@@ -1,6 +1,13 @@
 dist
 node_modules
-package-lock.json
+pnpm-lock.yaml
 test-results
 playwright-report
-e2e/__screenshots__
+.expo
+ios
+android
+expo-env.d.ts
+# Provided project documents and generated tokens: keep byte-for-byte.
+CLAUDE.md
+docs
+design

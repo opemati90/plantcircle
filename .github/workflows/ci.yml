@@ -10,15 +10,18 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run check
-      - run: npm audit --omit=dev --audit-level=high
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Format, lint, typecheck, unit tests (jest) and database access tests (PGlite).
+      - run: pnpm check
+      - run: pnpm audit --prod --audit-level=high
+      # Interim smoke test through Expo's web renderer. Device flows (Maestro) are not in CI yet.
+      - run: pnpm --filter @plantcircle/mobile exec playwright install --with-deps chromium
+      - run: pnpm --filter @plantcircle/mobile web:smoke

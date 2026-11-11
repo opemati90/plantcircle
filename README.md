@@ -1,155 +1,144 @@
 # PlantCircle
 
-Cook, eat and buy food together with plant-based people nearby. Launch city: Berlin.
+A mobile-first community app where people cook, eat and buy food together — in person and
+online. Global by default.
 
-Status: **milestone 1 of the MVP** — the first end-to-end journey. Not production-ready;
-see [Release blockers](#release-blockers).
+**Start with `CLAUDE.md`** (rules and stack) and `docs/01-mvp-scope.md` (what ships in v1).
+This README describes what exists in the repository today.
 
-## What works today
+Status: **early v1 work — not production-ready.** One journey is built; see
+[Not built yet](#not-built-yet) and [Blockers](#blockers).
 
-Welcome → what brings you here → city → Home (this week's Plans) → Plan details →
-sign up (Apple / Google / 6-digit email code, no passwords) → Join → bring something →
-cancel.
+## Layout
 
-Acceptance criteria (each covered by an automated test):
+```
+apps/mobile/         Expo app (iOS, Android), expo-router, TypeScript
+  app/               routes
+  src/components/    design-system components (docs/03)
+  src/features/      onboarding · auth · home · plans
+  src/lib/           backend contract + adapters, storage, dates
+  e2e/               interim web smoke tests (Playwright)
+packages/tokens/     design tokens (re-exports design/tokens.ts)
+supabase/            SQL migrations + access tests (in-process Postgres)
+docs/, design/       provided project documents and tokens
+```
 
-| #   | Criterion                                                                                         | Verified by               |
-| --- | ------------------------------------------------------------------------------------------------- | ------------------------- |
-| 1   | A visitor can browse Home and a Plan before creating an account                                   | `e2e/journey.spec.ts`     |
-| 2   | Joining requires an account; after sign-up the visitor lands back on the Plan, joined             | `e2e/journey.spec.ts`     |
-| 3   | A Plan can never have more confirmed guests than its capacity; joining is idempotent              | `tests/db/access.test.ts` |
-| 4   | The exact address is readable only by the host, or by confirmed guests from 24 h before the start | `tests/db/access.test.ts` |
-| 5   | Members cannot read each other's profiles or RSVPs, or write RSVPs directly                       | `tests/db/access.test.ts` |
-| 6   | A failed RSVP says so, holds no spot, and can be retried                                          | `e2e/journey.spec.ts`     |
-| 7   | Cancelling frees the spot and releases anything the member said they'd bring                      | both                      |
-| 8   | Unconfirmed allergens are never shown as "none" or "safe"                                         | `planCopy.test.ts`        |
-| 9   | No automatically detectable WCAG 2.2 A/AA violations; sheet traps focus; keyboard works           | `e2e/a11y.spec.ts`        |
+Not created yet: `apps/web` (public Plan page, web RSVP, staff console), `packages/types`,
+`packages/copy`, `supabase/functions`, `supabase/seed.sql`, Maestro flows.
 
 ## Getting started
 
 ```bash
-npm install
-npm run dev
+pnpm install
 ```
 
-With no environment variables the dev server uses **development fixtures** (an in-browser
-fake backend, labelled on screen; the email code is `000000`). To use a real backend, copy
-`.env.example` to `.env` and fill in the Supabase URL and anon key. A production build
-without those variables refuses to start rather than serving fixture data.
-
-Supabase project setup (not done yet — needs an account and your approval):
-
-1. Create a project in an **EU region** (Frankfurt) and apply `supabase/migrations`.
-2. Auth → enable Email with OTP; put `{{ .Token }}` in the email template (6 digits, 10 min
-   expiry). Enable Apple and Google providers. Add `<site>/auth/callback` to redirect URLs.
-3. Keep Supabase's built-in auth rate limits on; configure custom SMTP before launch.
-
-## Architecture
-
-One static single-page app plus a managed backend. No custom server.
-
-- **Client:** React 19 + TypeScript (strict) + Vite, React Router, TanStack Query, zod,
-  plain CSS modules with design tokens. Built as a responsive web app sized for phones
-  (the design's 390×844 artboards), centred in a 430px column on larger screens.
-- **Backend:** Supabase (Postgres, Auth). The client talks to the database directly;
-  authorisation is enforced by row-level security and `SECURITY DEFINER` functions, not by
-  the UI.
-- **`src/data/backend.ts`** is the only contract screens depend on. `supabase/` is the real
-  adapter; `fixtures/` is a dev/test stand-in and is not included in production bundles.
-
-Why this stack (proposed — there was no existing repository): it is the smallest thing that
-serves the design's own growth loop ("RSVP from a shared link, no install"), it can be
-rendered and tested here, and it can be wrapped for the app stores later with Capacitor
-without a rewrite. Native iOS/Android builds are **not** part of this milestone.
-
+```bash
+pnpm dev
 ```
-src/app          router, providers, not-built placeholder
-src/design       tokens.css, base.css, icons, shared UI
-src/features     onboarding · auth · home · plans (screens + pure rules + tests)
-src/data         types, Backend contract, supabase adapter, dev fixtures
-supabase         SQL migrations (schema, RLS, functions)
-tests/db         migration + access-policy tests on in-process Postgres (PGlite)
-e2e              Playwright journeys, accessibility, visual baselines
+
+Without environment variables a development build uses **development fixtures**: an in-app
+fake backend, labelled on screen, with the sample data from the prototype (email code
+`000000`). To use a real backend, copy `apps/mobile/.env.example` to `apps/mobile/.env`. A
+release build without those variables refuses to start rather than serving fixture data.
+
+```bash
+pnpm check
 ```
+
+runs formatting, lint, typecheck, unit tests and the database access tests.
+
+## What works today
+
+Welcome → what brings you here → choose a city (or skip) → Home → Plan → sign up
+(Apple / Google / 6-digit email code) → the Join that triggered sign-up is resumed →
+bring something → cancel.
+
+| #   | Behaviour                                                                                 | Verified by                             |
+| --- | ----------------------------------------------------------------------------------------- | --------------------------------------- |
+| 1   | Browse Home and a Plan without an account; sign up only at the first Join, then resume it | `e2e/journey.spec.ts`                   |
+| 2   | Cities are data; nothing is preselected; skipping shows Plans everywhere                  | `e2e/journey.spec.ts`, `supabase/tests` |
+| 3   | Capacity can never be exceeded; joins, cancels and claims run in one transaction          | `supabase/tests`                        |
+| 4   | Every mutating RPC takes an idempotency key and replays the stored response               | `supabase/tests`                        |
+| 5   | Exact address readable only by the host, or by confirmed guests after `reveal_at`         | `supabase/tests`                        |
+| 6   | Members cannot read each other's profiles, RSVPs or policy acceptances                    | `supabase/tests`                        |
+| 7   | A failed RSVP says so, holds no spot, and Retry re-sends the same key                     | `e2e/journey.spec.ts`                   |
+| 8   | Unconfirmed allergens are never shown as "none" or "safe"                                 | `planCopy.test.ts`                      |
+| 9   | No automatically detectable WCAG A/AA/AAA-contrast violations on these screens            | `e2e/a11y.spec.ts`                      |
+
+## How it was verified — and what was not
+
+- **Run:** `pnpm check` (19 unit tests, 20 database tests) and 18 Playwright tests that
+  drive the app through **Expo's web renderer** at the prototype size (390×844), plus a
+  side-by-side comparison with the prototype screens.
+- **Never run on a device.** No iOS simulator or Android emulator was available. Nothing
+  here has been seen in a native build: blur, safe areas, keyboard behaviour, the system
+  sign-in sheet, secure storage, VoiceOver/TalkBack, Dynamic Type and Reduce Motion are all
+  unverified.
+- **Never run against Supabase.** The adapter is type-checked only. Schema, RLS and RPCs are
+  tested on PGlite (real Postgres semantics), not on a Supabase project.
+- Expo and Supabase documentation could not be reached from the build environment; native
+  APIs were written against the installed packages' type definitions. Review the OAuth
+  deep-link flow and session storage against current docs before relying on them.
+- Date formatting uses `Intl` with time zones; `docs/02` names date-fns-tz. Check on Hermes.
 
 ## Security and data handling
 
-Threat model (lightweight):
+| Asset              | Risk                                                     | Control                                                                                               |
+| ------------------ | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Exact Plan address | Read by non-guests                                       | Separate table; RLS via `can_see_address` and `reveal_at`; never in public views                      |
+| Who attends what   | Tracking a person                                        | RSVP rows readable only by their owner; public views expose counts and up to three initials           |
+| Profile            | Cross-user reads; self-verifying as a host               | Own-row RLS; column grants exclude `is_verified_host`                                                 |
+| Capacity, claims   | Over-booking by concurrent or repeated requests          | Row lock + count inside each RPC; idempotency keys                                                    |
+| Session            | Token theft; data leaking between accounts on one device | Keychain/Keystore storage (chunked); query cache cleared on user change; post-sign-in paths validated |
+| Secrets            | Service-role key in the app                              | Only the anon key is an `EXPO_PUBLIC_` variable; `.env*` and signing files are git-ignored            |
 
-| Asset                                               | Risk                                                                          | Control                                                                                                                                 |
-| --------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Exact Plan address (people's homes)                 | Scraped by non-guests                                                         | Separate table; RLS via `can_see_address`; never in public views, share links or calendar files unless already unlocked for that viewer |
-| RSVPs / who attends what                            | Enumerating a person's whereabouts                                            | RSVP rows readable only by their owner; public views expose counts and up to three first initials                                       |
-| Profile (email is in Supabase Auth, not `profiles`) | Cross-user reads, self-promotion to verified host                             | Own-row RLS; column-level grants exclude `is_verified_host` and acceptance timestamps                                                   |
-| Capacity / claims                                   | Over-booking by concurrent or repeated requests                               | Row lock + count inside `join_plan` / `claim_bring_item`; idempotent                                                                    |
-| Session                                             | Open redirect after sign-in; data leaking between accounts on a shared device | `safeNextPath`; query cache cleared when the user changes                                                                               |
-| Secrets                                             | Service-role key in the bundle                                                | Only the anon key is a `VITE_` variable; `.env*` is git-ignored                                                                         |
+Personal data stored: email (Supabase Auth), display name (first name + last initial), chosen
+city, onboarding goals, policy acceptances, RSVPs and claims. No location is collected.
+Nothing is sent to analytics yet.
 
-Personal data collected: email (Auth), display name (first name + last initial, derived),
-city, onboarding goals, accepted terms version + timestamp, RSVPs and claims. Nothing is
-sent to analytics or third parties. Controls drawn from OWASP ASVS (access control, input
-validation, session handling); no certification is claimed.
+## Deviations from the prototype
 
-## Design fidelity
+| Where             | Prototype                                            | Built                                                   | Why                                                                                  |
+| ----------------- | ---------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Welcome           | "…plant-based people in Berlin."                     | "…near you."                                            | Rule 1: never hard-code a city                                                       |
+| Welcome           | Language chip                                        | Omitted                                                 | i18n (EN + DE) not built yet                                                         |
+| City step         | One row "Berlin" with a chevron                      | Radio list of cities from the backend, none preselected | The picker behind the chevron was not in the files provided                          |
+| Home (signed out) | Bell + avatar                                        | "Sign in" chip                                          | Prototype only shows the signed-in header                                            |
+| Home              | City chevron, invitation dot, Save, group-order card | Omitted                                                 | Those features are not built                                                         |
+| Plan              | Share, Add to calendar, Message host, footprint chip | Omitted                                                 | Share needs the public web page; calendar and messaging not built; footprint is v1.1 |
+| Plan              | Tapping "You're going" cancels                       | Confirmation sheet first                                | Prevents losing a spot by accident                                                   |
+| Plan (full)       | Join waitlist                                        | Disabled "Full"                                         | Waitlist needs `docs/07-state-machines.md`                                           |
+| Sign up           | Field border `#E5E5EA`; Terms/Privacy/Under-18 links | `borderControl` token; plain text                       | Control boundary contrast; documents and age screen not built                        |
+| Verify email      | "Open mail app"                                      | Omitted                                                 | Not built                                                                            |
 
-Screens implemented from the canvas: Welcome (3 steps), Home, Home loading, Plan, Plan
-sign-up sheet, RSVP failed, Sign up, Verify email, server-error layout. Verified by
-rendering the design markup and the app at 390×844 in Chromium and comparing side by side;
-`npm run test:visual` keeps baselines. **Not verified:** Safari/iOS, Android Chrome,
-Firefox, and real SF Pro rendering (Linux Chromium falls back to another sans-serif for
-both the design and the app).
+## Open questions introduced by this work
 
-Deliberate deviations:
+To merge into `docs/16-open-questions.md` when it is added to the repository:
 
-| Where             | Design                                                                      | Built                                             | Why                                                                                   |
-| ----------------- | --------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Welcome           | Language chip "English"                                                     | Omitted                                           | German is not built; a dead control is worse than none                                |
-| City step         | City picker chevron, "Skip for now", "online classes and worldwide circles" | Static Berlin, no skip, "More cities will follow" | One launch city; online/global features don't exist yet                               |
-| Home (signed out) | Bell + avatar                                                               | "Sign in" chip                                    | The design only shows the signed-in header                                            |
-| Home              | City chevron, invitation dot, Save bookmark, group-order card               | Omitted                                           | City switching, invitations, saving and group orders are not built                    |
-| Home              | "Up next" opens My Plans                                                    | Opens the Plan                                    | My Plans is not built                                                                 |
-| Plan              | "Message" host, footprint chip                                              | Omitted                                           | Messaging must ship with request/block/report; impact has no data source              |
-| Plan              | Tapping "You're going" cancels immediately                                  | Confirmation sheet first                          | Prevents losing a spot by accident                                                    |
-| Plan (full)       | Waitlist                                                                    | Disabled "Full" button                            | Waitlist offers/notifications are not built; a list that never promotes would be fake |
-| Sign up           | Email field border `#E5E5EA`, prefilled address                             | Border `#8A8A8E`, empty with placeholder          | Field boundary needs 3:1 contrast (WCAG 1.4.11)                                       |
-| Sign up           | Terms / Privacy / "Under 18?" links                                         | Plain text                                        | The documents and the age-blocked screen don't exist yet                              |
-| Verify email      | "Open mail app"                                                             | Omitted                                           | No reliable way to open an inbox from the web                                         |
-| Type              | Sizes in px                                                                 | Same sizes in rem                                 | Respects the reader's browser font size                                               |
-
-## Costs (unverified — check before committing)
-
-Pricing below is from memory, **not checked against the vendors' pages**; verify before
-creating anything billable. Nothing has been purchased or provisioned.
-
-| Need                              | Recommendation                                                                                    | Expected cost                       |
-| --------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Database + auth                   | Supabase, EU region. Free tier for development (pauses when idle, no backups); Pro for production | about US$25/month at launch         |
-| Static hosting                    | Cloudflare Pages or Netlify free tier                                                             | €0                                  |
-| Transactional email (login codes) | Resend or Postmark via Supabase custom SMTP                                                       | free tier to roughly US$15–20/month |
-| Apple sign-in                     | Apple Developer Program                                                                           | US$99/year                          |
-| Domain                            | —                                                                                                 | about €15/year                      |
-
-Cost drivers are login emails (one per email sign-in) and database size, not user count;
-at 1,000–10,000 monthly users this journey stays inside the Pro plan's included usage.
-Supabase has a spend cap toggle on Pro (a real cap for over-usage); email providers only
-alert. Data export is a standard `pg_dump`.
+- Colours used by the prototype but missing from `design/tokens.json`: avatar tints, map
+  tile, body text `#3A3A3C`, sheet handle, card border `#E5E5EA`
+  (`apps/mobile/src/components/theme.ts`).
+- Display name for email sign-ups is derived from the first word of the address and cannot be
+  edited until Profile exists.
+- Policy version string is the placeholder `2026-11`.
+- Bundle identifiers `app.plantcircle.mobile` and the `plantcircle://` scheme are placeholders.
+- The schema is **provisional**: it was written before `docs/05-data-model.md` and
+  `docs/06-api.md` were available and must be reconciled with them.
 
 ## Not built yet
 
-Routes that exist only as an honest "isn't built yet" screen: Explore, My Plans, Inbox,
-Profile (sign-out only), Start a Plan. Everything else on the canvas (circles, group
-orders, chat, recipes, online Plans, payments, hosting tools, AI features, German,
-web RSVP without an account, staff console, notifications, offline) is not started.
+Of the 60 v1 screens in `docs/01-mvp-scope.md`, these are implemented: Welcome & onboarding,
+Home, Loading skeleton, Plan detail & RSVP (with sign-up sheet), RSVP failed, Create account,
+Verify email, and the server-error layout. Explore, My Plans, Inbox, Profile and Start a Plan
+are honest "isn't built yet" screens. Everything else in v1 is not started, including the
+items `CLAUDE.md` calls non-negotiable for launch: report/block and the staff console,
+waitlist, i18n (EN + DE), offline cache, notifications, web RSVP.
 
-## Release blockers
+## Blockers
 
-- No Supabase project yet: the Supabase adapter is type-checked and its error mapping is
-  unit-tested, but it has **never run against a real project**. Schema, RLS and functions
-  are tested on real Postgres semantics (PGlite), not on Supabase itself.
-- Reporting, blocking and moderation (the design marks these as a ship blocker).
-- Terms, Privacy Policy and Community Rules; data export and account deletion; the
-  post-sign-up privacy choices screen. Needs legal review (GDPR/TDDDG/DSA) — not assessed here.
-- Members cannot edit their display name yet (Profile).
-- Plan creation (Plans can currently only be inserted by an administrator).
-- Production monitoring/error reporting, backups and a restore drill, staging environment.
-- Cross-browser and real-device checks; manual screen-reader pass (VoiceOver, TalkBack).
+- **Missing documents.** `CLAUDE.md` refers to `docs/04`–`docs/16` and `prototype-source/`;
+  only `docs/00`–`03` and the tokens were provided. The data model, API, state machines,
+  backlog order and Definition of Done are needed to build to spec.
+- **No Supabase project** (EU region) and no Apple/Google sign-in configuration.
+- **No device verification** — needs a simulator/emulator or EAS builds, and Maestro flows.
+- Legal documents (Terms, Privacy, Community Rules) and compliance review.

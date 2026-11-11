@@ -1,37 +1,34 @@
 # PlantCircle — instructions for coding agents
 
-Read `README.md` first: it holds scope, architecture, security rules and what is not built.
+**`CLAUDE.md` is the source of truth.** Read it first, then `docs/01-mvp-scope.md`.
+This file only adds what the current code base does that `CLAUDE.md` does not yet say.
 
-## Commands
+## Commands that exist today
 
-- `npm run dev` — dev server; without Supabase env vars it uses the labelled fixture backend
-- `npm run check` — format check, lint, typecheck, unit + database tests, production build
-- `npm run test:e2e` — Playwright journeys + accessibility (starts the dev server itself)
-- `npm run test:visual` — screenshots at 390×844; `-- -u` to update after an intended change
+```bash
+pnpm install
+pnpm dev                                        # expo start (apps/mobile)
+pnpm check                                      # format, lint, typecheck, unit + database tests
+pnpm --filter @plantcircle/mobile web:smoke     # Playwright through Expo's web renderer
+pnpm --filter @plantcircle/db test              # migration + access tests on in-process Postgres
+```
 
-## Rules
+`pnpm e2e` (Maestro) and `pnpm db:reset` from `CLAUDE.md` are not set up yet.
 
-- **Design source of truth:** the "PlantCircle MVP" design canvas. Match it; do not restyle.
-  Use tokens from `src/design/tokens.css`; never hard-code a colour, radius or shadow that
-  has a token. Font sizes are `rem` (design px ÷ 16). Record any deliberate deviation in the
-  README table.
-- **Structure:** `src/features/<feature>` (screens + their rules), `src/design` (tokens, shared
-  UI), `src/data` (backend contract and adapters), `src/lib` (pure helpers). Screens talk to
-  the `Backend` interface only — never import Supabase outside `src/data/supabase`.
-- **Business rules live in SQL** (`supabase/migrations`), enforced by RLS and
-  `SECURITY DEFINER` functions. The UI only mirrors them. New tables: enable RLS, revoke
-  default grants, grant the minimum, and add a test in `tests/db`.
-- **Copy/derivation logic is pure and tested** (`planCopy.ts`, `dates.ts`, `authRules.ts`);
-  keep it out of components.
-- Never show success before the server confirms. Every screen needs loading, error and
-  empty states. No dead buttons: unbuilt destinations route to `NotBuiltScreen`.
-- Accessibility: real `<button>`/`<a>`/`<input>` elements, 44px targets, visible focus, text
-  contrast ≥ 4.5:1; new screens get an axe check in `e2e/a11y.spec.ts`.
-- Never commit secrets. Only `VITE_SUPABASE_URL` and the anon key may reach the client.
-- Do not weaken or delete tests to get a green run.
+## Conventions in this code base
 
-## Definition of done
-
-Acceptance criteria work end to end · permissions enforced in the database and tested ·
-loading/empty/error states exist · `npm run check` and `npm run test:e2e` pass · screenshots
-compared with the design · README updated if scope, deviations or setup changed.
+- Screens talk to the `Backend` interface (`apps/mobile/src/lib/backend/backend.ts`) only.
+  Supabase is imported only under `src/lib/backend/supabase`. Without Supabase env vars a dev
+  build uses the labelled fixture backend; a release build refuses to start.
+- Copy and derivation rules are pure and unit-tested (`planCopy.ts`, `dates.ts`, `authRules.ts`).
+- Every mutating call takes an idempotency key: create it with `newIdempotencyKey()` per user
+  action and re-send the same key on retry.
+- Tokens come from `@plantcircle/tokens` (re-exports `design/tokens.ts`). Colours the prototype
+  uses that are not tokens yet live in `src/components/theme.ts` (`extra`) — do not add more
+  without listing them as an open question.
+- Use `aria-*` props (`aria-checked`, `aria-selected`, `aria-disabled`) for control state: they
+  work on iOS, Android and web. Decorative photos go through `<Photo>` without `alt`.
+- New tables: enable RLS, revoke default grants, grant the minimum, add a test in
+  `supabase/tests`.
+- Never commit secrets. Only `EXPO_PUBLIC_SUPABASE_URL` and the anon key may reach the app.
+- `docs/`, `design/` and `CLAUDE.md` are provided documents: do not reformat them.

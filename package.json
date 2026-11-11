@@ -1,50 +1,21 @@
 {
   "name": "plantcircle",
   "private": true,
-  "version": "0.1.0",
-  "type": "module",
+  "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "dev": "pnpm --filter @plantcircle/mobile start",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run",
-    "test:e2e": "playwright test --project=journeys --trace off",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
-    "test:visual": "playwright test --project=visual --trace off"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.119.0",
-    "@tanstack/react-query": "^5.107.1",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "react-router": "^7.18.5",
-    "zod": "^4.6.7"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.14.0",
-    "@electric-sql/pglite": "^0.5.16",
-    "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.63.0",
-    "@types/node": "^26.6.6",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.3.0",
-    "eslint": "^10.14.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "prettier": "^3.10.0",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.2",
-    "vite": "^8.3.8",
-    "vitest": "^5.1.0"
-  },
-  "overrides": {
-    "playwright-core": "1.63.0"
+    "prettier": "3.10.0",
+    "typescript": "6.0.3"
   }
 }
