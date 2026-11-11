@@ -1,0 +1,191 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  min-height: 100dvh;
+  padding: var(--screen-top-form) var(--gutter-wide) 190px;
+}
+
+.back {
+  display: flex;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background: var(--color-accent-tint);
+}
+
+.round {
+  composes: logo;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-pill);
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.9px;
+}
+
+.lead {
+  color: var(--color-text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+
+.lead b,
+.hint b {
+  color: var(--color-ink);
+}
+
+.providers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.providersInSheet {
+  composes: providers;
+  gap: 14px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+  flex: 1;
+  height: 1px;
+  background: var(--color-line);
+  content: '';
+}
+
+.emailForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emailRow {
+  display: flex;
+  gap: 10px;
+}
+
+.emailInput {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 54px;
+  padding: 0 16px;
+  border: 1.5px solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: 1.0625rem;
+}
+
+.emailSubmit {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-ink);
+  color: #ffffff;
+}
+
+.emailSubmit:disabled {
+  opacity: 0.55;
+}
+
+.terms {
+  margin-top: auto;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.signUpTerms {
+  position: absolute;
+  right: var(--gutter-wide);
+  bottom: calc(34px + var(--safe-bottom));
+  left: var(--gutter-wide);
+}
+
+/* Six display cells with one real input stretched across them. */
+.code {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.codeCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 62px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--color-fill);
+  font-size: 1.625rem;
+  font-weight: 700;
+}
+
+.code:focus-within .codeCellActive {
+  border-color: var(--color-ink);
+}
+
+.codeInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  font-size: 1rem;
+}
+
+/* The active cell's border is the focus indicator for this input. */
+.codeInput:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.hint {
+  margin-top: -8px;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+}
+
+.resend {
+  min-height: var(--touch-target);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-weight: 700;
+  text-decoration: underline;
+}

@@ -1,0 +1,66 @@
+/* Design tokens extracted from the PlantCircle MVP design canvas. */
+:root {
+  /* Colour */
+  --color-ink: #0a0a0a;
+  --color-text-secondary: #505054;
+  --color-text-body: #3a3a3c;
+  --color-surface: #ffffff;
+  --color-fill: #f5f5f7;
+  --color-line: #e5e5ea;
+  --color-hairline: #ededed;
+  --color-outline: #8a8a8e;
+  --color-handle: #c7c7cc;
+  --color-radio: #767680;
+  --color-accent: #155a37;
+  --color-accent-tint: #eaf5ee;
+  --color-attention: #6b4000;
+  --color-scrim: rgba(10, 10, 10, 0.45);
+  --color-sand: #e8e3da;
+  --color-sand-ink: #5a4a33;
+  --color-sky: #dce6ee;
+  --color-sky-ink: #2e4a60;
+  --color-sage: #e3ece2;
+  --color-sage-ink: #1e4d33;
+  --color-map: #e9eee6;
+  --color-map-park: #d5e4d0;
+
+  /* Radius */
+  --radius-sm: 14px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+  --radius-pill: 999px;
+
+  /* Elevation */
+  --shadow-bar: 0 10px 30px rgba(0, 0, 0, 0.14);
+  --shadow-nav: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 18px 40px rgba(30, 20, 10, 0.18);
+  --shadow-fab: 0 10px 24px rgba(0, 0, 0, 0.25);
+  --shadow-banner: 0 12px 30px rgba(0, 0, 0, 0.3);
+
+  /* Photo overlays */
+  --scrim-photo: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0) 18%,
+    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0.9) 60%,
+    rgba(0, 0, 0, 0.94) 100%
+  );
+  --glass-blur: blur(16px) saturate(160%);
+  --bar-blur: blur(24px) saturate(180%);
+
+  /* Layout */
+  --app-max-width: 430px;
+  --gutter: 20px;
+  --gutter-wide: 24px;
+  --touch-target: 44px;
+  --screen-top: max(58px, calc(env(safe-area-inset-top) + 14px));
+  --screen-top-form: max(54px, calc(env(safe-area-inset-top) + 10px));
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue',
+    'Segoe UI', Roboto, sans-serif;
+}
