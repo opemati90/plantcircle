@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, IconButton } from '../../components/Button';
 import {
@@ -24,6 +25,7 @@ import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
 import type { PlanDetail } from '../../lib/backend/types';
 import { longDate, timeRange, weekdayLong } from '../../lib/dates';
+import { currentLanguage } from '../../lib/i18n';
 import { ProviderButtons } from '../auth/ProviderButtons';
 import { useAuth } from '../auth/useAuth';
 import {
@@ -88,6 +90,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
   const router = useRouter();
   const insets = useScreenInsets();
   const { session } = useAuth();
+  const { t } = useTranslation();
   const { join, cancel, claim } = useRsvpMutations(plan.id);
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -128,11 +131,11 @@ function PlanView({ detail }: { detail: PlanDetail }) {
   const failure = failed ? errorCode(failed.error) : null;
   const failureCopy =
     failed === claim && failure === 'item_taken'
-      ? { title: 'Someone is already bringing this', detail: 'Pick something else' }
+      ? { title: t('plan.error.itemTakenTitle'), detail: t('plan.error.itemTakenDetail') }
       : failed === join && failure
-        ? rsvpErrorCopy(failure)
+        ? rsvpErrorCopy(t, failure)
         : failed
-          ? { title: 'Couldn’t save that', detail: 'Nothing was changed' }
+          ? { title: t('plan.error.genericTitle'), detail: t('plan.error.genericDetail') }
           : null;
   // A retry re-sends the same idempotency key, so it can never apply twice.
   const retry = () => {
@@ -144,14 +147,14 @@ function PlanView({ detail }: { detail: PlanDetail }) {
   const busy = join.isPending || cancel.isPending;
   const barNote = join.isError
     ? failure === 'network'
-      ? 'Check your connection'
-      : 'Not saved'
+      ? t('plan.checkConnection')
+      : t('plan.notSaved')
     : isGoing
-      ? `See you ${weekdayLong(plan.startsAt, plan.timezone)}`
+      ? t('plan.seeYou', { day: weekdayLong(plan.startsAt, plan.timezone) })
       : full
-        ? 'No spots left'
-        : spotsLeftShort(plan);
-  const hostFirstName = plan.hostName.split(' ')[0] ?? 'the host';
+        ? t('plan.noSpots')
+        : spotsLeftShort(t, plan);
+  const hostFirstName = plan.hostName.split(' ')[0] ?? plan.hostName;
 
   return (
     <View style={styles.screen}>
@@ -177,8 +180,8 @@ function PlanView({ detail }: { detail: PlanDetail }) {
             <Text
               style={[type(13, 'semibold', { color: '#FFFFFF', tracking: 0.6 }), styles.upper]}
             >
-              {categoryLabel(plan.category)}
-              {full ? ' · Full' : ''}
+              {categoryLabel(t, plan)}
+              {full ? ` · ${t('plan.full')}` : ''}
             </Text>
             <Text
               accessibilityRole="header"
@@ -202,7 +205,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
             <Fact
               lead={<MapTile />}
               title={plan.areaName}
-              note={addressNote(plan, isGoing, address)}
+              note={addressNote(t, plan, isGoing, address)}
             />
             <Fact
               lead={
@@ -228,12 +231,12 @@ function PlanView({ detail }: { detail: PlanDetail }) {
                   ))}
                 </View>
               }
-              title={goingLabel(plan, isGoing)}
-              note={spotsLabel(plan)}
+              title={goingLabel(t, plan, isGoing)}
+              note={spotsLabel(t, plan)}
             >
               <View
                 role="img"
-                accessibilityLabel={`${taken} of ${plan.capacity} spots taken`}
+                accessibilityLabel={t('plan.spotsTaken', { taken, capacity: plan.capacity })}
                 style={styles.meter}
               >
                 <View
@@ -266,22 +269,22 @@ function PlanView({ detail }: { detail: PlanDetail }) {
                   ) : null}
                 </>
               }
-              note={`${plan.hostVerified ? 'Verified host' : 'Your host'} · ${plan.hostPlansCount} ${plan.hostPlansCount === 1 ? 'Plan' : 'Plans'} hosted`}
+              note={`${plan.hostVerified ? t('plan.verifiedHost') : t('plan.yourHost')} · ${t('plan.plansHosted', { count: plan.hostPlansCount })}`}
             />
           </View>
 
-          <Section title="About">
+          <Section title={t('plan.about')}>
             <Text style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}>
               {plan.description}
             </Text>
           </Section>
 
           {bringItems.length > 0 ? (
-            <Section title="Bring something">
+            <Section title={t('plan.bring')}>
               <View>
                 {bringItems.map((item) => {
                   const open = item.claimedCount < item.quantity && !item.claimedByMe;
-                  const note = item.claimedByMe ? 'You’re bringing this' : bringItemNote(item);
+                  const note = bringItemNote(t, item);
                   return (
                     <View key={item.id} style={styles.bringItem}>
                       <View style={styles.bringText}>
@@ -293,19 +296,19 @@ function PlanView({ detail }: { detail: PlanDetail }) {
                       {open ? (
                         <Pressable
                           accessibilityRole="button"
-                          accessibilityLabel={`I’ll bring it: ${item.label}`}
+                          accessibilityLabel={t('plan.illBringItem', { item: item.label })}
                           aria-disabled={claim.isPending || busy}
                           disabled={claim.isPending || busy}
                           onPress={() => {
                             if (isGoing)
                               claim.mutate({ itemId: item.id, key: newIdempotencyKey() });
-                            else if (session) setNotice('Join this Plan first');
+                            else if (session) setNotice(t('plan.joinFirst'));
                             else setSheet('signUp');
                           }}
                           style={styles.bringButton}
                         >
                           <Text style={type(15, 'semibold', { color: '#FFFFFF' })}>
-                            I’ll bring it
+                            {t('plan.illBring')}
                           </Text>
                         </Pressable>
                       ) : (
@@ -318,14 +321,14 @@ function PlanView({ detail }: { detail: PlanDetail }) {
             </Section>
           ) : null}
 
-          <Section title="Good to know">
+          <Section title={t('plan.goodToKnow')}>
             <View style={styles.notes}>
               <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
-                <Text style={styles.strong}>Allergens:</Text> {allergenNote(plan)}
+                <Text style={styles.strong}>{t('plan.allergens')}</Text> {allergenNote(t, plan)}
               </Text>
               <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
-                <Text style={styles.strong}>Can’t make it?</Text> Cancel any time so someone
-                else can take your spot.
+                <Text style={styles.strong}>{t('plan.cantMakeIt')}</Text>{' '}
+                {t('plan.cancelAnytime')}
               </Text>
             </View>
           </Section>
@@ -334,7 +337,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
 
       <IconButton
         variant="glass"
-        label="Back"
+        label={t('common.back')}
         onPress={() => {
           if (router.canGoBack()) router.back();
           else router.replace('/home');
@@ -360,7 +363,9 @@ function PlanView({ detail }: { detail: PlanDetail }) {
 
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
-          <Text style={type(18, 'bold', { tracking: -0.3 })}>{priceLabel(plan)}</Text>
+          <Text style={type(18, 'bold', { tracking: -0.3 })}>
+            {priceLabel(t, plan, currentLanguage())}
+          </Text>
           <Text
             accessibilityLiveRegion="polite"
             style={type(14, 'regular', { color: color.secondary })}
@@ -371,20 +376,20 @@ function PlanView({ detail }: { detail: PlanDetail }) {
         {isGoing ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="You’re going"
-            accessibilityHint="Opens the option to cancel your spot"
+            accessibilityLabel={t('plan.youreGoing')}
+            accessibilityHint={t('plan.cancelHint')}
             onPress={() => {
               setSheet('cancel');
             }}
             style={[styles.cta, styles.ctaGoing]}
           >
             <Text style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}>
-              {cancel.isPending ? 'Cancelling…' : 'You’re going'}
+              {cancel.isPending ? t('plan.cancelling') : t('plan.youreGoing')}
             </Text>
           </Pressable>
         ) : (
           <Button
-            label={full ? 'Full' : join.isError ? 'Try again' : 'Join'}
+            label={full ? t('plan.full') : join.isError ? t('common.tryAgain') : t('plan.join')}
             disabled={full}
             loading={join.isPending}
             onPress={() => {
@@ -401,8 +406,8 @@ function PlanView({ detail }: { detail: PlanDetail }) {
         onClose={() => {
           setSheet(null);
         }}
-        title="Save your spot"
-        lead={`Create an account so ${hostFirstName} knows you’re coming and you get the address.`}
+        title={t('plan.sheet.saveSpot')}
+        lead={t('plan.sheet.saveSpotLead', { host: hostFirstName })}
       >
         <ProviderButtons gap={14} onSignedIn={afterSignUp} />
         <Pressable
@@ -413,12 +418,14 @@ function PlanView({ detail }: { detail: PlanDetail }) {
           }}
           style={styles.sheetLink}
         >
-          <Text style={[type(15, 'semibold'), styles.underline]}>Use email instead</Text>
+          <Text style={[type(15, 'semibold'), styles.underline]}>
+            {t('plan.sheet.useEmail')}
+          </Text>
         </Pressable>
         <Text
           style={[type(13, 'regular', { color: color.secondary, leading: 1.5 }), styles.center]}
         >
-          You confirm you’re 18+ and accept the Terms and Community Rules.
+          {t('plan.sheet.legal')}
         </Text>
       </BottomSheet>
 
@@ -427,11 +434,11 @@ function PlanView({ detail }: { detail: PlanDetail }) {
         onClose={() => {
           setSheet(null);
         }}
-        title="Cancel your spot?"
-        lead="Your spot goes back to the group, and anything you said you’d bring is released."
+        title={t('plan.sheet.cancelTitle')}
+        lead={t('plan.sheet.cancelLead')}
       >
         <Button
-          label="Cancel my spot"
+          label={t('plan.sheet.cancelConfirm')}
           onPress={() => {
             setSheet(null);
             cancel.mutate(newIdempotencyKey());
@@ -439,7 +446,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
         />
         <Button
           variant="ghost"
-          label="Keep my spot"
+          label={t('plan.sheet.keep')}
           onPress={() => {
             setSheet(null);
           }}
@@ -450,6 +457,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
 }
 
 export default function PlanScreen() {
+  const { t } = useTranslation();
   const { planId } = useLocalSearchParams<{ planId: string }>();
   const router = useRouter();
   const plan = usePlan(planId);
@@ -459,7 +467,12 @@ export default function PlanScreen() {
 
   if (plan.isPending) {
     return (
-      <View role="status" accessibilityLabel="Loading" aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="100%" height={420} radius={0} />
         <View style={styles.loading}>
           {[0, 1, 2, 3].map((row) => (
@@ -477,24 +490,26 @@ export default function PlanScreen() {
       <EmptyState
         title={
           missing
-            ? 'This Plan isn’t available'
+            ? t('plan.unavailableTitle')
             : code === 'network'
-              ? 'Can’t reach PlantCircle'
-              : 'Something went wrong on our side'
+              ? t('errors.offlineTitle')
+              : t('errors.serverTitle')
         }
         text={
           missing
-            ? 'It may have been cancelled, or the link is wrong.'
+            ? t('plan.unavailableText')
             : code === 'network'
-              ? 'Check your connection and try again.'
-              : 'It’s not you. Try again in a moment.'
+              ? t('errors.offlineText')
+              : t('errors.serverText')
         }
         actions={
           <>
-            {missing ? null : <Button label="Try again" onPress={() => void plan.refetch()} />}
+            {missing ? null : (
+              <Button label={t('common.tryAgain')} onPress={() => void plan.refetch()} />
+            )}
             <Button
               variant={missing ? 'primary' : 'ghost'}
-              label="Back to Home"
+              label={t('common.backToHome')}
               onPress={goHome}
             />
           </>

@@ -1,16 +1,25 @@
-/** All Plan times are rendered in the Plan's own time zone, 24-hour clock. */
-const LOCALE = 'en-GB';
+/**
+ * All Plan times are rendered in the Plan's own time zone, on a 24-hour clock,
+ * using the active language's conventions ("Saturday, 7 November" / "Samstag, 7. November").
+ */
+let locale = 'en-GB';
+
+/** Called by i18n whenever the language changes. */
+export function setDateLocale(next: string): void {
+  locale = next;
+}
 
 function part(iso: string, timeZone: string, options: Intl.DateTimeFormatOptions): string {
-  return new Intl.DateTimeFormat(LOCALE, { timeZone, ...options }).format(new Date(iso));
+  return new Intl.DateTimeFormat(locale, { timeZone, ...options }).format(new Date(iso));
 }
 
 export const monthShort = (iso: string, tz: string) =>
-  part(iso, tz, { month: 'short' }).toUpperCase();
+  part(iso, tz, { month: 'short' }).replace('.', '').toUpperCase();
 
 export const dayOfMonth = (iso: string, tz: string) => part(iso, tz, { day: 'numeric' });
 
-export const weekdayShort = (iso: string, tz: string) => part(iso, tz, { weekday: 'short' });
+export const weekdayShort = (iso: string, tz: string) =>
+  part(iso, tz, { weekday: 'short' }).replace('.', '');
 
 export const weekdayLong = (iso: string, tz: string) => part(iso, tz, { weekday: 'long' });
 
@@ -30,12 +39,14 @@ export const timeRange = (startIso: string, endIso: string, tz: string) =>
 export const shortWhen = (iso: string, tz: string) =>
   `${weekdayShort(iso, tz)} ${time(iso, tz)}`;
 
-export function greeting(now: Date): string {
+export type DayPart = 'morning' | 'afternoon' | 'evening';
+
+/** Which greeting fits the viewer's local time (the copy lives in the catalogue). */
+export function dayPart(now: Date): DayPart {
   const hour = now.getHours();
-  if (hour < 5) return 'Good evening';
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
+  if (hour >= 5 && hour < 12) return 'morning';
+  if (hour >= 12 && hour < 18) return 'afternoon';
+  return 'evening';
 }
 
 /** UTC instant for a wall-clock time in `timeZone` (used by fixtures and tests). */

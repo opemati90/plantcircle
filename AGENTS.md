@@ -13,13 +13,17 @@ pnpm --filter @plantcircle/mobile web:smoke     # Playwright through Expo's web 
 pnpm --filter @plantcircle/db test              # migration + access tests on in-process Postgres
 ```
 
-`pnpm e2e` (Maestro) and `pnpm db:reset` from `CLAUDE.md` are not set up yet.
+`pnpm e2e` runs the Maestro flows in `apps/mobile/e2e/maestro` (needs a simulator and a
+development build; they have not been run yet). `pnpm db:reset` is not set up yet.
 
 ## Conventions in this code base
 
 - Screens talk to the `Backend` interface (`apps/mobile/src/lib/backend/backend.ts`) only.
   Supabase is imported only under `src/lib/backend/supabase`. Without Supabase env vars a dev
   build uses the labelled fixture backend; a release build refuses to start.
+- **No user-facing string in components.** Add it to `packages/copy/src/en.ts` and `de.ts`
+  (same keys, same `{{placeholders}}`, typographic apostrophes — a test enforces this) and
+  read it with `useTranslation()`. Stable ids, not labels, go into storage and the database.
 - Copy and derivation rules are pure and unit-tested (`planCopy.ts`, `dates.ts`, `authRules.ts`).
 - Every mutating call takes an idempotency key: create it with `newIdempotencyKey()` per user
   action and re-send the same key on retry.

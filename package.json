@@ -12,7 +12,8 @@
     "typecheck": "pnpm -r typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "e2e": "maestro test apps/mobile/e2e/maestro"
   },
   "devDependencies": {
     "prettier": "3.10.0",

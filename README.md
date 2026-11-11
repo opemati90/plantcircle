@@ -19,12 +19,13 @@ apps/mobile/         Expo app (iOS, Android), expo-router, TypeScript
   src/lib/           backend contract + adapters, storage, dates
   e2e/               interim web smoke tests (Playwright)
 packages/tokens/     design tokens (re-exports design/tokens.ts)
+packages/copy/       i18n catalogues (en, de)
 supabase/            SQL migrations + access tests (in-process Postgres)
 docs/, design/       provided project documents and tokens
 ```
 
 Not created yet: `apps/web` (public Plan page, web RSVP, staff console), `packages/types`,
-`packages/copy`, `supabase/functions`, `supabase/seed.sql`, Maestro flows.
+`supabase/functions`, `supabase/seed.sql`, Maestro flows.
 
 ## Getting started
 
@@ -53,21 +54,22 @@ Welcome → what brings you here → choose a city (or skip) → Home → Plan �
 (Apple / Google / 6-digit email code) → the Join that triggered sign-up is resumed →
 bring something → cancel.
 
-| #   | Behaviour                                                                                 | Verified by                             |
-| --- | ----------------------------------------------------------------------------------------- | --------------------------------------- |
-| 1   | Browse Home and a Plan without an account; sign up only at the first Join, then resume it | `e2e/journey.spec.ts`                   |
-| 2   | Cities are data; nothing is preselected; skipping shows Plans everywhere                  | `e2e/journey.spec.ts`, `supabase/tests` |
-| 3   | Capacity can never be exceeded; joins, cancels and claims run in one transaction          | `supabase/tests`                        |
-| 4   | Every mutating RPC takes an idempotency key and replays the stored response               | `supabase/tests`                        |
-| 5   | Exact address readable only by the host, or by confirmed guests after `reveal_at`         | `supabase/tests`                        |
-| 6   | Members cannot read each other's profiles, RSVPs or policy acceptances                    | `supabase/tests`                        |
-| 7   | A failed RSVP says so, holds no spot, and Retry re-sends the same key                     | `e2e/journey.spec.ts`                   |
-| 8   | Unconfirmed allergens are never shown as "none" or "safe"                                 | `planCopy.test.ts`                      |
-| 9   | No automatically detectable WCAG A/AA/AAA-contrast violations on these screens            | `e2e/a11y.spec.ts`                      |
+| #   | Behaviour                                                                                                                                     | Verified by                                             |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| 1   | Browse Home and a Plan without an account; sign up only at the first Join, then resume it                                                     | `e2e/journey.spec.ts`                                   |
+| 2   | Cities are data; nothing is preselected; skipping shows Plans everywhere                                                                      | `e2e/journey.spec.ts`, `supabase/tests`                 |
+| 3   | Capacity can never be exceeded; joins, cancels and claims run in one transaction                                                              | `supabase/tests`                                        |
+| 4   | Every mutating RPC takes an idempotency key and replays the stored response                                                                   | `supabase/tests`                                        |
+| 5   | Exact address readable only by the host, or by confirmed guests after `reveal_at`                                                             | `supabase/tests`                                        |
+| 6   | Members cannot read each other's profiles, RSVPs or policy acceptances                                                                        | `supabase/tests`                                        |
+| 7   | A failed RSVP says so, holds no spot, and Retry re-sends the same key                                                                         | `e2e/journey.spec.ts`                                   |
+| 8   | Unconfirmed allergens are never shown as "none" or "safe"                                                                                     | `planCopy.test.ts`                                      |
+| 9   | English and German from one code path; device language by default, changeable on the welcome screen and remembered; dates follow the language | `e2e/i18n.spec.ts`, `catalogs.test.ts`, `dates.test.ts` |
+| 10  | No automatically detectable WCAG A/AA/AAA-contrast violations on these screens                                                                | `e2e/a11y.spec.ts`                                      |
 
 ## How it was verified — and what was not
 
-- **Run:** `pnpm check` (19 unit tests, 20 database tests) and 18 Playwright tests that
+- **Run:** `pnpm check` (unit, component and database tests) and the Playwright tests that
   drive the app through **Expo's web renderer** at the prototype size (390×844), plus a
   side-by-side comparison with the prototype screens.
 - **Never run on a device.** No iOS simulator or Android emulator was available. Nothing
@@ -101,7 +103,6 @@ Nothing is sent to analytics yet.
 | Where             | Prototype                                            | Built                                                   | Why                                                                                  |
 | ----------------- | ---------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | Welcome           | "…plant-based people in Berlin."                     | "…near you."                                            | Rule 1: never hard-code a city                                                       |
-| Welcome           | Language chip                                        | Omitted                                                 | i18n (EN + DE) not built yet                                                         |
 | City step         | One row "Berlin" with a chevron                      | Radio list of cities from the backend, none preselected | The picker behind the chevron was not in the files provided                          |
 | Home (signed out) | Bell + avatar                                        | "Sign in" chip                                          | Prototype only shows the signed-in header                                            |
 | Home              | City chevron, invitation dot, Save, group-order card | Omitted                                                 | Those features are not built                                                         |
@@ -121,6 +122,10 @@ To merge into `docs/16-open-questions.md` when it is added to the repository:
 - Display name for email sign-ups is derived from the first word of the address and cannot be
   edited until Profile exists.
 - Policy version string is the placeholder `2026-11`.
+- German strings that are not in the prototype's German screens are first-pass translations
+  and need review by a native speaker (`packages/copy/src/de.ts`). The prototype's German
+  Plan screen uses a different layout from the English one; the English layout is built.
+- Plurals rely on `Intl.PluralRules`; confirm it is available on Hermes for both platforms.
 - Bundle identifiers `app.plantcircle.mobile` and the `plantcircle://` scheme are placeholders.
 - The schema is **provisional**: it was written before `docs/05-data-model.md` and
   `docs/06-api.md` were available and must be reconciled with them.
@@ -132,7 +137,7 @@ Home, Loading skeleton, Plan detail & RSVP (with sign-up sheet), RSVP failed, Cr
 Verify email, and the server-error layout. Explore, My Plans, Inbox, Profile and Start a Plan
 are honest "isn't built yet" screens. Everything else in v1 is not started, including the
 items `CLAUDE.md` calls non-negotiable for launch: report/block and the staff console,
-waitlist, i18n (EN + DE), offline cache, notifications, web RSVP.
+waitlist, offline cache, notifications, web RSVP.
 
 ## Blockers
 

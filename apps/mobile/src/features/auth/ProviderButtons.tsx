@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
 import { AppleIcon, GoogleIcon } from '../../components/icons';
@@ -15,6 +16,7 @@ interface Props {
 /** "Continue with Apple / Google". */
 export function ProviderButtons({ onSignedIn, gap = 10 }: Props) {
   const backend = useBackend();
+  const { t } = useTranslation();
   const signIn = useMutation({
     mutationFn: (provider: OAuthProvider) => backend.signInWithOAuth(provider),
     onSuccess: onSignedIn,
@@ -25,7 +27,7 @@ export function ProviderButtons({ onSignedIn, gap = 10 }: Props) {
   return (
     <View style={{ gap }}>
       <Button
-        label="Continue with Apple"
+        label={t('auth.apple')}
         icon={<AppleIcon />}
         disabled={signIn.isPending}
         onPress={() => {
@@ -34,7 +36,7 @@ export function ProviderButtons({ onSignedIn, gap = 10 }: Props) {
       />
       <Button
         variant="outline"
-        label="Continue with Google"
+        label={t('auth.google')}
         icon={<GoogleIcon />}
         disabled={signIn.isPending}
         onPress={() => {
@@ -43,7 +45,7 @@ export function ProviderButtons({ onSignedIn, gap = 10 }: Props) {
       />
       {failed ? (
         <Text role="alert" style={styles.error}>
-          Couldn’t sign you in. Check your connection and try again.
+          {t('auth.oauthFailed')}
         </Text>
       ) : null}
     </View>

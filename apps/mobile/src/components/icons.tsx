@@ -38,6 +38,7 @@ export const SproutIcon = stroke(
     <Path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z" />
   </>,
 );
+export const ChevronDownIcon = stroke(<Path d="m6 9 6 6 6-6" />);
 export const ChevronRightIcon = stroke(<Path d="m9 18 6-6-6-6" />);
 export const ChevronLeftIcon = stroke(<Path d="m15 18-6-6 6-6" />);
 export const PinIcon = stroke(

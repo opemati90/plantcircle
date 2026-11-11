@@ -1,5 +1,5 @@
 import { NotBuiltScreen } from '../src/features/app/NotBuiltScreen';
 
 export default function Route() {
-  return <NotBuiltScreen name="Explore" />;
+  return <NotBuiltScreen area="explore" />;
 }

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { color, type } from '../src/components/theme';
@@ -10,6 +11,7 @@ import { loadOnboarding } from '../src/features/onboarding/onboardingStore';
 import { loadBackend } from '../src/lib/backend';
 import { BackendError, type Backend } from '../src/lib/backend/backend';
 import { BackendProvider } from '../src/lib/backend/BackendProvider';
+import { initI18n } from '../src/lib/i18n';
 
 function createQueryClient(): QueryClient {
   return new QueryClient({
@@ -30,6 +32,20 @@ function SessionSync() {
   return null;
 }
 
+function StartupFailed() {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.failed}>
+      <Text accessibilityRole="header" style={type(24, 'bold')}>
+        {t('errors.startTitle')}
+      </Text>
+      <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
+        {t('errors.startText')}
+      </Text>
+    </View>
+  );
+}
+
 type Startup = { backend: Backend } | { failed: true } | null;
 
 export default function RootLayout() {
@@ -37,32 +53,24 @@ export default function RootLayout() {
   const [queryClient] = useState(createQueryClient);
 
   useEffect(() => {
-    Promise.all([loadBackend(), loadOnboarding()]).then(
-      ([backend]) => {
-        setStartup({ backend });
-      },
-      (error: unknown) => {
-        console.error(error);
-        setStartup({ failed: true });
-      },
-    );
+    // Copy first, so that even the start-up failure screen is in the person's language.
+    initI18n()
+      .then(() => Promise.all([loadBackend(), loadOnboarding()]))
+      .then(
+        ([backend]) => {
+          setStartup({ backend });
+        },
+        (error: unknown) => {
+          console.error(error);
+          setStartup({ failed: true });
+        },
+      );
   }, []);
 
   // The native splash screen stays up while this resolves.
   if (!startup) return null;
 
-  if ('failed' in startup) {
-    return (
-      <View style={styles.failed}>
-        <Text accessibilityRole="header" style={type(24, 'bold')}>
-          PlantCircle can’t start
-        </Text>
-        <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
-          The app is not configured correctly. Please try again later.
-        </Text>
-      </View>
-    );
-  }
+  if ('failed' in startup) return <StartupFailed />;
 
   return (
     <SafeAreaProvider>

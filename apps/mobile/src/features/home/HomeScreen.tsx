@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
 import {
@@ -19,12 +20,13 @@ import { errorCode } from '../../lib/backend/backend';
 import type { Plan, UpNext } from '../../lib/backend/types';
 import {
   dayOfMonth,
-  greeting,
+  dayPart,
   shortWhen,
   time,
   weekdayLong,
   weekdayShort,
 } from '../../lib/dates';
+import { currentLanguage } from '../../lib/i18n';
 import { useAuth } from '../auth/useAuth';
 import { getOnboarding } from '../onboarding/onboardingStore';
 import { categoryLabel, priceLabel, spotsLeftShort } from '../plans/planCopy';
@@ -44,14 +46,15 @@ const SCRIM = {
 } as const;
 
 function UpNextCard({ plan, needsDish, onPress }: UpNext & { onPress: () => void }) {
+  const { t } = useTranslation();
   const when = `${weekdayLong(plan.startsAt, plan.timezone)} ${time(plan.startsAt, plan.timezone)}`;
-  const note = needsDish ? 'Choose a dish to bring' : plan.areaName;
+  const note = needsDish ? t('home.chooseDish') : plan.areaName;
   return (
     <Pressable accessibilityRole="link" onPress={onPress} style={styles.upNext}>
       <DateTile iso={plan.startsAt} timeZone={plan.timezone} />
       <View style={styles.upNextText}>
         <Text style={[type(13, 'bold', { color: color.brand, tracking: 0.5 }), styles.upper]}>
-          Up next · {when}
+          {t('home.upNext', { when })}
         </Text>
         <Text style={type(16, 'semibold', { tracking: -0.3 })}>{plan.title}</Text>
         <Text
@@ -68,8 +71,9 @@ function UpNextCard({ plan, needsDish, onPress }: UpNext & { onPress: () => void
 }
 
 function FeaturedCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
+  const { t } = useTranslation();
   const tz = plan.timezone;
-  const meta = `${time(plan.startsAt, tz)} · ${plan.areaName} · hosted by ${plan.hostName}`;
+  const meta = `${time(plan.startsAt, tz)} · ${plan.areaName} · ${t('home.hostedBy', { name: plan.hostName })}`;
   return (
     <Pressable accessibilityRole="link" onPress={onPress} style={styles.featured}>
       <Photo source={planImage(plan)} contentPosition={imageFocus(plan)} />
@@ -90,7 +94,7 @@ function FeaturedCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
       </View>
       <View style={styles.featuredBody}>
         <Text style={[type(13, 'semibold', { color: '#FFFFFF', tracking: 0.2 }), styles.upper]}>
-          {categoryLabel(plan.category)} · {priceLabel(plan)}
+          {categoryLabel(t, plan)} · {priceLabel(t, plan, currentLanguage())}
         </Text>
         <Text style={type(27, 'bold', { color: '#FFFFFF', tracking: -0.8, leading: 1.08 })}>
           {plan.title}
@@ -113,11 +117,11 @@ function FeaturedCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
               </View>
             ) : null}
             <Text style={type(14, 'medium', { color: '#FFFFFF' })}>
-              {plan.goingCount} going
+              {t('home.going', { count: plan.goingCount })}
             </Text>
           </View>
           <View style={styles.spotsPill}>
-            <Text style={type(14, 'semibold')}>{spotsLeftShort(plan)}</Text>
+            <Text style={type(14, 'semibold')}>{spotsLeftShort(t, plan)}</Text>
           </View>
         </View>
       </View>
@@ -126,8 +130,9 @@ function FeaturedCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
 }
 
 function RailCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
+  const { t } = useTranslation();
   const when = shortWhen(plan.startsAt, plan.timezone);
-  const meta = `${plan.areaName} · ${plan.goingCount} going`;
+  const meta = `${plan.areaName} · ${t('home.going', { count: plan.goingCount })}`;
   return (
     <Pressable accessibilityRole="link" onPress={onPress} style={styles.card}>
       <View style={styles.cardImage}>
@@ -145,10 +150,11 @@ function RailCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
 }
 
 function HomeSkeleton({ top }: { top: number }) {
+  const { t } = useTranslation();
   return (
     <View
       role="status"
-      accessibilityLabel="Loading"
+      accessibilityLabel={t('common.loading')}
       aria-busy
       style={[styles.content, { paddingTop: top }]}
     >
@@ -186,7 +192,8 @@ export default function HomeScreen() {
   const cityName = cities.data?.find((city) => city.id === cityId)?.name ?? null;
   const plans = usePlansThisWeek(cityId);
   const upNext = useUpNext();
-  const [filter, setFilter] = useState<HomeFilter>('For you');
+  const [filter, setFilter] = useState<HomeFilter>('forYou');
+  const { t } = useTranslation();
   const openPlan = (plan: Plan) => {
     router.push({ pathname: '/plans/[planId]', params: { planId: plan.id } });
   };
@@ -204,14 +211,10 @@ export default function HomeScreen() {
     const offline = errorCode(plans.error) === 'network';
     return (
       <EmptyState
-        title={offline ? 'Can’t reach PlantCircle' : 'Something went wrong on our side'}
-        text={
-          offline
-            ? 'Check your connection and try again.'
-            : 'It’s not you. Try again in a moment.'
-        }
+        title={offline ? t('errors.offlineTitle') : t('errors.serverTitle')}
+        text={offline ? t('errors.offlineText') : t('errors.serverText')}
         {...(offline ? { icon: <OfflineIcon size={36} strokeWidth={1.7} /> } : {})}
-        actions={<Button label="Try again" onPress={() => void plans.refetch()} />}
+        actions={<Button label={t('common.tryAgain')} onPress={() => void plans.refetch()} />}
       />
     );
   }
@@ -230,13 +233,13 @@ export default function HomeScreen() {
         <View style={[styles.row, styles.spread]}>
           <View style={styles.chip}>
             <PinIcon size={15} strokeWidth={2.3} />
-            <Text style={type(15, 'semibold')}>{cityName ?? 'Anywhere'}</Text>
+            <Text style={type(15, 'semibold')}>{cityName ?? t('home.anywhere')}</Text>
           </View>
           {session ? (
             <View style={styles.headerActions}>
               <Pressable
                 accessibilityRole="link"
-                accessibilityLabel="Notifications"
+                accessibilityLabel={t('home.notifications')}
                 onPress={() => {
                   router.push('/my-plans');
                 }}
@@ -246,7 +249,7 @@ export default function HomeScreen() {
               </Pressable>
               <Pressable
                 accessibilityRole="link"
-                accessibilityLabel="Profile"
+                accessibilityLabel={t('tabs.profile')}
                 onPress={() => {
                   router.push('/profile');
                 }}
@@ -265,21 +268,25 @@ export default function HomeScreen() {
               }}
               style={styles.chip}
             >
-              <Text style={type(15, 'semibold')}>Sign in</Text>
+              <Text style={type(15, 'semibold')}>{t('home.signIn')}</Text>
             </Pressable>
           )}
         </View>
 
         <View style={[styles.row, styles.heading]}>
           <Text style={type(15, 'medium', { color: color.secondary })}>
-            {greeting(new Date())}
-            {name ? `, ${name}` : ''}
+            {name
+              ? t('home.greetingNamed', {
+                  greeting: t(`home.greeting.${dayPart(new Date())}`),
+                  name,
+                })
+              : t(`home.greeting.${dayPart(new Date())}`)}
           </Text>
           <Text
             accessibilityRole="header"
             style={type(34, 'bold', { tracking: -1.1, leading: 1.05 })}
           >
-            {cityName ? `This week in ${cityName}` : 'This week'}
+            {cityName ? t('home.titleCity', { city: cityName }) : t('home.title')}
           </Text>
         </View>
 
@@ -294,7 +301,7 @@ export default function HomeScreen() {
 
         <View
           accessibilityRole="radiogroup"
-          accessibilityLabel="Filter Plans"
+          accessibilityLabel={t('home.filterLabel')}
           style={[styles.row, styles.chips]}
         >
           {HOME_FILTERS.map((option) => {
@@ -315,7 +322,7 @@ export default function HomeScreen() {
                     tracking: -0.1,
                   })}
                 >
-                  {option}
+                  {t(`home.filters.${option}`)}
                 </Text>
               </Pressable>
             );
@@ -333,9 +340,7 @@ export default function HomeScreen() {
           <Text
             style={[styles.row, type(17, 'regular', { color: color.secondary, leading: 1.5 })]}
           >
-            {plans.data.length === 0
-              ? 'Nothing is planned this week yet.'
-              : 'No Plans match this filter this week.'}
+            {plans.data.length === 0 ? t('home.emptyWeek') : t('home.emptyFilter')}
           </Text>
         )}
 
@@ -347,7 +352,7 @@ export default function HomeScreen() {
                 aria-level={2}
                 style={type(22, 'bold', { tracking: -0.6 })}
               >
-                Near you
+                {t('home.nearYou')}
               </Text>
               <Pressable
                 accessibilityRole="link"
@@ -356,7 +361,9 @@ export default function HomeScreen() {
                   router.push('/explore');
                 }}
               >
-                <Text style={type(15, 'medium', { color: color.secondary })}>See all</Text>
+                <Text style={type(15, 'medium', { color: color.secondary })}>
+                  {t('home.seeAll')}
+                </Text>
               </Pressable>
             </View>
             <ScrollView
@@ -380,7 +387,7 @@ export default function HomeScreen() {
 
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel="Start a Plan"
+        accessibilityLabel={t('home.startPlan')}
         onPress={() => {
           router.push('/create');
         }}

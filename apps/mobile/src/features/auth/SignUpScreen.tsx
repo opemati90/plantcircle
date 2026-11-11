@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -29,6 +30,7 @@ export default function SignUpScreen() {
   const params = useLocalSearchParams<{ next?: string }>();
   const next = safeNextPath(params.next);
   const { session } = useAuth();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [invalid, setInvalid] = useState(false);
 
@@ -48,11 +50,11 @@ export default function SignUpScreen() {
   };
 
   const error = invalid
-    ? 'Enter a valid email address.'
+    ? t('auth.invalidEmail')
     : requestCode.isError
       ? errorCode(requestCode.error) === 'rate_limited'
-        ? 'Too many attempts. Wait a minute and try again.'
-        : 'Couldn’t send the code. Check your connection and try again.'
+        ? t('auth.rateLimited')
+        : t('auth.sendFailed')
       : null;
 
   return (
@@ -69,7 +71,7 @@ export default function SignUpScreen() {
       >
         <View style={styles.row}>
           <IconButton
-            label="Back"
+            label={t('common.back')}
             onPress={() => {
               if (router.canGoBack()) router.back();
               else router.replace('/');
@@ -86,10 +88,10 @@ export default function SignUpScreen() {
             accessibilityRole="header"
             style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
           >
-            Create your account
+            {t('auth.createTitle')}
           </Text>
           <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
-            So hosts know you’re coming and you get reminders. No password needed.
+            {t('auth.createLead')}
           </Text>
         </View>
         <ProviderButtons
@@ -99,18 +101,20 @@ export default function SignUpScreen() {
         />
         <View style={styles.divider}>
           <View style={styles.rule} />
-          <Text style={type(14, 'regular', { color: color.secondary })}>or with email</Text>
+          <Text style={type(14, 'regular', { color: color.secondary })}>
+            {t('auth.orEmail')}
+          </Text>
           <View style={styles.rule} />
         </View>
         <View style={styles.form}>
           <View style={styles.emailRow}>
             <TextInput
-              accessibilityLabel="Email"
+              accessibilityLabel={t('auth.email')}
               aria-invalid={invalid}
               value={email}
               onChangeText={setEmail}
               onSubmitEditing={submit}
-              placeholder="you@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               placeholderTextColor={color.secondary}
               keyboardType="email-address"
               autoCapitalize="none"
@@ -121,7 +125,7 @@ export default function SignUpScreen() {
             />
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Continue with email"
+              accessibilityLabel={t('auth.continueEmail')}
               aria-disabled={requestCode.isPending}
               disabled={requestCode.isPending}
               onPress={submit}
@@ -142,7 +146,7 @@ export default function SignUpScreen() {
         <Text
           style={[type(14, 'regular', { color: color.secondary, leading: 1.5 }), styles.terms]}
         >
-          By continuing you confirm you’re 18+ and accept the Terms and Privacy Policy.
+          {t('auth.terms')}
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>

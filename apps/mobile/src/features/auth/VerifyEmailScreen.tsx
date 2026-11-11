@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -47,6 +48,7 @@ export default function VerifyEmailScreen() {
   const backend = useBackend();
   const router = useRouter();
   const insets = useScreenInsets();
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{ email?: string; next?: string }>();
   const next = safeNextPath(params.next);
   const email = emailSchema.safeParse(params.email).data;
@@ -76,10 +78,10 @@ export default function VerifyEmailScreen() {
 
   const error = verify.isError
     ? errorCode(verify.error) === 'invalid_code'
-      ? 'That code didn’t work. Check it and try again, or request a new one.'
-      : 'Couldn’t verify the code. Check your connection and try again.'
+      ? t('auth.codeInvalid')
+      : t('auth.verifyFailed')
     : resend.isError
-      ? 'Couldn’t send a new code. Try again in a moment.'
+      ? t('auth.resendFailed')
       : null;
   const activeIndex = Math.min(code.length, CODE_LENGTH - 1);
 
@@ -94,7 +96,7 @@ export default function VerifyEmailScreen() {
       >
         <View style={styles.row}>
           <IconButton
-            label="Back"
+            label={t('common.back')}
             onPress={() => {
               router.back();
             }}
@@ -110,11 +112,12 @@ export default function VerifyEmailScreen() {
             accessibilityRole="header"
             style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
           >
-            Check your email
+            {t('auth.verifyTitle')}
           </Text>
           <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
-            Enter the code we sent to <Text style={styles.strong}>{email}</Text>. It works for
-            10 minutes.
+            {t('auth.verifyLeadBefore')}
+            <Text style={styles.strong}>{email}</Text>
+            {t('auth.verifyLeadAfter')}
           </Text>
         </View>
         <View style={styles.code}>
@@ -131,7 +134,7 @@ export default function VerifyEmailScreen() {
           ))}
           {/* One real input stretched over the six cells; the active cell shows focus. */}
           <TextInput
-            accessibilityLabel="6-digit code"
+            accessibilityLabel={t('auth.codeLabel')}
             aria-invalid={verify.isError}
             value={code}
             onChangeText={(text) => {
@@ -160,10 +163,12 @@ export default function VerifyEmailScreen() {
           </Text>
         ) : null}
         <View style={styles.hint}>
-          <Text style={type(15, 'regular', { color: color.secondary })}>Didn’t get it? </Text>
+          <Text style={type(15, 'regular', { color: color.secondary })}>
+            {t('auth.didntGet')}
+          </Text>
           {secondsLeft > 0 ? (
             <Text style={type(15, 'bold')}>
-              Resend in 0:{String(secondsLeft).padStart(2, '0')}
+              {t('auth.resendIn', { time: `0:${String(secondsLeft).padStart(2, '0')}` })}
             </Text>
           ) : (
             <Pressable
@@ -174,15 +179,17 @@ export default function VerifyEmailScreen() {
               }}
               style={styles.resend}
             >
-              <Text style={[type(15, 'bold'), styles.underline]}>Resend code</Text>
+              <Text style={[type(15, 'bold'), styles.underline]}>{t('auth.resend')}</Text>
             </Pressable>
           )}
-          <Text style={type(15, 'regular', { color: color.secondary })}> · check spam</Text>
+          <Text style={type(15, 'regular', { color: color.secondary })}>
+            {t('auth.checkSpam')}
+          </Text>
         </View>
       </ScrollView>
       <FloatingActionBar style={styles.bar}>
         <Button
-          label="Verify"
+          label={t('auth.verify')}
           disabled={!complete}
           loading={verify.isPending}
           onPress={submit}

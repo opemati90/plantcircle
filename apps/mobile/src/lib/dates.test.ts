@@ -1,8 +1,9 @@
 import {
   dayOfMonth,
-  greeting,
+  dayPart,
   longDate,
   monthShort,
+  setDateLocale,
   shortWhen,
   timeRange,
   zonedTimeToUtc,
@@ -39,10 +40,25 @@ describe('zonedTimeToUtc', () => {
   });
 });
 
-describe('greeting', () => {
+describe('dayPart', () => {
   it('follows the local hour', () => {
-    expect(greeting(new Date(2026, 10, 7, 8))).toBe('Good morning');
-    expect(greeting(new Date(2026, 10, 7, 14))).toBe('Good afternoon');
-    expect(greeting(new Date(2026, 10, 7, 20))).toBe('Good evening');
+    expect(dayPart(new Date(2026, 10, 7, 8))).toBe('morning');
+    expect(dayPart(new Date(2026, 10, 7, 14))).toBe('afternoon');
+    expect(dayPart(new Date(2026, 10, 7, 20))).toBe('evening');
+    expect(dayPart(new Date(2026, 10, 7, 2))).toBe('evening');
+  });
+});
+
+describe('German formatting', () => {
+  afterAll(() => {
+    setDateLocale('en-GB');
+  });
+
+  it('uses German conventions without trailing dots in tiles', () => {
+    setDateLocale('de-DE');
+    expect(longDate(START, BERLIN)).toBe('Samstag, 7. November');
+    expect(shortWhen(START, BERLIN)).toBe('Sa 17:00');
+    expect(monthShort(START, BERLIN)).toBe('NOV');
+    expect(timeRange(START, END, BERLIN)).toBe('17:00 – 20:30');
   });
 });

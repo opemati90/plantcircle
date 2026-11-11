@@ -1,0 +1,35 @@
+# First-run journey on a real device or simulator:
+# onboarding → Home → Plan → sign up with an email code → joined → cancel.
+#
+# NOT YET RUN: written without access to a simulator. Run against a development
+# build using the fixture backend (email code 000000):
+#   maestro test apps/mobile/e2e/maestro
+appId: app.plantcircle.mobile
+---
+- launchApp:
+    clearState: true
+- assertVisible: 'Find your people.'
+- tapOn: 'Get started'
+- tapOn: 'Cook and learn together'
+- tapOn: 'Continue'
+- assertVisible: 'Where are you based?'
+- tapOn: 'Berlin'
+- tapOn: 'Continue'
+- assertVisible: 'This week in Berlin'
+- tapOn: 'West African Cooking Night'
+- assertVisible: '4 people are going'
+- assertVisible: '.*exact address after you join'
+- tapOn: 'Join'
+- assertVisible: 'Save your spot'
+- tapOn: 'Use email instead'
+- tapOn: 'Email'
+- inputText: 'lena@example.com'
+- tapOn: 'Continue with email'
+- assertVisible: 'Check your email'
+- inputText: '000000'
+- tapOn: 'Verify'
+- assertVisible: 'You’re going'
+- assertVisible: 'You and 4 others are going'
+- tapOn: 'You’re going'
+- tapOn: 'Cancel my spot'
+- assertVisible: 'Join'

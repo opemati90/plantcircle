@@ -1,6 +1,7 @@
 import { BlurView } from 'expo-blur';
 import { usePathname, useRouter, type Href } from 'expo-router';
 import type { ComponentType } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CalendarIcon, ChatIcon, CompassIcon, HomeIcon, UserIcon } from './icons';
 import { color, extra, radius, shadow, size, type } from './theme';
@@ -8,16 +9,17 @@ import { useScreenInsets } from './useScreenInsets';
 
 interface Tab {
   href: Href;
-  label: string;
+  /** Key under `tabs.` in the copy catalogue. */
+  key: 'home' | 'explore' | 'myPlans' | 'inbox' | 'profile';
   Icon: ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
 }
 
 const TABS: Tab[] = [
-  { href: '/home', label: 'Home', Icon: HomeIcon },
-  { href: '/explore', label: 'Explore', Icon: CompassIcon },
-  { href: '/my-plans', label: 'My Plans', Icon: CalendarIcon },
-  { href: '/inbox', label: 'Inbox', Icon: ChatIcon },
-  { href: '/profile', label: 'Profile', Icon: UserIcon },
+  { href: '/home', key: 'home', Icon: HomeIcon },
+  { href: '/explore', key: 'explore', Icon: CompassIcon },
+  { href: '/my-plans', key: 'myPlans', Icon: CalendarIcon },
+  { href: '/inbox', key: 'inbox', Icon: ChatIcon },
+  { href: '/profile', key: 'profile', Icon: UserIcon },
 ];
 
 /** Floating glass pill; the active tab gets a black pill behind its icon only. */
@@ -25,19 +27,21 @@ export function TabBar() {
   const pathname = usePathname();
   const router = useRouter();
   const { tabBarBottom } = useScreenInsets();
+  const { t } = useTranslation();
 
   return (
     <View
       accessibilityRole="tablist"
-      accessibilityLabel="Main"
+      accessibilityLabel={t('tabs.label')}
       style={[styles.bar, { bottom: tabBarBottom }]}
     >
       <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
-      {TABS.map(({ href, label, Icon }) => {
+      {TABS.map(({ href, key, Icon }) => {
         const active = pathname === href;
+        const label = t(`tabs.${key}`);
         return (
           <Pressable
-            key={label}
+            key={key}
             accessibilityRole="tab"
             accessibilityLabel={label}
             aria-selected={active}

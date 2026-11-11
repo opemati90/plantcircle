@@ -1,90 +1,99 @@
+import type { TFunction } from 'i18next';
 import type { BackendErrorCode } from '../../lib/backend/backend';
-import type { BringItem, Plan, PlanCategory } from '../../lib/backend/types';
+import type { BringItem, Plan } from '../../lib/backend/types';
 import { time, weekdayLong } from '../../lib/dates';
 
-const CATEGORY_LABELS: Record<PlanCategory, string> = {
-  cooking_class: 'Cooking class',
-  potluck: 'Potluck',
-  social: 'Social',
-  online_class: 'Online class',
-};
+// Pure rules that turn a Plan into the sentences shown about it. The words live
+// in the copy catalogue; `t` is passed in so these stay testable.
 
-export const categoryLabel = (category: PlanCategory) => CATEGORY_LABELS[category];
+export const categoryLabel = (t: TFunction, plan: Plan) => t(`plan.category.${plan.category}`);
 
 export const spotsLeft = (plan: Plan) => Math.max(plan.capacity - plan.goingCount, 0);
 
 export const isFull = (plan: Plan) => spotsLeft(plan) === 0;
 
-export function priceLabel(plan: Plan): string {
-  if (plan.priceCents === 0) return 'Free';
-  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: plan.currency }).format(
+export function priceLabel(t: TFunction, plan: Plan, language: string): string {
+  if (plan.priceCents === 0) return t('plan.free');
+  return new Intl.NumberFormat(language, { style: 'currency', currency: plan.currency }).format(
     plan.priceCents / 100,
   );
 }
 
-const plural = (count: number, one: string, many: string) => (count === 1 ? one : many);
-
-export function goingLabel(plan: Plan, isGoing: boolean): string {
+export function goingLabel(t: TFunction, plan: Plan, isGoing: boolean): string {
   const count = plan.goingCount;
   if (isGoing) {
     const others = count - 1;
-    if (others <= 0) return 'You’re going';
-    return `You and ${others} ${plural(others, 'other', 'others')} are going`;
+    return others <= 0 ? t('plan.youreGoing') : t('plan.goingWithOthers', { count: others });
   }
-  if (isFull(plan)) return `All ${plan.capacity} spots are taken`;
-  if (count === 0) return 'Be the first to join';
-  return `${count} ${plural(count, 'person is', 'people are')} going`;
+  if (isFull(plan)) return t('plan.allTaken', { capacity: plan.capacity });
+  if (count === 0) return t('plan.beFirst');
+  return t('plan.goingCount', { count });
 }
 
-export function spotsLabel(plan: Plan): string {
+export function spotsLabel(t: TFunction, plan: Plan): string {
   const left = spotsLeft(plan);
-  if (left === 0) return 'No spots left';
-  return `${left} of ${plan.capacity} spots left`;
+  return left === 0 ? t('plan.noSpots') : t('plan.spotsOf', { left, capacity: plan.capacity });
 }
 
-export function spotsLeftShort(plan: Plan): string {
+export function spotsLeftShort(t: TFunction, plan: Plan): string {
   const left = spotsLeft(plan);
-  if (left === 0) return 'Full';
-  return `${left} ${plural(left, 'spot', 'spots')} left`;
+  return left === 0 ? t('plan.full') : t('plan.spotsLeft', { count: left });
 }
 
 /** The line under the neighbourhood: never reveals more than the viewer may see. */
-export function addressNote(plan: Plan, isGoing: boolean, address: string | null): string {
+export function addressNote(
+  t: TFunction,
+  plan: Plan,
+  isGoing: boolean,
+  address: string | null,
+): string {
   if (address) return address;
-  const hint = plan.areaHint ? `${plan.areaHint} · ` : '';
-  if (!isGoing) return `${hint}exact address after you join`;
+  const hint = plan.areaHint;
+  if (!isGoing) {
+    return hint ? t('plan.addressAfterJoinHint', { hint }) : t('plan.addressAfterJoin');
+  }
   const when = `${weekdayLong(plan.revealAt, plan.timezone)}, ${time(plan.revealAt, plan.timezone)}`;
-  return `Address unlocks ${when}${plan.areaHint ? ` · ${plan.areaHint}` : ''}`;
+  return hint
+    ? t('plan.addressUnlocksHint', { when, hint })
+    : t('plan.addressUnlocks', { when });
 }
 
-export function bringItemNote(item: BringItem): string {
+export function bringItemNote(t: TFunction, item: BringItem): string {
+  if (item.claimedByMe) return t('plan.youBring');
   const open = item.quantity - item.claimedCount;
   if (open > 0) {
-    return item.quantity === 1 ? 'Still open' : `${open} of ${item.quantity} still open`;
+    return item.quantity === 1
+      ? t('plan.stillOpen')
+      : t('plan.openOf', { open, quantity: item.quantity });
   }
-  if (item.claimedByMe && item.claimedBy.length <= 1) return 'You’re bringing this';
-  const names = item.claimedBy.join(', ');
-  return `${names} ${plural(item.claimedBy.length, 'is', 'are')} bringing ${plural(item.quantity, 'this', 'these')}`;
+  return t('plan.bringing', { count: item.claimedBy.length, names: item.claimedBy.join(', ') });
 }
 
 /** Allergens the host has not confirmed are never presented as "none" or "safe". */
-export function allergenNote(plan: Plan): string {
+export function allergenNote(t: TFunction, plan: Plan): string {
   return plan.allergens
-    ? `${plan.allergens}, as declared by the host.`
-    : 'not confirmed by the host. Ask before you eat.';
+    ? t('plan.allergensDeclared', { allergens: plan.allergens })
+    : t('plan.allergensUnknown');
 }
 
-export function rsvpErrorCopy(code: BackendErrorCode): { title: string; detail: string } {
+export function rsvpErrorCopy(
+  t: TFunction,
+  code: BackendErrorCode,
+): { title: string; detail: string } {
+  const pick = (key: string) => ({
+    title: t(`plan.error.${key}Title`),
+    detail: t(`plan.error.${key}Detail`),
+  });
   switch (code) {
     case 'plan_full':
-      return { title: 'This Plan just filled up', detail: 'Someone took the last spot' };
+      return pick('full');
     case 'plan_ended':
-      return { title: 'This Plan has ended', detail: 'You can’t join it any more' };
+      return pick('ended');
     case 'not_authenticated':
-      return { title: 'You’ve been signed out', detail: 'Sign in again to join' };
+      return pick('signedOut');
     case 'rate_limited':
-      return { title: 'Too many attempts', detail: 'Wait a moment and try again' };
+      return pick('rate');
     default:
-      return { title: 'Couldn’t save your RSVP', detail: 'Your spot isn’t held yet' };
+      return pick('rsvp');
   }
 }

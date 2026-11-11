@@ -1,6 +1,7 @@
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AccessibilityInfo,
   Animated,
@@ -155,12 +156,13 @@ interface BottomSheetProps {
 
 export function BottomSheet({ open, onClose, title, lead, children }: BottomSheetProps) {
   const { bottom } = useScreenInsets();
+  const { t } = useTranslation();
   return (
     <Modal visible={open} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.sheetRoot}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Close"
+          accessibilityLabel={t('common.close')}
           onPress={onClose}
           style={styles.sheetScrim}
         />
@@ -180,7 +182,7 @@ export function BottomSheet({ open, onClose, title, lead, children }: BottomShee
                 </Text>
               ) : null}
             </View>
-            <IconButton label="Close" onPress={onClose}>
+            <IconButton label={t('common.close')} onPress={onClose}>
               <CloseIcon strokeWidth={2.2} />
             </IconButton>
           </View>

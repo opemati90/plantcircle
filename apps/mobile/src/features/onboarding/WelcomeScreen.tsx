@@ -1,39 +1,37 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { LANGUAGES, type Language } from '@plantcircle/copy';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
-import { SproutIcon } from '../../components/icons';
-import { Skeleton } from '../../components/parts';
+import { ChevronDownIcon, SproutIcon } from '../../components/icons';
+import { BottomSheet, Skeleton } from '../../components/parts';
 import { Photo } from '../../components/Photo';
-import { color, radius, type } from '../../components/theme';
+import { color, extra, radius, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import type { City } from '../../lib/backend/types';
+import { currentLanguage, setLanguage } from '../../lib/i18n';
 import { useAuth } from '../auth/useAuth';
 import { welcomePhoto } from '../plans/planImage';
 import { useCities } from '../plans/queries';
-import {
-  GOAL_LABELS,
-  GOALS,
-  getOnboarding,
-  saveOnboarding,
-  type Goal,
-} from './onboardingStore';
+import { GOALS, getOnboarding, saveOnboarding, type Goal } from './onboardingStore';
 
-function countryName(code: string): string {
+function countryName(code: string, language: string): string {
   // Intl.DisplayNames is not available on every JS engine; the code is an acceptable fallback.
   try {
-    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? code;
+    return new Intl.DisplayNames([language], { type: 'region' }).of(code) ?? code;
   } catch {
     return code;
   }
 }
 
 function Progress({ step }: { step: 1 | 2 }) {
+  const { t } = useTranslation();
   return (
     <View
       accessibilityRole="progressbar"
-      accessibilityLabel={`Step ${step} of 2`}
+      accessibilityLabel={t('goals.step', { step })}
       style={styles.progress}
     >
       <View style={[styles.progressBar, styles.progressDone]} />
@@ -87,6 +85,9 @@ export default function WelcomeScreen() {
   const [goals, setGoals] = useState<Goal[]>(stored.goals);
   const [cityId, setCityId] = useState<string | null>(stored.cityId);
   const cities = useCities();
+  const { t } = useTranslation();
+  const language = currentLanguage();
+  const [languageSheet, setLanguageSheet] = useState(false);
 
   if (session || stored.done) return <Redirect href="/home" />;
 
@@ -115,13 +116,26 @@ export default function WelcomeScreen() {
           <Text style={type(17, 'semibold', { color: '#FFFFFF', tracking: -0.3 })}>
             PlantCircle
           </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${t('language.label')}: ${t(`language.${language}`)}`}
+            onPress={() => {
+              setLanguageSheet(true);
+            }}
+            style={styles.languageChip}
+          >
+            <Text style={type(13, 'semibold', { color: '#FFFFFF' })}>
+              {t(`language.${language}`)}
+            </Text>
+            <ChevronDownIcon size={12} strokeWidth={2.6} color="#FFFFFF" />
+          </Pressable>
         </View>
         <View style={[styles.heroContent, { bottom: Math.max(40, insets.bottom + 16) }]}>
           <Text
             accessibilityRole="header"
             style={type(46, 'bold', { color: '#FFFFFF', tracking: -1.6, leading: 1 })}
           >
-            Find your people.
+            {t('welcome.title')}
           </Text>
           <Text
             style={[
@@ -129,11 +143,11 @@ export default function WelcomeScreen() {
               styles.heroLead,
             ]}
           >
-            Cook, eat and buy food together with plant-based people near you.
+            {t('welcome.lead')}
           </Text>
           <Button
             variant="inverse"
-            label="Get started"
+            label={t('welcome.getStarted')}
             onPress={() => {
               router.push({ pathname: '/', params: { step: 'goals' } });
             }}
@@ -147,10 +161,36 @@ export default function WelcomeScreen() {
             style={styles.heroLink}
           >
             <Text style={type(15, 'regular', { color: '#FFFFFF' })}>
-              I already have an account
+              {t('welcome.haveAccount')}
             </Text>
           </Pressable>
         </View>
+        <BottomSheet
+          open={languageSheet}
+          onClose={() => {
+            setLanguageSheet(false);
+          }}
+          title={t('language.label')}
+        >
+          <View
+            accessibilityRole="radiogroup"
+            accessibilityLabel={t('language.label')}
+            style={styles.options}
+          >
+            {LANGUAGES.map((code: Language) => (
+              <OptionRow
+                key={code}
+                role="radio"
+                selected={code === language}
+                title={t(`language.${code}`)}
+                onPress={() => {
+                  setLanguageSheet(false);
+                  void setLanguage(code);
+                }}
+              />
+            ))}
+          </View>
+        </BottomSheet>
       </View>
     );
   }
@@ -165,10 +205,10 @@ export default function WelcomeScreen() {
           accessibilityRole="header"
           style={[type(30, 'bold', { tracking: -0.7, leading: 1.1 }), styles.title]}
         >
-          What brings you here?
+          {t('goals.title')}
         </Text>
         <Text style={[type(16, 'regular', { color: color.secondary }), styles.lead]}>
-          Choose any. You can change this later.
+          {t('goals.lead')}
         </Text>
         <View style={styles.options}>
           {GOALS.map((goal) => {
@@ -178,7 +218,7 @@ export default function WelcomeScreen() {
                 key={goal}
                 role="checkbox"
                 selected={selected}
-                title={GOAL_LABELS[goal]}
+                title={t(`goals.${goal}`)}
                 onPress={() => {
                   setGoals(selected ? goals.filter((g) => g !== goal) : [...goals, goal]);
                 }}
@@ -188,7 +228,7 @@ export default function WelcomeScreen() {
         </View>
         <View style={styles.actions}>
           <Button
-            label="Continue"
+            label={t('common.continue')}
             onPress={() => {
               saveOnboarding({ goals, cityId, done: false });
               router.push({ pathname: '/', params: { step: 'city' } });
@@ -206,14 +246,18 @@ export default function WelcomeScreen() {
         accessibilityRole="header"
         style={[type(30, 'bold', { tracking: -0.7, leading: 1.1 }), styles.title]}
       >
-        Where are you based?
+        {t('city.title')}
       </Text>
       <Text style={[type(16, 'regular', { color: color.secondary }), styles.lead]}>
-        Just your city. Never your exact location.
+        {t('city.lead')}
       </Text>
-      <View accessibilityRole="radiogroup" accessibilityLabel="City" style={styles.options}>
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t('city.group')}
+        style={styles.options}
+      >
         {cities.isPending ? (
-          <View role="status" accessibilityLabel="Loading cities" style={styles.options}>
+          <View role="status" accessibilityLabel={t('city.loading')} style={styles.options}>
             <Skeleton width="100%" height={60} radius={radius.control} />
             <Skeleton width="100%" height={60} radius={radius.control} />
           </View>
@@ -223,9 +267,13 @@ export default function WelcomeScreen() {
               role="alert"
               style={type(15, 'regular', { color: color.danger, leading: 1.4 })}
             >
-              Couldn’t load the list of cities.
+              {t('city.loadError')}
             </Text>
-            <Button variant="outline" label="Try again" onPress={() => void cities.refetch()} />
+            <Button
+              variant="outline"
+              label={t('common.tryAgain')}
+              onPress={() => void cities.refetch()}
+            />
           </View>
         ) : (
           cities.data.map((city: City) => (
@@ -234,7 +282,7 @@ export default function WelcomeScreen() {
               role="radio"
               selected={cityId === city.id}
               title={city.name}
-              subtitle={countryName(city.countryCode)}
+              subtitle={countryName(city.countryCode, language)}
               onPress={() => {
                 setCityId(city.id);
               }}
@@ -245,11 +293,11 @@ export default function WelcomeScreen() {
       <Text
         style={[type(14, 'regular', { color: color.secondary, leading: 1.5 }), styles.note]}
       >
-        Somewhere else? You can still join online classes and worldwide circles.
+        {t('city.elsewhere')}
       </Text>
       <View style={styles.actions}>
         <Button
-          label="Continue"
+          label={t('common.continue')}
           disabled={!cityId}
           onPress={() => {
             finish(cityId);
@@ -257,7 +305,7 @@ export default function WelcomeScreen() {
         />
         <Button
           variant="ghost"
-          label="Skip for now"
+          label={t('city.skip')}
           onPress={() => {
             finish(null);
           }}
@@ -265,7 +313,7 @@ export default function WelcomeScreen() {
         <Text
           style={[type(13, 'regular', { color: color.secondary, leading: 1.5 }), styles.center]}
         >
-          By continuing you confirm you’re 18+ and agree to the community rules.
+          {t('city.legal')}
         </Text>
       </View>
     </ScrollView>
@@ -287,6 +335,18 @@ const styles = StyleSheet.create({
   heroContent: { position: 'absolute', left: 24, right: 24, gap: 14 },
   heroLead: { marginBottom: 18 },
   heroCta: { minHeight: 56 },
+  languageChip: {
+    marginLeft: 'auto',
+    minHeight: 44,
+    paddingHorizontal: 12,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: extra.hairlineOnPhoto,
+    backgroundColor: extra.glassLight,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   heroLink: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   step: { flexGrow: 1, paddingHorizontal: 24 },
   progress: { flexDirection: 'row', gap: 6 },

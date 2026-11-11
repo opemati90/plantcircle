@@ -12,9 +12,9 @@ const ids = (list: Plan[]) => list.map((plan) => plan.id);
 
 describe('filterPlans', () => {
   it('keeps the original order within each filter', () => {
-    expect(ids(filterPlans(plans, 'For you'))).toEqual(['a', 'b', 'c', 'd']);
-    expect(ids(filterPlans(plans, 'Cooking'))).toEqual(['a']);
-    expect(ids(filterPlans(plans, 'Social'))).toEqual(['b', 'd']);
-    expect(ids(filterPlans(plans, 'Online'))).toEqual(['c']);
+    expect(ids(filterPlans(plans, 'forYou'))).toEqual(['a', 'b', 'c', 'd']);
+    expect(ids(filterPlans(plans, 'cooking'))).toEqual(['a']);
+    expect(ids(filterPlans(plans, 'social'))).toEqual(['b', 'd']);
+    expect(ids(filterPlans(plans, 'online'))).toEqual(['c']);
   });
 });
