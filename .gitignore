@@ -5,8 +5,8 @@ web-build/
 expo-env.d.ts
 
 # Native build output and signing material — never commit
-/ios
-/android
+/apps/mobile/ios
+/apps/mobile/android
 .kotlin/
 *.jks
 *.p8
