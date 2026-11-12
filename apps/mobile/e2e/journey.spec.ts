@@ -130,7 +130,6 @@ test('signing out returns Home to the anonymous state', async ({ page }) => {
   await expect(page.getByText('Good evening, Lena')).toBeVisible();
   await page.goto('/profile');
   await page.getByRole('button', { name: 'Sign out' }).click();
-  await page.getByRole('button', { name: 'Back to Home' }).click();
   await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
 });
 

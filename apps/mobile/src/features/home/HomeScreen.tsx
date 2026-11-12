@@ -29,9 +29,16 @@ import {
 import { currentLanguage } from '../../lib/i18n';
 import { useAuth } from '../auth/useAuth';
 import { getOnboarding } from '../onboarding/onboardingStore';
-import { categoryLabel, priceLabel, spotsLeftShort } from '../plans/planCopy';
+import { categoryLabel, placeLabel, priceLabel, spotsLeftShort } from '../plans/planCopy';
 import { imageFocus, planImage } from '../plans/planImage';
-import { useCities, usePlansThisWeek, useUpNext, useWaitlistOffers } from '../plans/queries';
+import {
+  useCities,
+  usePlansThisWeek,
+  useSetCity,
+  useUpNext,
+  useWaitlistOffers,
+} from '../plans/queries';
+import { CityPickerSheet } from './CityPickerSheet';
 import { filterPlans, HOME_FILTERS, type HomeFilter } from './homeFilters';
 
 const SCRIM = {
@@ -48,7 +55,7 @@ const SCRIM = {
 function UpNextCard({ plan, needsDish, onPress }: UpNext & { onPress: () => void }) {
   const { t } = useTranslation();
   const when = `${weekdayLong(plan.startsAt, plan.timezone)} ${time(plan.startsAt, plan.timezone)}`;
-  const note = needsDish ? t('home.chooseDish') : plan.areaName;
+  const note = needsDish ? t('home.chooseDish') : placeLabel(t, plan);
   return (
     <Pressable accessibilityRole="link" onPress={onPress} style={styles.upNext}>
       <DateTile iso={plan.startsAt} timeZone={plan.timezone} />
@@ -81,7 +88,9 @@ function OfferCard({ plan, expiresAt, onPress }: WaitlistOffer & { onPress: () =
           {t('offer.homeLabel', { time: localTime(expiresAt) })}
         </Text>
         <Text style={type(16, 'semibold', { tracking: -0.3 })}>{plan.title}</Text>
-        <Text style={type(14, 'regular', { color: color.secondary })}>{plan.areaName}</Text>
+        <Text style={type(14, 'regular', { color: color.secondary })}>
+          {placeLabel(t, plan)}
+        </Text>
       </View>
       <ChevronRightIcon size={16} strokeWidth={2.4} color={color.brand} />
     </Pressable>
@@ -91,7 +100,7 @@ function OfferCard({ plan, expiresAt, onPress }: WaitlistOffer & { onPress: () =
 function FeaturedCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
   const { t } = useTranslation();
   const tz = plan.timezone;
-  const meta = `${time(plan.startsAt, tz)} · ${plan.areaName} · ${t('home.hostedBy', { name: plan.hostName })}`;
+  const meta = `${time(plan.startsAt, tz)} · ${placeLabel(t, plan)} · ${t('home.hostedBy', { name: plan.hostName })}`;
   return (
     <Pressable accessibilityRole="link" onPress={onPress} style={styles.featured}>
       <Photo source={planImage(plan)} contentPosition={imageFocus(plan)} />
@@ -150,7 +159,7 @@ function FeaturedCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
 function RailCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
   const { t } = useTranslation();
   const when = shortWhen(plan.startsAt, plan.timezone);
-  const meta = `${plan.areaName} · ${t('home.going', { count: plan.goingCount })}`;
+  const meta = `${placeLabel(t, plan)} · ${t('home.going', { count: plan.goingCount })}`;
   return (
     <Pressable accessibilityRole="link" onPress={onPress} style={styles.card}>
       <View style={styles.cardImage}>
@@ -208,10 +217,12 @@ export default function HomeScreen() {
   const cityId = session ? (profile?.cityId ?? null) : getOnboarding().cityId;
   const cities = useCities();
   const cityName = cities.data?.find((city) => city.id === cityId)?.name ?? null;
-  const plans = usePlansThisWeek(cityId);
+  const plans = usePlansThisWeek(cityId ? [cityId] : null);
   const upNext = useUpNext();
   const offers = useWaitlistOffers();
   const [filter, setFilter] = useState<HomeFilter>('forYou');
+  const [cityOpen, setCityOpen] = useState(false);
+  const setCity = useSetCity();
   const { t } = useTranslation();
   const openPlan = (plan: Plan) => {
     router.push({ pathname: '/plan/[id]', params: { id: plan.id } });
@@ -249,10 +260,18 @@ export default function HomeScreen() {
         ]}
       >
         <View style={[styles.row, styles.spread]}>
-          <View style={styles.chip}>
+          <Pressable
+            accessibilityRole="button"
+            // The name starts with the visible city, so speech input matches what is on screen.
+            accessibilityLabel={`${cityName ?? t('home.anywhere')}, ${t('home.changeCity')}`}
+            onPress={() => {
+              setCityOpen(true);
+            }}
+            style={styles.chip}
+          >
             <PinIcon size={15} strokeWidth={2.3} />
             <Text style={type(15, 'semibold')}>{cityName ?? t('home.anywhere')}</Text>
-          </View>
+          </Pressable>
           {session ? (
             <View style={styles.headerActions}>
               <Pressable
@@ -415,6 +434,37 @@ export default function HomeScreen() {
           </>
         ) : null}
       </ScrollView>
+
+      <CityPickerSheet
+        open={cityOpen}
+        onClose={() => {
+          setCityOpen(false);
+        }}
+        cities={cities.data ?? []}
+        loadError={cities.isError}
+        onRetry={() => void cities.refetch()}
+        anywhere={{
+          label: t('home.anywhere'),
+          selected: cityId === null,
+          onPress: () => {
+            setCity.mutate(null, {
+              onSuccess: () => {
+                setCityOpen(false);
+              },
+            });
+          },
+        }}
+        selectedId={cityId}
+        failed={setCity.isError}
+        saving={setCity.isPending}
+        onSelect={(city) => {
+          setCity.mutate(city.id, {
+            onSuccess: () => {
+              setCityOpen(false);
+            },
+          });
+        }}
+      />
 
       <Pressable
         accessibilityRole="link"

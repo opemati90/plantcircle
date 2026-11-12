@@ -1,5 +1,1 @@
-import { NotBuiltScreen } from '../../src/features/app/NotBuiltScreen';
-
-export default function Route() {
-  return <NotBuiltScreen area="startPlan" />;
-}
+export { default } from '../../src/features/create/CreatePlanScreen';

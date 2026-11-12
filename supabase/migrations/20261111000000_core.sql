@@ -25,6 +25,8 @@ create type public.plan_kind as enum (
 create type public.plan_status as enum (
   'draft', 'published', 'changed', 'on_hold', 'cancelled', 'completed'
 );
+-- Where it happens, separate from what it is (kind): an online Plan has a meeting link.
+create type public.plan_format as enum ('in_person', 'online');
 -- going: holds a spot · waitlisted: in line · offered: a freed spot is held until
 -- offer_expires_at · cancelled: left, declined, or the offer ran out ·
 -- checked_in: attended · no_show: did not come after the Plan ended.
@@ -117,6 +119,7 @@ create table public.plans (
   id uuid primary key default gen_random_uuid(),
   host_id uuid not null references public.profiles (id) on delete restrict,
   kind public.plan_kind not null,
+  format public.plan_format not null default 'in_person',
   title text not null check (char_length(title) between 3 and 80),
   description text not null check (char_length(description) <= 2000),
   city_id uuid not null references public.cities (id) on delete restrict,
@@ -150,9 +153,9 @@ revoke all on public.plans from anon, authenticated;
 
 create table public.plan_private (
   plan_id uuid primary key references public.plans (id) on delete cascade,
-  address text not null check (char_length(address) between 1 and 200),
-  meeting_url text check (meeting_url ~ '^https://'),
-  -- When confirmed guests may see the exact address (and meeting link).
+  -- In-person Plans have an address. Only the host and confirmed guests can read this row,
+  -- and only from reveal_at.
+  address text check (char_length(address) between 1 and 200),
   reveal_at timestamptz not null
 );
 
@@ -160,15 +163,22 @@ alter table public.plan_private enable row level security;
 revoke all on public.plan_private from anon, authenticated;
 grant select on public.plan_private to authenticated;
 
+
+
 -- ------------------------------------------------------------------- rsvps
+
+-- Waitlist order. A sequence, not a timestamp: two joins can share a timestamp, and the
+-- queue must stay first-come, first-served. Every (re)join takes the next number.
+create sequence public.rsvp_queue_seq;
 
 create table public.rsvps (
   id uuid primary key default gen_random_uuid(),
   plan_id uuid not null references public.plans (id) on delete cascade,
   user_id uuid not null references public.profiles (id) on delete cascade,
   state public.rsvp_state not null,
-  -- Position in line is (created_at, user_id); reset when someone re-joins.
+  -- Position in line is queue_seq (first come, first served); a re-join takes a new number.
   created_at timestamptz not null default now(),
+  queue_seq bigint not null default nextval('public.rsvp_queue_seq'),
   updated_at timestamptz not null default now(),
   offer_expires_at timestamptz,
   checked_in_at timestamptz,
@@ -179,7 +189,7 @@ create table public.rsvps (
 );
 
 create index rsvps_user_idx on public.rsvps (user_id, state);
-create index rsvps_queue_idx on public.rsvps (plan_id, state, created_at);
+create index rsvps_queue_idx on public.rsvps (plan_id, state, queue_seq);
 
 alter table public.rsvps enable row level security;
 revoke all on public.rsvps from anon, authenticated;
@@ -219,6 +229,47 @@ $$;
 
 create policy plan_private_select_confirmed on public.plan_private
   for select to authenticated using (public.can_see_address(plan_id));
+
+-- Online Plans: the Google Meet link lives in its own table, so its access rule can be
+-- time-based. The host can always see it; a confirmed guest sees it only from 10 minutes
+-- before the start. Derived from starts_at, so rescheduling moves the release with it.
+create table public.plan_meeting_links (
+  plan_id uuid primary key references public.plans (id) on delete cascade,
+  meeting_url text not null check (meeting_url ~ '^https://[^[:space:]]+$' and char_length(meeting_url) <= 500)
+);
+
+alter table public.plan_meeting_links enable row level security;
+revoke all on public.plan_meeting_links from anon, authenticated;
+grant select on public.plan_meeting_links to authenticated;
+
+create function public.can_see_meeting_link(p_plan_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.plans p
+    where p.id = p_plan_id
+      and (
+        p.host_id = (select auth.uid())
+        or (
+          now() >= p.starts_at - interval '10 minutes'
+          and p.status in ('published', 'changed', 'on_hold')
+          and exists (
+            select 1 from public.rsvps r
+            where r.plan_id = p.id and r.user_id = (select auth.uid())
+              and r.state in ('going', 'checked_in')
+          )
+        )
+      )
+  );
+$$;
+
+create policy plan_meeting_links_select on public.plan_meeting_links
+  for select to authenticated using (public.can_see_meeting_link(plan_id));
 
 -- -------------------------------------------------------- contributions
 
@@ -262,6 +313,7 @@ select
   p.id,
   p.title,
   p.kind as category,
+  p.format,
   p.status,
   p.city_id,
   c.name as city,
@@ -359,7 +411,7 @@ select
     select count(*)::int from public.rsvps ahead
     where ahead.plan_id = r.plan_id
       and ahead.state in ('waitlisted', 'offered')
-      and (ahead.created_at, ahead.user_id) <= (r.created_at, r.user_id)
+      and ahead.queue_seq <= r.queue_seq
   ) end as waitlist_position
 from public.rsvps r
 where r.user_id = (select auth.uid());
@@ -371,15 +423,32 @@ grant select on public.my_rsvps to authenticated;
 -- Each RPC runs in one transaction, locks the Plan row so concurrent calls are
 -- serialised, and records its response under the caller's idempotency key.
 
-create function public.idempotent_replay(p_key uuid)
+-- A key is bound to one request: the RPC name and its target (for example the Plan).
+-- Reusing a key for a different request is an error, never a silent replay.
+-- The advisory lock serialises retries of one key, including races across Plans.
+create function public.idempotent_replay(p_key uuid, p_fingerprint text)
 returns jsonb
-language sql
-stable
+language plpgsql
 security definer
 set search_path = ''
 as $$
-  select response from public.idempotency_keys
-  where user_id = (select auth.uid()) and key = p_key;
+declare
+  v_uid uuid := (select auth.uid());
+  v_rpc text;
+  v_response jsonb;
+begin
+  perform pg_advisory_xact_lock(hashtextextended(v_uid::text || p_key::text, 0));
+  select rpc, response into v_rpc, v_response
+  from public.idempotency_keys
+  where user_id = v_uid and key = p_key;
+  if not found then
+    return null;
+  end if;
+  if v_rpc <> p_fingerprint then
+    raise exception 'idempotency_key_reused' using errcode = 'P0001';
+  end if;
+  return v_response;
+end;
 $$;
 
 create function public.idempotent_store(p_key uuid, p_rpc text, p_response jsonb)
@@ -413,14 +482,26 @@ declare
 begin
   select * into v_plan from public.plans where id = p_plan_id;
 
-  -- An offer that ran out leaves the line; the member can rejoin at the back.
-  update public.rsvps
-  set state = 'cancelled', offer_expires_at = null, updated_at = now()
-  where plan_id = p_plan_id and state = 'offered' and offer_expires_at <= now();
+  -- A Plan that is on hold keeps its line but cannot offer or confirm spots.
+  -- A cancelled or completed Plan releases everyone still waiting.
+  if v_plan.status = 'on_hold' then
+    update public.rsvps
+    set state = 'waitlisted', offer_expires_at = null, updated_at = now()
+    where plan_id = p_plan_id and state = 'offered';
+  elsif v_plan.status in ('cancelled', 'completed') then
+    update public.rsvps
+    set state = 'cancelled', offer_expires_at = null, updated_at = now()
+    where plan_id = p_plan_id and state in ('waitlisted', 'offered');
+  end if;
 
   if v_plan.status not in ('published', 'changed') or v_plan.starts_at <= now() then
     return;
   end if;
+
+  -- An offer that ran out leaves the line; the member can rejoin at the back.
+  update public.rsvps
+  set state = 'cancelled', offer_expires_at = null, updated_at = now()
+  where plan_id = p_plan_id and state = 'offered' and offer_expires_at <= now();
 
   select count(*) filter (where state in ('going', 'checked_in')),
          count(*) filter (where state = 'offered')
@@ -449,7 +530,7 @@ begin
     from (
       select user_id from public.rsvps
       where plan_id = p_plan_id and state = 'waitlisted'
-      order by created_at, user_id
+      order by queue_seq
       limit v_free
     ) next_in_line
     where r.plan_id = p_plan_id and r.user_id = next_in_line.user_id;
@@ -496,7 +577,7 @@ as $$
   join public.rsvps ahead
     on ahead.plan_id = me.plan_id
    and ahead.state in ('waitlisted', 'offered')
-   and (ahead.created_at, ahead.user_id) <= (me.created_at, me.user_id)
+   and ahead.queue_seq <= me.queue_seq
   where me.plan_id = p_plan_id and me.user_id = p_user_id
     and me.state in ('waitlisted', 'offered');
 $$;
@@ -520,7 +601,7 @@ declare
 begin
   v_plan := public.lock_plan_for_member(p_plan_id);
   -- Looked up after the lock so a concurrent duplicate sees the first call's result.
-  v_replay := public.idempotent_replay(p_idempotency_key);
+  v_replay := public.idempotent_replay(p_idempotency_key, 'rsvp_join:' || p_plan_id::text);
   if v_replay is not null then
     return v_replay;
   end if;
@@ -552,7 +633,7 @@ begin
     values (p_plan_id, v_uid, v_state)
     on conflict (plan_id, user_id)
     do update set state = excluded.state, created_at = now(), updated_at = now(),
-                  offer_expires_at = null;
+                  queue_seq = nextval('public.rsvp_queue_seq'), offer_expires_at = null;
     -- Inside the last 6 hours a newcomer may be offered an open spot straight away.
     perform public.promote_waitlist(p_plan_id);
   end if;
@@ -561,7 +642,7 @@ begin
   from public.rsvps where plan_id = p_plan_id and user_id = v_uid;
   return public.idempotent_store(
     p_idempotency_key,
-    'rsvp_join',
+    'rsvp_join:' || p_plan_id::text,
     jsonb_build_object(
       'status', v_state,
       'position', public.waitlist_position(p_plan_id, v_uid)));
@@ -598,9 +679,13 @@ begin
   end if;
 
   v_plan := public.lock_plan_for_member(p_plan_id);
-  v_replay := public.idempotent_replay(p_idempotency_key);
+  -- Replay first: a committed confirmation keeps its answer even if the Plan has since changed.
+  v_replay := public.idempotent_replay(p_idempotency_key, 'waitlist_respond:' || p_plan_id::text);
   if v_replay is not null then
     return v_replay;
+  end if;
+  if v_plan.status not in ('published', 'changed') then
+    raise exception 'plan_not_found' using errcode = 'P0002';
   end if;
 
   select state into v_before
@@ -627,7 +712,7 @@ begin
   end if;
 
   return public.idempotent_store(
-    p_idempotency_key, 'waitlist_respond', jsonb_build_object('status', v_outcome));
+    p_idempotency_key, 'waitlist_respond:' || p_plan_id::text, jsonb_build_object('status', v_outcome));
 end;
 $$;
 
@@ -651,7 +736,7 @@ begin
   end if;
 
   perform 1 from public.plans where id = p_plan_id for update;
-  v_replay := public.idempotent_replay(p_idempotency_key);
+  v_replay := public.idempotent_replay(p_idempotency_key, 'rsvp_cancel:' || p_plan_id::text);
   if v_replay is not null then
     return v_replay;
   end if;
@@ -668,7 +753,7 @@ begin
   perform public.promote_waitlist(p_plan_id);
 
   return public.idempotent_store(
-    p_idempotency_key, 'rsvp_cancel', jsonb_build_object('status', 'cancelled'));
+    p_idempotency_key, 'rsvp_cancel:' || p_plan_id::text, jsonb_build_object('status', 'cancelled'));
 end;
 $$;
 
@@ -682,6 +767,7 @@ as $$
 declare
   v_uid uuid := auth.uid();
   v_slot public.contribution_slots%rowtype;
+  v_plan_id uuid;
   v_claimed integer;
   v_replay jsonb;
 begin
@@ -689,12 +775,15 @@ begin
     raise exception 'not_authenticated' using errcode = '28000';
   end if;
 
-  select * into v_slot from public.contribution_slots where id = p_slot_id for update;
+  select plan_id into v_plan_id from public.contribution_slots where id = p_slot_id;
   if not found then
     raise exception 'item_not_found' using errcode = 'P0002';
   end if;
+  -- Same order as rsvp_cancel (Plan first), so a claim cannot slip in after a cancellation.
+  perform 1 from public.plans where id = v_plan_id for update;
+  select * into v_slot from public.contribution_slots where id = p_slot_id for update;
 
-  v_replay := public.idempotent_replay(p_idempotency_key);
+  v_replay := public.idempotent_replay(p_idempotency_key, 'slot_claim:' || p_slot_id::text);
   if v_replay is not null then
     return v_replay;
   end if;
@@ -717,7 +806,7 @@ begin
   end if;
 
   return public.idempotent_store(
-    p_idempotency_key, 'slot_claim', jsonb_build_object('claimed', true));
+    p_idempotency_key, 'slot_claim:' || p_slot_id::text, jsonb_build_object('claimed', true));
 end;
 $$;
 
@@ -745,13 +834,15 @@ begin
 end;
 $$;
 
-revoke all on function public.idempotent_replay(uuid) from public, anon, authenticated;
+revoke all on function public.idempotent_replay(uuid, text) from public, anon, authenticated;
 revoke all on function public.idempotent_store(uuid, text, jsonb) from public, anon, authenticated;
 revoke all on function public.promote_waitlist(uuid) from public, anon, authenticated;
 revoke all on function public.lock_plan_for_member(uuid) from public, anon, authenticated;
 revoke all on function public.waitlist_position(uuid, uuid) from public, anon, authenticated;
 revoke all on function public.expire_waitlist_offers() from public, anon, authenticated;
 revoke all on function public.can_see_address(uuid) from public, anon;
+revoke all on function public.can_see_meeting_link(uuid) from public, anon;
+grant execute on function public.can_see_meeting_link(uuid) to authenticated;
 revoke all on function public.rsvp_join(uuid, uuid) from public, anon;
 revoke all on function public.rsvp_cancel(uuid, uuid) from public, anon;
 revoke all on function public.waitlist_respond(uuid, boolean, uuid) from public, anon;

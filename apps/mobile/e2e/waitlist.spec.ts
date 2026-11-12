@@ -53,8 +53,9 @@ test('an offered spot shows on Home with a countdown and can be confirmed', asyn
   ).toBeVisible();
 
   await page.getByRole('button', { name: 'Confirm my spot' }).click();
-  await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
-  await expect(page).toHaveURL(/\/plan\/ramen-workshop$/);
+  // Confirming lands in My Plans, where the new spot is listed as Going.
+  await expect(page).toHaveURL(/\/my-plans$/);
+  await expect(page.getByRole('link', { name: /Vegan Ramen Workshop/ })).toContainText('Going');
 });
 
 test('the Plan itself shows the offer and leads to confirming it', async ({ page }) => {

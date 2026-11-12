@@ -15,10 +15,14 @@ export const PLAN_CATEGORIES = [
 export type PlanCategory = (typeof PLAN_CATEGORIES)[number];
 
 /** Public read model of a Plan (mirrors the `plan_cards` view). */
+export const PLAN_FORMATS = ['in_person', 'online'] as const;
+export type PlanFormat = (typeof PLAN_FORMATS)[number];
+
 export const planCardSchema = z.object({
   id: z.string(),
   title: z.string(),
   category: z.enum(PLAN_CATEGORIES),
+  format: z.enum(PLAN_FORMATS),
   city_id: z.string(),
   city: z.string(),
   area_name: z.string(),
@@ -50,6 +54,8 @@ export interface Plan {
   id: string;
   title: string;
   category: PlanCategory;
+  /** Where it happens: in person at an address, or online with a meeting link. */
+  format: PlanFormat;
   cityId: string;
   city: string;
   areaName: string;
@@ -85,6 +91,7 @@ export function toPlan(row: z.infer<typeof planCardSchema>): Plan {
     id: row.id,
     title: row.title,
     category: row.category,
+    format: row.format,
     cityId: row.city_id,
     city: row.city,
     areaName: row.area_name,
@@ -144,6 +151,8 @@ export interface PlanDetail {
   offerExpiresAt: string | null;
   /** Only present for the host, or for confirmed guests after `revealAt`. */
   address: string | null;
+  /** Google Meet link; same visibility as `address`. Never on public cards. */
+  meetingUrl: string | null;
 }
 
 export type RsvpState = 'none' | 'going' | 'waitlisted' | 'offered';
@@ -168,6 +177,84 @@ export interface MyPlan {
 
 /** `upcoming`: Plans not yet over where the viewer is going, waiting or offered a spot. */
 export type MyPlansScope = 'upcoming' | 'past';
+
+export const CIRCLE_ACCESS = ['open', 'request'] as const;
+export type CircleAccess = (typeof CIRCLE_ACCESS)[number];
+export type CircleRole = 'member' | 'moderator' | 'owner';
+
+export const circleCardSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  tagline: z.string().nullable(),
+  city_id: z.string().nullable(),
+  city: z.string().nullable(),
+  is_global: z.boolean(),
+  access: z.enum(['open', 'request', 'invite']),
+  join_question: z.string().nullable(),
+  member_count: z.number().int(),
+  viewer_role: z.enum(['member', 'moderator', 'owner']).nullable(),
+  viewer_request: z.string().nullable(),
+});
+
+/** A Circle as listed publicly, with the viewer's own standing in it. */
+export interface Circle {
+  id: string;
+  name: string;
+  tagline: string | null;
+  cityId: string | null;
+  city: string | null;
+  isGlobal: boolean;
+  access: 'open' | 'request' | 'invite';
+  joinQuestion: string | null;
+  memberCount: number;
+  viewerRole: CircleRole | null;
+  /** The viewer has asked to join and is waiting for a decision. */
+  viewerRequestPending: boolean;
+}
+
+export const toCircle = (row: z.infer<typeof circleCardSchema>): Circle => ({
+  id: row.id,
+  name: row.name,
+  tagline: row.tagline,
+  cityId: row.city_id,
+  city: row.city,
+  isGlobal: row.is_global,
+  access: row.access,
+  joinQuestion: row.join_question,
+  memberCount: row.member_count,
+  viewerRole: row.viewer_role,
+  viewerRequestPending: row.viewer_request === 'pending',
+});
+
+export const circleRequestSchema = z.object({
+  request_id: z.string(),
+  display_name: z.string().nullable(),
+  answer: z.string().nullable(),
+  created_at: z.string(),
+});
+
+/** Someone waiting for a decision on a request Circle. Only moderators and the owner see these. */
+export interface CircleRequest {
+  id: string;
+  displayName: string | null;
+  answer: string | null;
+  createdAt: string;
+}
+
+export const toCircleRequest = (row: z.infer<typeof circleRequestSchema>): CircleRequest => ({
+  id: row.request_id,
+  displayName: row.display_name,
+  answer: row.answer,
+  createdAt: row.created_at,
+});
+
+export interface CircleInput {
+  name: string;
+  tagline: string | null;
+  cityId: string;
+  access: CircleAccess;
+  joinQuestion: string | null;
+}
 
 export interface UpNext {
   plan: Plan;
@@ -200,7 +287,38 @@ export interface Profile {
   /** null until the member picks a city. */
   cityId: string | null;
   goals: string[];
+  /** Off by default. On means members of the Circles you share can see you in People. */
+  peopleVisible: boolean;
 }
+
+export const PERSON_CONNECTIONS = ['none', 'requested', 'requested_by_them', 'connected'] as const;
+export type PersonConnection = (typeof PERSON_CONNECTIONS)[number];
+
+export const personRowSchema = z.object({
+  user_id: z.string(),
+  display_name: z.string(),
+  city: z.string().nullable(),
+  circle_names: z.array(z.string()),
+  connection: z.enum(PERSON_CONNECTIONS),
+});
+
+/** A member who chose to be visible and shares a Circle with you. */
+export interface Person {
+  userId: string;
+  displayName: string;
+  city: string | null;
+  /** The Circles you both belong to, by name. */
+  circleNames: string[];
+  connection: PersonConnection;
+}
+
+export const toPerson = (row: z.infer<typeof personRowSchema>): Person => ({
+  userId: row.user_id,
+  displayName: row.display_name,
+  city: row.city,
+  circleNames: row.circle_names,
+  connection: row.connection,
+});
 
 export const profileInputSchema = z.object({
   displayName: z.string().trim().min(1).max(40),
@@ -212,3 +330,168 @@ export type ProfileInput = z.infer<typeof profileInputSchema>;
 
 export const emailSchema = z.email().max(254);
 export const emailCodeSchema = z.string().regex(/^\d{6}$/);
+
+/** The allergens a poster can declare. 'none' means the poster checked and there are none. */
+export const RECIPE_ALLERGENS = [
+  'none',
+  'gluten',
+  'crustaceans',
+  'eggs',
+  'fish',
+  'peanuts',
+  'soy',
+  'milk',
+  'nuts',
+  'celery',
+  'mustard',
+  'sesame',
+  'sulphites',
+  'lupin',
+  'molluscs',
+] as const;
+export type RecipeAllergen = (typeof RECIPE_ALLERGENS)[number];
+
+export const isRecipeAllergen = (value: string): value is RecipeAllergen =>
+  (RECIPE_ALLERGENS as readonly string[]).includes(value);
+
+export const recipeCardSchema = z.object({
+  id: z.string(),
+  circle_id: z.string(),
+  circle_name: z.string(),
+  author_name: z.string().nullable(),
+  title: z.string(),
+  cuisine: z.string().nullable(),
+  serves: z.number().int(),
+  minutes: z.number().int().nullable(),
+  intro: z.string().nullable(),
+  allergens: z.array(z.enum(RECIPE_ALLERGENS)),
+  allergens_confirmed: z.boolean(),
+  created_at: z.string(),
+});
+
+export const recipeIngredientSchema = z.object({
+  name: z.string(),
+  qty: z.number().nullable(),
+  unit: z.string().nullable(),
+});
+
+/** A recipe as shared into a Circle, without its method. */
+export interface Recipe {
+  id: string;
+  title: string;
+  cuisine: string | null;
+  serves: number;
+  minutes: number | null;
+  intro: string | null;
+  allergens: RecipeAllergen[];
+  /** False means the poster did not confirm allergens: show that, never assume none. */
+  allergensConfirmed: boolean;
+  circleId: string;
+  circleName: string;
+  authorName: string | null;
+  createdAt: string;
+}
+
+export interface RecipeIngredient {
+  name: string;
+  qty: number | null;
+  unit: string | null;
+}
+
+export interface RecipeDetail extends Recipe {
+  ingredients: RecipeIngredient[];
+  steps: string[];
+}
+
+export interface RecipeInput {
+  circleId: string;
+  title: string;
+  cuisine: string | null;
+  serves: number;
+  minutes: number | null;
+  intro: string | null;
+  allergens: RecipeAllergen[];
+  allergensConfirmed: boolean;
+  ingredients: RecipeIngredient[];
+  steps: string[];
+}
+
+export const GUEST_STATES = ['going', 'checked_in', 'no_show', 'waitlisted', 'offered'] as const;
+export type GuestState = (typeof GUEST_STATES)[number];
+
+export const guestRowSchema = z.object({
+  user_id: z.string(),
+  display_name: z.string(),
+  state: z.enum(GUEST_STATES),
+  checked_in_at: z.string().nullable(),
+});
+
+/** Someone on a Plan's list, as the host sees it: a name and a state, never contact details. */
+export interface Guest {
+  userId: string;
+  displayName: string;
+  state: GuestState;
+  checkedInAt: string | null;
+}
+
+export const toGuest = (row: z.infer<typeof guestRowSchema>): Guest => ({
+  userId: row.user_id,
+  displayName: row.display_name,
+  state: row.state,
+  checkedInAt: row.checked_in_at,
+});
+
+export interface HostSummary {
+  going: number;
+  checkedIn: number;
+  noShow: number;
+  /** The host has ended the Plan. */
+  ended: boolean;
+  /** Published or changed: a Plan that is running, as opposed to on hold or cancelled. */
+  live: boolean;
+  feedbackCount: number;
+  /** Null until someone has rated. */
+  averageRating: number | null;
+}
+
+export interface FeedbackState {
+  /** A checked-in guest, once the Plan has ended. */
+  eligible: boolean;
+  rating: number | null;
+  comment: string | null;
+}
+
+/** What a host enters to publish a Plan. The database checks every rule again. */
+export interface PlanInput {
+  category: 'cooking_night' | 'potluck';
+  format: PlanFormat;
+  title: string;
+  description: string;
+  startsAt: string;
+  endsAt: string;
+  capacity: number;
+  /** The allergen keys the host chose, never empty. */
+  allergens: RecipeAllergen[];
+  /** In person: the public area. */
+  areaName: string | null;
+  /** In person: the exact address, revealed to confirmed guests. */
+  address: string | null;
+  keepAddressPrivate: boolean;
+  /** Online: the Google Meet link, https only. */
+  meetingUrl: string | null;
+}
+
+export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
+  id: row.id,
+  title: row.title,
+  cuisine: row.cuisine,
+  serves: row.serves,
+  minutes: row.minutes,
+  intro: row.intro,
+  allergens: row.allergens,
+  allergensConfirmed: row.allergens_confirmed,
+  circleId: row.circle_id,
+  circleName: row.circle_name,
+  authorName: row.author_name,
+  createdAt: row.created_at,
+});

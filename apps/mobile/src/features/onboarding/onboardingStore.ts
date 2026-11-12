@@ -31,6 +31,12 @@ export async function loadOnboarding(): Promise<void> {
 
 export const getOnboarding = (): Onboarding => current;
 
+/** Saves and resolves only once the answers are stored; rejects if storage fails. */
+export async function saveOnboardingStrict(value: Onboarding): Promise<void> {
+  await appStorage.set(KEY, JSON.stringify(value));
+  current = value;
+}
+
 export function saveOnboarding(value: Onboarding): void {
   current = value;
   appStorage.set(KEY, JSON.stringify(value)).catch(() => {

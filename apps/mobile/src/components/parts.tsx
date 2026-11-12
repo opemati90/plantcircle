@@ -7,6 +7,7 @@ import {
   Animated,
   Keyboard,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -89,6 +90,8 @@ export function Skeleton({ width, height, radius: corner }: SkeletonProps) {
 function useKeyboardHeight(): number {
   const [height, setHeight] = useState(0);
   useEffect(() => {
+    // Android resizes the window for the keyboard already, so lifting again would double it.
+    if (Platform.OS !== 'ios') return;
     const shown = Keyboard.addListener('keyboardDidShow', (event) => {
       setHeight(event.endCoordinates.height);
     });
@@ -337,4 +340,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyActions: { gap: 10 },
+});
+
+/** A message inside a screen that keeps its other controls usable: empty, error and "later" states. */
+export function InlineState({
+  title,
+  text,
+  action,
+}: {
+  title: string;
+  text: string;
+  action?: ReactNode;
+}) {
+  return (
+    <View style={inlineStyles.wrap}>
+      <Text accessibilityRole="header" style={type(22, 'bold', { tracking: -0.5 })}>
+        {title}
+      </Text>
+      <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{text}</Text>
+      {action}
+    </View>
+  );
+}
+
+const inlineStyles = StyleSheet.create({
+  wrap: { alignItems: 'center', gap: 10, paddingVertical: 36, paddingHorizontal: 16 },
 });

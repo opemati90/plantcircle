@@ -10,9 +10,24 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   item_taken: 'item_taken',
   rsvp_required: 'rsvp_required',
   no_offer: 'no_offer',
+  rate_limited: 'rate_limited',
+  circle_not_found: 'not_found',
+  request_not_found: 'not_found',
+  not_moderator: 'forbidden',
+  invalid_recipe: 'invalid_input',
+  allergens_required: 'invalid_input',
+  invalid_plan: 'invalid_input',
+  city_required: 'city_required',
+  not_host: 'forbidden',
+  checkin_closed: 'checkin_closed',
+  plan_not_started: 'plan_not_started',
+  plan_not_live: 'invalid_input',
+  guest_not_found: 'not_found',
+  feedback_not_open: 'invalid_input',
+  invalid_feedback: 'invalid_input',
 };
 
-interface ErrorLike {
+export interface ErrorLike {
   message: string;
   status?: number | undefined;
   code?: string | undefined;

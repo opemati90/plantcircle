@@ -10,21 +10,14 @@ import { BottomSheet, Skeleton } from '../../components/parts';
 import { Photo } from '../../components/Photo';
 import { color, extra, radius, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
+import { catalogs } from '@plantcircle/copy';
 import type { City } from '../../lib/backend/types';
+import { groupCitiesByCountry } from '../home/cityGroups';
 import { currentLanguage, setLanguage } from '../../lib/i18n';
 import { useAuth } from '../auth/useAuth';
 import { welcomePhoto } from '../plans/planImage';
 import { useCities } from '../plans/queries';
 import { GOALS, getOnboarding, saveOnboarding, type Goal } from './onboardingStore';
-
-function countryName(code: string, language: string): string {
-  // Intl.DisplayNames is not available on every JS engine; the code is an acceptable fallback.
-  try {
-    return new Intl.DisplayNames([language], { type: 'region' }).of(code) ?? code;
-  } catch {
-    return code;
-  }
-}
 
 function Progress({ step }: { step: 1 | 2 }) {
   const { t } = useTranslation();
@@ -275,18 +268,29 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
             />
           </View>
         ) : (
-          cities.data.map((city: City) => (
-            <OptionRow
-              key={city.id}
-              role="radio"
-              selected={cityId === city.id}
-              title={city.name}
-              subtitle={countryName(city.countryCode, language)}
-              onPress={() => {
-                setCityId(city.id);
-              }}
-            />
-          ))
+          groupCitiesByCountry(cities.data, language, catalogs[language].countries).map(
+            (group) => (
+              <View key={group.countryCode} style={styles.group}>
+                <Text
+                  accessibilityRole="header"
+                  style={type(13, 'bold', { color: color.secondary, tracking: 0.5 })}
+                >
+                  {group.countryName.toUpperCase()}
+                </Text>
+                {group.cities.map((city: City) => (
+                  <OptionRow
+                    key={city.id}
+                    role="radio"
+                    selected={cityId === city.id}
+                    title={city.name}
+                    onPress={() => {
+                      setCityId(city.id);
+                    }}
+                  />
+                ))}
+              </View>
+            ),
+          )
         )}
       </View>
       <Text
@@ -320,6 +324,7 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
 }
 
 const styles = StyleSheet.create({
+  group: { gap: 10 },
   screen: { flex: 1, backgroundColor: color.surface },
   hero: { flex: 1, backgroundColor: color.ink },
   brand: {

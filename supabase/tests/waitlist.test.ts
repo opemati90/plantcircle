@@ -262,3 +262,58 @@ describe('waitlist, inside the last 6 hours', () => {
     expect(late.rows[0]?.n).toBe(0);
   });
 });
+
+describe('safety rules added after review', () => {
+  beforeEach(async () => {
+    await seed(72);
+    await fillPlan();
+  });
+
+  it('an offer cannot be confirmed while its Plan is on hold, but can be once it is open again', async () => {
+    await waitlist(C);
+    await cancel(A);
+    expect(await statuses()).toMatchObject({ Cem: 'offered' });
+    await db.exec(`update public.plans set status = 'on_hold' where id = '${PLAN}'`);
+    await expect(confirm(C)).rejects.toThrow(/plan_not_found/);
+    await db.exec(`update public.plans set status = 'published' where id = '${PLAN}'`);
+    expect(await confirm(C)).toEqual({ status: 'going' });
+  });
+
+  it('cancelling a Plan releases everyone still waiting', async () => {
+    await waitlist(C);
+    await db.exec(`update public.plans set status = 'cancelled' where id = '${PLAN}'`);
+    await cancel(A);
+    expect(await statuses()).toMatchObject({ Cem: 'cancelled' });
+  });
+
+  it('an idempotency key cannot be reused for a different request', async () => {
+    const key = newKey();
+    await call('rsvp_cancel', A, key);
+    await expect(call('rsvp_join', A, key)).rejects.toThrow(/idempotency_key_reused/);
+  });
+});
+
+describe('review round 2', () => {
+  beforeEach(async () => {
+    await seed(72);
+    await fillPlan();
+  });
+
+  it('an offer that runs out while the Plan is on hold keeps its place in line', async () => {
+    await waitlist(C);
+    await cancel(A);
+    await db.exec(`update public.plans set status = 'on_hold' where id = '${PLAN}'`);
+    await letOffersLapse();
+    await db.query('select public.expire_waitlist_offers()');
+    expect(await statuses()).toMatchObject({ Cem: 'waitlisted' });
+  });
+
+  it('a retried confirmation returns its committed answer even after the Plan changes', async () => {
+    const key = newKey();
+    await waitlist(C);
+    await cancel(A);
+    expect(await confirm(C, key)).toEqual({ status: 'going' });
+    await db.exec(`update public.plans set status = 'on_hold' where id = '${PLAN}'`);
+    expect(await confirm(C, key)).toEqual({ status: 'going' });
+  });
+});

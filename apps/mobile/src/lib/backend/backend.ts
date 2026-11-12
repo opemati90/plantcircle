@@ -8,6 +8,17 @@ import type {
   Profile,
   ProfileInput,
   Session,
+  Circle,
+  CircleInput,
+  CircleRequest,
+  FeedbackState,
+  Guest,
+  HostSummary,
+  Person,
+  PlanInput,
+  Recipe,
+  RecipeDetail,
+  RecipeInput,
   UpNext,
   WaitlistOffer,
 } from './types';
@@ -23,6 +34,11 @@ export type BackendErrorCode =
   | 'no_offer'
   | 'invalid_code'
   | 'rate_limited'
+  | 'forbidden'
+  | 'invalid_input'
+  | 'city_required'
+  | 'checkin_closed'
+  | 'plan_not_started'
   | 'cancelled'
   | 'invalid_response'
   | 'unknown';
@@ -60,10 +76,65 @@ export interface Backend {
 
   getProfile(): Promise<Profile | null>;
   createProfile(input: ProfileInput): Promise<Profile>;
+  /** The member's home city. Only changes the profile; browsing other cities does not call this. */
+  /** `null` is "Anywhere": no home city, so Home shows Plans from every city. */
+  setCity(cityId: string | null): Promise<void>;
+
+  /** Circles anyone can see (open and request), with optional text search. */
+  listCircles(query: { search: string }): Promise<Circle[]>;
+  /** Every Circle the viewer is a member of, for pickers. Not limited by the discovery search. */
+  listMyCircles(): Promise<Circle[]>;
+  getCircle(circleId: string): Promise<Circle>;
+  /** Open Circles admit at once; request Circles record a request with the answer. */
+  joinCircle(
+    circleId: string,
+    answer: string | null,
+    idempotencyKey: string,
+  ): Promise<'member' | 'requested'>;
+  createCircle(input: CircleInput, idempotencyKey: string): Promise<string>;
+  /** Waiting requests for a request Circle. Only its owner and moderators can read them. */
+  getCircleRequests(circleId: string): Promise<CircleRequest[]>;
+  respondToCircleRequest(requestId: string, approve: boolean, idempotencyKey: string): Promise<void>;
+
+  /** Visible members who share a Circle with the viewer. */
+  listPeople(): Promise<Person[]>;
+  /** Asks to connect. The result is "connected" when the other person had already asked. */
+  connectWithPerson(userId: string, idempotencyKey: string): Promise<'requested' | 'connected'>;
+  /** The member's own choice to be seen in People. Off by default. */
+  setPeopleVisible(visible: boolean): Promise<void>;
+
+  /** Recipes shared into Circles the viewer is in, newest first, searched on the server. */
+  listRecipes(query: { search: string }): Promise<Recipe[]>;
+  getRecipe(recipeId: string): Promise<RecipeDetail>;
+  createRecipe(input: RecipeInput, idempotencyKey: string): Promise<string>;
+
+  /** Publishes a Plan in the host's home city. Returns the new Plan's id. */
+  createPlan(input: PlanInput, idempotencyKey: string): Promise<string>;
+
+  /** Hosting. Only the host of the Plan can call these; the database refuses anyone else. */
+  listGuests(planId: string): Promise<Guest[]>;
+  getHostSummary(planId: string): Promise<HostSummary>;
+  checkInGuest(
+    planId: string,
+    userId: string,
+    checkedIn: boolean,
+    idempotencyKey: string,
+  ): Promise<'going' | 'checked_in'>;
+  endPlan(planId: string, idempotencyKey: string): Promise<void>;
+
+  /** Feedback from a guest who checked in, once the Plan has ended. */
+  getFeedback(planId: string): Promise<FeedbackState>;
+  submitFeedback(
+    planId: string,
+    rating: number,
+    comment: string | null,
+    idempotencyKey: string,
+  ): Promise<void>;
 
   listCities(): Promise<City[]>;
   /** `cityId: null` lists Plans everywhere (the member has not picked a city). */
-  listUpcomingPlans(query: { cityId: string | null; from: Date; to: Date }): Promise<Plan[]>;
+  /** `cityIds: null` lists Plans everywhere; a list limits them to those cities. */
+  listUpcomingPlans(query: { cityIds: string[] | null; from: Date; to: Date }): Promise<Plan[]>;
   getPlan(planId: string): Promise<PlanDetail>;
   getUpNext(now: Date): Promise<UpNext | null>;
   /** The viewer's own Plans, soonest first (upcoming) or latest first (past). */

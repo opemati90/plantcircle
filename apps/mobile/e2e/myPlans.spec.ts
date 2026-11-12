@@ -50,8 +50,9 @@ test('the Hosting and Past tabs each say what they show, and Hosting leads to cr
   await page.getByRole('tab', { name: 'Hosting' }).click();
   await expect(page.getByRole('heading', { name: 'Host your first Plan' })).toBeVisible();
   await page.getByRole('button', { name: 'Start a Plan' }).click();
+  // Without a home city, creating a Plan asks for one first.
   await expect(
-    page.getByRole('heading', { name: 'Start a Plan isn’t built yet' }),
+    page.getByRole('heading', { name: 'Choose your home city first, then you can host.' }),
   ).toBeVisible();
 
   await page.goto('/my-plans');

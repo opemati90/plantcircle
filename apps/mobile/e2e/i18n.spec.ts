@@ -16,8 +16,9 @@ test.describe('on a German device', () => {
     await page.getByRole('checkbox', { name: 'Zusammen kochen und lernen' }).click();
     await page.getByRole('button', { name: 'Weiter' }).click();
 
-    // Country names are localised too.
-    await page.getByRole('radio', { name: /Berlin.*Deutschland/ }).click();
+    // Country names are localised too: the heading above the cities is in German.
+    await expect(page.getByText('DEUTSCHLAND', { exact: true })).toBeVisible();
+    await page.getByRole('radio', { name: 'Berlin', exact: true }).click();
     await page.getByRole('button', { name: 'Weiter' }).click();
 
     await expect(page.getByRole('heading', { name: 'Diese Woche in Berlin' })).toBeVisible();

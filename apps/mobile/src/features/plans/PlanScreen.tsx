@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, IconButton } from '../../components/Button';
 import {
   CheckIcon,
@@ -30,6 +30,7 @@ import { ProviderButtons } from '../auth/ProviderButtons';
 import { useAuth } from '../auth/useAuth';
 import {
   addressNote,
+  placeLabel,
   allergenNote,
   bringItemNote,
   categoryLabel,
@@ -43,6 +44,7 @@ import {
 } from './planCopy';
 import { imageFocus, planImage } from './planImage';
 import { newIdempotencyKey, usePlan, useRsvpMutations } from './queries';
+import { useFeedback } from '../hosting/queries';
 
 type SheetKind = 'signUp' | 'cancel' | 'leave' | null;
 
@@ -87,9 +89,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function PlanView({ detail }: { detail: PlanDetail }) {
-  const { plan, rsvp, bringItems, address } = detail;
+  const { plan, rsvp, bringItems, address, meetingUrl } = detail;
   const isGoing = rsvp === 'going';
   const router = useRouter();
+  const feedback = useFeedback(plan.id);
   const insets = useScreenInsets();
   const { session } = useAuth();
   const { t } = useTranslation();
@@ -236,9 +239,17 @@ function PlanView({ detail }: { detail: PlanDetail }) {
             />
             <Fact
               lead={<MapTile />}
-              title={plan.areaName}
-              note={addressNote(t, plan, isGoing, address)}
+              title={placeLabel(t, plan)}
+              note={addressNote(t, plan, isGoing, address, meetingUrl)}
             />
+            {meetingUrl ? (
+              <Button
+                label={t('plan.joinMeet')}
+                onPress={() => {
+                  void Linking.openURL(meetingUrl);
+                }}
+              />
+            ) : null}
             <Fact
               lead={
                 <View aria-hidden style={styles.cluster}>
@@ -403,6 +414,17 @@ function PlanView({ detail }: { detail: PlanDetail }) {
         />
       ) : notice ? (
         <Toast tone="status" title={notice} />
+      ) : feedback.data?.eligible ? (
+        <Toast
+          tone="status"
+          title={t('hostFeedback.title')}
+          action={{
+            label: t('hostFeedback.leave'),
+            onPress: () => {
+              router.push({ pathname: '/plan/[id]/feedback', params: { id: plan.id } });
+            },
+          }}
+        />
       ) : null}
 
       <FloatingActionBar style={styles.bar}>

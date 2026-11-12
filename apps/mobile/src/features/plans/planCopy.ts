@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 import type { BackendErrorCode } from '../../lib/backend/backend';
-import type { BringItem, Plan } from '../../lib/backend/types';
+import { isRecipeAllergen, type BringItem, type Plan } from '../../lib/backend/types';
 import { time, weekdayLong } from '../../lib/dates';
 
 // Pure rules that turn a Plan into the sentences shown about it. The words live
@@ -42,12 +42,29 @@ export function spotsLeftShort(t: TFunction, plan: Plan): string {
 }
 
 /** The line under the neighbourhood: never reveals more than the viewer may see. */
+/** Where a Plan happens, short: the area for in-person Plans, "Online" otherwise. */
+export const placeLabel = (t: TFunction, plan: Plan) =>
+  plan.format === 'online' ? t('plan.onlineTitle') : plan.areaName;
+
+/**
+ * The line under the place on the Plan screen. In-person Plans show the address; online
+ * Plans show the meeting service, and when the link opens for confirmed guests.
+ */
 export function addressNote(
   t: TFunction,
   plan: Plan,
   isGoing: boolean,
   address: string | null,
+  meetingUrl: string | null = null,
 ): string {
+  if (plan.format === 'online') {
+    if (meetingUrl) return t('plan.onlineForGuests');
+    if (isGoing) {
+      const when = `${weekdayLong(plan.revealAt, plan.timezone)}, ${time(plan.revealAt, plan.timezone)}`;
+      return t('plan.onlineLinkAt', { when });
+    }
+    return t('plan.onlineForGuests');
+  }
   if (address) return address;
   const hint = plan.areaHint;
   if (!isGoing) {
@@ -72,9 +89,14 @@ export function bringItemNote(t: TFunction, item: BringItem): string {
 
 /** Allergens the host has not confirmed are never presented as "none" or "safe". */
 export function allergenNote(t: TFunction, plan: Plan): string {
-  return plan.allergens
-    ? t('plan.allergensDeclared', { allergens: plan.allergens })
-    : t('plan.allergensUnknown');
+  if (!plan.allergens) return t('plan.allergensUnknown');
+  // Keys the app knows are translated; anything else is the host's own wording, shown as written.
+  const names = plan.allergens
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => (isRecipeAllergen(item) ? t(`allergen.${item}`) : item));
+  return t('plan.allergensDeclared', { allergens: names.join(', ') });
 }
 
 export function rsvpErrorCopy(

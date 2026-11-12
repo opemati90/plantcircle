@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
@@ -90,6 +90,7 @@ function OfferView({ detail }: { detail: PlanDetail }) {
   const now = useNow(15_000);
   const { confirmOffer, cancel, joinWaitlist } = useRsvpMutations(plan.id);
   const [outcome, setOutcome] = useState<OfferOutcome | null>(null);
+  const openedAsOffer = useRef(rsvp === 'offered');
 
   const toPlan = () => {
     router.dismissTo({ pathname: '/plan/[id]', params: { id: plan.id } });
@@ -109,7 +110,14 @@ function OfferView({ detail }: { detail: PlanDetail }) {
             : 'none';
 
   useEffect(() => {
-    if (outcome === 'going' || rsvp === 'going') toPlan();
+    // A held spot that is now confirmed goes to My Plans, where the spot is listed. This
+    // also covers a confirmation whose reply was lost: the refetch shows the spot as going.
+    // Anyone who simply opened a Plan they already attend goes back to the Plan.
+    if (outcome === 'going' || (rsvp === 'going' && openedAsOffer.current)) {
+      router.replace('/my-plans');
+    } else if (rsvp === 'going') {
+      toPlan();
+    }
     // `toPlan` is new every render; navigating once per state change is intended.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outcome, rsvp]);

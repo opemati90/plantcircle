@@ -93,7 +93,9 @@ const styles = StyleSheet.create({
   icon: {
     width: 52,
     height: 30,
-    borderRadius: radius.pill,
+    // Exactly half the height: Android draws a larger radius on a small view as square.
+    borderRadius: 15,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },

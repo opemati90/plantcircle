@@ -310,3 +310,77 @@ describe('bring something', () => {
     expect(card.rows[0]?.claimed_by).toEqual(['Mia S.']);
   });
 });
+
+describe('online Plans', () => {
+  const ONLINE = '10000000-0000-4000-8000-0000000000aa';
+  const LINK = 'https://meet.google.com/abc-defg-hij';
+
+  // The Plan starts `minutesAhead` minutes from now.
+  const startIn = (minutesAhead: number) =>
+    db.exec(
+      `update public.plans set starts_at = now() + interval '${minutesAhead} minutes',
+         ends_at = now() + interval '${minutesAhead + 120} minutes' where id = '${ONLINE}'`,
+    );
+
+  beforeEach(async () => {
+    await db.query(
+      `insert into public.plans
+         (id, host_id, title, kind, format, city_id, area_label, starts_at, ends_at, tz,
+          capacity, description)
+       values ($1, $2, 'Vegan Feijoada', 'online_class', 'online', $3, 'Online',
+          now() + interval '5 hours', now() + interval '7 hours', 'Europe/Berlin', 8, 'x')`,
+      [ONLINE, HOST, CITY],
+    );
+    // Online Plans have no address, but keep their private-details row for the reveal time.
+    await db.query(
+      `insert into public.plan_private (plan_id, reveal_at)
+       values ($1, now() + interval '5 hours' - interval '10 minutes')`,
+      [ONLINE],
+    );
+    await db.query(
+      'insert into public.plan_meeting_links (plan_id, meeting_url) values ($1, $2)',
+      [ONLINE, LINK],
+    );
+    await join(MIA, ONLINE);
+  });
+
+  const link = (user: string) =>
+    asUser(db, user, () =>
+      db.query<{ meeting_url: string }>(
+        'select meeting_url from public.plan_meeting_links where plan_id = $1',
+        [ONLINE],
+      ),
+    ).then((r) => r.rows.map((row) => row.meeting_url));
+
+  it('is hidden from people who are not going, even close to the start', async () => {
+    await startIn(5);
+    expect(await link(LENA)).toEqual([]);
+  });
+
+  it('is hidden from confirmed guests until 10 minutes before the start', async () => {
+    await startIn(30);
+    expect(await link(MIA)).toEqual([]);
+    await startIn(5);
+    expect(await link(MIA)).toEqual([LINK]);
+  });
+
+  it('is always visible to the host', async () => {
+    await startIn(300);
+    expect(await link(HOST)).toEqual([LINK]);
+  });
+
+  it('never puts the meeting link on public Plan cards', async () => {
+    await asUser(db, null, async () => {
+      const cols = await db.query<{ column_name: string }>(
+        `select column_name from information_schema.columns
+         where table_name = 'plan_cards' and column_name = 'meeting_url'`,
+      );
+      expect(cols.rows).toEqual([]);
+      const card = await db.query<{ format: string }>(
+        'select format from public.plan_cards where id = $1',
+        [ONLINE],
+      );
+      expect(card.rows[0]?.format).toBe('online');
+    });
+  });
+});

@@ -14,7 +14,16 @@ import { appStorage } from './storage';
 const STORAGE_KEY = 'pc.language';
 
 /** Formatting locale when the device does not use this language itself. */
-const FALLBACK_FORMAT: Record<Language, string> = { en: 'en-GB', de: 'de-DE' };
+const FALLBACK_FORMAT: Record<Language, string> = {
+  en: 'en-GB',
+  de: 'de-DE',
+  es: 'es-ES',
+  pt: 'pt-PT',
+  fr: 'fr-FR',
+  pl: 'pl-PL',
+  it: 'it-IT',
+  nl: 'nl-NL',
+};
 
 /** First device locale we have a catalogue for, in the person's own order of preference. */
 function deviceLanguage(): Language {

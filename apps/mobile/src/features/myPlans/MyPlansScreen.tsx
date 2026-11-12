@@ -1,84 +1,22 @@
 import { useRouter } from 'expo-router';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
-import { ChevronRightIcon, OfflineIcon, PlusIcon } from '../../components/icons';
-import { DateTile, EmptyState, Skeleton } from '../../components/parts';
-import { color, extra, radius, size, type } from '../../components/theme';
+import { OfflineIcon, PlusIcon } from '../../components/icons';
+import { EmptyState, InlineState, Skeleton } from '../../components/parts';
+import { color, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
 import type { MyPlan } from '../../lib/backend/types';
 import { shortDate, time, weekdayShort } from '../../lib/dates';
+import { placeLabel } from '../plans/planCopy';
+import { PlanListItem } from '../plans/PlanListItem';
 import { useAuth } from '../auth/useAuth';
 import { useMyPlans } from '../plans/queries';
-import { statusPill, type MyPlansTab, type PillTone } from './myPlanRules';
+import { statusPill, type MyPlansTab } from './myPlanRules';
 
 const TABS: MyPlansTab[] = ['going', 'hosting', 'past'];
-
-const TONE: Record<PillTone, { background: string; text: string }> = {
-  positive: { background: color.brandTint, text: color.brand },
-  neutral: { background: color.fill, text: color.secondary },
-  attention: { background: color.warningTint, text: color.warning },
-};
-
-function PlanRow({
-  item,
-  isPast,
-  onPress,
-}: {
-  item: MyPlan;
-  isPast: boolean;
-  onPress: () => void;
-}) {
-  const { t } = useTranslation();
-  const { plan } = item;
-  const tz = plan.timezone;
-  const when = isPast
-    ? shortDate(plan.startsAt, tz)
-    : `${weekdayShort(plan.startsAt, tz)} ${time(plan.startsAt, tz)} · ${plan.areaName}`;
-  const pill = statusPill(t, item, isPast);
-  return (
-    <Pressable accessibilityRole="link" onPress={onPress} style={styles.row}>
-      <View style={styles.rowTop}>
-        <DateTile iso={plan.startsAt} timeZone={tz} />
-        <View style={styles.rowText}>
-          <Text style={type(17, 'semibold', { tracking: -0.3 })}>{plan.title}</Text>
-          <Text style={type(15, 'regular', { color: color.secondary })}>{when}</Text>
-        </View>
-        <ChevronRightIcon size={16} strokeWidth={2.4} color={color.borderControl} />
-      </View>
-      <View style={styles.pills}>
-        <View style={[styles.pill, { backgroundColor: TONE[pill.tone].background }]}>
-          <Text style={type(14, 'semibold', { color: TONE[pill.tone].text })}>
-            {pill.label}
-          </Text>
-        </View>
-      </View>
-    </Pressable>
-  );
-}
-
-/** Centred message inside a tab: the tab itself stays usable. */
-function TabMessage({
-  title,
-  text,
-  action,
-}: {
-  title: string;
-  text: string;
-  action?: ReactNode;
-}) {
-  return (
-    <View style={styles.message}>
-      <Text accessibilityRole="header" style={type(22, 'bold', { tracking: -0.5 })}>
-        {title}
-      </Text>
-      <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{text}</Text>
-      {action}
-    </View>
-  );
-}
 
 function ListSkeleton() {
   const { t } = useTranslation();
@@ -100,7 +38,12 @@ export default function MyPlansScreen() {
   const past = useMyPlans('past', tab === 'past');
   const query = tab === 'past' ? past : upcoming;
 
+  // A held spot goes straight to its offer; everything else opens the Plan.
   const openPlan = (item: MyPlan) => {
+    if (item.rsvp === 'offered') {
+      router.push({ pathname: '/plan/[id]/waitlist-offer', params: { id: item.plan.id } });
+      return;
+    }
     router.push({ pathname: '/plan/[id]', params: { id: item.plan.id } });
   };
 
@@ -108,7 +51,7 @@ export default function MyPlansScreen() {
     if (authLoading) return <ListSkeleton />;
     if (!session) {
       return (
-        <TabMessage
+        <InlineState
           title={t('myPlans.signedOutTitle')}
           text={t('myPlans.signedOutText')}
           action={
@@ -124,7 +67,7 @@ export default function MyPlansScreen() {
     }
     if (tab === 'hosting') {
       return (
-        <TabMessage
+        <InlineState
           title={t('myPlans.hostingEmpty.title')}
           text={t('myPlans.hostingEmpty.text')}
           action={
@@ -152,9 +95,9 @@ export default function MyPlansScreen() {
     }
     if (query.data.length === 0) {
       return tab === 'past' ? (
-        <TabMessage title={t('myPlans.pastEmpty.title')} text={t('myPlans.pastEmpty.text')} />
+        <InlineState title={t('myPlans.pastEmpty.title')} text={t('myPlans.pastEmpty.text')} />
       ) : (
-        <TabMessage
+        <InlineState
           title={t('myPlans.upcomingEmpty.title')}
           text={t('myPlans.upcomingEmpty.text')}
         />
@@ -162,16 +105,24 @@ export default function MyPlansScreen() {
     }
     return (
       <View style={styles.list}>
-        {query.data.map((item) => (
-          <PlanRow
-            key={item.plan.id}
-            item={item}
-            isPast={tab === 'past'}
-            onPress={() => {
-              openPlan(item);
-            }}
-          />
-        ))}
+        {query.data.map((item) => {
+          const isPast = tab === 'past';
+          const { plan } = item;
+          const when = isPast
+            ? shortDate(plan.startsAt, plan.timezone)
+            : `${weekdayShort(plan.startsAt, plan.timezone)} ${time(plan.startsAt, plan.timezone)} · ${placeLabel(t, plan)}`;
+          return (
+            <PlanListItem
+              key={plan.id}
+              plan={plan}
+              when={when}
+              pill={statusPill(t, item, isPast)}
+              onPress={() => {
+                openPlan(item);
+              }}
+            />
+          );
+        })}
       </View>
     );
   }
@@ -266,22 +217,4 @@ const styles = StyleSheet.create({
   },
   segmentSelected: { backgroundColor: color.surface },
   list: { gap: 12 },
-  row: {
-    gap: 12,
-    padding: 14,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: extra.cardBorder,
-    backgroundColor: color.surface,
-  },
-  rowTop: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  rowText: { flex: 1, minWidth: 0, gap: 3 },
-  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  pill: {
-    minHeight: 30,
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    borderRadius: radius.pill,
-  },
-  message: { alignItems: 'center', gap: 10, paddingVertical: 36, paddingHorizontal: 16 },
 });

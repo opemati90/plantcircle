@@ -1,5 +1,3 @@
-import { NotBuiltScreen } from '../../src/features/app/NotBuiltScreen';
+import ExploreScreen from '../../src/features/explore/ExploreScreen';
 
-export default function Route() {
-  return <NotBuiltScreen area="explore" />;
-}
+export default ExploreScreen;

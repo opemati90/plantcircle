@@ -25,6 +25,9 @@ export interface Auth {
   /** `undefined` while the stored session is still being read. */
   session: Session | null | undefined;
   profile: Profile | undefined;
+  /** The profile could not be loaded after retries. */
+  profileError: boolean;
+  retryProfile: () => void;
   isLoading: boolean;
 }
 
@@ -50,6 +53,10 @@ export function useAuth(): Auth {
   return {
     session: sessionQuery.isError ? null : session,
     profile: profileQuery.data,
+    profileError: profileQuery.isError,
+    retryProfile: () => {
+      void profileQuery.refetch();
+    },
     isLoading: sessionQuery.isPending,
   };
 }

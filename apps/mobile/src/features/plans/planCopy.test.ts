@@ -3,6 +3,7 @@ import { createInstance, type TFunction } from 'i18next';
 import type { BringItem, Plan } from '../../lib/backend/types';
 import {
   addressNote,
+  placeLabel,
   allergenNote,
   bringItemNote,
   goingLabel,
@@ -28,6 +29,7 @@ const plan: Plan = {
   id: 'p1',
   title: 'West African Cooking Night',
   category: 'cooking_night',
+  format: 'in_person',
   cityId: 'c1',
   city: 'Berlin',
   areaName: 'Neukölln',
@@ -172,5 +174,32 @@ describe('German', () => {
     expect(bringItemNote(t, item)).toBe('1 von 2 noch offen');
     expect(priceLabel(t, plan, 'de')).toBe('Kostenlos');
     expect(placeInLine(t, 4)).toBe('4.');
+  });
+});
+
+describe('online Plans', () => {
+  const online: Plan = { ...plan, format: 'online', id: 'o1', areaName: 'Online' };
+  let t: TFunction;
+  beforeAll(async () => {
+    t = await translator('en');
+  });
+
+  it('label the place "Online" instead of an area', () => {
+    expect(placeLabel(t, online)).toBe(catalogs.en.plan.onlineTitle);
+    expect(placeLabel(t, plan)).toBe('Neukölln');
+  });
+
+  it('never shows a link note to people who are not going', () => {
+    expect(addressNote(t, online, false, null, null)).toBe(catalogs.en.plan.onlineForGuests);
+  });
+
+  it('shows when the link opens to confirmed guests before it is released', () => {
+    expect(addressNote(t, online, true, null, null)).toMatch(/^Google Meet · link opens /);
+  });
+
+  it('describes the meeting service once the link is shown', () => {
+    expect(addressNote(t, online, true, null, 'https://meet.google.com/abc-defg-hij')).toBe(
+      catalogs.en.plan.onlineForGuests,
+    );
   });
 });

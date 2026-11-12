@@ -1,0 +1,36 @@
+# A held spot, end to end on a device: join, wait in line, a spot frees up, the
+# offer is opened from My Plans, confirmed, and My Plans lists it as Going.
+# Uses the development-only route plantcircle://dev/free-spot (fixture backend).
+#   maestro test apps/mobile/e2e/maestro/offered-spot.yaml
+appId: app.plantcircle.mobile
+---
+- launchApp:
+    clearState: true
+- assertVisible: 'Find your people.'
+- tapOn: 'Get started'
+- tapOn: 'Cook and learn together'
+- tapOn: 'Continue'
+- tapOn: '.*Berlin.*'
+- tapOn: 'Continue'
+- assertVisible: 'This week in Berlin'
+- tapOn: '.*West African Cooking Night.*'
+- tapOn: 'Join'
+- tapOn: 'Use email instead'
+- tapOn: 'Email'
+- inputText: 'lena@example.com'
+- tapOn: 'Continue with email'
+- assertVisible: 'Check your email'
+- inputText: '000000'
+- tapOn: 'Verify'
+- assertVisible: 'You’re going'
+- openLink: plantcircle://plan/ramen-workshop
+- tapOn: 'Join waitlist'
+- assertVisible: 'On the waitlist ✓'
+- openLink: plantcircle://dev/free-spot?plan=ramen-workshop
+- assertVisible: 'Going'
+- assertVisible: '.*Spot offered.*'
+- tapOn: '.*Vegan Ramen Workshop.*'
+- assertVisible: 'Confirm my spot'
+- tapOn: 'Confirm my spot'
+- assertVisible: 'Going'
+- assertVisible: '.*Vegan Ramen Workshop.*'

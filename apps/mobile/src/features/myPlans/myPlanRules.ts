@@ -1,15 +1,9 @@
 import type { TFunction } from 'i18next';
 import type { MyPlan } from '../../lib/backend/types';
 import { localTime } from '../../lib/dates';
+import type { StatusPill } from '../plans/PlanListItem';
 
 export type MyPlansTab = 'going' | 'hosting' | 'past';
-
-export type PillTone = 'positive' | 'neutral' | 'attention';
-
-export interface StatusPill {
-  label: string;
-  tone: PillTone;
-}
 
 /**
  * The status chip on a Plan in My Plans. Past Plans are never "Going": the person
