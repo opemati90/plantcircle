@@ -2,9 +2,9 @@ import type { PGlite } from '@electric-sql/pglite';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { asUser, createDatabase } from './harness';
 
-const HOST = '00000000-0000-4000-8000-0000000000g1';
-const MIA = '00000000-0000-4000-8000-0000000000g2';
-const OUTSIDER = '00000000-0000-4000-8000-0000000000g3';
+const HOST = '00000000-0000-4000-8000-0000000000a1';
+const MIA = '00000000-0000-4000-8000-0000000000a2';
+const OUTSIDER = '00000000-0000-4000-8000-0000000000a3';
 const CITY = '30000000-0000-4000-8000-0000000000c6';
 
 let db: PGlite;
@@ -48,6 +48,9 @@ async function plan(startsInHours: number, status = 'published'): Promise<string
   );
   return id;
 }
+
+const going = (planId: string, user: string) =>
+  db.query(`insert into public.rsvps (plan_id, user_id, state) values ($1, $2, 'going')`, [planId, user]);
 
 const add = (user: string, planId: string, label: string, quantity: number, key = newKey()) =>
   asUser(db, user, () =>
@@ -107,7 +110,10 @@ describe('adding and changing bring items', () => {
   it('changes an item, but not below the number already brought', async () => {
     const id = await plan(5);
     const item = await add(HOST, id, 'Bread', 3);
+    await going(id, MIA);
+    await going(id, OUTSIDER);
     await claim(MIA, item);
+    await claim(OUTSIDER, item);
     await expect(update(HOST, item, 'Bread', 0)).rejects.toThrow(/invalid_item/);
     await expect(update(HOST, item, 'Sourdough', 1)).rejects.toThrow(/quantity_below_claims/);
     await update(HOST, item, 'Sourdough', 2);
@@ -122,6 +128,7 @@ describe('adding and changing bring items', () => {
     const id = await plan(5);
     const taken = await add(HOST, id, 'Bread', 1);
     const free = await add(HOST, id, 'Salad', 1);
+    await going(id, MIA);
     await claim(MIA, taken);
     await expect(remove(HOST, taken)).rejects.toThrow(/item_claimed/);
     await remove(HOST, free);
