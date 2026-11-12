@@ -22,7 +22,7 @@ test.describe('on a German device', () => {
 
     await expect(page.getByRole('heading', { name: 'Diese Woche in Berlin' })).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Pläne' })).toBeVisible();
-    await expect(page.getByText('KOCHKURS · KOSTENLOS', { exact: false })).toBeVisible();
+    await expect(page.getByText('KOCHABEND · KOSTENLOS', { exact: false })).toBeVisible();
     await expect(page.getByText('Noch 4 Plätze')).toBeVisible();
 
     await page.getByRole('link', { name: /West African Cooking Night/ }).click();

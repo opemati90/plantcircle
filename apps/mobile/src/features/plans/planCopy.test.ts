@@ -27,7 +27,7 @@ async function translator(language: 'en' | 'de'): Promise<TFunction> {
 const plan: Plan = {
   id: 'p1',
   title: 'West African Cooking Night',
-  category: 'cooking_class',
+  category: 'cooking_night',
   cityId: 'c1',
   city: 'Berlin',
   areaName: 'Neukölln',

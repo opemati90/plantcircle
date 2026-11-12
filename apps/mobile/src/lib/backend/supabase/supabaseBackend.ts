@@ -60,6 +60,20 @@ function toRsvpState(status: string | undefined): RsvpState {
 }
 
 const LIST_LIMIT = 20;
+/** Plans shown in listings: cancelled and completed ones are only reached by their link. */
+const LISTED_STATUSES = ['published', 'changed', 'on_hold'];
+/** Own RSVPs read before the date filter; bounds the query for very active members. */
+const MY_PLANS_CANDIDATES = 100;
+/** Past Plans older than this are not listed (the list is for recent history). */
+const PAST_PLANS_DAYS = 90;
+const DAY_MS = 86_400_000;
+
+const myPlanRowSchema = z.object({
+  plan_id: z.string(),
+  status: z.string(),
+  offer_expires_at: z.string().nullable(),
+  waitlist_position: z.number().int().nullable(),
+});
 
 export function createSupabaseBackend(url: string, anonKey: string): Backend {
   const client = createClient(url, anonKey, {
@@ -85,7 +99,7 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     return data.session.user.id;
   }
 
-  async function rpc(name: string, args: Record<string, string>): Promise<void> {
+  async function rpc(name: string, args: Record<string, string | boolean>): Promise<void> {
     const { error } = await client.rpc(name, args);
     if (error) throw toBackendError(error);
   }
@@ -194,7 +208,7 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         id: row.id,
         name: row.name,
         countryCode: row.country_code,
-        timezone: row.timezone,
+        timezone: row.tz,
       }));
     },
 
@@ -202,6 +216,7 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       let query = client
         .from('plan_cards')
         .select('*')
+        .in('status', LISTED_STATUSES)
         .gte('ends_at', from.toISOString())
         .lt('starts_at', to.toISOString());
       if (cityId) query = query.eq('city_id', cityId);
@@ -216,7 +231,11 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
 
       const [card, items] = await Promise.all([
         client.from('plan_cards').select('*').eq('id', planId).maybeSingle(),
-        client.from('bring_item_cards').select('*').eq('plan_id', planId).order('position'),
+        client
+          .from('contribution_slot_cards')
+          .select('*')
+          .eq('plan_id', planId)
+          .order('position'),
       ]);
       if (card.error) throw toBackendError(card.error);
       if (items.error) throw toBackendError(items.error);
@@ -232,10 +251,10 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
           // RLS returns no row unless this member is allowed to see the address.
           client.from('plan_private').select('address').eq('plan_id', planId).maybeSingle(),
           client
-            .from('bring_claims')
-            .select('item_id')
+            .from('contribution_claims')
+            .select('slot_id')
             .in(
-              'item_id',
+              'slot_id',
               itemRows.map((item) => item.id),
             ),
         ]);
@@ -246,7 +265,7 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         address =
           parse(z.object({ address: z.string() }).nullable(), secret.data)?.address ?? null;
         myItemIds = new Set(
-          parse(z.array(z.object({ item_id: z.string() })), claims.data).map((c) => c.item_id),
+          parse(z.array(z.object({ slot_id: z.string() })), claims.data).map((c) => c.slot_id),
         );
       }
 
@@ -271,7 +290,7 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       const rsvps = await client
         .from('rsvps')
         .select('plan_id')
-        .eq('status', 'going')
+        .in('state', ['going', 'checked_in'])
         .limit(100);
       if (rsvps.error) throw toBackendError(rsvps.error);
       const planIds = parse(z.array(z.object({ plan_id: z.string() })), rsvps.data).map(
@@ -293,23 +312,77 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       if (plan.openBringSlots === 0) return { plan, needsDish: false };
 
       const mine = await client
-        .from('bring_claims')
-        .select('item_id, bring_items!inner(plan_id)')
-        .eq('bring_items.plan_id', plan.id)
+        .from('contribution_claims')
+        .select('slot_id, contribution_slots!inner(plan_id)')
+        .eq('contribution_slots.plan_id', plan.id)
         .limit(1);
       if (mine.error) throw toBackendError(mine.error);
       return { plan, needsDish: mine.data.length === 0 };
     },
 
-    joinPlan: (planId, key) => rpc('join_plan', { p_plan_id: planId, p_idempotency_key: key }),
+    async listMyPlans({ scope, now }) {
+      await requireUserId();
+      const statuses = scope === 'upcoming' ? ['going', 'waitlisted', 'offered'] : ['going'];
+      const rsvps = await client
+        .from('my_rsvps')
+        .select('plan_id, status, offer_expires_at, waitlist_position')
+        .in('status', statuses)
+        .limit(MY_PLANS_CANDIDATES);
+      if (rsvps.error) throw toBackendError(rsvps.error);
+      const rows = parse(z.array(myPlanRowSchema), rsvps.data);
+      if (rows.length === 0) return [];
+
+      const byId = client
+        .from('plan_cards')
+        .select('*')
+        .in(
+          'id',
+          rows.map((row) => row.plan_id),
+        );
+      const cards =
+        scope === 'upcoming'
+          ? await byId.gte('ends_at', now.toISOString())
+          : await byId
+              .lt('ends_at', now.toISOString())
+              .gte('ends_at', new Date(now.getTime() - PAST_PLANS_DAYS * DAY_MS).toISOString());
+      if (cards.error) throw toBackendError(cards.error);
+      const plans = new Map(
+        parse(z.array(planCardSchema), cards.data).map((card) => [card.id, toPlan(card)]),
+      );
+
+      const mine = rows.flatMap((row) => {
+        const plan = plans.get(row.plan_id);
+        const rsvp = toRsvpState(row.status);
+        if (!plan || rsvp === 'none') return [];
+        return [
+          {
+            plan,
+            rsvp,
+            waitlistPosition: row.waitlist_position,
+            offerExpiresAt: row.offer_expires_at,
+          },
+        ];
+      });
+      const direction = scope === 'upcoming' ? 1 : -1;
+      mine.sort(
+        (a, b) =>
+          direction *
+          (new Date(a.plan.startsAt).getTime() - new Date(b.plan.startsAt).getTime()),
+      );
+      return mine.slice(0, LIST_LIMIT);
+    },
+
+    // rsvp_join takes a free spot or puts the member in line, so joinWaitlist is the same call.
+    joinPlan: (planId, key) => rpc('rsvp_join', { p_plan_id: planId, p_idempotency_key: key }),
     cancelRsvp: (planId, key) =>
-      rpc('cancel_rsvp', { p_plan_id: planId, p_idempotency_key: key }),
+      rpc('rsvp_cancel', { p_plan_id: planId, p_idempotency_key: key }),
     joinWaitlist: (planId, key) =>
-      rpc('join_waitlist', { p_plan_id: planId, p_idempotency_key: key }),
+      rpc('rsvp_join', { p_plan_id: planId, p_idempotency_key: key }),
 
     async confirmWaitlistOffer(planId, key) {
-      const result = await client.rpc('confirm_waitlist_offer', {
+      const result = await client.rpc('waitlist_respond', {
         p_plan_id: planId,
+        p_accept: true,
         p_idempotency_key: key,
       });
       if (result.error) throw toBackendError(result.error);
@@ -349,6 +422,6 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       });
     },
     claimBringItem: (itemId, key) =>
-      rpc('claim_bring_item', { p_item_id: itemId, p_idempotency_key: key }),
+      rpc('slot_claim', { p_slot_id: itemId, p_idempotency_key: key }),
   };
 }

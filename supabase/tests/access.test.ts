@@ -19,7 +19,7 @@ let db: PGlite;
 
 async function seed(): Promise<void> {
   await db.query(
-    `insert into public.cities (id, name, country_code, timezone)
+    `insert into public.cities (id, name, country_code, tz)
      values ($1, 'Berlin', 'DE', 'Europe/Berlin')`,
     [CITY],
   );
@@ -36,35 +36,34 @@ async function seed(): Promise<void> {
     ]);
   }
   const plan = `insert into public.plans
-    (id, host_id, title, category, city_id, area_name, starts_at, ends_at, reveal_at, timezone,
+    (id, host_id, title, kind, city_id, area_label, starts_at, ends_at, tz,
      capacity, description)
-    values ($1, $2, $3, 'cooking_class', '${CITY}', 'Neukölln', $4, $5, $4, 'Europe/Berlin', $6,
+    values ($1, $2, $3, 'cooking_night', '${CITY}', 'Neukölln', $4, $5, 'Europe/Berlin', $6,
       'x')`;
   await db.query(plan, [PLAN, HOST, 'Cooking Night', 'now', 'tomorrow', 2]);
   await db.query(plan, [SOON_PLAN, HOST, 'Tonight', 'now', 'tomorrow', 8]);
   await db.exec(`
     update public.plans set starts_at = now() + interval '5 days',
-      ends_at = now() + interval '5 days 3 hours',
-      reveal_at = now() + interval '4 days' where id = '${PLAN}';
+      ends_at = now() + interval '5 days 3 hours' where id = '${PLAN}';
     update public.plans set starts_at = now() + interval '2 hours',
-      ends_at = now() + interval '5 hours',
-      reveal_at = now() - interval '1 hour' where id = '${SOON_PLAN}';
-    insert into public.plan_private (plan_id, address) values
-      ('${PLAN}', 'Secret Street 1'), ('${SOON_PLAN}', 'Secret Street 2');
-    insert into public.bring_items (id, plan_id, label, quantity)
+      ends_at = now() + interval '5 hours' where id = '${SOON_PLAN}';
+    insert into public.plan_private (plan_id, address, reveal_at) values
+      ('${PLAN}', 'Secret Street 1', now() + interval '4 days'),
+      ('${SOON_PLAN}', 'Secret Street 2', now() - interval '1 hour');
+    insert into public.contribution_slots (id, plan_id, label, needed)
       values ('${ITEM}', '${SOON_PLAN}', 'Plantains', 1);
   `);
 }
 
 const join = (user: string, plan = PLAN, key = newKey()) =>
   asUser(db, user, () =>
-    db.query<{ result: { status: string } }>('select public.join_plan($1, $2) as result', [
+    db.query<{ result: { status: string } }>('select public.rsvp_join($1, $2) as result', [
       plan,
       key,
     ]),
   );
 const cancel = (user: string, plan = PLAN, key = newKey()) =>
-  asUser(db, user, () => db.query('select public.cancel_rsvp($1, $2)', [plan, key]));
+  asUser(db, user, () => db.query('select public.rsvp_cancel($1, $2)', [plan, key]));
 
 beforeEach(async () => {
   db = await createDatabase();
@@ -81,7 +80,7 @@ describe('anonymous visitors', () => {
         'profiles',
         'rsvps',
         'plan_private',
-        'bring_claims',
+        'contribution_claims',
         'policy_acceptances',
         'idempotency_keys',
       ]) {
@@ -94,7 +93,7 @@ describe('anonymous visitors', () => {
 
   it('cannot join a Plan', async () => {
     await expect(
-      asUser(db, null, () => db.query('select public.join_plan($1, $2)', [PLAN, newKey()])),
+      asUser(db, null, () => db.query('select public.rsvp_join($1, $2)', [PLAN, newKey()])),
     ).rejects.toThrow(/permission denied/);
   });
 });
@@ -148,7 +147,13 @@ describe('joining a Plan', () => {
   it('never exceeds capacity', async () => {
     await join(LENA);
     await join(MIA);
-    await expect(join(JONAS)).rejects.toThrow(/plan_full/);
+    // A full Plan does not refuse: the newcomer is put in line instead.
+    expect((await join(JONAS)).rows[0]?.result).toEqual({ status: 'waitlisted', position: 1 });
+    const held = await db.query<{ n: number }>(
+      `select count(*)::int as n from public.rsvps where plan_id = $1 and state = 'going'`,
+      [PLAN],
+    );
+    expect(held.rows[0]?.n).toBe(2);
   });
 
   it('frees the spot on cancel so someone else can take it', async () => {
@@ -170,7 +175,7 @@ describe('joining a Plan', () => {
     await asUser(db, LENA, async () => {
       await expect(
         db.query(
-          `insert into public.rsvps (plan_id, user_id, status) values ($1, $2, 'going')`,
+          `insert into public.rsvps (plan_id, user_id, state) values ($1, $2, 'going')`,
           [PLAN, LENA],
         ),
       ).rejects.toThrow(/permission denied/);
@@ -245,9 +250,7 @@ describe('cities', () => {
       const cities = await db.query<{ name: string }>('select name from public.cities');
       expect(cities.rows.map((c) => c.name)).toEqual(['Berlin']);
       await expect(
-        db.query(
-          `insert into public.cities (name, country_code, timezone) values ('X','XX','UTC')`,
-        ),
+        db.query(`insert into public.cities (name, country_code, tz) values ('X','XX','UTC')`),
       ).rejects.toThrow(/permission denied/);
     });
   });
@@ -285,15 +288,13 @@ describe('exact address', () => {
 
 describe('bring something', () => {
   const claim = (user: string) =>
-    asUser(db, user, () =>
-      db.query('select public.claim_bring_item($1, $2)', [ITEM, newKey()]),
-    );
+    asUser(db, user, () => db.query('select public.slot_claim($1, $2)', [ITEM, newKey()]));
 
   it('requires a confirmed RSVP', async () => {
     await expect(claim(LENA)).rejects.toThrow(/rsvp_required/);
   });
 
-  it('cannot be claimed more times than the quantity, and is released on cancel', async () => {
+  it('cannot be claimed more times than it is needed, and is released on cancel', async () => {
     await join(LENA, SOON_PLAN);
     await join(MIA, SOON_PLAN);
     await claim(LENA);
@@ -303,7 +304,7 @@ describe('bring something', () => {
     await cancel(LENA, SOON_PLAN);
     await expect(claim(MIA)).resolves.toBeDefined();
     const card = await db.query<{ claimed_by: string[] }>(
-      'select claimed_by from public.bring_item_cards where id = $1',
+      'select claimed_by from public.contribution_slot_cards where id = $1',
       [ITEM],
     );
     expect(card.rows[0]?.claimed_by).toEqual(['Mia S.']);

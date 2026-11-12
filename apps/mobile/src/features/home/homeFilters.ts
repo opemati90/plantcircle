@@ -7,8 +7,8 @@ export type HomeFilter = (typeof HOME_FILTERS)[number];
 const MATCHERS: Record<HomeFilter, (plan: Plan) => boolean> = {
   // Personalised ranking is not built; "For you" is everything this week.
   forYou: () => true,
-  cooking: (plan) => plan.category === 'cooking_class',
-  social: (plan) => plan.category === 'potluck' || plan.category === 'social',
+  cooking: (plan) => plan.category === 'cooking_night' || plan.category === 'workshop',
+  social: (plan) => plan.category === 'potluck' || plan.category === 'meetup',
   online: (plan) => plan.category === 'online_class',
 };
 

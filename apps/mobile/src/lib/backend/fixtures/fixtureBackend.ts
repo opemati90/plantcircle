@@ -1,6 +1,6 @@
 import { appStorage } from '../../storage';
 import { BackendError, type Backend } from '../backend';
-import type { Plan, Profile, Session } from '../types';
+import type { MyPlan, Plan, Profile, Session } from '../types';
 import {
   fixtureAddresses,
   fixtureBringItems,
@@ -349,6 +349,35 @@ export async function createFixtureBackend(): Promise<Backend> {
         const entry = liveEntry(plan.id);
         return entry?.expiresAt ? [{ plan, expiresAt: entry.expiresAt }] : [];
       });
+    },
+
+    async listMyPlans({ scope, now }) {
+      await call();
+      requireSession();
+      const mine = plans(now).flatMap((plan): MyPlan[] => {
+        const entry = liveEntry(plan.id);
+        const isGoing = state.goingPlanIds.includes(plan.id);
+        const isUpcoming = new Date(plan.endsAt).getTime() >= now.getTime();
+        if (scope === 'upcoming' ? !isUpcoming : isUpcoming) return [];
+        if (isGoing) {
+          return [{ plan, rsvp: 'going', waitlistPosition: null, offerExpiresAt: null }];
+        }
+        if (!entry) return [];
+        return [
+          {
+            plan,
+            rsvp: entry.expiresAt ? 'offered' : 'waitlisted',
+            waitlistPosition: plan.waitlistCount,
+            offerExpiresAt: entry.expiresAt,
+          },
+        ];
+      });
+      const direction = scope === 'upcoming' ? 1 : -1;
+      return mine.sort(
+        (a, b) =>
+          direction *
+          (new Date(a.plan.startsAt).getTime() - new Date(b.plan.startsAt).getTime()),
+      );
     },
 
     async claimBringItem(itemId, key) {

@@ -72,10 +72,15 @@ export const en = {
   },
   plan: {
     category: {
-      cooking_class: 'Cooking class',
+      cooking_night: 'Cooking night',
       potluck: 'Potluck',
-      social: 'Social',
+      workshop: 'Workshop',
+      meetup: 'Meetup',
       online_class: 'Online class',
+      group_order: 'Group order',
+      food_swap: 'Food swap',
+      volunteering: 'Volunteering',
+      global_table: 'Global table',
     },
     free: 'Free',
     full: 'Full',
@@ -217,6 +222,32 @@ export const en = {
     verify: 'Verify',
     signOut: 'Sign out',
     signOutFailed: 'Couldn’t sign out. Try again.',
+  },
+  myPlans: {
+    create: 'Create',
+    tabs: { going: 'Going', hosting: 'Hosting', past: 'Past' },
+    pill: {
+      going: 'Going',
+      waitlist_ordinal_one: 'Waitlist · {{count}}st',
+      waitlist_ordinal_two: 'Waitlist · {{count}}nd',
+      waitlist_ordinal_few: 'Waitlist · {{count}}rd',
+      waitlist_ordinal_other: 'Waitlist · {{count}}th',
+      attended: 'You attended',
+    },
+    upcomingEmpty: {
+      title: 'Nothing coming up',
+      text: 'Plans you’re going to, or waiting for a spot on, will show here.',
+    },
+    hostingEmpty: {
+      title: 'Host your first Plan',
+      text: 'A cooking night, a potluck or a group order.',
+    },
+    signedOutTitle: 'Sign in to see your Plans',
+    signedOutText: 'Plans you join show up here.',
+    pastEmpty: {
+      title: 'No past Plans yet',
+      text: 'Plans you attended in the last 90 days will show here.',
+    },
   },
   errors: {
     offlineTitle: 'Can’t reach PlantCircle',

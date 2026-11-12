@@ -3,6 +3,8 @@ import type {
   OfferOutcome,
   Plan,
   PlanDetail,
+  MyPlan,
+  MyPlansScope,
   Profile,
   ProfileInput,
   Session,
@@ -64,6 +66,8 @@ export interface Backend {
   listUpcomingPlans(query: { cityId: string | null; from: Date; to: Date }): Promise<Plan[]>;
   getPlan(planId: string): Promise<PlanDetail>;
   getUpNext(now: Date): Promise<UpNext | null>;
+  /** The viewer's own Plans, soonest first (upcoming) or latest first (past). */
+  listMyPlans(query: { scope: MyPlansScope; now: Date }): Promise<MyPlan[]>;
   // State-changing calls take an idempotency key: one key per user action, reused on retry.
   joinPlan(planId: string, idempotencyKey: string): Promise<void>;
   /** Gives up a spot, a place in line, or an offered spot ("pass it on"). */

@@ -2,10 +2,10 @@ import type { Plan } from '../../lib/backend/types';
 import { filterPlans } from './homeFilters';
 
 const plans = [
-  { id: 'a', category: 'cooking_class' },
+  { id: 'a', category: 'cooking_night' },
   { id: 'b', category: 'potluck' },
   { id: 'c', category: 'online_class' },
-  { id: 'd', category: 'social' },
+  { id: 'd', category: 'meetup' },
 ] as Plan[];
 
 const ids = (list: Plan[]) => list.map((plan) => plan.id);

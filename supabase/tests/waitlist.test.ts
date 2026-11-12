@@ -18,7 +18,7 @@ const newKey = () => `40000000-0000-4000-8000-${String((keyCounter += 1)).padSta
 /** A Plan with room for two, starting `hoursAhead` hours from now. */
 async function seed(hoursAhead: number): Promise<void> {
   await db.query(
-    `insert into public.cities (id, name, country_code, timezone)
+    `insert into public.cities (id, name, country_code, tz)
      values ($1, 'Berlin', 'DE', 'Europe/Berlin')`,
     [CITY],
   );
@@ -38,11 +38,13 @@ async function seed(hoursAhead: number): Promise<void> {
   }
   await db.exec(`
     insert into public.plans
-      (id, host_id, title, category, city_id, area_name, starts_at, ends_at, reveal_at,
-       timezone, capacity, description)
-    values ('${PLAN}', '${HOST}', 'Ramen', 'cooking_class', '${CITY}', 'Friedrichshain',
+      (id, host_id, title, kind, city_id, area_label, starts_at, ends_at,
+       tz, capacity, description)
+    values ('${PLAN}', '${HOST}', 'Ramen', 'cooking_night', '${CITY}', 'Friedrichshain',
       now() + interval '${hoursAhead} hours', now() + interval '${hoursAhead + 2} hours',
-      now() + interval '${hoursAhead - 1} hours', 'Europe/Berlin', 2, 'x');
+      'Europe/Berlin', 2, 'x');
+    insert into public.plan_private (plan_id, address, reveal_at)
+    values ('${PLAN}', 'Ramen Street 1', now() + interval '${hoursAhead - 1} hours');
   `);
 }
 
@@ -52,14 +54,21 @@ const call = (fn: string, user: string, key = newKey()) =>
     db.query<{ result: Result }>(`select public.${fn}($1, $2) as result`, [PLAN, key]),
   ).then((r) => r.rows[0]?.result);
 
-const join = (user: string) => call('join_plan', user);
-const waitlist = (user: string) => call('join_waitlist', user);
-const confirm = (user: string, key?: string) => call('confirm_waitlist_offer', user, key);
-const cancel = (user: string) => call('cancel_rsvp', user);
+// rsvp_join takes a free spot or gets the member in line, so one call serves both.
+const join = (user: string) => call('rsvp_join', user);
+const waitlist = (user: string) => call('rsvp_join', user);
+const confirm = (user: string, key = newKey()) =>
+  asUser(db, user, () =>
+    db.query<{ result: Result }>('select public.waitlist_respond($1, true, $2) as result', [
+      PLAN,
+      key,
+    ]),
+  ).then((r) => r.rows[0]?.result);
+const cancel = (user: string) => call('rsvp_cancel', user);
 
 async function statuses(): Promise<Record<string, string>> {
   const rows = await db.query<{ display_name: string; status: string }>(
-    `select p.display_name, r.status from public.rsvps r
+    `select p.display_name, r.state as status from public.rsvps r
      join public.profiles p on p.id = r.user_id where r.plan_id = $1`,
     [PLAN],
   );
@@ -69,7 +78,7 @@ async function statuses(): Promise<Record<string, string>> {
 /** Moves every outstanding offer's expiry into the past, as if 2 hours had gone by. */
 const letOffersLapse = () =>
   db.exec(`update public.rsvps set offer_expires_at = now() - interval '1 minute'
-           where status = 'offered'`);
+           where state = 'offered'`);
 
 async function fillPlan(): Promise<void> {
   await join(A);
@@ -87,7 +96,7 @@ describe('waitlist, more than 6 hours before the start', () => {
   });
 
   it('puts people in line in the order they joined and reports their position', async () => {
-    await expect(join(C)).rejects.toThrow(/plan_full/);
+    expect(await join(C)).toEqual({ status: 'waitlisted', position: 1 });
     expect(await waitlist(C)).toEqual({ status: 'waitlisted', position: 1 });
     expect(await waitlist(D)).toEqual({ status: 'waitlisted', position: 2 });
     // Asking again does not move you to the back or create a second entry.
@@ -111,7 +120,7 @@ describe('waitlist, more than 6 hours before the start', () => {
   it('holds the offered spot: nobody else can take it, not even a new visitor', async () => {
     await waitlist(C);
     await cancel(A);
-    await expect(join(E)).rejects.toThrow(/plan_full/);
+    expect(await join(E)).toEqual({ status: 'waitlisted', position: 2 });
     expect(await waitlist(E)).toEqual({ status: 'waitlisted', position: 2 });
   });
 
@@ -147,7 +156,7 @@ describe('waitlist, more than 6 hours before the start', () => {
     await letOffersLapse();
 
     expect(await confirm(C)).toEqual({ status: 'expired' });
-    expect(await statuses()).toMatchObject({ Cem: 'expired', Dora: 'offered' });
+    expect(await statuses()).toMatchObject({ Cem: 'cancelled', Dora: 'offered' });
     expect(await confirm(D)).toEqual({ status: 'going' });
   });
 
@@ -161,7 +170,7 @@ describe('waitlist, more than 6 hours before the start', () => {
       'select public.expire_waitlist_offers() as n',
     );
     expect(processed.rows[0]?.n).toBe(1);
-    expect(await statuses()).toMatchObject({ Cem: 'expired', Dora: 'offered' });
+    expect(await statuses()).toMatchObject({ Cem: 'cancelled', Dora: 'offered' });
     await expect(
       asUser(db, C, () => db.query('select public.expire_waitlist_offers()')),
     ).rejects.toThrow(/permission denied/);
@@ -183,7 +192,7 @@ describe('waitlist, more than 6 hours before the start', () => {
     await confirm(D);
     expect(await confirm(E)).toEqual({ status: 'waitlisted' });
     const going = await db.query<{ n: number }>(
-      `select count(*)::int as n from public.rsvps where plan_id = $1 and status = 'going'`,
+      `select count(*)::int as n from public.rsvps where plan_id = $1 and state = 'going'`,
       [PLAN],
     );
     expect(going.rows[0]?.n).toBe(2);
@@ -248,7 +257,7 @@ describe('waitlist, inside the last 6 hours', () => {
     await cancel(A);
     const late = await db.query<{ n: number }>(
       `select count(*)::int as n from public.rsvps r join public.plans p on p.id = r.plan_id
-       where r.status = 'offered' and r.offer_expires_at > p.starts_at`,
+       where r.state = 'offered' and r.offer_expires_at > p.starts_at`,
     );
     expect(late.rows[0]?.n).toBe(0);
   });

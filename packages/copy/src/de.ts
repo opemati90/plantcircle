@@ -76,10 +76,15 @@ export const de: Catalog = {
   },
   plan: {
     category: {
-      cooking_class: 'Kochkurs',
+      cooking_night: 'Kochabend',
       potluck: 'Potluck',
-      social: 'Treffen',
+      workshop: 'Workshop',
+      meetup: 'Treffen',
       online_class: 'Online-Kurs',
+      group_order: 'Gruppenbestellung',
+      food_swap: 'Tauschbörse',
+      volunteering: 'Ehrenamt',
+      global_table: 'Globaler Tisch',
     },
     free: 'Kostenlos',
     full: 'Voll',
@@ -229,6 +234,32 @@ export const de: Catalog = {
     verify: 'Bestätigen',
     signOut: 'Abmelden',
     signOutFailed: 'Abmelden hat nicht geklappt. Versuch es noch mal.',
+  },
+  myPlans: {
+    create: 'Erstellen',
+    tabs: { going: 'Dabei', hosting: 'Gastgeber', past: 'Vergangen' },
+    pill: {
+      going: 'Dabei',
+      waitlist_ordinal_one: 'Warteliste · {{count}}.',
+      waitlist_ordinal_two: 'Warteliste · {{count}}.',
+      waitlist_ordinal_few: 'Warteliste · {{count}}.',
+      waitlist_ordinal_other: 'Warteliste · {{count}}.',
+      attended: 'Du warst dabei',
+    },
+    upcomingEmpty: {
+      title: 'Noch nichts in Sicht',
+      text: 'Pläne, bei denen du dabei bist oder auf einen Platz wartest, erscheinen hier.',
+    },
+    hostingEmpty: {
+      title: 'Lade zu deinem ersten Plan ein',
+      text: 'Ein Kochabend, ein Potluck oder eine Gruppenbestellung.',
+    },
+    signedOutTitle: 'Melde dich an, um deine Pläne zu sehen',
+    signedOutText: 'Pläne, denen du beitrittst, erscheinen hier.',
+    pastEmpty: {
+      title: 'Noch keine vergangenen Pläne',
+      text: 'Pläne der letzten 90 Tage, bei denen du dabei warst, erscheinen hier.',
+    },
   },
   errors: {
     offlineTitle: 'PlantCircle ist nicht erreichbar',

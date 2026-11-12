@@ -1,6 +1,17 @@
 import { z } from 'zod';
 
-export const PLAN_CATEGORIES = ['cooking_class', 'potluck', 'social', 'online_class'] as const;
+// Mirrors the database's plan_kind enum, so any stored Plan parses.
+export const PLAN_CATEGORIES = [
+  'cooking_night',
+  'potluck',
+  'workshop',
+  'meetup',
+  'online_class',
+  'group_order',
+  'food_swap',
+  'volunteering',
+  'global_table',
+] as const;
 export type PlanCategory = (typeof PLAN_CATEGORIES)[number];
 
 /** Public read model of a Plan (mirrors the `plan_cards` view). */
@@ -146,6 +157,18 @@ export interface WaitlistOffer {
   expiresAt: string;
 }
 
+/** One of the viewer's own Plans, with where they stand on it. */
+export interface MyPlan {
+  plan: Plan;
+  rsvp: Exclude<RsvpState, 'none'>;
+  /** 1 = next in line. Present while waitlisted or offered. */
+  waitlistPosition: number | null;
+  offerExpiresAt: string | null;
+}
+
+/** `upcoming`: Plans not yet over where the viewer is going, waiting or offered a spot. */
+export type MyPlansScope = 'upcoming' | 'past';
+
 export interface UpNext {
   plan: Plan;
   needsDish: boolean;
@@ -169,7 +192,7 @@ export const cityRowSchema = z.object({
   id: z.string(),
   name: z.string(),
   country_code: z.string(),
-  timezone: z.string(),
+  tz: z.string(),
 });
 
 export interface Profile {
