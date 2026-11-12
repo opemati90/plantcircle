@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import { useBackend } from '../../lib/backend/BackendProvider';
+import type { MyPlansScope } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 
 const WEEK_MS = 7 * 86_400_000;
@@ -52,6 +53,17 @@ export function useUpNext() {
   });
 }
 
+/** The signed-in person's own Plans for one tab; off until that tab is opened. */
+export function useMyPlans(scope: MyPlansScope, enabled: boolean) {
+  const backend = useBackend();
+  const { session } = useAuth();
+  return useQuery({
+    queryKey: ['myPlans', scope, session?.userId ?? null],
+    queryFn: () => backend.listMyPlans({ scope, now: new Date() }),
+    enabled: enabled && Boolean(session),
+  });
+}
+
 /** Spots currently held for the signed-in person. */
 export function useWaitlistOffers() {
   const backend = useBackend();
@@ -73,7 +85,7 @@ export function useRsvpMutations(planId: string) {
   const options = {
     onSettled: () =>
       Promise.all(
-        ['plan', 'plans', 'upNext', 'offers'].map((key) =>
+        ['plan', 'plans', 'upNext', 'offers', 'myPlans'].map((key) =>
           queryClient.invalidateQueries({ queryKey: [key] }),
         ),
       ),

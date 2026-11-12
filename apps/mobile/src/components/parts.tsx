@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import {
   AccessibilityInfo,
   Animated,
+  Keyboard,
   Modal,
   Pressable,
   StyleSheet,
@@ -84,6 +85,24 @@ export function Skeleton({ width, height, radius: corner }: SkeletonProps) {
 }
 
 /** Blur bar over a white fade, so content never shows through behind the action. */
+/** Height of the on-screen keyboard, so a bar pinned to the bottom can rise above it. */
+function useKeyboardHeight(): number {
+  const [height, setHeight] = useState(0);
+  useEffect(() => {
+    const shown = Keyboard.addListener('keyboardDidShow', (event) => {
+      setHeight(event.endCoordinates.height);
+    });
+    const hidden = Keyboard.addListener('keyboardDidHide', () => {
+      setHeight(0);
+    });
+    return () => {
+      shown.remove();
+      hidden.remove();
+    };
+  }, []);
+  return height;
+}
+
 export function FloatingActionBar({
   children,
   style,
@@ -92,6 +111,8 @@ export function FloatingActionBar({
   style?: StyleProp<ViewStyle>;
 }) {
   const { barBottom } = useScreenInsets();
+  // Absolutely positioned, so a keyboard-avoiding view cannot lift it; lift it here.
+  const keyboardHeight = useKeyboardHeight();
   return (
     <>
       <LinearGradient
@@ -100,7 +121,7 @@ export function FloatingActionBar({
         locations={[0, 0.55]}
         style={styles.fade}
       />
-      <View style={[styles.bar, { bottom: barBottom }]}>
+      <View style={[styles.bar, { bottom: barBottom + keyboardHeight }]}>
         <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
         <View style={style}>{children}</View>
       </View>

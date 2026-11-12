@@ -1,5 +1,3 @@
-import { NotBuiltScreen } from '../../src/features/app/NotBuiltScreen';
+import MyPlansScreen from '../../src/features/myPlans/MyPlansScreen';
 
-export default function Route() {
-  return <NotBuiltScreen area="myPlans" />;
-}
+export default MyPlansScreen;

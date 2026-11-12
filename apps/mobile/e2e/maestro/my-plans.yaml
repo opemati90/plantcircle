@@ -1,0 +1,39 @@
+# My Plans on a simulator, signed in with the fixture backend (email code 000000).
+# Joins a Plan, then checks it under Going on the My Plans tab.
+# Run against the dev build with Metro on :8081:
+#   maestro test apps/mobile/e2e/maestro/my-plans.yaml
+appId: app.plantcircle.mobile
+---
+- launchApp:
+    clearState: true
+- assertVisible: 'Find your people.'
+- tapOn: 'Get started'
+- tapOn: 'Cook and learn together'
+- tapOn: 'Continue'
+- tapOn: '.*Berlin.*'
+- tapOn: 'Continue'
+- assertVisible: 'This week in Berlin'
+- tapOn: '.*West African Cooking Night.*'
+- tapOn: 'Join'
+- tapOn: 'Use email instead'
+- tapOn: 'Email'
+- inputText: 'lena@example.com'
+- tapOn: 'Continue with email'
+- assertVisible: 'Check your email'
+- inputText: '000000'
+- tapOn: 'Verify'
+- assertVisible: 'You’re going'
+- openLink: plantcircle://my-plans
+- assertVisible: 'Going'
+- assertVisible: '.*West African Cooking Night.*'
+- openLink: plantcircle://plan/ramen-workshop
+- tapOn: 'Join waitlist'
+- assertVisible: 'On the waitlist ✓'
+- openLink: plantcircle://my-plans
+- assertVisible: '.*Vegan Ramen Workshop.*'
+- assertVisible: '.*Waitlist · 4th.*'
+- assertVisible: 'Hosting'
+- tapOn: 'Hosting'
+- assertVisible: 'Host your first Plan'
+- tapOn: 'Past'
+- assertVisible: 'No past Plans yet'
