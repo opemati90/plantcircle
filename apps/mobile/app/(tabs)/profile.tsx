@@ -1,4 +1,4 @@
-import { NotBuiltScreen } from '../src/features/app/NotBuiltScreen';
+import { NotBuiltScreen } from '../../src/features/app/NotBuiltScreen';
 
 export default function Route() {
   return <NotBuiltScreen area="profile" signOut />;

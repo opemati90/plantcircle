@@ -6,9 +6,12 @@ import {
   allergenNote,
   bringItemNote,
   goingLabel,
+  offerFraction,
+  placeInLine,
   priceLabel,
   spotsLabel,
   spotsLeftShort,
+  timeLeft,
 } from './planCopy';
 
 async function translator(language: 'en' | 'de'): Promise<TFunction> {
@@ -48,6 +51,8 @@ const plan: Plan = {
   goingCount: 4,
   attendeeInitials: ['M', 'J', 'S'],
   openBringSlots: 1,
+  waitlistCount: 0,
+  hasOpenSpot: true,
 };
 
 const item: BringItem = {
@@ -77,7 +82,9 @@ describe('English', () => {
     expect(goingLabel(t, { ...plan, goingCount: 2 }, true)).toBe('You and 1 other are going');
     expect(goingLabel(t, { ...plan, goingCount: 1 }, true)).toBe('You’re going');
     expect(goingLabel(t, { ...plan, goingCount: 0 }, false)).toBe('Be the first to join');
-    expect(goingLabel(t, { ...plan, goingCount: 8 }, false)).toBe('All 8 spots are taken');
+    expect(goingLabel(t, { ...plan, goingCount: 8, hasOpenSpot: false }, false)).toBe(
+      'All 8 spots are taken',
+    );
     expect(spotsLeftShort(t, { ...plan, goingCount: 7 })).toBe('1 spot left');
     expect(spotsLeftShort(t, { ...plan, goingCount: 9 })).toBe('Full');
   });
@@ -113,12 +120,40 @@ describe('English', () => {
     expect(allergenNote(t, plan)).toBe('Peanuts and soy, as declared by the host.');
   });
 
+  it('writes places in line as ordinals', () => {
+    expect([1, 2, 3, 4, 11, 22].map((n) => placeInLine(t, n))).toEqual([
+      '1st',
+      '2nd',
+      '3rd',
+      '4th',
+      '11th',
+      '22nd',
+    ]);
+    expect(t('plan.wouldBe', { place: placeInLine(t, 4) })).toBe('You’d be 4th in line');
+  });
+
   it('formats paid Plans in their own currency', () => {
     expect(priceLabel(t, plan, 'en')).toBe('Free');
     expect(priceLabel(t, { ...plan, priceCents: 1800 }, 'en')).toBe('€18.00');
     expect(priceLabel(t, { ...plan, priceCents: 1800, currency: 'CAD' }, 'en')).toBe(
       'CA$18.00',
     );
+  });
+});
+
+describe('offer countdown', () => {
+  const now = new Date('2026-11-05T14:48:00.000Z');
+
+  it('shows hours and minutes left and never goes negative', () => {
+    expect(timeLeft('2026-11-05T16:30:00.000Z', now)).toBe('1:42');
+    expect(timeLeft('2026-11-05T14:48:30.000Z', now)).toBe('0:01');
+    expect(timeLeft('2026-11-05T14:00:00.000Z', now)).toBe('0:00');
+  });
+
+  it('reports how much of the 2 hours remains', () => {
+    expect(offerFraction('2026-11-05T16:48:00.000Z', now)).toBe(1);
+    expect(offerFraction('2026-11-05T15:48:00.000Z', now)).toBe(0.5);
+    expect(offerFraction('2026-11-05T13:00:00.000Z', now)).toBe(0);
   });
 });
 
@@ -136,5 +171,6 @@ describe('German', () => {
     expect(spotsLeftShort(t, { ...plan, goingCount: 7 })).toBe('Noch 1 Platz');
     expect(bringItemNote(t, item)).toBe('1 von 2 noch offen');
     expect(priceLabel(t, plan, 'de')).toBe('Kostenlos');
+    expect(placeInLine(t, 4)).toBe('4.');
   });
 });

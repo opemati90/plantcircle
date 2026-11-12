@@ -10,7 +10,8 @@ export const categoryLabel = (t: TFunction, plan: Plan) => t(`plan.category.${pl
 
 export const spotsLeft = (plan: Plan) => Math.max(plan.capacity - plan.goingCount, 0);
 
-export const isFull = (plan: Plan) => spotsLeft(plan) === 0;
+/** No spot can be taken directly: either none is free, or people are already in line. */
+export const isFull = (plan: Plan) => !plan.hasOpenSpot;
 
 export function priceLabel(t: TFunction, plan: Plan, language: string): string {
   if (plan.priceCents === 0) return t('plan.free');
@@ -96,4 +97,23 @@ export function rsvpErrorCopy(
     default:
       return pick('rsvp');
   }
+}
+
+/** "4th" / "4." — a place in line, in the active language. */
+export const placeInLine = (t: TFunction, position: number) =>
+  t('plan.place', { count: position, ordinal: true });
+
+/** Hours and minutes left, as "1:42". Never negative. */
+export function timeLeft(expiresAt: string, now: Date): string {
+  const minutes = Math.max(
+    0,
+    Math.ceil((new Date(expiresAt).getTime() - now.getTime()) / 60_000),
+  );
+  return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
+}
+
+/** Share of the 2-hour offer window still remaining, 0–1. */
+export function offerFraction(expiresAt: string, now: Date): number {
+  const left = new Date(expiresAt).getTime() - now.getTime();
+  return Math.min(1, Math.max(0, left / (2 * 3_600_000)));
 }

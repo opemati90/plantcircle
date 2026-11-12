@@ -1,4 +1,14 @@
-import type { City, Plan, PlanDetail, Profile, ProfileInput, Session, UpNext } from './types';
+import type {
+  City,
+  OfferOutcome,
+  Plan,
+  PlanDetail,
+  Profile,
+  ProfileInput,
+  Session,
+  UpNext,
+  WaitlistOffer,
+} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -8,6 +18,7 @@ export type BackendErrorCode =
   | 'plan_ended'
   | 'item_taken'
   | 'rsvp_required'
+  | 'no_offer'
   | 'invalid_code'
   | 'rate_limited'
   | 'cancelled'
@@ -55,6 +66,11 @@ export interface Backend {
   getUpNext(now: Date): Promise<UpNext | null>;
   // State-changing calls take an idempotency key: one key per user action, reused on retry.
   joinPlan(planId: string, idempotencyKey: string): Promise<void>;
+  /** Gives up a spot, a place in line, or an offered spot ("pass it on"). */
   cancelRsvp(planId: string, idempotencyKey: string): Promise<void>;
+  joinWaitlist(planId: string, idempotencyKey: string): Promise<void>;
+  confirmWaitlistOffer(planId: string, idempotencyKey: string): Promise<OfferOutcome>;
+  /** Spots currently held for the viewer, soonest expiry first. */
+  getWaitlistOffers(): Promise<WaitlistOffer[]>;
   claimBringItem(itemId: string, idempotencyKey: string): Promise<void>;
 }

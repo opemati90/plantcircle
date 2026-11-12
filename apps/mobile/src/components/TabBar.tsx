@@ -46,7 +46,7 @@ export function TabBar() {
             accessibilityLabel={label}
             aria-selected={active}
             onPress={() => {
-              if (!active) router.replace(href);
+              if (!active) router.navigate(href);
             }}
             style={styles.tab}
           >

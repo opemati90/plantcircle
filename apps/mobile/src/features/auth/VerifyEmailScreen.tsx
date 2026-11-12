@@ -69,7 +69,7 @@ export default function VerifyEmailScreen() {
   });
 
   // Reached without an email (deep link, restored state): start over.
-  if (!email) return <Redirect href={{ pathname: '/signup', params: { next } }} />;
+  if (!email) return <Redirect href={{ pathname: '/sign-up', params: { next } }} />;
 
   const complete = emailCodeSchema.safeParse(code).success;
   const submit = () => {

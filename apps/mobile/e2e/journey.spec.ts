@@ -71,21 +71,21 @@ test('first run: pick a city, browse, sign up with an email code, join, bring so
 test('skipping the city shows Plans everywhere, with no city in the title', async ({
   page,
 }) => {
-  await page.goto('/?step=city');
+  await page.goto('/city');
   await page.getByRole('button', { name: 'Skip for now' }).click();
   await expect(page.getByRole('heading', { name: 'This week', exact: true })).toBeVisible();
   await expect(page.getByText('Anywhere')).toBeVisible();
 });
 
 test('continue with Apple from the sheet signs in and joins', async ({ page }) => {
-  await page.goto('/plans/cooking-night');
+  await page.goto('/plan/cooking-night');
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await page.getByRole('button', { name: 'Continue with Apple' }).click();
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
 });
 
 test('a failed RSVP is reported, holds no spot, and can be retried', async ({ page }) => {
-  await signInWithEmail(page, '/plans/cooking-night');
+  await signInWithEmail(page, '/plan/cooking-night');
   await page.evaluate(() => (globalThis as FixtureWindow).__pcFixtures?.failNext('joinPlan'));
   await page.getByRole('button', { name: 'Join', exact: true }).click();
 
@@ -98,12 +98,6 @@ test('a failed RSVP is reported, holds no spot, and can be retried', async ({ pa
   await alert.getByRole('button', { name: 'Retry' }).click();
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
   await expect(page.getByRole('alert')).toHaveCount(0);
-});
-
-test('a full Plan cannot be joined', async ({ page }) => {
-  await signInWithEmail(page, '/plans/ramen-workshop');
-  await expect(page.getByText('All 8 spots are taken')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Full' })).toBeDisabled();
 });
 
 test('Home shows an error with a working retry when loading fails', async ({ page }) => {
@@ -120,7 +114,7 @@ test('Home shows an error with a working retry when loading fails', async ({ pag
 });
 
 test('an unknown Plan shows a clear dead end with a next step', async ({ page }) => {
-  await page.goto('/plans/does-not-exist');
+  await page.goto('/plan/does-not-exist');
   await expect(page.getByRole('heading', { name: 'This Plan isn’t available' })).toBeVisible();
   await page.getByRole('button', { name: 'Back to Home' }).click();
   await expect(page).toHaveURL(/\/home$/);

@@ -18,7 +18,9 @@
 
 create type public.plan_category as enum ('cooking_class', 'potluck', 'social', 'online_class');
 create type public.plan_status as enum ('published', 'cancelled');
-create type public.rsvp_status as enum ('going', 'cancelled');
+-- going: holds a spot · waitlisted: in line · offered: a freed spot is held for them until
+-- offer_expires_at · expired: the offer ran out · cancelled: left (also: declined an offer)
+create type public.rsvp_status as enum ('going', 'waitlisted', 'offered', 'cancelled', 'expired');
 
 -- ------------------------------------------------------------------ cities
 create table public.cities (
@@ -148,12 +150,16 @@ create table public.rsvps (
   plan_id uuid not null references public.plans (id) on delete cascade,
   user_id uuid not null references public.profiles (id) on delete cascade,
   status public.rsvp_status not null,
+  -- Position in line is (joined_at, user_id); reset when someone re-joins.
   joined_at timestamptz not null default now(),
+  offer_expires_at timestamptz,
   updated_at timestamptz not null default now(),
-  primary key (plan_id, user_id)
+  primary key (plan_id, user_id),
+  check ((status = 'offered') = (offer_expires_at is not null))
 );
 
 create index rsvps_user_idx on public.rsvps (user_id, status);
+create index rsvps_queue_idx on public.rsvps (plan_id, status, joined_at);
 
 alter table public.rsvps enable row level security;
 revoke all on public.rsvps from anon, authenticated;
@@ -269,7 +275,18 @@ select
   ) as attendee_initials,
   (select coalesce(sum(greatest(
       i.quantity - (select count(*) from public.bring_claims c where c.item_id = i.id), 0)), 0)::int
-    from public.bring_items i where i.plan_id = p.id) as open_bring_slots
+    from public.bring_items i where i.plan_id = p.id) as open_bring_slots,
+  -- People in line (waiting, or holding an offer).
+  (select count(*)::int from public.rsvps r
+    where r.plan_id = p.id and r.status in ('waitlisted', 'offered')) as waitlist_count,
+  -- True when a spot can be taken directly: one is free and nobody is in line.
+  (
+    (select count(*) from public.rsvps r
+      where r.plan_id = p.id and r.status in ('going', 'offered')) < p.capacity
+    and not exists (
+      select 1 from public.rsvps r
+      where r.plan_id = p.id and r.status in ('waitlisted', 'offered'))
+  ) as has_open_spot
 from public.plans p
 join public.profiles h on h.id = p.host_id
 join public.cities c on c.id = p.city_id

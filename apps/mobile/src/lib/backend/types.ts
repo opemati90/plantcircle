@@ -31,6 +31,8 @@ export const planCardSchema = z.object({
   going_count: z.number().int(),
   attendee_initials: z.array(z.string()),
   open_bring_slots: z.number().int(),
+  waitlist_count: z.number().int(),
+  has_open_spot: z.boolean(),
 });
 
 export interface Plan {
@@ -61,6 +63,10 @@ export interface Plan {
   goingCount: number;
   attendeeInitials: string[];
   openBringSlots: number;
+  /** People in line (waiting, or holding an offer). */
+  waitlistCount: number;
+  /** A spot can be taken directly: one is free and nobody is in line. */
+  hasOpenSpot: boolean;
 }
 
 export function toPlan(row: z.infer<typeof planCardSchema>): Plan {
@@ -91,6 +97,8 @@ export function toPlan(row: z.infer<typeof planCardSchema>): Plan {
     goingCount: row.going_count,
     attendeeInitials: row.attendee_initials,
     openBringSlots: row.open_bring_slots,
+    waitlistCount: row.waitlist_count,
+    hasOpenSpot: row.has_open_spot,
   };
 }
 
@@ -117,9 +125,25 @@ export interface BringItem {
 export interface PlanDetail {
   plan: Plan;
   bringItems: BringItem[];
-  isGoing: boolean;
+  /** The viewer's own state for this Plan. */
+  rsvp: RsvpState;
+  /** 1 = next in line. Present while waitlisted or offered. */
+  waitlistPosition: number | null;
+  /** Present while a spot is being held for the viewer. */
+  offerExpiresAt: string | null;
   /** Only present for the host, or for confirmed guests after `revealAt`. */
   address: string | null;
+}
+
+export type RsvpState = 'none' | 'going' | 'waitlisted' | 'offered';
+
+/** What happened when the viewer tried to confirm an offered spot. */
+export type OfferOutcome = 'going' | 'expired' | 'waitlisted';
+
+/** A spot currently held for the viewer. */
+export interface WaitlistOffer {
+  plan: Plan;
+  expiresAt: string;
 }
 
 export interface UpNext {

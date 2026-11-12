@@ -13,6 +13,7 @@ import {
   toPlan,
   type Plan,
   type Profile,
+  type RsvpState,
   type Session,
 } from '../types';
 
@@ -45,6 +46,18 @@ const toProfile = (row: z.infer<typeof profileRowSchema>): Profile => ({
   cityId: row.city_id,
   goals: row.goals,
 });
+
+const myRsvpSchema = z.object({
+  status: z.string(),
+  offer_expires_at: z.string().nullable(),
+  waitlist_position: z.number().int().nullable(),
+});
+
+function toRsvpState(status: string | undefined): RsvpState {
+  return status === 'going' || status === 'waitlisted' || status === 'offered'
+    ? status
+    : 'none';
+}
 
 const LIST_LIMIT = 20;
 
@@ -210,12 +223,12 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       if (!card.data) throw new BackendError('not_found');
       const itemRows = parse(z.array(bringItemCardSchema), items.data);
 
-      let isGoing = false;
+      let mine: z.infer<typeof myRsvpSchema> | null = null;
       let address: string | null = null;
       let myItemIds = new Set<string>();
       if (userId) {
         const [rsvp, secret, claims] = await Promise.all([
-          client.from('rsvps').select('status').eq('plan_id', planId).maybeSingle(),
+          client.from('my_rsvps').select('*').eq('plan_id', planId).maybeSingle(),
           // RLS returns no row unless this member is allowed to see the address.
           client.from('plan_private').select('address').eq('plan_id', planId).maybeSingle(),
           client
@@ -229,8 +242,7 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         if (rsvp.error) throw toBackendError(rsvp.error);
         if (secret.error) throw toBackendError(secret.error);
         if (claims.error) throw toBackendError(claims.error);
-        isGoing =
-          parse(z.object({ status: z.string() }).nullable(), rsvp.data)?.status === 'going';
+        mine = parse(myRsvpSchema.nullable(), rsvp.data);
         address =
           parse(z.object({ address: z.string() }).nullable(), secret.data)?.address ?? null;
         myItemIds = new Set(
@@ -248,7 +260,9 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
           claimedBy: item.claimed_by,
           claimedByMe: myItemIds.has(item.id),
         })),
-        isGoing,
+        rsvp: toRsvpState(mine?.status),
+        waitlistPosition: mine?.waitlist_position ?? null,
+        offerExpiresAt: mine?.offer_expires_at ?? null,
         address,
       };
     },
@@ -290,6 +304,50 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     joinPlan: (planId, key) => rpc('join_plan', { p_plan_id: planId, p_idempotency_key: key }),
     cancelRsvp: (planId, key) =>
       rpc('cancel_rsvp', { p_plan_id: planId, p_idempotency_key: key }),
+    joinWaitlist: (planId, key) =>
+      rpc('join_waitlist', { p_plan_id: planId, p_idempotency_key: key }),
+
+    async confirmWaitlistOffer(planId, key) {
+      const result = await client.rpc('confirm_waitlist_offer', {
+        p_plan_id: planId,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+      const outcome: unknown = result.data;
+      return parse(z.object({ status: z.enum(['going', 'expired', 'waitlisted']) }), outcome)
+        .status;
+    },
+
+    async getWaitlistOffers() {
+      const offers = await client
+        .from('my_rsvps')
+        .select('plan_id, offer_expires_at')
+        .eq('status', 'offered')
+        .order('offer_expires_at')
+        .limit(20);
+      if (offers.error) throw toBackendError(offers.error);
+      const rows = parse(
+        z.array(z.object({ plan_id: z.string(), offer_expires_at: z.string() })),
+        offers.data,
+      );
+      if (rows.length === 0) return [];
+
+      const cards = await client
+        .from('plan_cards')
+        .select('*')
+        .in(
+          'id',
+          rows.map((row) => row.plan_id),
+        );
+      if (cards.error) throw toBackendError(cards.error);
+      const plans = new Map(
+        parse(z.array(planCardSchema), cards.data).map((card) => [card.id, toPlan(card)]),
+      );
+      return rows.flatMap((row) => {
+        const plan = plans.get(row.plan_id);
+        return plan ? [{ plan, expiresAt: row.offer_expires_at }] : [];
+      });
+    },
     claimBringItem: (itemId, key) =>
       rpc('claim_bring_item', { p_item_id: itemId, p_idempotency_key: key }),
   };

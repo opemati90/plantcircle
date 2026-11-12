@@ -74,7 +74,7 @@ export default function SignUpScreen() {
             label={t('common.back')}
             onPress={() => {
               if (router.canGoBack()) router.back();
-              else router.replace('/');
+              else router.replace('/welcome');
             }}
           >
             <ChevronLeftIcon strokeWidth={2.2} />

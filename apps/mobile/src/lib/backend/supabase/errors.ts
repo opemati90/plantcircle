@@ -9,6 +9,7 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   plan_ended: 'plan_ended',
   item_taken: 'item_taken',
   rsvp_required: 'rsvp_required',
+  no_offer: 'no_offer',
 };
 
 interface ErrorLike {

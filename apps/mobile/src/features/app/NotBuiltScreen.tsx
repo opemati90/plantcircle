@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/parts';
-import { TabBar } from '../../components/TabBar';
 import { color, type } from '../../components/theme';
 import { useBackend } from '../../lib/backend/BackendProvider';
 import { useAuth } from '../auth/useAuth';
@@ -54,7 +53,6 @@ export function NotBuiltScreen({ area, signOut }: { area: Area; signOut?: boolea
           </>
         }
       />
-      <TabBar />
     </View>
   );
 }

@@ -22,19 +22,48 @@ interface State {
   profile: Profile | null;
   goingPlanIds: string[];
   claimedItemIds: string[];
+  /** The viewer's place in line per Plan; `expiresAt` is set while a spot is offered. */
+  waitlist: Record<string, { expiresAt: string | null }>;
+  /** Plans where another guest cancelled (test hook), freeing one spot. */
+  freedPlanIds: string[];
 }
 
-type Operation = 'listPlans' | 'getPlan' | 'joinPlan' | 'cancelRsvp' | 'claimBringItem';
+type Operation =
+  | 'listPlans'
+  | 'getPlan'
+  | 'joinPlan'
+  | 'cancelRsvp'
+  | 'claimBringItem'
+  | 'joinWaitlist'
+  | 'confirmOffer';
+
+const OFFER_MS = 2 * 3_600_000;
 
 interface FixtureHooks {
   /** Test hook: make the next call to `operation` fail as a network error. */
-  __pcFixtures?: { failNext: (operation: Operation, times?: number) => void };
+  __pcFixtures?: {
+    failNext: (operation: Operation, times?: number) => void;
+    /** Test hook: another guest cancels; the viewer (if in line) is offered the spot. */
+    freeSpot: (planId: string, offerMs?: number) => void;
+  };
   /** Test hook: failures to simulate from the very first call after load. */
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
 }
 const hooks = globalThis as FixtureHooks;
 
-const EMPTY: State = { session: null, profile: null, goingPlanIds: [], claimedItemIds: [] };
+const EMPTY: State = {
+  session: null,
+  profile: null,
+  goingPlanIds: [],
+  claimedItemIds: [],
+  waitlist: {},
+  freedPlanIds: [],
+};
+
+function removeOne(list: string[], value: string): string[] {
+  const index = list.indexOf(value);
+  return index < 0 ? list : [...list.slice(0, index), ...list.slice(index + 1)];
+}
 
 async function loadState(): Promise<State> {
   try {
@@ -58,6 +87,19 @@ export async function createFixtureBackend(): Promise<Backend> {
   hooks.__pcFixtures = {
     failNext: (operation, times = 1) => {
       failures.set(operation, times);
+    },
+    freeSpot: (planId, offerMs = OFFER_MS) => {
+      const inLine = planId in state.waitlist;
+      commit({
+        ...state,
+        freedPlanIds: [...state.freedPlanIds, planId],
+        waitlist: inLine
+          ? {
+              ...state.waitlist,
+              [planId]: { expiresAt: new Date(Date.now() + offerMs).toISOString() },
+            }
+          : state.waitlist,
+      });
     },
   };
 
@@ -91,14 +133,32 @@ export async function createFixtureBackend(): Promise<Backend> {
     return false;
   }
 
+  function withoutEntry(planId: string): State['waitlist'] {
+    return Object.fromEntries(Object.entries(state.waitlist).filter(([id]) => id !== planId));
+  }
+
+  /** The viewer's entry, or null once an offer has run out (as the server would report). */
+  function liveEntry(planId: string): { expiresAt: string | null } | null {
+    const entry = state.waitlist[planId];
+    if (!entry) return null;
+    if (entry.expiresAt && new Date(entry.expiresAt).getTime() <= Date.now()) return null;
+    return entry;
+  }
+
   const myName = () => state.profile?.displayName ?? 'You';
 
   function plans(now = new Date()): Plan[] {
-    return fixturePlans(now).map((plan) =>
-      state.goingPlanIds.includes(plan.id)
-        ? { ...plan, goingCount: plan.goingCount + 1 }
-        : plan,
-    );
+    return fixturePlans(now).map((plan) => {
+      const freed = state.freedPlanIds.filter((id) => id === plan.id).length;
+      const going = plan.goingCount - freed + (state.goingPlanIds.includes(plan.id) ? 1 : 0);
+      const waitlistCount = plan.waitlistCount + (plan.id in state.waitlist ? 1 : 0);
+      return {
+        ...plan,
+        goingCount: going,
+        waitlistCount,
+        hasOpenSpot: going < plan.capacity && waitlistCount === 0,
+      };
+    });
   }
 
   function findPlan(planId: string): Plan {
@@ -182,10 +242,14 @@ export async function createFixtureBackend(): Promise<Backend> {
       await call('getPlan');
       const plan = findPlan(planId);
       const isGoing = state.goingPlanIds.includes(planId);
+      const entry = liveEntry(planId);
       const revealed = Date.now() >= new Date(plan.revealAt).getTime();
       return {
         plan,
-        isGoing,
+        rsvp: isGoing ? 'going' : entry ? (entry.expiresAt ? 'offered' : 'waitlisted') : 'none',
+        // The viewer joined after the people already in the sample data.
+        waitlistPosition: entry ? plan.waitlistCount : null,
+        offerExpiresAt: entry?.expiresAt ?? null,
         address: isGoing && revealed ? (fixtureAddresses[planId] ?? null) : null,
         bringItems: fixtureBringItems
           .filter((item) => item.planId === planId)
@@ -225,7 +289,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireSession();
       if (replayed(key) || state.goingPlanIds.includes(planId)) return;
       const plan = findPlan(planId);
-      if (plan.goingCount >= plan.capacity) throw new BackendError('plan_full');
+      if (!plan.hasOpenSpot) throw new BackendError('plan_full');
       commit({ ...state, goingPlanIds: [...state.goingPlanIds, planId] });
     },
 
@@ -240,6 +304,50 @@ export async function createFixtureBackend(): Promise<Backend> {
         ...state,
         goingPlanIds: state.goingPlanIds.filter((id) => id !== planId),
         claimedItemIds: state.claimedItemIds.filter((id) => !planItemIds.includes(id)),
+        waitlist: withoutEntry(planId),
+      });
+    },
+
+    async joinWaitlist(planId, key) {
+      await call('joinWaitlist');
+      requireSession();
+      findPlan(planId);
+      if (replayed(key) || planId in state.waitlist || state.goingPlanIds.includes(planId))
+        return;
+      commit({ ...state, waitlist: { ...state.waitlist, [planId]: { expiresAt: null } } });
+    },
+
+    async confirmWaitlistOffer(planId, key) {
+      await call('confirmOffer');
+      requireSession();
+      if (state.goingPlanIds.includes(planId)) return 'going';
+      const entry = state.waitlist[planId];
+      if (!entry) throw new BackendError('no_offer');
+      if (replayed(key)) return 'going';
+      if (!entry.expiresAt) return 'waitlisted';
+      if (new Date(entry.expiresAt).getTime() <= Date.now()) {
+        // Expired: the spot passes to the next person and the viewer leaves the line.
+        commit({
+          ...state,
+          waitlist: withoutEntry(planId),
+          freedPlanIds: removeOne(state.freedPlanIds, planId),
+        });
+        return 'expired';
+      }
+      commit({
+        ...state,
+        waitlist: withoutEntry(planId),
+        goingPlanIds: [...state.goingPlanIds, planId],
+      });
+      return 'going';
+    },
+
+    async getWaitlistOffers() {
+      await call();
+      requireSession();
+      return plans().flatMap((plan) => {
+        const entry = liveEntry(plan.id);
+        return entry?.expiresAt ? [{ plan, expiresAt: entry.expiresAt }] : [];
       });
     },
 

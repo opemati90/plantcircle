@@ -13,14 +13,14 @@ import {
 } from '../../components/icons';
 import { DateTile, EmptyState, Skeleton } from '../../components/parts';
 import { Photo } from '../../components/Photo';
-import { TabBar } from '../../components/TabBar';
 import { color, extra, radius, shadow, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
-import type { Plan, UpNext } from '../../lib/backend/types';
+import type { Plan, UpNext, WaitlistOffer } from '../../lib/backend/types';
 import {
   dayOfMonth,
   dayPart,
+  localTime,
   shortWhen,
   time,
   weekdayLong,
@@ -31,7 +31,7 @@ import { useAuth } from '../auth/useAuth';
 import { getOnboarding } from '../onboarding/onboardingStore';
 import { categoryLabel, priceLabel, spotsLeftShort } from '../plans/planCopy';
 import { imageFocus, planImage } from '../plans/planImage';
-import { useCities, usePlansThisWeek, useUpNext } from '../plans/queries';
+import { useCities, usePlansThisWeek, useUpNext, useWaitlistOffers } from '../plans/queries';
 import { filterPlans, HOME_FILTERS, type HomeFilter } from './homeFilters';
 
 const SCRIM = {
@@ -66,6 +66,24 @@ function UpNextCard({ plan, needsDish, onPress }: UpNext & { onPress: () => void
         </Text>
       </View>
       <ChevronRightIcon size={16} strokeWidth={2.4} color={color.borderControl} />
+    </Pressable>
+  );
+}
+
+/** A spot is being held for the person: the most time-critical thing on Home. */
+function OfferCard({ plan, expiresAt, onPress }: WaitlistOffer & { onPress: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <Pressable accessibilityRole="link" onPress={onPress} style={[styles.upNext, styles.offer]}>
+      <DateTile iso={plan.startsAt} timeZone={plan.timezone} />
+      <View style={styles.upNextText}>
+        <Text style={[type(13, 'bold', { color: color.brand, tracking: 0.5 }), styles.upper]}>
+          {t('offer.homeLabel', { time: localTime(expiresAt) })}
+        </Text>
+        <Text style={type(16, 'semibold', { tracking: -0.3 })}>{plan.title}</Text>
+        <Text style={type(14, 'regular', { color: color.secondary })}>{plan.areaName}</Text>
+      </View>
+      <ChevronRightIcon size={16} strokeWidth={2.4} color={color.brand} />
     </Pressable>
   );
 }
@@ -192,17 +210,17 @@ export default function HomeScreen() {
   const cityName = cities.data?.find((city) => city.id === cityId)?.name ?? null;
   const plans = usePlansThisWeek(cityId);
   const upNext = useUpNext();
+  const offers = useWaitlistOffers();
   const [filter, setFilter] = useState<HomeFilter>('forYou');
   const { t } = useTranslation();
   const openPlan = (plan: Plan) => {
-    router.push({ pathname: '/plans/[planId]', params: { planId: plan.id } });
+    router.push({ pathname: '/plan/[id]', params: { id: plan.id } });
   };
 
   if (plans.isPending) {
     return (
       <View style={styles.screen}>
         <HomeSkeleton top={insets.top} />
-        <TabBar />
       </View>
     );
   }
@@ -264,7 +282,7 @@ export default function HomeScreen() {
             <Pressable
               accessibilityRole="link"
               onPress={() => {
-                router.push('/signup');
+                router.push('/sign-up');
               }}
               style={styles.chip}
             >
@@ -289,6 +307,19 @@ export default function HomeScreen() {
             {cityName ? t('home.titleCity', { city: cityName }) : t('home.title')}
           </Text>
         </View>
+
+        {offers.data?.map((offer) => (
+          <OfferCard
+            key={offer.plan.id}
+            {...offer}
+            onPress={() => {
+              router.push({
+                pathname: '/plan/[id]/waitlist-offer',
+                params: { id: offer.plan.id },
+              });
+            }}
+          />
+        ))}
 
         {upNext.data ? (
           <UpNextCard
@@ -395,7 +426,6 @@ export default function HomeScreen() {
       >
         <PlusIcon size={22} strokeWidth={2.4} color="#FFFFFF" />
       </Pressable>
-      <TabBar />
     </View>
   );
 }
@@ -441,6 +471,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   upNextText: { flex: 1, gap: 3 },
+  offer: { borderColor: color.brand, backgroundColor: color.brandTint },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   filter: {
     minHeight: 44,

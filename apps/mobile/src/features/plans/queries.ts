@@ -52,6 +52,17 @@ export function useUpNext() {
   });
 }
 
+/** Spots currently held for the signed-in person. */
+export function useWaitlistOffers() {
+  const backend = useBackend();
+  const { session } = useAuth();
+  return useQuery({
+    queryKey: ['offers', session?.userId ?? null],
+    queryFn: () => backend.getWaitlistOffers(),
+    enabled: Boolean(session),
+  });
+}
+
 /** One key per user action; pass the same key again to retry that action safely. */
 export const newIdempotencyKey = (): string => randomUUID();
 
@@ -62,7 +73,7 @@ export function useRsvpMutations(planId: string) {
   const options = {
     onSettled: () =>
       Promise.all(
-        ['plan', 'plans', 'upNext'].map((key) =>
+        ['plan', 'plans', 'upNext', 'offers'].map((key) =>
           queryClient.invalidateQueries({ queryKey: [key] }),
         ),
       ),
@@ -74,6 +85,14 @@ export function useRsvpMutations(planId: string) {
     }),
     cancel: useMutation({
       mutationFn: (key: string) => backend.cancelRsvp(planId, key),
+      ...options,
+    }),
+    joinWaitlist: useMutation({
+      mutationFn: (key: string) => backend.joinWaitlist(planId, key),
+      ...options,
+    }),
+    confirmOffer: useMutation({
+      mutationFn: (key: string) => backend.confirmWaitlistOffer(planId, key),
       ...options,
     }),
     claim: useMutation({

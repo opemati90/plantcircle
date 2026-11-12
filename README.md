@@ -54,18 +54,19 @@ Welcome → what brings you here → choose a city (or skip) → Home → Plan �
 (Apple / Google / 6-digit email code) → the Join that triggered sign-up is resumed →
 bring something → cancel.
 
-| #   | Behaviour                                                                                                                                     | Verified by                                             |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| 1   | Browse Home and a Plan without an account; sign up only at the first Join, then resume it                                                     | `e2e/journey.spec.ts`                                   |
-| 2   | Cities are data; nothing is preselected; skipping shows Plans everywhere                                                                      | `e2e/journey.spec.ts`, `supabase/tests`                 |
-| 3   | Capacity can never be exceeded; joins, cancels and claims run in one transaction                                                              | `supabase/tests`                                        |
-| 4   | Every mutating RPC takes an idempotency key and replays the stored response                                                                   | `supabase/tests`                                        |
-| 5   | Exact address readable only by the host, or by confirmed guests after `reveal_at`                                                             | `supabase/tests`                                        |
-| 6   | Members cannot read each other's profiles, RSVPs or policy acceptances                                                                        | `supabase/tests`                                        |
-| 7   | A failed RSVP says so, holds no spot, and Retry re-sends the same key                                                                         | `e2e/journey.spec.ts`                                   |
-| 8   | Unconfirmed allergens are never shown as "none" or "safe"                                                                                     | `planCopy.test.ts`                                      |
-| 9   | English and German from one code path; device language by default, changeable on the welcome screen and remembered; dates follow the language | `e2e/i18n.spec.ts`, `catalogs.test.ts`, `dates.test.ts` |
-| 10  | No automatically detectable WCAG A/AA/AAA-contrast violations on these screens                                                                | `e2e/a11y.spec.ts`                                      |
+| #   | Behaviour                                                                                                                                                                                                                       | Verified by                                               |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 1   | Browse Home and a Plan without an account; sign up only at the first Join, then resume it                                                                                                                                       | `e2e/journey.spec.ts`                                     |
+| 2   | Cities are data; nothing is preselected; skipping shows Plans everywhere                                                                                                                                                        | `e2e/journey.spec.ts`, `supabase/tests`                   |
+| 3   | Capacity can never be exceeded; joins, cancels and claims run in one transaction                                                                                                                                                | `supabase/tests`                                          |
+| 4   | Every mutating RPC takes an idempotency key and replays the stored response                                                                                                                                                     | `supabase/tests`                                          |
+| 5   | Exact address readable only by the host, or by confirmed guests after `reveal_at`                                                                                                                                               | `supabase/tests`                                          |
+| 6   | Members cannot read each other's profiles, RSVPs or policy acceptances                                                                                                                                                          | `supabase/tests`                                          |
+| 7   | A failed RSVP says so, holds no spot, and Retry re-sends the same key                                                                                                                                                           | `e2e/journey.spec.ts`                                     |
+| 8   | Unconfirmed allergens are never shown as "none" or "safe"                                                                                                                                                                       | `planCopy.test.ts`                                        |
+| 9   | English and German from one code path; device language by default, changeable on the welcome screen and remembered; dates follow the language                                                                                   | `e2e/i18n.spec.ts`, `catalogs.test.ts`, `dates.test.ts`   |
+| 10  | Waitlist: first in, first out; a freed spot is offered to the first person for 2 hours, then passes on; inside the last 6 hours it is offered to everyone and the first to confirm wins; confirmed guests never exceed capacity | `supabase/tests/waitlist.test.ts`, `e2e/waitlist.spec.ts` |
+| 11  | No automatically detectable WCAG A/AA/AAA-contrast violations on these screens                                                                                                                                                  | `e2e/a11y.spec.ts`                                        |
 
 ## How it was verified — and what was not
 
@@ -100,17 +101,18 @@ Nothing is sent to analytics yet.
 
 ## Deviations from the prototype
 
-| Where             | Prototype                                            | Built                                                   | Why                                                                                  |
-| ----------------- | ---------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Welcome           | "…plant-based people in Berlin."                     | "…near you."                                            | Rule 1: never hard-code a city                                                       |
-| City step         | One row "Berlin" with a chevron                      | Radio list of cities from the backend, none preselected | The picker behind the chevron was not in the files provided                          |
-| Home (signed out) | Bell + avatar                                        | "Sign in" chip                                          | Prototype only shows the signed-in header                                            |
-| Home              | City chevron, invitation dot, Save, group-order card | Omitted                                                 | Those features are not built                                                         |
-| Plan              | Share, Add to calendar, Message host, footprint chip | Omitted                                                 | Share needs the public web page; calendar and messaging not built; footprint is v1.1 |
-| Plan              | Tapping "You're going" cancels                       | Confirmation sheet first                                | Prevents losing a spot by accident                                                   |
-| Plan (full)       | Join waitlist                                        | Disabled "Full"                                         | Waitlist needs `docs/07-state-machines.md`                                           |
-| Sign up           | Field border `#E5E5EA`; Terms/Privacy/Under-18 links | `borderControl` token; plain text                       | Control boundary contrast; documents and age screen not built                        |
-| Verify email      | "Open mail app"                                      | Omitted                                                 | Not built                                                                            |
+| Where             | Prototype                                                                                            | Built                                                               | Why                                                                                  |
+| ----------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Welcome           | "…plant-based people in Berlin."                                                                     | "…near you."                                                        | Rule 1: never hard-code a city                                                       |
+| City step         | One row "Berlin" with a chevron                                                                      | Radio list of cities from the backend, none preselected             | The picker behind the chevron was not in the files provided                          |
+| Home (signed out) | Bell + avatar                                                                                        | "Sign in" chip                                                      | Prototype only shows the signed-in header                                            |
+| Home              | City chevron, invitation dot, Save, group-order card                                                 | Omitted                                                             | Those features are not built                                                         |
+| Plan              | Share, Add to calendar, Message host, footprint chip                                                 | Omitted                                                             | Share needs the public web page; calendar and messaging not built; footprint is v1.1 |
+| Plan              | Tapping "You're going" cancels                                                                       | Confirmation sheet first                                            | Prevents losing a spot by accident                                                   |
+| Waitlist          | “We’ll tell you by notification and email the moment it’s your turn”; “You’re 4th · we’ll alert you” | Those promises are left out; an offer shows on Home and on the Plan | Notifications and email are not built, so the app must not promise them              |
+| Waitlist offer    | “Confirm my spot” → My Plans                                                                         | → the Plan                                                          | My Plans is not built                                                                |
+| Sign up           | Field border `#E5E5EA`; Terms/Privacy/Under-18 links                                                 | `borderControl` token; plain text                                   | Control boundary contrast; documents and age screen not built                        |
+| Verify email      | "Open mail app"                                                                                      | Omitted                                                             | Not built                                                                            |
 
 ## Open questions introduced by this work
 
@@ -134,15 +136,28 @@ To merge into `docs/16-open-questions.md` when it is added to the repository:
 
 Of the 60 v1 screens in `docs/01-mvp-scope.md`, these are implemented: Welcome & onboarding,
 Home, Loading skeleton, Plan detail & RSVP (with sign-up sheet), RSVP failed, Create account,
-Verify email, and the server-error layout. Explore, My Plans, Inbox, Profile and Start a Plan
+Verify email, Plan full → waitlist, Waitlist spot offered, and the server-error layout.
+Routes follow the map in `docs/04-screens.md`. Explore, My Plans, Inbox, Profile and Start a Plan
 are honest "isn't built yet" screens. Everything else in v1 is not started, including the
 items `CLAUDE.md` calls non-negotiable for launch: report/block and the staff console,
-waitlist, offline cache, notifications, web RSVP.
+offline cache, notifications, web RSVP.
+
+## Waitlist: what it still needs before launch
+
+- **A scheduler.** Overdue offers are expired whenever anyone touches the Plan, so an expired
+  offer can never be confirmed. But passing the spot on _promptly_ needs
+  `select public.expire_waitlist_offers();` run every minute with the service role (pg_cron or
+  a scheduled Edge Function). That job is not set up.
+- **Notifications.** Nobody is told when a spot is offered to them; they only see it on Home or
+  on the Plan if they open the app within the 2 hours. Push and email are required before the
+  waitlist is usable in practice.
+- Rules were taken from the design canvas notes and `docs/04-screens.md`;
+  `docs/07-state-machines.md` has not been provided.
 
 ## Blockers
 
-- **Missing documents.** `CLAUDE.md` refers to `docs/04`–`docs/16` and `prototype-source/`;
-  only `docs/00`–`03` and the tokens were provided. The data model, API, state machines,
+- **Missing documents.** `CLAUDE.md` refers to `docs/05`–`docs/16` and `prototype-source/`;
+  only `docs/00`–`04` and the tokens were provided. The data model, API, state machines,
   backlog order and Definition of Done are needed to build to spec.
 - **No Supabase project** (EU region) and no Apple/Google sign-in configuration.
 - **No device verification** — needs a simulator/emulator or EAS builds, and Maestro flows.

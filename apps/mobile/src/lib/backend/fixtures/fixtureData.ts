@@ -59,6 +59,8 @@ export function fixturePlans(now: Date): Plan[] {
     currency: 'EUR',
     imageFocus: null,
     hostVerified: false,
+    waitlistCount: 0,
+    hasOpenSpot: true,
   };
   return [
     {
@@ -128,6 +130,8 @@ export function fixturePlans(now: Date): Plan[] {
       hostName: 'Kenji T.',
       hostPlansCount: 3,
       goingCount: 8,
+      waitlistCount: 3,
+      hasOpenSpot: false,
       attendeeInitials: ['M', 'J', 'S'],
       openBringSlots: 0,
     },

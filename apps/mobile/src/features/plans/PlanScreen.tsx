@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, IconButton } from '../../components/Button';
 import {
   CheckIcon,
@@ -24,7 +24,7 @@ import { Photo } from '../../components/Photo';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
 import type { PlanDetail } from '../../lib/backend/types';
-import { longDate, timeRange, weekdayLong } from '../../lib/dates';
+import { localTime, longDate, timeRange, weekdayLong } from '../../lib/dates';
 import { currentLanguage } from '../../lib/i18n';
 import { ProviderButtons } from '../auth/ProviderButtons';
 import { useAuth } from '../auth/useAuth';
@@ -35,6 +35,7 @@ import {
   categoryLabel,
   goingLabel,
   isFull,
+  placeInLine,
   priceLabel,
   rsvpErrorCopy,
   spotsLabel,
@@ -43,7 +44,7 @@ import {
 import { imageFocus, planImage } from './planImage';
 import { newIdempotencyKey, usePlan, useRsvpMutations } from './queries';
 
-type SheetKind = 'signUp' | 'cancel' | null;
+type SheetKind = 'signUp' | 'cancel' | 'leave' | null;
 
 function Fact({
   lead,
@@ -86,27 +87,29 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function PlanView({ detail }: { detail: PlanDetail }) {
-  const { plan, isGoing, bringItems, address } = detail;
+  const { plan, rsvp, bringItems, address } = detail;
+  const isGoing = rsvp === 'going';
   const router = useRouter();
   const insets = useScreenInsets();
   const { session } = useAuth();
   const { t } = useTranslation();
-  const { join, cancel, claim } = useRsvpMutations(plan.id);
+  const { join, cancel, claim, joinWaitlist } = useRsvpMutations(plan.id);
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const params = useLocalSearchParams<{ join?: string }>();
   const wantsJoin = params.join === '1';
-  const full = isFull(plan) && !isGoing;
+  // No spot can be taken directly, so the way in is the waitlist.
+  const full = isFull(plan);
   const taken = Math.min(plan.goingCount, plan.capacity);
 
   // Returning from sign-up with ?join=1: finish the join the person asked for.
   useEffect(() => {
     if (!wantsJoin || !session) return;
     router.setParams({ join: undefined });
-    if (!isGoing) join.mutate(newIdempotencyKey());
-    // `join` and `router` are new objects every render; the action itself is stable.
+    if (rsvp === 'none') enter();
+    // `enter` and `router` are new every render; the action itself is stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wantsJoin, session, isGoing]);
+  }, [wantsJoin, session, rsvp]);
 
   useEffect(() => {
     if (!notice) return;
@@ -118,21 +121,34 @@ function PlanView({ detail }: { detail: PlanDetail }) {
     };
   }, [notice]);
 
+  /** Takes a spot, or a place in line when there is no spot to take. */
+  const enter = () => {
+    (full ? joinWaitlist : join).mutate(newIdempotencyKey());
+  };
   const startJoin = () => {
     if (!session) setSheet('signUp');
-    else join.mutate(newIdempotencyKey());
+    else enter();
   };
   const afterSignUp = () => {
     setSheet(null);
-    join.mutate(newIdempotencyKey());
+    enter();
   };
 
-  const failed = join.isError ? join : cancel.isError ? cancel : claim.isError ? claim : null;
+  const entering = full ? joinWaitlist : join;
+  const failed = join.isError
+    ? join
+    : joinWaitlist.isError
+      ? joinWaitlist
+      : cancel.isError
+        ? cancel
+        : claim.isError
+          ? claim
+          : null;
   const failure = failed ? errorCode(failed.error) : null;
   const failureCopy =
     failed === claim && failure === 'item_taken'
       ? { title: t('plan.error.itemTakenTitle'), detail: t('plan.error.itemTakenDetail') }
-      : failed === join && failure
+      : (failed === join || failed === joinWaitlist) && failure
         ? rsvpErrorCopy(t, failure)
         : failed
           ? { title: t('plan.error.genericTitle'), detail: t('plan.error.genericDetail') }
@@ -140,25 +156,41 @@ function PlanView({ detail }: { detail: PlanDetail }) {
   // A retry re-sends the same idempotency key, so it can never apply twice.
   const retry = () => {
     if (failed === join && join.variables) join.mutate(join.variables);
-    else if (failed === cancel && cancel.variables) cancel.mutate(cancel.variables);
+    else if (failed === joinWaitlist && joinWaitlist.variables) {
+      joinWaitlist.mutate(joinWaitlist.variables);
+    } else if (failed === cancel && cancel.variables) cancel.mutate(cancel.variables);
     else if (failed === claim) claim.mutate(claim.variables);
   };
 
-  const busy = join.isPending || cancel.isPending;
-  const barNote = join.isError
+  const busy = join.isPending || joinWaitlist.isPending || cancel.isPending;
+  const barTitle =
+    rsvp === 'offered'
+      ? t('plan.offerBarTitle')
+      : full && !isGoing
+        ? t('plan.full')
+        : priceLabel(t, plan, currentLanguage());
+  const barNote = entering.isError
     ? failure === 'network'
       ? t('plan.checkConnection')
       : t('plan.notSaved')
     : isGoing
       ? t('plan.seeYou', { day: weekdayLong(plan.startsAt, plan.timezone) })
-      : full
-        ? t('plan.noSpots')
-        : spotsLeftShort(t, plan);
+      : rsvp === 'offered' && detail.offerExpiresAt
+        ? t('plan.confirmBy', { time: localTime(detail.offerExpiresAt) })
+        : rsvp === 'waitlisted' && detail.waitlistPosition
+          ? t('plan.youAre', { place: placeInLine(t, detail.waitlistPosition) })
+          : full
+            ? t('plan.wouldBe', { place: placeInLine(t, plan.waitlistCount + 1) })
+            : spotsLeftShort(t, plan);
   const hostFirstName = plan.hostName.split(' ')[0] ?? plan.hostName;
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 170 + insets.bottom }}>
+      {/* Focusable on web so the page can be scrolled with the keyboard. */}
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 170 + insets.bottom }}
+        {...(Platform.OS === 'web' ? { tabIndex: 0 as const } : {})}
+      >
         <View style={styles.hero}>
           <Photo
             source={planImage(plan)}
@@ -232,7 +264,11 @@ function PlanView({ detail }: { detail: PlanDetail }) {
                 </View>
               }
               title={goingLabel(t, plan, isGoing)}
-              note={spotsLabel(t, plan)}
+              note={
+                plan.waitlistCount > 0
+                  ? t('plan.onWaitlist', { count: plan.waitlistCount })
+                  : spotsLabel(t, plan)
+              }
             >
               <View
                 role="img"
@@ -272,6 +308,14 @@ function PlanView({ detail }: { detail: PlanDetail }) {
               note={`${plan.hostVerified ? t('plan.verifiedHost') : t('plan.yourHost')} · ${t('plan.plansHosted', { count: plan.hostPlansCount })}`}
             />
           </View>
+
+          {full && !isGoing ? (
+            <Section title={t('plan.waitlistTitle')}>
+              <Text style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}>
+                {t('plan.waitlistText')}
+              </Text>
+            </Section>
+          ) : null}
 
           <Section title={t('plan.about')}>
             <Text style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}>
@@ -363,9 +407,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
 
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
-          <Text style={type(18, 'bold', { tracking: -0.3 })}>
-            {priceLabel(t, plan, currentLanguage())}
-          </Text>
+          <Text style={type(18, 'bold', { tracking: -0.3 })}>{barTitle}</Text>
           <Text
             accessibilityLiveRegion="polite"
             style={type(14, 'regular', { color: color.secondary })}
@@ -387,13 +429,41 @@ function PlanView({ detail }: { detail: PlanDetail }) {
               {cancel.isPending ? t('plan.cancelling') : t('plan.youreGoing')}
             </Text>
           </Pressable>
+        ) : rsvp === 'waitlisted' ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('plan.onWaitlistCta')}
+            accessibilityHint={t('plan.leaveHint')}
+            onPress={() => {
+              setSheet('leave');
+            }}
+            style={[styles.cta, styles.ctaGoing]}
+          >
+            <Text style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}>
+              {t('plan.onWaitlistCta')}
+            </Text>
+          </Pressable>
+        ) : rsvp === 'offered' ? (
+          <Button
+            label={t('plan.confirmSpot')}
+            onPress={() => {
+              router.push({ pathname: '/plan/[id]/waitlist-offer', params: { id: plan.id } });
+            }}
+            style={styles.cta}
+          />
         ) : (
           <Button
-            label={full ? t('plan.full') : join.isError ? t('common.tryAgain') : t('plan.join')}
-            disabled={full}
-            loading={join.isPending}
+            label={
+              entering.isError
+                ? t('common.tryAgain')
+                : full
+                  ? t('plan.joinWaitlist')
+                  : t('plan.join')
+            }
+            loading={entering.isPending}
             onPress={() => {
-              if (join.isError && join.variables) join.mutate(join.variables);
+              // Retrying re-sends the same idempotency key.
+              if (entering.isError && entering.variables) entering.mutate(entering.variables);
               else startJoin();
             }}
             style={styles.cta}
@@ -414,7 +484,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
           accessibilityRole="link"
           onPress={() => {
             setSheet(null);
-            router.push({ pathname: '/signup', params: { next: `/plans/${plan.id}?join=1` } });
+            router.push({ pathname: '/sign-up', params: { next: `/plan/${plan.id}?join=1` } });
           }}
           style={styles.sheetLink}
         >
@@ -452,13 +522,37 @@ function PlanView({ detail }: { detail: PlanDetail }) {
           }}
         />
       </BottomSheet>
+
+      <BottomSheet
+        open={sheet === 'leave'}
+        onClose={() => {
+          setSheet(null);
+        }}
+        title={t('plan.sheet.leaveTitle')}
+        lead={t('plan.sheet.leaveLead')}
+      >
+        <Button
+          label={t('plan.sheet.leaveConfirm')}
+          onPress={() => {
+            setSheet(null);
+            cancel.mutate(newIdempotencyKey());
+          }}
+        />
+        <Button
+          variant="ghost"
+          label={t('plan.sheet.stay')}
+          onPress={() => {
+            setSheet(null);
+          }}
+        />
+      </BottomSheet>
     </View>
   );
 }
 
 export default function PlanScreen() {
   const { t } = useTranslation();
-  const { planId } = useLocalSearchParams<{ planId: string }>();
+  const { id: planId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const plan = usePlan(planId);
   const goHome = () => {

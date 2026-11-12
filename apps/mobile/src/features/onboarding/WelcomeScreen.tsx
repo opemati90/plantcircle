@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { LANGUAGES, type Language } from '@plantcircle/copy';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -75,9 +75,8 @@ function OptionRow({
   );
 }
 
-/** First run: welcome → what brings you here → city. Steps are routes so Back works. */
-export default function WelcomeScreen() {
-  const { step } = useLocalSearchParams<{ step?: string }>();
+/** First run: welcome → what brings you here → city. Each step is its own route. */
+export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' }) {
   const router = useRouter();
   const insets = useScreenInsets();
   const { session } = useAuth();
@@ -96,7 +95,7 @@ export default function WelcomeScreen() {
     router.replace('/home');
   };
 
-  if (step !== 'goals' && step !== 'city') {
+  if (step === 'welcome') {
     return (
       <View style={styles.hero}>
         <Photo source={welcomePhoto} contentPosition={{ left: '38%', top: '50%' }} />
@@ -149,14 +148,14 @@ export default function WelcomeScreen() {
             variant="inverse"
             label={t('welcome.getStarted')}
             onPress={() => {
-              router.push({ pathname: '/', params: { step: 'goals' } });
+              router.push('/goals');
             }}
             style={styles.heroCta}
           />
           <Pressable
             accessibilityRole="link"
             onPress={() => {
-              router.push('/signup');
+              router.push('/sign-up');
             }}
             style={styles.heroLink}
           >
@@ -231,7 +230,7 @@ export default function WelcomeScreen() {
             label={t('common.continue')}
             onPress={() => {
               saveOnboarding({ goals, cityId, done: false });
-              router.push({ pathname: '/', params: { step: 'city' } });
+              router.push('/city');
             }}
           />
         </View>

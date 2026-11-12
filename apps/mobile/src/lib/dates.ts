@@ -26,6 +26,26 @@ export const weekdayLong = (iso: string, tz: string) => part(iso, tz, { weekday:
 export const time = (iso: string, tz: string) =>
   part(iso, tz, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
+/** A deadline for the viewer ("16:30"), in the viewer's own time zone. */
+export const localTime = (iso: string) =>
+  new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(new Date(iso));
+
+/** A deadline on another day ("Wed 16:30"), in the viewer's own time zone. */
+export const localWeekdayTime = (iso: string) =>
+  `${new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(iso)).replace('.', '')} ${localTime(iso)}`;
+
+/** "Wed 11 Nov" */
+export const shortDate = (iso: string, tz: string) =>
+  part(iso, tz, { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '');
+
+/** True when `iso` falls on the viewer's current calendar day. */
+export const isToday = (iso: string, now: Date) =>
+  new Date(iso).toDateString() === now.toDateString();
+
 /** "Saturday, 7 November" */
 export function longDate(iso: string, tz: string): string {
   return `${weekdayLong(iso, tz)}, ${part(iso, tz, { day: 'numeric', month: 'long' })}`;
