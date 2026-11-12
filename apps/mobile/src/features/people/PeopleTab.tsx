@@ -69,6 +69,13 @@ export function PeopleTab() {
 
   return (
     <View style={styles.list}>
+      <Button
+        variant="outline"
+        label={t('direct.requestsButton')}
+        onPress={() => {
+          router.push('/messages/requests');
+        }}
+      />
       <Text style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}>
         {t('people.lead')}
       </Text>
@@ -117,6 +124,14 @@ export function PeopleTab() {
                   : t('people.requested')}
               </Text>
             )}
+            <Button
+              variant="outline"
+              label={t('direct.messageButton')}
+              accessibilityLabel={`${t('direct.messageButton')} ${person.displayName}`}
+              onPress={() => {
+                router.push({ pathname: '/chat/direct/[id]', params: { id: person.userId } });
+              }}
+            />
           </View>
         ))
       )}

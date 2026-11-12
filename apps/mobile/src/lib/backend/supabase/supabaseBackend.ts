@@ -16,7 +16,9 @@ import {
   toCircleRequest,
   guestRowSchema,
   messageCardSchema,
+  messageRequestCardSchema,
   personRowSchema,
+  toDirectRequest,
   toChatMessage,
   recipeCardSchema,
   toGuest,
@@ -53,6 +55,10 @@ const profileRowSchema = z.object({
   city_id: z.string().nullable(),
   goals: z.array(z.string()),
   people_visible: z.boolean(),
+});
+const settingsRowSchema = z.object({
+  muted_until: z.string().nullable(),
+  pinned_at: z.string().nullable(),
 });
 const PROFILE_COLUMNS = 'display_name, city_id, goals, people_visible';
 
@@ -504,6 +510,72 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         p_conversation_id: conversationId,
         p_body: body,
         p_client_id: clientId,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async requestDirect(userId, firstMessage, clientId) {
+      const result = await client.rpc('dm_request', {
+        p_to: userId,
+        p_first_message: firstMessage,
+        p_client_id: clientId,
+      });
+      if (result.error) throw toBackendError(result.error);
+      return parse(
+        z.object({
+          status: z.enum(['pending', 'accepted', 'declined']),
+          conversation_id: z.string().optional(),
+        }),
+        result.data,
+      );
+    },
+
+    async listDirectRequests() {
+      const { data, error } = await client
+        .from('message_request_cards')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw toBackendError(error);
+      return parse(z.array(messageRequestCardSchema), data).map(toDirectRequest);
+    },
+
+    async respondDirectRequest(requestId, accept) {
+      const result = await client.rpc('dm_request_respond', {
+        p_request_id: requestId,
+        p_accept: accept,
+      });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.object({ status: z.enum(['accepted', 'declined']) }), result.data).status;
+    },
+
+    async getConversationSettings(conversationId) {
+      const userId = await requireUserId();
+      const response: { data: unknown; error: ErrorLike | null } = await client
+        .from('conversation_settings')
+        .select('muted_until, pinned_at')
+        .eq('conversation_id', conversationId)
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (response.error) throw toBackendError(response.error);
+      const row = parse(settingsRowSchema.nullable(), response.data);
+      return {
+        mutedUntil: row?.muted_until ?? null,
+        pinned: Boolean(row?.pinned_at),
+      };
+    },
+
+    async setMutedUntil(conversationId, until) {
+      const result = await client.rpc('conversation_mute', {
+        p_conversation_id: conversationId,
+        p_until: until,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async setPinned(conversationId, pinned) {
+      const result = await client.rpc('conversation_pin', {
+        p_conversation_id: conversationId,
+        p_pinned: pinned,
       });
       if (result.error) throw toBackendError(result.error);
     },

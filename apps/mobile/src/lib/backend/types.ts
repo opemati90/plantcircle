@@ -513,6 +513,37 @@ export const toChatMessage = (row: z.infer<typeof messageCardSchema>): ChatMessa
   createdAt: row.created_at,
 });
 
+export const messageRequestCardSchema = z.object({
+  id: z.string(),
+  from_id: z.string(),
+  from_name: z.string(),
+  first_message: z.string(),
+  created_at: z.string(),
+});
+
+/** A first-message request from someone who shares a Circle with you. */
+export interface DirectRequest {
+  id: string;
+  fromId: string;
+  fromName: string;
+  firstMessage: string;
+  createdAt: string;
+}
+
+export const toDirectRequest = (row: z.infer<typeof messageRequestCardSchema>): DirectRequest => ({
+  id: row.id,
+  fromId: row.from_id,
+  fromName: row.from_name,
+  firstMessage: row.first_message,
+  createdAt: row.created_at,
+});
+
+/** Your own view of one conversation: muted until a time, and pinned. */
+export interface ConversationSettings {
+  mutedUntil: string | null;
+  pinned: boolean;
+}
+
 export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
   id: row.id,
   title: row.title,

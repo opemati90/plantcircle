@@ -2,8 +2,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Button, IconButton } from '../../components/Button';
-import { ChevronLeftIcon } from '../../components/icons';
+import { Button } from '../../components/Button';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { BottomSheet, EmptyState, Skeleton } from '../../components/parts';
 import { color, extra, radius, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
@@ -43,16 +43,13 @@ export default function ManageScreen() {
   const now = useNow();
 
   const back = (
-    <IconButton
-      label={t('common.back')}
-      onPress={() => {
+    <ScreenHeader
+      backLabel={t('common.back')}
+      onBack={() => {
         if (router.canGoBack()) router.back();
         else router.replace('/my-plans');
       }}
-      style={[styles.back, { top: insets.top + 8 }]}
-    >
-      <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />
-    </IconButton>
+    />
   );
 
   if (plan.isPending || summary.isPending) {
@@ -117,7 +114,7 @@ export default function ManageScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + 64, paddingBottom: 40 + insets.bottom },
+          { paddingTop: 16, paddingBottom: 40 + insets.bottom },
         ]}
       >
         <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
@@ -273,7 +270,7 @@ function Stat({ label, value }: { label: string; value: number }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   back: { position: 'absolute', left: 16, zIndex: 1 },
-  content: { paddingHorizontal: 20, gap: 12 },
+  content: { paddingHorizontal: 24, gap: 12 },
   summary: { flexDirection: 'row', gap: 10 },
   stat: {
     flex: 1,

@@ -1,4 +1,4 @@
-import type {BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, FeedbackState, Guest, HostSummary, MyPlan, MyPlansScope, OfferOutcome, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, Session, UpNext, WaitlistOffer} from './types';
+import type {BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, Guest, HostSummary, MyPlan, MyPlansScope, OfferOutcome, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, Session, UpNext, WaitlistOffer} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -18,6 +18,7 @@ export type BackendErrorCode =
   | 'plan_not_started'
   | 'item_claimed'
   | 'closed_chat'
+  | 'person_not_found'
   | 'cancelled'
   | 'invalid_response'
   | 'unknown';
@@ -91,9 +92,21 @@ export interface Backend {
   createPlan(input: PlanInput, idempotencyKey: string): Promise<string>;
 
   /** Group chats for a Plan or a Circle, for members only. */
-  openConversation(kind: 'plan' | 'circle', refId: string): Promise<string>;
+  openConversation(kind: 'plan' | 'circle' | 'direct', refId: string): Promise<string>;
   listMessages(conversationId: string): Promise<ChatMessage[]>;
   sendMessage(conversationId: string, body: string, clientId: string): Promise<void>;
+  /** A first message to someone who shares a Circle with you. The answer may be a conversation. */
+  requestDirect(
+    userId: string,
+    firstMessage: string,
+    clientId: string,
+  ): Promise<{ status: 'pending' | 'accepted' | 'declined'; conversationId?: string }>;
+  listDirectRequests(): Promise<DirectRequest[]>;
+  respondDirectRequest(requestId: string, accept: boolean): Promise<'accepted' | 'declined'>;
+  getConversationSettings(conversationId: string): Promise<ConversationSettings>;
+  /** Mute until a time, or unmute with null. */
+  setMutedUntil(conversationId: string, until: string | null): Promise<void>;
+  setPinned(conversationId: string, pinned: boolean): Promise<void>;
 
   /** Hosting. Only the host of the Plan can call these; the database refuses anyone else. */
   listGuests(planId: string): Promise<Guest[]>;

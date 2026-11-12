@@ -68,6 +68,14 @@ interface State {
   /** Bring items the host added or changed in this session (the sample items are read-only). */
   bringCreated: FixtureBringItem[];
   /** Group chat messages by conversation id; a client id makes a send idempotent. */
+  /** Direct conversations open with these people (their ids). */
+  directOpen: string[];
+  /** First-message requests: incoming ones from people in the viewer's Circles, and the viewer's own. */
+  directIncoming: { id: string; fromId: string; fromName: string; firstMessage: string; createdAt: string; status: 'pending' | 'accepted' | 'declined' }[];
+  /** The viewer's requests, by recipient: the first message and when it was sent. */
+  directOutgoing: Record<string, { firstMessage: string; createdAt: string; clientId: string }>;
+  /** Mute and pin per conversation, for this person. */
+  conversationSettings: Record<string, { mutedUntil: string | null; pinned: boolean }>;
   messages: Record<string, { id: string; clientId: string; senderId: string; senderName: string; body: string; createdAt: string }[]>;
   /** The viewer's feedback on Plans, by Plan id. */
   feedbackMine: Record<string, { rating: number; comment: string | null }>;
@@ -118,6 +126,19 @@ const EMPTY: State = {
   plansEnded: [],
   bringCreated: [],
   messages: {},
+  directOpen: [],
+  directIncoming: [
+    {
+      id: 'dm-mia-k',
+      fromId: 'fixture-mia-k',
+      fromName: 'Mia K.',
+      firstMessage: 'Hi, are you bringing the lentils?',
+      createdAt: '2026-11-02T10:00:00Z',
+      status: 'pending',
+    },
+  ],
+  directOutgoing: {},
+  conversationSettings: {},
   feedbackMine: {},
   idempotent: {},
 };
@@ -217,14 +238,18 @@ export async function createFixtureBackend(): Promise<Backend> {
       .split(/\s+/)
       .filter(Boolean);
 
-  /** The kind and id a fixture conversation id was made from ("conv-plan-<id>", "conv-circle-<id>"). */
-  function conversationRef(conversationId: string): { kind: 'plan' | 'circle'; refId: string } {
+  type ChatKind = 'plan' | 'circle' | 'direct';
+
+/** The kind and id a fixture conversation id was made from ("conv-plan-<id>", "conv-circle-<id>"). */
+  function conversationRef(conversationId: string): { kind: ChatKind; refId: string } {
     const [, kind, ...rest] = conversationId.split('-');
-    return { kind: kind === 'plan' ? 'plan' : 'circle', refId: rest.join('-') };
+    const parsed: ChatKind = kind === 'plan' ? 'plan' : kind === 'direct' ? 'direct' : 'circle';
+    return { kind: parsed, refId: rest.join('-') };
   }
 
   /** Who may use a group chat in the fixture: a Plan's host and people going, or a Circle's members. */
-  function chatMember(kind: 'plan' | 'circle', refId: string): boolean {
+  function chatMember(kind: ChatKind, refId: string): boolean {
+    if (kind === 'direct') return state.directOpen.includes(refId);
     if (kind === 'plan') {
       const hosted = state.plansCreated.some((p) => p.id === refId);
       return hosted || state.goingPlanIds.includes(refId);
@@ -859,6 +884,114 @@ export async function createFixtureBackend(): Promise<Backend> {
             },
           ],
         },
+      });
+    },
+
+    async requestDirect(userId, firstMessage, clientId) {
+      await call();
+      requireSession();
+      if (state.directOpen.includes(userId)) {
+        return { status: 'accepted', conversationId: `conv-direct-${userId}` };
+      }
+      // A request already made reads as pending, whatever the recipient decided (a decline is silent).
+      // A retry with the same client id, or any request already made, reads as pending.
+      if (state.directOutgoing[userId]) return { status: 'pending' };
+      if (!visiblePeople().some((p) => p.userId === userId)) throw new BackendError('person_not_found');
+      const text = firstMessage.trim();
+      if (Array.from(text).length < 1 || Array.from(text).length > 1000) {
+        throw new BackendError('invalid_input');
+      }
+      // Ten requests in a rolling 24 hours, as the database counts them.
+      const now = Date.now();
+      const sentLastDay = Object.values(state.directOutgoing).filter(
+        (r) => now - new Date(r.createdAt).getTime() < 86_400_000,
+      ).length;
+      if (sentLastDay >= 10) throw new BackendError('rate_limited');
+      commit({
+        ...state,
+        directOutgoing: {
+          ...state.directOutgoing,
+          [userId]: { firstMessage: text, createdAt: new Date(now).toISOString(), clientId },
+        },
+      });
+      return { status: 'pending' };
+    },
+
+    async listDirectRequests() {
+      await call();
+      requireSession();
+      return state.directIncoming
+        .filter((r) => r.status === 'pending')
+        .map((r) => ({
+          id: r.id,
+          fromId: r.fromId,
+          fromName: r.fromName,
+          firstMessage: r.firstMessage,
+          createdAt: r.createdAt,
+        }));
+    },
+
+    async respondDirectRequest(requestId, accept) {
+      await call();
+      requireSession();
+      const request = state.directIncoming.find((r) => r.id === requestId);
+      if (!request) throw new BackendError('not_found');
+      if (request.status !== 'pending') return request.status === 'accepted' ? 'accepted' : 'declined';
+      const conversationId = `conv-direct-${request.fromId}`;
+      const status: 'accepted' | 'declined' = accept ? 'accepted' : 'declined';
+      commit({
+        ...state,
+        directIncoming: state.directIncoming.map((r) => (r.id === requestId ? { ...r, status } : r)),
+        directOpen: accept ? [...state.directOpen, request.fromId] : state.directOpen,
+        messages: accept
+          ? {
+              ...state.messages,
+              [conversationId]: [
+                {
+                  id: `msg-${requestId}`,
+                  clientId: requestId,
+                  senderId: request.fromId,
+                  senderName: request.fromName,
+                  body: request.firstMessage,
+                  createdAt: request.createdAt,
+                },
+              ],
+            }
+          : state.messages,
+      });
+      return status;
+    },
+
+    async getConversationSettings(conversationId) {
+      await call();
+      requireSession();
+      return state.conversationSettings[conversationId] ?? { mutedUntil: null, pinned: false };
+    },
+
+    async setMutedUntil(conversationId, until) {
+      await call();
+      requireSession();
+      const { kind, refId } = conversationRef(conversationId);
+      if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
+      const current = state.conversationSettings[conversationId] ?? { mutedUntil: null, pinned: false };
+      commit({
+        ...state,
+        conversationSettings: {
+          ...state.conversationSettings,
+          [conversationId]: { ...current, mutedUntil: until },
+        },
+      });
+    },
+
+    async setPinned(conversationId, pinned) {
+      await call();
+      requireSession();
+      const { kind, refId } = conversationRef(conversationId);
+      if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
+      const current = state.conversationSettings[conversationId] ?? { mutedUntil: null, pinned: false };
+      commit({
+        ...state,
+        conversationSettings: { ...state.conversationSettings, [conversationId]: { ...current, pinned } },
       });
     },
 

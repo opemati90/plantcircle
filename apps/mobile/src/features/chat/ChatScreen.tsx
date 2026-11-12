@@ -1,9 +1,9 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from 'react-native';
-import { Button, IconButton } from '../../components/Button';
-import { ChevronLeftIcon } from '../../components/icons';
+import { Button } from '../../components/Button';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { EmptyState, InlineState, Skeleton } from '../../components/parts';
 import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
@@ -12,10 +12,20 @@ import type { ChatMessage } from '../../lib/backend/types';
 import { localTime } from '../../lib/dates';
 import { useAuth } from '../auth/useAuth';
 import { newIdempotencyKey } from '../plans/queries';
-import { useConversation, useMessages, useSendMessage } from './queries';
+import {
+  useConversation,
+  useConversationPrefs,
+  useConversationSettings,
+  useMessages,
+  useRequestDirect,
+  useSendMessage,
+} from './queries';
 
-/** A group chat for a Plan or a Circle. Members read and post; anyone else is refused by the server. */
-export function Chat({ kind, refId }: { kind: 'plan' | 'circle'; refId: string }) {
+/**
+ * A chat: a Plan's, a Circle's, or a direct one with a person. Members read and post; anyone else is
+ * refused by the server. Until a direct request is accepted there is no chat, only the request.
+ */
+export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refId: string }) {
   const { t } = useTranslation();
   const insets = useScreenInsets();
   const router = useRouter();
@@ -32,23 +42,23 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle'; refId: string }
     setClientId(newIdempotencyKey());
   }, [text]);
   const list = useRef<ScrollViewInstance>(null);
-  const lead = kind === 'plan' ? t('chat.lead') : t('chat.circleLead');
+  const lead = kind === 'plan' ? t('chat.lead') : kind === 'circle' ? t('chat.circleLead') : null;
+  const settings = useConversationSettings(conversationId);
+  const prefs = useConversationPrefs(conversationId);
+  const mutedNow = settings.data?.mutedUntil ? Date.parse(settings.data.mutedUntil) > Date.now() : false;
 
   useEffect(() => {
     list.current?.scrollToEnd({ animated: false });
   }, [messages.data?.length]);
 
   const back = (
-    <IconButton
-      label={t('common.back')}
-      onPress={() => {
+    <ScreenHeader
+      backLabel={t('common.back')}
+      onBack={() => {
         if (router.canGoBack()) router.back();
         else router.replace('/home');
       }}
-      style={[styles.back, { top: insets.top + 8 }]}
-    >
-      <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />
-    </IconButton>
+    />
   );
 
   if (session === undefined) {
@@ -60,7 +70,7 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle'; refId: string }
         {back}
         <EmptyState
           title={t('people.signedOut.title')}
-          text={lead}
+          text={lead ?? t('chat.lead')}
           actions={
             <Button
               variant="outline"
@@ -83,12 +93,23 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle'; refId: string }
   }
   if (conversation.isError) {
     const closed = errorCode(conversation.error) === 'closed_chat';
+    if (kind === 'direct' && closed) {
+      return (
+        <DirectRequest
+          userId={refId}
+          onAccepted={() => {
+            void conversation.refetch();
+          }}
+          back={back}
+        />
+      );
+    }
     return (
       <View style={styles.screen}>
         {back}
         <EmptyState
           title={closed ? t('chat.closed') : t('errors.serverTitle')}
-          text={closed ? lead : t('errors.serverText')}
+          text={closed ? (lead ?? t('chat.lead')) : t('errors.serverText')}
           actions={
             closed ? (
               <Button
@@ -137,13 +158,44 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle'; refId: string }
   return (
     <View style={styles.screen}>
       {back}
-      <View style={[styles.header, { paddingTop: insets.top + 64 }]}>
+      <View style={[styles.header, { paddingTop: 8 }]}>
         <Text accessibilityRole="header" style={type(24, 'bold', { tracking: -0.6 })}>
-          {kind === 'plan' ? t('chat.openPlan') : t('chat.openCircle')}
+          {kind === 'plan' ? t('chat.openPlan') : kind === 'circle' ? t('chat.openCircle') : t('direct.messageButton')}
         </Text>
-        <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>
-          {lead}
-        </Text>
+        {lead ? (
+          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>{lead}</Text>
+        ) : null}
+        <View style={styles.controls}>
+          <Button
+            variant="outline"
+            label={mutedNow ? t('direct.unmute') : t('direct.mute8')}
+            disabled={!settings.data || prefs.mute.isPending}
+            onPress={() => {
+              prefs.mute.mutate(mutedNow ? null : new Date(Date.now() + 8 * 3_600_000).toISOString());
+            }}
+          />
+          <Button
+            variant="outline"
+            label={settings.data?.pinned ? t('direct.unpin') : t('direct.pin')}
+            disabled={!settings.data || prefs.pin.isPending}
+            onPress={() => {
+              prefs.pin.mutate(!settings.data?.pinned);
+            }}
+          />
+        </View>
+        {settings.isError ? (
+          <View style={styles.controls}>
+            <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+              {t('direct.prefsError')}
+            </Text>
+            <Button variant="outline" label={t('common.retry')} onPress={() => void settings.refetch()} />
+          </View>
+        ) : null}
+        {prefs.mute.isError || prefs.pin.isError ? (
+          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+            {t('direct.prefsError')}
+          </Text>
+        ) : null}
       </View>
 
       <ScrollView
@@ -215,6 +267,83 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle'; refId: string }
 }
 
 /** The Plan chat, opened from a Plan's route. */
+/** The first message to someone, for a direct chat that does not exist yet. */
+function DirectRequest({
+  userId,
+  onAccepted,
+  back,
+}: {
+  userId: string;
+  onAccepted: () => void;
+  back: ReactNode;
+}) {
+  const { t } = useTranslation();
+  const insets = useScreenInsets();
+  const request = useRequestDirect(userId);
+  const [text, setText] = useState('');
+  // The request's id follows its text, so a retry of the same text is the same request.
+  const [clientId, setClientId] = useState(newIdempotencyKey);
+  useEffect(() => {
+    setClientId(newIdempotencyKey());
+  }, [text]);
+  const body = text.trim();
+  const tooLong = Array.from(body).length > 1000;
+  const answered = request.data?.status;
+  useEffect(() => {
+    if (answered === 'accepted') onAccepted();
+  }, [answered, onAccepted]);
+
+  return (
+    <View style={styles.screen}>
+      {back}
+      <View style={[styles.header, { paddingTop: 8 }]}>
+        <Text accessibilityRole="header" style={type(24, 'bold', { tracking: -0.6 })}>
+          {t('direct.messageButton')}
+        </Text>
+        <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>
+          {t('direct.requestLead')}
+        </Text>
+      </View>
+      <View style={[styles.composer, { paddingBottom: 12 + insets.bottom }]}>
+        {answered === 'pending' || answered === 'declined' ? (
+          <Text role="status" style={type(15, 'regular', { color: color.secondary })}>
+            {t('direct.requestSent')}
+          </Text>
+        ) : null}
+        {tooLong ? (
+          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+            {t('chat.tooLong')}
+          </Text>
+        ) : request.isError ? (
+          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+            {errorCode(request.error) === 'rate_limited' ? t('direct.requestLimit') : t('chat.error')}
+          </Text>
+        ) : null}
+        <View style={styles.row}>
+          <TextInput
+            accessibilityLabel={t('chat.placeholder')}
+            placeholder={t('chat.placeholder')}
+            placeholderTextColor={color.secondary}
+            value={text}
+            onChangeText={setText}
+            multiline
+            maxLength={2000}
+            style={[styles.input, type(17)]}
+          />
+          <Button
+            label={t('chat.send')}
+            disabled={body.length === 0 || tooLong || answered !== undefined}
+            loading={request.isPending}
+            onPress={() => {
+              request.mutate({ firstMessage: body, clientId });
+            }}
+          />
+        </View>
+      </View>
+    </View>
+  );
+}
+
 export function PlanChat() {
   const { id } = useLocalSearchParams<{ id: string }>();
   return <Chat kind="plan" refId={id} />;
@@ -226,10 +355,17 @@ export function CircleChat() {
   return <Chat kind="circle" refId={id} />;
 }
 
+/** The direct chat with a person, opened from People or from a request. */
+export function DirectChat() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return <Chat kind="direct" refId={id} />;
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   back: { position: 'absolute', left: 16, zIndex: 1 },
   header: { paddingHorizontal: 20, gap: 4, paddingBottom: 8 },
+  controls: { flexDirection: 'row', gap: 10, paddingTop: 6 },
   list: { flex: 1 },
   listContent: { paddingHorizontal: 20, paddingVertical: 12, gap: 10 },
   bubble: {

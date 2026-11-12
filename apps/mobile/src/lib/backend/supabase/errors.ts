@@ -30,6 +30,7 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   item_claimed: 'item_claimed',
   invalid_message: 'invalid_input',
   not_member: 'closed_chat',
+  person_not_found: 'person_not_found',
 };
 
 export interface ErrorLike {

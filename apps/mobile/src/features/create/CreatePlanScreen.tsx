@@ -2,8 +2,8 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Button, IconButton } from '../../components/Button';
-import { ChevronLeftIcon } from '../../components/icons';
+import { Button } from '../../components/Button';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { Stepper } from '../../components/Stepper';
 import { InlineState, Skeleton } from '../../components/parts';
 import { color, extra, radius, size, type } from '../../components/theme';
@@ -158,14 +158,11 @@ export default function CreatePlanScreen() {
   };
 
   const header = (
-    <View style={styles.header}>
-      <IconButton label={t('common.back')} onPress={back} style={styles.back}>
-        <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />
-      </IconButton>
-      <Text style={type(14, 'semibold', { color: color.secondary })}>
-        {t('create.stepOf', { step: index + 1, total: STEPS.length })}
-      </Text>
-    </View>
+    <ScreenHeader
+      backLabel={t('common.back')}
+      onBack={back}
+      caption={t('create.stepOf', { step: index + 1, total: STEPS.length })}
+    />
   );
 
   if (session === undefined) {
@@ -621,7 +618,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   back: {},
-  content: { paddingHorizontal: 20, paddingTop: 16, gap: 12 },
+  content: { paddingHorizontal: 24, paddingTop: 8, gap: 12 },
   title: { ...type(30, 'bold', { tracking: -0.9, leading: 1.1 }) },
   lead: { ...type(15, 'regular', { color: color.secondary, leading: 1.5 }) },
   label: { ...type(14, 'semibold', { color: color.secondary }), marginTop: 4 },
