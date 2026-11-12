@@ -23,6 +23,7 @@ import {
   fixtureRecipes,
   fixtureMeetingUrls,
   fixtureBringItems,
+  type FixtureBringItem,
   fixtureCities,
   fixturePeople,
   fixturePlans,
@@ -64,6 +65,8 @@ interface State {
   plansGuests: Record<string, { userId: string; displayName: string; state: GuestState; checkedInAt: string | null }[]>;
   /** Plans the host has ended in this session. */
   plansEnded: string[];
+  /** Bring items the host added or changed in this session (the sample items are read-only). */
+  bringCreated: FixtureBringItem[];
   /** The viewer's feedback on Plans, by Plan id. */
   feedbackMine: Record<string, { rating: number; comment: string | null }>;
   /** Keyed creations, so a retry replays the same result as the database does. */
@@ -111,6 +114,7 @@ const EMPTY: State = {
   plansSecrets: {},
   plansGuests: {},
   plansEnded: [],
+  bringCreated: [],
   feedbackMine: {},
   idempotent: {},
 };
@@ -214,6 +218,14 @@ export async function createFixtureBackend(): Promise<Backend> {
   function requireHost(planId: string): void {
     requireSession();
     if (!state.plansCreated.some((p) => p.id === planId)) throw new BackendError('forbidden');
+  }
+
+  /** Bring items change only while the Plan is live: before its scheduled end, and not ended. */
+  function requireLive(planId: string): void {
+    const plan = findPlan(planId);
+    if (state.plansEnded.includes(planId) || Date.now() >= new Date(plan.endsAt).getTime()) {
+      throw new BackendError('invalid_input');
+    }
   }
 
   /** The same window as the database: from two hours before the start to two after the end. */
@@ -851,7 +863,10 @@ export async function createFixtureBackend(): Promise<Backend> {
           : isGoing && revealed
             ? (fixtureMeetingUrls[planId] ?? null)
             : null,
-        bringItems: fixtureBringItems
+        bringItems: [
+          ...fixtureBringItems,
+          ...state.bringCreated,
+        ]
           .filter((item) => item.planId === planId)
           .map((item) => {
             const claimedByMe = state.claimedItemIds.includes(item.id);
@@ -980,10 +995,79 @@ export async function createFixtureBackend(): Promise<Backend> {
       );
     },
 
+    async addBringItem(planId, item, key) {
+      await call();
+      requireHost(planId);
+      const fingerprint = `bring_add:${planId}:${item.label.trim()}:${item.quantity}`;
+      const replayed = replayKey(key, fingerprint);
+      if (replayed) return replayed;
+      const label = item.label.trim();
+      if (Array.from(label).length < 1 || Array.from(label).length > 60) {
+        throw new BackendError('invalid_input');
+      }
+      if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 20) {
+        throw new BackendError('invalid_input');
+      }
+      requireLive(planId);
+      const id = `bring-${Date.now()}-${key.slice(0, 8)}`;
+      const created: FixtureBringItem = { id, planId, label, quantity: item.quantity, claimedBy: [] };
+      commit({
+        ...state,
+        bringCreated: [...state.bringCreated, created],
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id } },
+      });
+      return id;
+    },
+
+    async updateBringItem(itemId, item, key) {
+      await call();
+      const existing = state.bringCreated.find((b) => b.id === itemId);
+      if (!existing) throw new BackendError('not_found');
+      requireHost(existing.planId);
+      const fingerprint = `bring_update:${itemId}:${item.label.trim()}:${item.quantity}`;
+      if (replayKey(key, fingerprint)) return;
+      const label = item.label.trim();
+      if (Array.from(label).length < 1 || Array.from(label).length > 60) {
+        throw new BackendError('invalid_input');
+      }
+      if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 20) {
+        throw new BackendError('invalid_input');
+      }
+      requireLive(existing.planId);
+      if (item.quantity < existing.claimedBy.length) throw new BackendError('invalid_input');
+      commit({
+        ...state,
+        bringCreated: state.bringCreated.map((b) =>
+          b.id === itemId ? { ...b, label, quantity: item.quantity } : b,
+        ),
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: itemId } },
+      });
+    },
+
+    async removeBringItem(itemId, key) {
+      await call();
+      requireSession();
+      // A retry of a removal that already happened replays it, even though the item is gone.
+      const fingerprint = `bring_remove:${itemId}`;
+      if (replayKey(key, fingerprint)) return;
+      const existing = state.bringCreated.find((b) => b.id === itemId);
+      if (!existing) throw new BackendError('not_found');
+      requireHost(existing.planId);
+      requireLive(existing.planId);
+      if (existing.claimedBy.length > 0) throw new BackendError('item_claimed');
+      commit({
+        ...state,
+        bringCreated: state.bringCreated.filter((b) => b.id !== itemId),
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: itemId } },
+      });
+    },
+
     async claimBringItem(itemId, key) {
       await call('claimBringItem');
       requireSession();
-      const item = fixtureBringItems.find((candidate) => candidate.id === itemId);
+      const item =
+        fixtureBringItems.find((candidate) => candidate.id === itemId) ??
+        state.bringCreated.find((candidate) => candidate.id === itemId);
       if (!item) throw new BackendError('not_found');
       if (replayed(key) || state.claimedItemIds.includes(itemId)) return;
       if (!state.goingPlanIds.includes(item.planId)) throw new BackendError('rsvp_required');

@@ -130,6 +130,12 @@ export const bringItemCardSchema = z.object({
   claimed_by: z.array(z.string()),
 });
 
+/** What the host enters for a thing guests can bring. */
+export interface BringItemInput {
+  label: string;
+  quantity: number;
+}
+
 export interface BringItem {
   id: string;
   label: string;

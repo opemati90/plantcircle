@@ -34,11 +34,11 @@ declare
   v_fingerprint text;
   v_replay jsonb;
   -- Text is trimmed before any rule is checked, so blank-looking values are refused everywhere.
-  v_title text := regexp_replace(coalesce(p_title, ''), '^[[:space:]]+|[[:space:]]+$', '', 'g');
-  v_description text := regexp_replace(coalesce(p_description, ''), '^[[:space:]]+|[[:space:]]+$', '', 'g');
-  v_area text := regexp_replace(coalesce(p_area_label, ''), '^[[:space:]]+|[[:space:]]+$', '', 'g');
-  v_address text := regexp_replace(coalesce(p_address, ''), '^[[:space:]]+|[[:space:]]+$', '', 'g');
-  v_link text := regexp_replace(coalesce(p_meeting_url, ''), '^[[:space:]]+|[[:space:]]+$', '', 'g');
+  v_title text := public.text_trim(p_title);
+  v_description text := public.text_trim(p_description);
+  v_area text := public.text_trim(p_area_label);
+  v_address text := public.text_trim(p_address);
+  v_link text := public.text_trim(p_meeting_url);
   v_allergen_keys constant text[] := array['none','gluten','crustaceans','eggs','fish','peanuts',
     'soy','milk','nuts','celery','mustard','sesame','sulphites','lupin','molluscs'];
 begin

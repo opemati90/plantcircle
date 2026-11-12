@@ -139,6 +139,21 @@ describe('adding and changing bring items', () => {
     expect(left.rows[0]?.n).toBe(1);
   });
 
+  it('replays a successful removal to a retry, even though the item is gone', async () => {
+    const id = await plan(5);
+    const item = await add(HOST, id, 'Salad', 1);
+    const key = newKey();
+    await asUser(db, HOST, () => db.query('select public.host_bring_remove($1, $2)', [item, key]));
+    await expect(
+      asUser(db, HOST, () => db.query('select public.host_bring_remove($1, $2)', [item, key])),
+    ).resolves.toBeDefined();
+  });
+
+  it('keeps a whitespace-only label refused, including the non-breaking kind', async () => {
+    const id = await plan(5);
+    await expect(add(HOST, id, '\u00a0\u00a0', 1)).rejects.toThrow(/invalid_item/);
+  });
+
   it('answers a retry with the same key with the same item', async () => {
     const id = await plan(5);
     const key = newKey();

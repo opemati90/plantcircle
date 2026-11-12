@@ -25,6 +25,9 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   guest_not_found: 'not_found',
   feedback_not_open: 'invalid_input',
   invalid_feedback: 'invalid_input',
+  invalid_item: 'invalid_input',
+  quantity_below_claims: 'invalid_input',
+  item_claimed: 'item_claimed',
 };
 
 export interface ErrorLike {

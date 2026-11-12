@@ -13,6 +13,7 @@ import { timeRange, longDate } from '../../lib/dates';
 import { useNow } from '../../lib/useNow';
 import { newIdempotencyKey, usePlan } from '../plans/queries';
 import { useCheckInGuest, useEndPlan, useGuests, useHostSummary } from './queries';
+import { BringSection } from './BringSection';
 import { canEnd, checkinOpen } from './rules';
 
 const STATE_LABEL: Record<GuestState, 'stateGoing' | 'stateCheckedIn' | 'stateNoShow' | 'stateWaitlisted' | 'stateOffered'> = {
@@ -91,6 +92,8 @@ export default function ManageScreen() {
   const live = summary.data.live;
   const open = live && checkinOpen(window, ended, now);
   const endable = live && canEnd(detail.startsAt, ended, now);
+  // Bring items change only while the Plan can still take guests: live, not ended, before its end.
+  const itemsEditable = live && !ended && now.getTime() < Date.parse(detail.endsAt);
   const rows: Guest[] = guests.data ?? [];
 
   const toggle = (guest: Guest) => {
@@ -196,6 +199,8 @@ export default function ManageScreen() {
             {t('host.error')}
           </Text>
         ) : null}
+
+        <BringSection planId={id} items={plan.data.bringItems} editable={itemsEditable} />
 
         <View style={styles.end}>
           {ended ? (

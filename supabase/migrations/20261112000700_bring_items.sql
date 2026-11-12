@@ -1,7 +1,12 @@
 -- Contributions, host side (C6). Guests claim bring slots (slot_claim, from core). The host adds,
 -- changes and removes them while the Plan is live. A claimed item cannot be removed, and its
 -- quantity cannot drop below the number already claimed.
+--
+-- Order in each function: the caller must be signed in; a retry of a request that already
+-- succeeded replays its result first (so a retry after the Plan ended, or after the item was
+-- removed, still gets the original answer); then the host and live checks; then the change.
 
+-- The Plan an item belongs to, read for the host check. Locks the Plan, as claims do.
 create function public.host_bring_live(p_plan_id uuid)
 returns public.plans
 language plpgsql
@@ -41,17 +46,21 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_label text := regexp_replace(coalesce(p_label, ''), '^[[:space:]]+|[[:space:]]+$', '', 'g');
+  v_uid uuid := (select auth.uid());
+  v_label text := public.text_trim(p_label);
   v_fingerprint text := 'bring_add:' || p_plan_id::text || ':' || v_label || ':' || coalesce(p_quantity::text, '');
   v_replay jsonb;
   v_id uuid;
   v_position integer;
 begin
-  perform public.host_bring_live(p_plan_id);
+  if v_uid is null then
+    raise exception 'not_authenticated' using errcode = '28000';
+  end if;
   v_replay := public.idempotent_replay(p_idempotency_key, v_fingerprint);
   if v_replay is not null then
     return v_replay;
   end if;
+  perform public.host_bring_live(p_plan_id);
   if char_length(v_label) not between 1 and 60 or p_quantity is null or p_quantity not between 1 and 20 then
     raise exception 'invalid_item' using errcode = 'P0001';
   end if;
@@ -78,21 +87,25 @@ security definer
 set search_path = ''
 as $$
 declare
+  v_uid uuid := (select auth.uid());
   v_plan_id uuid;
-  v_label text := regexp_replace(coalesce(p_label, ''), '^[[:space:]]+|[[:space:]]+$', '', 'g');
+  v_label text := public.text_trim(p_label);
   v_fingerprint text := 'bring_update:' || p_item_id::text || ':' || v_label || ':' || coalesce(p_quantity::text, '');
   v_replay jsonb;
   v_claimed integer;
 begin
+  if v_uid is null then
+    raise exception 'not_authenticated' using errcode = '28000';
+  end if;
+  v_replay := public.idempotent_replay(p_idempotency_key, v_fingerprint);
+  if v_replay is not null then
+    return v_replay;
+  end if;
   select plan_id into v_plan_id from public.contribution_slots where id = p_item_id;
   if not found then
     raise exception 'item_not_found' using errcode = 'P0002';
   end if;
   perform public.host_bring_live(v_plan_id);
-  v_replay := public.idempotent_replay(p_idempotency_key, v_fingerprint);
-  if v_replay is not null then
-    return v_replay;
-  end if;
   if char_length(v_label) not between 1 and 60 or p_quantity is null or p_quantity not between 1 and 20 then
     raise exception 'invalid_item' using errcode = 'P0001';
   end if;
@@ -113,19 +126,23 @@ security definer
 set search_path = ''
 as $$
 declare
+  v_uid uuid := (select auth.uid());
   v_plan_id uuid;
   v_fingerprint text := 'bring_remove:' || p_item_id::text;
   v_replay jsonb;
 begin
+  if v_uid is null then
+    raise exception 'not_authenticated' using errcode = '28000';
+  end if;
+  v_replay := public.idempotent_replay(p_idempotency_key, v_fingerprint);
+  if v_replay is not null then
+    return v_replay;
+  end if;
   select plan_id into v_plan_id from public.contribution_slots where id = p_item_id;
   if not found then
     raise exception 'item_not_found' using errcode = 'P0002';
   end if;
   perform public.host_bring_live(v_plan_id);
-  v_replay := public.idempotent_replay(p_idempotency_key, v_fingerprint);
-  if v_replay is not null then
-    return v_replay;
-  end if;
   if exists (select 1 from public.contribution_claims where slot_id = p_item_id) then
     raise exception 'item_claimed' using errcode = 'P0001';
   end if;

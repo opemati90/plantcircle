@@ -1,27 +1,4 @@
-import type {
-  City,
-  OfferOutcome,
-  Plan,
-  PlanDetail,
-  MyPlan,
-  MyPlansScope,
-  Profile,
-  ProfileInput,
-  Session,
-  Circle,
-  CircleInput,
-  CircleRequest,
-  FeedbackState,
-  Guest,
-  HostSummary,
-  Person,
-  PlanInput,
-  Recipe,
-  RecipeDetail,
-  RecipeInput,
-  UpNext,
-  WaitlistOffer,
-} from './types';
+import type {BringItemInput, Circle, CircleInput, CircleRequest, City, FeedbackState, Guest, HostSummary, MyPlan, MyPlansScope, OfferOutcome, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, Session, UpNext, WaitlistOffer} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -39,6 +16,7 @@ export type BackendErrorCode =
   | 'city_required'
   | 'checkin_closed'
   | 'plan_not_started'
+  | 'item_claimed'
   | 'cancelled'
   | 'invalid_response'
   | 'unknown';
@@ -148,4 +126,9 @@ export interface Backend {
   /** Spots currently held for the viewer, soonest expiry first. */
   getWaitlistOffers(): Promise<WaitlistOffer[]>;
   claimBringItem(itemId: string, idempotencyKey: string): Promise<void>;
+
+  /** Host-side bring items: only the host, only while the Plan is live. */
+  addBringItem(planId: string, item: BringItemInput, idempotencyKey: string): Promise<string>;
+  updateBringItem(itemId: string, item: BringItemInput, idempotencyKey: string): Promise<void>;
+  removeBringItem(itemId: string, idempotencyKey: string): Promise<void>;
 }

@@ -260,7 +260,7 @@ as $$
 declare
   v_uid uuid := (select auth.uid());
   v_ends timestamptz;
-  v_comment text := nullif(btrim(coalesce(p_comment, '')), '');
+  v_comment text := nullif(public.text_trim(p_comment), '');
   v_fingerprint text := 'plan_feedback:' || p_plan_id::text || ':' || p_rating::text || ':' || coalesce(v_comment, '');
   v_replay jsonb;
 begin

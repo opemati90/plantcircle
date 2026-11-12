@@ -717,5 +717,31 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     },
     claimBringItem: (itemId, key) =>
       rpc('slot_claim', { p_slot_id: itemId, p_idempotency_key: key }),
+    addBringItem: async (planId, item, key) => {
+      const result = await client.rpc('host_bring_add', {
+        p_plan_id: planId,
+        p_label: item.label,
+        p_quantity: item.quantity,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.object({ id: z.string() }), result.data).id;
+    },
+    updateBringItem: async (itemId, item, key) => {
+      const result = await client.rpc('host_bring_update', {
+        p_item_id: itemId,
+        p_label: item.label,
+        p_quantity: item.quantity,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
+    removeBringItem: async (itemId, key) => {
+      const result = await client.rpc('host_bring_remove', {
+        p_item_id: itemId,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
   };
 }

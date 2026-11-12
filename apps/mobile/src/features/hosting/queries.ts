@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBackend } from '../../lib/backend/BackendProvider';
+import type { BringItemInput } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 
 export function useGuests(planId: string) {
@@ -72,5 +73,46 @@ export function useSubmitFeedback(planId: string) {
     mutationFn: (input: { rating: number; comment: string | null; key: string }) =>
       backend.submitFeedback(planId, input.rating, input.comment, input.key),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['feedback', planId] }),
+  });
+}
+
+/** Bring items change the Plan's own list, so the Plan and its guest views are refreshed. */
+function useRefreshBring(planId: string) {
+  const queryClient = useQueryClient();
+  return () =>
+    Promise.all(
+      [['plan', planId], ['hostSummary', planId]].map((key) =>
+        queryClient.invalidateQueries({ queryKey: key }),
+      ),
+    );
+}
+
+export function useAddBringItem(planId: string) {
+  const backend = useBackend();
+  const refresh = useRefreshBring(planId);
+  return useMutation({
+    mutationFn: (input: { item: BringItemInput; key: string }) =>
+      backend.addBringItem(planId, input.item, input.key),
+    onSuccess: refresh,
+  });
+}
+
+export function useUpdateBringItem(planId: string) {
+  const backend = useBackend();
+  const refresh = useRefreshBring(planId);
+  return useMutation({
+    mutationFn: (input: { itemId: string; item: BringItemInput; key: string }) =>
+      backend.updateBringItem(input.itemId, input.item, input.key),
+    onSuccess: refresh,
+  });
+}
+
+export function useRemoveBringItem(planId: string) {
+  const backend = useBackend();
+  const refresh = useRefreshBring(planId);
+  return useMutation({
+    mutationFn: (input: { itemId: string; key: string }) =>
+      backend.removeBringItem(input.itemId, input.key),
+    onSuccess: refresh,
   });
 }
