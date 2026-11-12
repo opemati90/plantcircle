@@ -96,7 +96,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
   const insets = useScreenInsets();
   const { session } = useAuth();
   const { t } = useTranslation();
-  const { join, cancel, claim, joinWaitlist } = useRsvpMutations(plan.id);
+  const { join, cancel, claim, unclaim, joinWaitlist } = useRsvpMutations(plan.id);
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const params = useLocalSearchParams<{ join?: string }>();
@@ -146,7 +146,9 @@ function PlanView({ detail }: { detail: PlanDetail }) {
         ? cancel
         : claim.isError
           ? claim
-          : null;
+          : unclaim.isError
+            ? unclaim
+            : null;
   const failure = failed ? errorCode(failed.error) : null;
   const failureCopy =
     failed === claim && failure === 'item_taken'
@@ -163,6 +165,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
       joinWaitlist.mutate(joinWaitlist.variables);
     } else if (failed === cancel && cancel.variables) cancel.mutate(cancel.variables);
     else if (failed === claim) claim.mutate(claim.variables);
+    else if (failed === unclaim) unclaim.mutate(unclaim.variables);
   };
 
   const busy = join.isPending || joinWaitlist.isPending || cancel.isPending;
@@ -334,6 +337,16 @@ function PlanView({ detail }: { detail: PlanDetail }) {
             </Text>
           </Section>
 
+          {isGoing ? (
+            <Button
+              variant="outline"
+              label={t('chat.openPlan')}
+              onPress={() => {
+                router.push({ pathname: '/chat/plan/[id]', params: { id: plan.id } });
+              }}
+            />
+          ) : null}
+
           {bringItems.length > 0 ? (
             <Section title={t('plan.bring')}>
               <View>
@@ -348,7 +361,22 @@ function PlanView({ detail }: { detail: PlanDetail }) {
                           {note}
                         </Text>
                       </View>
-                      {open ? (
+                      {item.claimedByMe ? (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={t('plan.withdrawBringItem', { item: item.label })}
+                          aria-disabled={unclaim.isPending}
+                          disabled={unclaim.isPending}
+                          onPress={() => {
+                            unclaim.mutate({ itemId: item.id, key: newIdempotencyKey() });
+                          }}
+                          style={styles.bringButton}
+                        >
+                          <Text style={type(15, 'semibold', { color: '#FFFFFF' })}>
+                            {t('plan.withdrawBring')}
+                          </Text>
+                        </Pressable>
+                      ) : open ? (
                         <Pressable
                           accessibilityRole="button"
                           accessibilityLabel={t('plan.illBringItem', { item: item.label })}

@@ -114,6 +114,8 @@ export const fr: Catalog = {
     emptyFilter: 'Aucun plan de cette semaine ne correspond à ce filtre.',
   },
   plan: {
+    withdrawBring: 'Retirer',
+    withdrawBringItem: 'Retirer {{item}}',
     category: {
       cooking_night: 'Soirée cuisine',
       potluck: 'Potluck',
@@ -498,6 +500,21 @@ export const fr: Catalog = {
     thanks: 'Merci. Votre avis est enregistré.',
     error: 'Impossible d’envoyer. Réessayez.',
     leave: 'Donner un avis',
+  },
+  chat: {
+    tooLong: 'C’est trop long. Restez sous 1 000 caractères.',
+    circleLead: 'Seuls les membres de ce cercle peuvent lire et écrire ici.',
+    circleEmptyText: 'Dites bonjour à votre cercle.',
+    openPlan: 'Discussion de la sortie',
+    openCircle: 'Discussion du cercle',
+    lead: 'Seules les personnes de cette sortie peuvent lire et écrire ici.',
+    emptyTitle: 'Pas encore de messages',
+    emptyText: 'Dites bonjour ou posez une question sur la sortie.',
+    placeholder: 'Écrire un message',
+    send: 'Envoyer',
+    error: 'Impossible d’envoyer. Votre message est toujours là.',
+    rateLimited: 'Vous envoyez beaucoup de messages. Réessayez dans une minute.',
+    closed: 'Cette discussion est fermée pour vous.',
   },
   circles: {
     signUpTitle: 'Inscrivez-vous pour rejoindre ce cercle',

@@ -109,6 +109,8 @@ export const es: Catalog = {
     emptyFilter: 'Ningún plan de esta semana coincide con este filtro.',
   },
   plan: {
+    withdrawBring: 'Retirar',
+    withdrawBringItem: 'Retirar {{item}}',
     category: {
       cooking_night: 'Cena cocinada',
       potluck: 'Potluck',
@@ -490,6 +492,21 @@ export const es: Catalog = {
     thanks: 'Gracias. Tu valoración está guardada.',
     error: 'No se pudo enviar. Inténtalo de nuevo.',
     leave: 'Valorar',
+  },
+  chat: {
+    tooLong: 'Es demasiado largo. Mantenlo por debajo de 1.000 caracteres.',
+    circleLead: 'Solo los miembros de este círculo pueden leer y escribir aquí.',
+    circleEmptyText: 'Saluda a tu círculo.',
+    openPlan: 'Chat del plan',
+    openCircle: 'Chat del círculo',
+    lead: 'Solo las personas de este plan pueden leer y escribir aquí.',
+    emptyTitle: 'Todavía no hay mensajes',
+    emptyText: 'Saluda o haz una pregunta sobre el plan.',
+    placeholder: 'Escribe un mensaje',
+    send: 'Enviar',
+    error: 'No se pudo enviar. Tu mensaje sigue aquí.',
+    rateLimited: 'Estás enviando muchos mensajes. Inténtalo de nuevo en un minuto.',
+    closed: 'Este chat está cerrado para ti.',
   },
   circles: {
     signUpTitle: 'Regístrate para unirte a este círculo',

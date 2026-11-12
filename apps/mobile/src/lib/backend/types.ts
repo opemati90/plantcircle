@@ -487,6 +487,32 @@ export interface PlanInput {
   meetingUrl: string | null;
 }
 
+export const messageCardSchema = z.object({
+  id: z.string(),
+  conversation_id: z.string(),
+  sender_id: z.string(),
+  sender_name: z.string(),
+  body: z.string(),
+  created_at: z.string(),
+});
+
+/** One message in a group chat, with who sent it. */
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  body: string;
+  createdAt: string;
+}
+
+export const toChatMessage = (row: z.infer<typeof messageCardSchema>): ChatMessage => ({
+  id: row.id,
+  senderId: row.sender_id,
+  senderName: row.sender_name,
+  body: row.body,
+  createdAt: row.created_at,
+});
+
 export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
   id: row.id,
   title: row.title,

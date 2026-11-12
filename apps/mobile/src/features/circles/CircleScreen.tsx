@@ -177,9 +177,18 @@ export default function CircleScreen() {
         <Text style={type(15, 'regular', { color: color.secondary })}>{circleMeta(t, data)}</Text>
 
         {member ? (
-          <Text role="status" style={type(17, 'semibold', { color: color.brand })}>
-            {t('circles.member')}
-          </Text>
+          <View style={styles.action}>
+            <Text role="status" style={type(17, 'semibold', { color: color.brand })}>
+              {t('circles.member')}
+            </Text>
+            <Button
+              variant="outline"
+              label={t('chat.openCircle')}
+              onPress={() => {
+                router.push({ pathname: '/chat/circle/[id]', params: { id: data.id } });
+              }}
+            />
+          </View>
         ) : data.access === 'open' ? (
           <View style={styles.action}>
             <Text style={type(15, 'regular', { color: color.secondary })}>

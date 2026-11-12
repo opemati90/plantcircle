@@ -55,6 +55,12 @@ test('first run: pick a city, browse, sign up with an email code, join, bring so
   await page.getByRole('button', { name: 'I’ll bring it: Plantains' }).click();
   await expect(page.getByText('You’re bringing this')).toBeVisible();
 
+  // Withdrawing frees the place again; bringing it once more keeps the rest of the journey as it was.
+  await page.getByRole('button', { name: 'Withdraw Plantains' }).click();
+  await expect(page.getByRole('button', { name: 'I’ll bring it: Plantains' })).toBeVisible();
+  await page.getByRole('button', { name: 'I’ll bring it: Plantains' }).click();
+  await expect(page.getByText('You’re bringing this')).toBeVisible();
+
   await page.goto('/home');
   await expect(page.getByText('Good evening, Lena')).toBeVisible();
   await page

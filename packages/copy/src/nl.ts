@@ -109,6 +109,8 @@ export const nl: Catalog = {
     emptyFilter: 'Geen plannen van deze week passen bij dit filter.',
   },
   plan: {
+    withdrawBring: 'Terugtrekken',
+    withdrawBringItem: '{{item}} terugtrekken',
     category: {
       cooking_night: 'Kookavond',
       potluck: 'Potluck',
@@ -494,6 +496,21 @@ export const nl: Catalog = {
     thanks: 'Bedankt. Je feedback is opgeslagen.',
     error: 'Dat lukte niet. Probeer het opnieuw.',
     leave: 'Feedback geven',
+  },
+  chat: {
+    tooLong: 'Dat is te lang. Blijf onder de 1.000 tekens.',
+    circleLead: 'Alleen leden van deze kring kunnen hier lezen en schrijven.',
+    circleEmptyText: 'Zeg hallo tegen je kring.',
+    openPlan: 'Chat van de Plan',
+    openCircle: 'Chat van de kring',
+    lead: 'Alleen mensen van deze Plan kunnen hier lezen en schrijven.',
+    emptyTitle: 'Nog geen berichten',
+    emptyText: 'Zeg hallo of stel een vraag over de Plan.',
+    placeholder: 'Schrijf een bericht',
+    send: 'Versturen',
+    error: 'Dat lukte niet. Je bericht staat er nog.',
+    rateLimited: 'Je stuurt veel berichten. Probeer het over een minuut opnieuw.',
+    closed: 'Deze chat is voor jou gesloten.',
   },
   circles: {
     signUpTitle: 'Maak een account om lid te worden van deze kring',

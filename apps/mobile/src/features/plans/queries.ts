@@ -250,5 +250,10 @@ export function useRsvpMutations(planId: string) {
         backend.claimBringItem(input.itemId, input.key),
       ...options,
     }),
+    unclaim: useMutation({
+      mutationFn: (input: { itemId: string; key: string }) =>
+        backend.unclaimBringItem(input.itemId, input.key),
+      ...options,
+    }),
   };
 }

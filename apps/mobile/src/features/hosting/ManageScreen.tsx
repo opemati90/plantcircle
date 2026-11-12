@@ -200,6 +200,14 @@ export default function ManageScreen() {
           </Text>
         ) : null}
 
+        <Button
+          variant="outline"
+          label={t('chat.openPlan')}
+          onPress={() => {
+            router.push({ pathname: '/chat/plan/[id]', params: { id } });
+          }}
+        />
+
         <BringSection planId={id} items={plan.data.bringItems} editable={itemsEditable} />
 
         <View style={styles.end}>

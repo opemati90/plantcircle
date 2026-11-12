@@ -109,6 +109,8 @@ export const de: Catalog = {
     emptyFilter: 'Diese Woche passt kein Plan zu diesem Filter.',
   },
   plan: {
+    withdrawBring: 'Zurückziehen',
+    withdrawBringItem: '{{item}} zurückziehen',
     category: {
       cooking_night: 'Kochabend',
       potluck: 'Potluck',
@@ -496,6 +498,21 @@ export const de: Catalog = {
     thanks: 'Danke. Dein Feedback ist gespeichert.',
     error: 'Das hat nicht geklappt. Bitte versuch es noch einmal.',
     leave: 'Feedback geben',
+  },
+  chat: {
+    tooLong: 'Das ist zu lang. Bleib unter 1.000 Zeichen.',
+    circleLead: 'Nur Mitglieder dieses Kreises können hier lesen und schreiben.',
+    circleEmptyText: 'Sag deinem Kreis Hallo.',
+    openPlan: 'Plan-Chat',
+    openCircle: 'Kreis-Chat',
+    lead: 'Nur Leute aus diesem Plan können hier lesen und schreiben.',
+    emptyTitle: 'Noch keine Nachrichten',
+    emptyText: 'Sag Hallo oder stell eine Frage zum Plan.',
+    placeholder: 'Nachricht schreiben',
+    send: 'Senden',
+    error: 'Das hat nicht geklappt. Deine Nachricht ist noch da.',
+    rateLimited: 'Du sendest gerade viel. Versuch es in einer Minute noch einmal.',
+    closed: 'Dieser Chat ist für dich geschlossen.',
   },
   circles: {
     signUpTitle: 'Registriere dich, um diesem Kreis beizutreten',

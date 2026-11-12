@@ -28,6 +28,8 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   invalid_item: 'invalid_input',
   quantity_below_claims: 'invalid_input',
   item_claimed: 'item_claimed',
+  invalid_message: 'invalid_input',
+  not_member: 'closed_chat',
 };
 
 export interface ErrorLike {

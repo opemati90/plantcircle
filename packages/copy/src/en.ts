@@ -104,6 +104,8 @@ export const en = {
     emptyFilter: 'No Plans match this filter this week.',
   },
   plan: {
+    withdrawBring: 'Withdraw',
+    withdrawBringItem: 'Withdraw {{item}}',
     category: {
       cooking_night: 'Cooking night',
       potluck: 'Potluck',
@@ -483,6 +485,21 @@ export const en = {
     thanks: 'Thanks. Your feedback is saved.',
     error: 'Couldn’t send that. Try again.',
     leave: 'Leave feedback',
+  },
+  chat: {
+    tooLong: 'That’s too long. Keep it under 1,000 characters.',
+    circleLead: 'Only members of this Circle can read and post here.',
+    circleEmptyText: 'Say hello to your Circle.',
+    openPlan: 'Plan chat',
+    openCircle: 'Circle chat',
+    lead: 'Only people in this Plan can read and post here.',
+    emptyTitle: 'No messages yet',
+    emptyText: 'Say hello, or ask a question about the Plan.',
+    placeholder: 'Write a message',
+    send: 'Send',
+    error: 'Couldn’t send that. Your message is still here.',
+    rateLimited: 'You’re sending a lot. Try again in a minute.',
+    closed: 'This chat is closed for you.',
   },
   circles: {
     signUpTitle: 'Sign up to join this Circle',

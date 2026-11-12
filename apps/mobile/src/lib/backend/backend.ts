@@ -1,4 +1,4 @@
-import type {BringItemInput, Circle, CircleInput, CircleRequest, City, FeedbackState, Guest, HostSummary, MyPlan, MyPlansScope, OfferOutcome, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, Session, UpNext, WaitlistOffer} from './types';
+import type {BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, FeedbackState, Guest, HostSummary, MyPlan, MyPlansScope, OfferOutcome, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, Session, UpNext, WaitlistOffer} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -17,6 +17,7 @@ export type BackendErrorCode =
   | 'checkin_closed'
   | 'plan_not_started'
   | 'item_claimed'
+  | 'closed_chat'
   | 'cancelled'
   | 'invalid_response'
   | 'unknown';
@@ -89,6 +90,11 @@ export interface Backend {
   /** Publishes a Plan in the host's home city. Returns the new Plan's id. */
   createPlan(input: PlanInput, idempotencyKey: string): Promise<string>;
 
+  /** Group chats for a Plan or a Circle, for members only. */
+  openConversation(kind: 'plan' | 'circle', refId: string): Promise<string>;
+  listMessages(conversationId: string): Promise<ChatMessage[]>;
+  sendMessage(conversationId: string, body: string, clientId: string): Promise<void>;
+
   /** Hosting. Only the host of the Plan can call these; the database refuses anyone else. */
   listGuests(planId: string): Promise<Guest[]>;
   getHostSummary(planId: string): Promise<HostSummary>;
@@ -126,6 +132,8 @@ export interface Backend {
   /** Spots currently held for the viewer, soonest expiry first. */
   getWaitlistOffers(): Promise<WaitlistOffer[]>;
   claimBringItem(itemId: string, idempotencyKey: string): Promise<void>;
+  /** A guest withdraws their own claim, until the Plan ends. */
+  unclaimBringItem(itemId: string, idempotencyKey: string): Promise<void>;
 
   /** Host-side bring items: only the host, only while the Plan is live. */
   addBringItem(planId: string, item: BringItemInput, idempotencyKey: string): Promise<string>;

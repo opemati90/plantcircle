@@ -15,7 +15,9 @@ import {
   toCircle,
   toCircleRequest,
   guestRowSchema,
+  messageCardSchema,
   personRowSchema,
+  toChatMessage,
   recipeCardSchema,
   toGuest,
   recipeIngredientSchema,
@@ -479,6 +481,33 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       if (result.error) throw toBackendError(result.error);
     },
 
+    async openConversation(kind, refId) {
+      const result = await client.rpc('conversation_open', { p_kind: kind, p_ref: refId });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.string(), result.data);
+    },
+
+    async listMessages(conversationId) {
+      // The newest 100, shown oldest first.
+      const { data, error } = await client
+        .from('message_cards')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw toBackendError(error);
+      return parse(z.array(messageCardSchema), data).map(toChatMessage).reverse();
+    },
+
+    async sendMessage(conversationId, body, clientId) {
+      const result = await client.rpc('message_post', {
+        p_conversation_id: conversationId,
+        p_body: body,
+        p_client_id: clientId,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
+
     async listCities() {
       const { data, error } = await client.from('cities').select('*').order('name').limit(200);
       if (error) throw toBackendError(error);
@@ -717,6 +746,8 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     },
     claimBringItem: (itemId, key) =>
       rpc('slot_claim', { p_slot_id: itemId, p_idempotency_key: key }),
+    unclaimBringItem: (itemId, key) =>
+      rpc('slot_unclaim', { p_slot_id: itemId, p_idempotency_key: key }),
     addBringItem: async (planId, item, key) => {
       const result = await client.rpc('host_bring_add', {
         p_plan_id: planId,

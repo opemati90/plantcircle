@@ -67,6 +67,8 @@ interface State {
   plansEnded: string[];
   /** Bring items the host added or changed in this session (the sample items are read-only). */
   bringCreated: FixtureBringItem[];
+  /** Group chat messages by conversation id; a client id makes a send idempotent. */
+  messages: Record<string, { id: string; clientId: string; senderId: string; senderName: string; body: string; createdAt: string }[]>;
   /** The viewer's feedback on Plans, by Plan id. */
   feedbackMine: Record<string, { rating: number; comment: string | null }>;
   /** Keyed creations, so a retry replays the same result as the database does. */
@@ -115,6 +117,7 @@ const EMPTY: State = {
   plansGuests: {},
   plansEnded: [],
   bringCreated: [],
+  messages: {},
   feedbackMine: {},
   idempotent: {},
 };
@@ -213,6 +216,23 @@ export async function createFixtureBackend(): Promise<Backend> {
       .toLowerCase()
       .split(/\s+/)
       .filter(Boolean);
+
+  /** The kind and id a fixture conversation id was made from ("conv-plan-<id>", "conv-circle-<id>"). */
+  function conversationRef(conversationId: string): { kind: 'plan' | 'circle'; refId: string } {
+    const [, kind, ...rest] = conversationId.split('-');
+    return { kind: kind === 'plan' ? 'plan' : 'circle', refId: rest.join('-') };
+  }
+
+  /** Who may use a group chat in the fixture: a Plan's host and people going, or a Circle's members. */
+  function chatMember(kind: 'plan' | 'circle', refId: string): boolean {
+    if (kind === 'plan') {
+      const hosted = state.plansCreated.some((p) => p.id === refId);
+      return hosted || state.goingPlanIds.includes(refId);
+    }
+    return (
+      state.circlesJoined.includes(refId) || state.circlesCreated.some((c) => c.id === refId)
+    );
+  }
 
   /** Only the host of a Plan may see its guests and summary. */
   function requireHost(planId: string): void {
@@ -782,6 +802,66 @@ export async function createFixtureBackend(): Promise<Backend> {
       });
     },
 
+    async openConversation(kind, refId) {
+      await call();
+      requireSession();
+      if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
+      return `conv-${kind}-${refId}`;
+    },
+
+    async listMessages(conversationId) {
+      await call();
+      requireSession();
+      const { kind, refId } = conversationRef(conversationId);
+      if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
+      return (state.messages[conversationId] ?? []).map((m) => ({
+        id: m.id,
+        senderId: m.senderId,
+        senderName: m.senderName,
+        body: m.body,
+        createdAt: m.createdAt,
+      }));
+    },
+
+    async sendMessage(conversationId, body, clientId) {
+      await call();
+      requireSession();
+      const { kind, refId } = conversationRef(conversationId);
+      if (!chatMember(kind, refId)) {
+        throw new BackendError('closed_chat');
+      }
+      const me = state.session?.userId ?? 'fixture-you';
+      const existing = state.messages[conversationId] ?? [];
+      // Like the database: a client id is unique per sender across every conversation.
+      const everything = Object.values(state.messages).flat();
+      if (everything.some((m) => m.clientId === clientId && m.senderId === me)) return;
+      const text = body.trim();
+      if (Array.from(text).length < 1 || Array.from(text).length > 1000) {
+        throw new BackendError('invalid_input');
+      }
+      const recent = everything.filter(
+        (m) => m.senderId === me && Date.now() - new Date(m.createdAt).getTime() < 60_000,
+      );
+      if (recent.length >= 20) throw new BackendError('rate_limited');
+      commit({
+        ...state,
+        messages: {
+          ...state.messages,
+          [conversationId]: [
+            ...existing,
+            {
+              id: `msg-${Date.now()}-${clientId.slice(0, 8)}`,
+              clientId,
+              senderId: me,
+              senderName: myName(),
+              body: text,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        },
+      });
+    },
+
     async listPeople() {
       await call();
       requireSession();
@@ -1058,6 +1138,23 @@ export async function createFixtureBackend(): Promise<Backend> {
       commit({
         ...state,
         bringCreated: state.bringCreated.filter((b) => b.id !== itemId),
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: itemId } },
+      });
+    },
+
+    async unclaimBringItem(itemId, key) {
+      await call();
+      requireSession();
+      const fingerprint = `slot_unclaim:${itemId}`;
+      if (replayKey(key, fingerprint)) return;
+      const item =
+        fixtureBringItems.find((candidate) => candidate.id === itemId) ??
+        state.bringCreated.find((candidate) => candidate.id === itemId);
+      if (!item) throw new BackendError('not_found');
+      requireLive(item.planId);
+      commit({
+        ...state,
+        claimedItemIds: state.claimedItemIds.filter((id) => id !== itemId),
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: itemId } },
       });
     },

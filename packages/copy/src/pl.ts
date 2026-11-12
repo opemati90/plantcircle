@@ -115,6 +115,8 @@ export const pl: Catalog = {
     emptyFilter: 'Żaden plan z tego tygodnia nie pasuje do tego filtra.',
   },
   plan: {
+    withdrawBring: 'Wycofaj',
+    withdrawBringItem: 'Wycofaj {{item}}',
     category: {
       cooking_night: 'Wieczór gotowania',
       potluck: 'Potluck',
@@ -510,6 +512,21 @@ export const pl: Catalog = {
     thanks: 'Dziękujemy. Twoja opinia została zapisana.',
     error: 'Nie udało się wysłać. Spróbuj ponownie.',
     leave: 'Zostaw opinię',
+  },
+  chat: {
+    tooLong: 'To za długie. Zmieść się w 1000 znakach.',
+    circleLead: 'Tutaj mogą czytać i pisać tylko członkowie tego kręgu.',
+    circleEmptyText: 'Przywitaj się ze swoim kręgiem.',
+    openPlan: 'Czat spotkania',
+    openCircle: 'Czat kręgu',
+    lead: 'Tylko osoby z tego spotkania mogą tu czytać i pisać.',
+    emptyTitle: 'Brak wiadomości',
+    emptyText: 'Przywitaj się albo zadaj pytanie o spotkanie.',
+    placeholder: 'Napisz wiadomość',
+    send: 'Wyślij',
+    error: 'Nie udało się wysłać. Twoja wiadomość jest nadal tutaj.',
+    rateLimited: 'Wysyłasz dużo wiadomości. Spróbuj ponownie za minutę.',
+    closed: 'Ten czat jest dla Ciebie zamknięty.',
   },
   circles: {
     signUpTitle: 'Załóż konto, aby dołączyć do tego kręgu',
