@@ -41,7 +41,8 @@ export default function SignUpScreen() {
     },
   });
 
-  if (session) return <Redirect href={next} />;
+  // Signed in already: the privacy choices decide whether to ask or move straight on.
+  if (session) return <Redirect href={{ pathname: '/privacy-choices', params: { next } }} />;
 
   const submit = () => {
     const parsed = emailSchema.safeParse(email.trim());
@@ -96,7 +97,7 @@ export default function SignUpScreen() {
         </View>
         <ProviderButtons
           onSignedIn={() => {
-            router.replace(next);
+            router.replace({ pathname: '/privacy-choices', params: { next } });
           }}
         />
         <View style={styles.divider}>

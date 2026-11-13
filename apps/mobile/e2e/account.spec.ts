@@ -23,6 +23,10 @@ test('the first sign-in asks the privacy choices once, with consent off by defau
   await analytics.click();
   await page.getByRole('button', { name: 'Save choices' }).click();
   await expect(page).toHaveURL(/home/);
+  // Dev fixtures persist a moment after the screen moves on; wait for that before a full reload.
+  await expect
+    .poll(() => page.evaluate(() => (localStorage.getItem('pc.fixtures.v2') ?? '').includes('"analyticsConsent":true')))
+    .toBe(true);
 
   // Not asked again; the choice is kept and can be changed from Privacy.
   await page.goto('/profile/privacy');

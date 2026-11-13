@@ -111,10 +111,18 @@ begin
   perform public.settings_get();
   select * into v_old from public.user_settings where user_id = v_uid for update;
 
+  -- Only known keys, and JSON booleans and integers (no text that happens to cast).
   for v_key in select jsonb_object_keys(p_patch) loop
-    if v_key not in ('analytics_consent', 'personalisation_consent', 'notif_reminders', 'notif_waitlist',
-                     'notif_direct', 'notif_chats', 'quiet_hours', 'quiet_start', 'quiet_end', 'lock_screen_text',
-                     'notif_prompt_dismissed') then
+    if v_key in ('analytics_consent', 'personalisation_consent', 'notif_reminders', 'notif_waitlist',
+                 'notif_direct', 'notif_chats', 'quiet_hours', 'lock_screen_text', 'notif_prompt_dismissed') then
+      if jsonb_typeof(p_patch -> v_key) <> 'boolean' then
+        raise exception 'invalid_settings' using errcode = 'P0001';
+      end if;
+    elsif v_key in ('quiet_start', 'quiet_end') then
+      if jsonb_typeof(p_patch -> v_key) <> 'number' or (p_patch ->> v_key) !~ '^[0-9]+$' then
+        raise exception 'invalid_settings' using errcode = 'P0001';
+      end if;
+    else
       raise exception 'invalid_settings' using errcode = 'P0001';
     end if;
   end loop;
@@ -212,22 +220,36 @@ begin
   -- Leaving everything is a safety action: a paused member may delete their account too.
   perform set_config('pc.safety_action', 'leave', true);
 
-  -- Spots and places in line go back to people waiting.
+  -- Spots and places in line go back to people waiting. The Plan row is locked first, as every
+  -- RSVP change does, so promotion sees a settled count.
+  -- Only Plans still ahead: a past check-in is history and stays.
   for v_plan in
-    select plan_id from public.rsvps where user_id = v_uid and state in ('going', 'waitlisted', 'offered', 'checked_in')
-      for update
+    select distinct r.plan_id from public.rsvps r join public.plans p on p.id = r.plan_id
+    where r.user_id = v_uid and r.state in ('going', 'waitlisted', 'offered', 'checked_in') and p.ends_at > now()
+    order by r.plan_id
   loop
-    update public.rsvps set state = 'cancelled', offer_expires_at = null, updated_at = now()
-    where plan_id = v_plan and user_id = v_uid and state in ('going', 'waitlisted', 'offered');
+    perform 1 from public.plans where id = v_plan for update;
+    update public.rsvps set state = 'cancelled', offer_expires_at = null, checked_in_at = null, updated_at = now()
+    where plan_id = v_plan and user_id = v_uid and state in ('going', 'waitlisted', 'offered', 'checked_in');
     delete from public.contribution_claims cc using public.contribution_slots s
     where cc.slot_id = s.id and s.plan_id = v_plan and cc.user_id = v_uid;
     perform public.promote_waitlist(v_plan);
   end loop;
-  -- Plans you host that have not happened are cancelled; guests are released.
-  update public.plans set status = 'cancelled'
-  where host_id = v_uid and status in ('published', 'changed') and ends_at > now();
-  update public.group_orders o set state = 'cancelled'
-  from public.plans p where p.id = o.plan_id and p.host_id = v_uid and p.status = 'cancelled';
+  -- Plans you host that have not happened (held ones too) are cancelled and every guest released.
+  -- Orders lock their row before the Plan, as order_mark_collected does, so the two cannot deadlock.
+  for v_plan in
+    select id from public.plans where host_id = v_uid and status in ('published', 'changed', 'on_hold') and ends_at > now()
+    order by id
+  loop
+    perform 1 from public.group_orders where plan_id = v_plan for update;
+    perform 1 from public.plans where id = v_plan for update;
+    update public.group_orders set state = 'cancelled' where plan_id = v_plan;
+    update public.plans set status = 'cancelled' where id = v_plan;
+    update public.rsvps set state = 'cancelled', offer_expires_at = null, checked_in_at = null, updated_at = now()
+    where plan_id = v_plan and state in ('going', 'waitlisted', 'offered', 'checked_in');
+    delete from public.contribution_claims cc using public.contribution_slots s
+    where cc.slot_id = s.id and s.plan_id = v_plan;
+  end loop;
   -- Interest in orders, contact, Circles.
   delete from public.order_interests where user_id = v_uid;
   delete from public.connections where requester_id = v_uid or addressee_id = v_uid;
@@ -238,12 +260,17 @@ begin
   update public.circles set status = 'archived' where created_by = v_uid and status = 'active';
   delete from public.user_settings where user_id = v_uid;
 
+  -- The purge (service role, within 30 days) scrubs the auth identity (email, phone, providers)
+  -- and keeps the profile stub: content it authored still needs an owner, and the foreign keys
+  -- on hosted Plans and owned Circles are restrictive on purpose. Recorded before the status
+  -- changes, since the stub can write nothing afterwards.
+  insert into public.data_requests (user_id, kind, purge_after) values (v_uid, 'delete', now() + interval '30 days');
+
   -- The profile stays as an anonymous stub so authored content keeps a sender.
   update public.profiles
   set display_name = 'Deleted member', city_id = null, goals = '{}', people_visible = false,
-      status = 'deleted', suspended_until = null, messages_frozen_until = null
+      status = 'deleted', role = 'member', suspended_until = null, messages_frozen_until = null
   where id = v_uid;
-  insert into public.data_requests (user_id, kind, purge_after) values (v_uid, 'delete', now() + interval '30 days');
 
   return public.idempotent_store(p_idempotency_key, v_fingerprint, jsonb_build_object('deleted', true));
 end;
@@ -264,16 +291,98 @@ begin
 end;
 $$;
 revoke all on function public.refuse_when_deleted() from public, anon, authenticated;
-create trigger plans_not_deleted before insert on public.plans
+create trigger plans_not_deleted before insert or update or delete on public.plans
   for each row execute function public.refuse_when_deleted();
-create trigger rsvps_not_deleted before insert on public.rsvps
+create trigger plan_private_not_deleted before insert or update or delete on public.plan_private
   for each row execute function public.refuse_when_deleted();
-create trigger messages_not_deleted before insert on public.messages
+create trigger rsvps_not_deleted before insert or update or delete on public.rsvps
   for each row execute function public.refuse_when_deleted();
-create trigger message_requests_not_deleted before insert on public.message_requests
+create trigger messages_not_deleted before insert or update or delete on public.messages
   for each row execute function public.refuse_when_deleted();
-create trigger circle_members_not_deleted before insert on public.circle_members
+create trigger message_requests_not_deleted before insert or update or delete on public.message_requests
   for each row execute function public.refuse_when_deleted();
+create trigger conversation_settings_not_deleted before insert or update or delete on public.conversation_settings
+  for each row execute function public.refuse_when_deleted();
+create trigger circles_not_deleted before insert or update or delete on public.circles
+  for each row execute function public.refuse_when_deleted();
+create trigger circle_members_not_deleted before insert or update or delete on public.circle_members
+  for each row execute function public.refuse_when_deleted();
+create trigger circle_requests_not_deleted before insert or update or delete on public.circle_requests
+  for each row execute function public.refuse_when_deleted();
+create trigger recipes_not_deleted before insert or update or delete on public.recipes
+  for each row execute function public.refuse_when_deleted();
+create trigger connections_not_deleted before insert or update or delete on public.connections
+  for each row execute function public.refuse_when_deleted();
+create trigger group_orders_not_deleted before insert or update or delete on public.group_orders
+  for each row execute function public.refuse_when_deleted();
+create trigger order_items_not_deleted before insert or update or delete on public.order_items
+  for each row execute function public.refuse_when_deleted();
+create trigger order_interests_not_deleted before insert or update or delete on public.order_interests
+  for each row execute function public.refuse_when_deleted();
+create trigger contribution_slots_not_deleted before insert or update or delete on public.contribution_slots
+  for each row execute function public.refuse_when_deleted();
+create trigger contribution_claims_not_deleted before insert or update or delete on public.contribution_claims
+  for each row execute function public.refuse_when_deleted();
+create trigger plan_feedback_not_deleted before insert or update or delete on public.plan_feedback
+  for each row execute function public.refuse_when_deleted();
+create trigger user_settings_not_deleted before insert or update or delete on public.user_settings
+  for each row execute function public.refuse_when_deleted();
+create trigger blocks_not_deleted before insert or update or delete on public.blocks
+  for each row execute function public.refuse_when_deleted();
+create trigger reports_not_deleted before insert on public.reports
+  for each row execute function public.refuse_when_deleted();
+create trigger appeals_not_deleted before insert or update on public.appeals
+  for each row execute function public.refuse_when_deleted();
+create trigger policy_acceptances_not_deleted before insert on public.policy_acceptances
+  for each row execute function public.refuse_when_deleted();
+create trigger data_requests_not_deleted before insert on public.data_requests
+  for each row execute function public.refuse_when_deleted();
+-- The stub's own profile row is frozen too (account_delete itself runs before status changes).
+create function public.refuse_own_profile_when_deleted()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.id = (select auth.uid()) and old.status = 'deleted' then
+    raise exception 'account_deleted' using errcode = 'P0001';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.refuse_own_profile_when_deleted() from public, anon, authenticated;
+create trigger profiles_not_deleted before update on public.profiles
+  for each row execute function public.refuse_own_profile_when_deleted();
+
+-- Staff standing ends with the account.
+create or replace function public.is_staff()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (select 1 from public.profiles where id = (select auth.uid()) and role = 'staff' and status = 'active');
+$$;
+
+-- A direct chat with a deleted member closes for both, like a blocked one.
+create or replace function public.conversation_member(p_conversation_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.conversations c
+    where c.id = p_conversation_id
+      and ((c.kind = 'plan' and public.plan_chat_member(c.plan_id))
+        or (c.kind = 'circle' and public.circle_chat_member(c.circle_id))
+        or (c.kind = 'direct' and (c.user_low = (select auth.uid()) or c.user_high = (select auth.uid()))
+            and not public.blocked_pair(c.user_low, c.user_high)
+            and not exists (select 1 from public.profiles d where d.id in (c.user_low, c.user_high) and d.status = 'deleted'))));
+$$;
 
 -- Reports about the app itself (accessibility problems) need no other target.
 alter table public.reports drop constraint reports_target_type_check;

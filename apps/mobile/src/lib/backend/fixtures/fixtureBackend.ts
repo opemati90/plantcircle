@@ -573,7 +573,8 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async signOut() {
       await call();
-      commit(EMPTY, true);
+      // The dev person's privacy choices and settings survive a sign-out, as the database's do.
+      commit({ ...EMPTY, settings: state.settings }, true);
     },
 
     async getProfile() {

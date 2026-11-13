@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
@@ -20,6 +21,7 @@ export default function AccessibilityScreen() {
   const { t } = useTranslation();
   const insets = useScreenInsets();
   const router = useRouter();
+  const [linkFailed, setLinkFailed] = useState(false);
 
   const back = () => {
     if (router.canGoBack()) router.back();
@@ -66,12 +68,15 @@ export default function AccessibilityScreen() {
         <Pressable
           accessibilityRole="link"
           onPress={() => {
-            void Linking.openURL(RIGHTS_URL).catch(() => undefined);
+            Linking.openURL(RIGHTS_URL).then(() => { setLinkFailed(false); }).catch(() => { setLinkFailed(true); });
           }}
           style={styles.link}
         >
           <Text style={type(15, 'semibold', { color: color.brand })}>{t('account.a11yRights')}</Text>
         </Pressable>
+        {linkFailed ? (
+          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('account.linkError', { url: RIGHTS_URL })}</Text>
+        ) : null}
       </ScrollView>
     </View>
   );

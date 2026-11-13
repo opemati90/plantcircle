@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
@@ -36,8 +36,16 @@ export default function PrivacyChoicesScreen() {
   const onboarding = from !== 'profile';
   const next = safeNextPath(rawNext);
 
+  // Already answered (a later sign-in): straight on to where the person was going.
+  useEffect(() => {
+    if (onboarding && settings.data?.consentDecidedAt) router.dismissTo(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onboarding, settings.data?.consentDecidedAt]);
+  const [linkFailed, setLinkFailed] = useState(false);
+
   const leave = () => {
-    if (onboarding) router.replace(next);
+    // After sign-up the screen that asked for sign-in is still below; go back to it, not onto a copy.
+    if (onboarding) router.dismissTo(next);
     else if (router.canGoBack()) router.back();
     else router.replace('/profile/privacy');
   };
@@ -108,13 +116,16 @@ export default function PrivacyChoicesScreen() {
         <Pressable
           accessibilityRole="link"
           onPress={() => {
-            void Linking.openURL(PRIVACY_URL).catch(() => undefined);
+            Linking.openURL(PRIVACY_URL).then(() => { setLinkFailed(false); }).catch(() => { setLinkFailed(true); });
           }}
           style={styles.link}
         >
           <Text style={type(15, 'semibold', { color: color.brand })}>{t('account.readPrivacy')}</Text>
         </Pressable>
 
+        {linkFailed ? (
+          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('account.linkError', { url: PRIVACY_URL })}</Text>
+        ) : null}
         {update.isError ? (
           <Text role="alert" style={type(15, 'regular', { color: color.danger })}>{t('account.error')}</Text>
         ) : null}

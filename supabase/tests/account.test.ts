@@ -55,6 +55,9 @@ describe('settings and consent', () => {
     ]);
     expect(await settings(ANA)).toEqual(expect.objectContaining({ notif_direct: false, quiet_start: 23, analytics_consent: false }));
     await expect(update(ANA, { diet: 'vegan' })).rejects.toThrow(/invalid_settings/);
+    await expect(update(ANA, { analytics_consent: 'yes' })).rejects.toThrow(/invalid_settings/);
+    await expect(update(ANA, { quiet_start: '12' })).rejects.toThrow(/invalid_settings/);
+    await expect(update(ANA, { quiet_start: 12.5 })).rejects.toThrow(/invalid_settings/);
     await expect(update(ANA, { quiet_start: 25 })).rejects.toThrow();
     await expect(asUser(db, ANA, () => db.query('select * from public.user_settings'))).rejects.toThrow(/permission denied/);
     await expect(asUser(db, null, () => db.query('select public.settings_get()'))).rejects.toThrow();
@@ -78,11 +81,15 @@ describe('deleting the account', () => {
     await asUser(db, ANA, () => db.query('select public.rsvp_join($1, $2)', [plan, key()]));
     const waiting = await asUser(db, BEN, () => db.query<{ result: { status: string } }>('select public.rsvp_join($1, $2) as result', [plan, key()])).then((r) => r.rows[0]?.result);
     expect(waiting?.status).toBe('waitlisted');
-    const hosted = await db.query<{ id: string }>(
+    const hostedId = await db.query<{ id: string }>(
       `insert into public.plans (host_id, kind, format, title, description, city_id, area_label, starts_at, ends_at, tz, capacity, allergens, status)
        values ($1, 'cooking_night', 'in_person', 'Soup', '', $2, 'Neukölln', now() + interval '1 day', now() + interval '1 day 2 hours', 'Europe/Berlin', 6, 'none', 'published') returning id`,
       [ANA, CITY],
     ).then((r) => r.rows[0]?.id ?? '');
+    const hosted = hostedId;
+    await db.query(`select set_config('request.jwt.claim.sub', '', false)`);
+    await db.query(`insert into public.rsvps (plan_id, user_id, state, checked_in_at) values ($1, $2, 'going', null), ($1, $3, 'checked_in', now())`, [hosted, OLU, BEN]);
+    await db.query(`insert into public.conversations (kind, user_low, user_high) values ('direct', $1, $2)`, [ANA < BEN ? ANA : BEN, ANA < BEN ? BEN : ANA]);
 
     const k = key();
     await asUser(db, ANA, () => db.query('select public.account_delete($1)', [k]));
@@ -94,6 +101,8 @@ describe('deleting the account', () => {
     expect(['going', 'offered']).toContain(ben.rows[0]?.state);
     const soup = await db.query<{ status: string }>('select status from public.plans where id = $1', [hosted]);
     expect(soup.rows[0]?.status).toBe('cancelled');
+    const guests = await db.query<{ state: string }>('select state from public.rsvps where plan_id = $1', [hosted]);
+    expect(guests.rows.every((g) => g.state === 'cancelled')).toBe(true);
     const members = await db.query('select 1 from public.circle_members where user_id = $1', [ANA]);
     expect(members.rows).toHaveLength(0);
     const circle = await db.query<{ status: string }>('select status from public.circles where id = $1', [KITCHEN]);
@@ -105,5 +114,11 @@ describe('deleting the account', () => {
     const people = await asUser(db, BEN, () => db.query<{ user_id: string }>('select user_id from public.people_in_my_circles()'));
     expect(people.rows.map((r) => r.user_id)).not.toContain(ANA);
     await expect(asUser(db, ANA, () => db.query('select public.rsvp_join($1, $2)', [plan, key()]))).rejects.toThrow(/account_deleted|plan_full/);
+    await expect(asUser(db, ANA, () => db.query(`update public.profiles set display_name = 'Ana' where id = $1`, [ANA]))).rejects.toThrow(/account_deleted/);
+    await expect(asUser(db, ANA, () => db.query('select public.settings_update($1)', ['{"notif_direct": false}']))).rejects.toThrow(/account_deleted/);
+    await expect(asUser(db, ANA, () => db.query('select public.data_export_request($1)', [key()]))).rejects.toThrow(/account_deleted/);
+    await expect(asUser(db, ANA, () => db.query(`insert into public.policy_acceptances (user_id, policy, version) values ($1, 'terms', '2027-01')`, [ANA]))).rejects.toThrow(/account_deleted/);
+    // Nobody reaches the stub by direct message either.
+    await expect(asUser(db, BEN, () => db.query('select public.conversation_open($1, $2)', ['direct', ANA]))).rejects.toThrow(/not_member/);
   });
 });

@@ -5,11 +5,12 @@ import { useAuth } from '../auth/useAuth';
 
 export function useSettings() {
   const backend = useBackend();
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   return useQuery({
     queryKey: ['settings', session?.userId ?? null],
     queryFn: () => backend.getSettings(),
-    enabled: !!session,
+    // Settings hang off the profile, which the first sign-in is still creating.
+    enabled: !!session && !!profile,
     staleTime: 60_000,
   });
 }
@@ -40,11 +41,7 @@ export function useDeleteAccount() {
   const backend = useBackend();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (key: string) => {
-      await backend.deleteAccount(key);
-      // The stub that is left cannot sign in as this person again; end the session here.
-      await backend.signOut().catch(() => undefined);
-    },
+    mutationFn: (key: string) => backend.deleteAccount(key),
     onSuccess: () => {
       queryClient.clear();
     },

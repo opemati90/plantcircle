@@ -711,6 +711,8 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     async deleteAccount(key) {
       const result = await client.rpc('account_delete', { p_idempotency_key: key });
       if (result.error) throw toBackendError(result.error);
+      // The stub cannot act as this person again; the device forgets the session even offline.
+      await client.auth.signOut({ scope: 'local' });
     },
 
     async blockUser(userId, key) {
