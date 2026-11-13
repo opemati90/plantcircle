@@ -21,6 +21,7 @@ import { IconButton } from './Button';
 import { AlertIcon, CloseIcon } from './icons';
 import { color, extra, radius, shadow, size, type } from './theme';
 import { useScreenInsets } from './useScreenInsets';
+import { useSavedPlansAvailable } from '../lib/savedPlans';
 
 /** Decorative calendar tile; the date is always also present as text nearby. */
 export function DateTile({ iso, timeZone }: { iso: string; timeZone: string }) {
@@ -236,6 +237,7 @@ interface EmptyStateProps {
 export function EmptyState({ title, text, icon, actions, onSavedPlans, reference }: EmptyStateProps) {
   const { headerTop } = useScreenInsets();
   const { t } = useTranslation();
+  const savedPlans = useSavedPlansAvailable();
   return (
     <View style={[styles.empty, { paddingTop: headerTop + 56 }]}>
       <View style={styles.emptyBody}>
@@ -251,7 +253,7 @@ export function EmptyState({ title, text, icon, actions, onSavedPlans, reference
         <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
           {text}
         </Text>
-        {onSavedPlans ? (
+        {onSavedPlans && savedPlans ? (
           <Pressable accessibilityRole="link" onPress={onSavedPlans} style={styles.savedCard}>
             <View style={styles.savedText}>
               <Text style={type(16, 'semibold')}>{t('errors.savedTitle')}</Text>

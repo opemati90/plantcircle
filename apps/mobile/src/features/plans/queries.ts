@@ -37,6 +37,19 @@ export function usePlansThisWeek(cityIds: string[] | null, enabled = true) {
 
 const MONTH_MS = 30 * 86_400_000;
 
+/** Online Plans anywhere in the next month: what a city with nothing this week can join from home. */
+export function useOnlinePlans(enabled: boolean) {
+  const backend = useBackend();
+  return useQuery({
+    queryKey: ['explorePlans', 'online'],
+    enabled,
+    queryFn: () => {
+      const from = new Date();
+      return backend.listUpcomingPlans({ cityIds: null, from, to: new Date(from.getTime() + MONTH_MS), format: 'online' });
+    },
+  });
+}
+
 /** Plans in the next month for Explore: the cities given, or every city when `null`. */
 export function useExplorePlans(cityIds: string[] | null, enabled = true) {
   const backend = useBackend();

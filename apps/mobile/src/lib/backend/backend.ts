@@ -194,7 +194,7 @@ export interface Backend {
   listCities(): Promise<City[]>;
   /** `cityId: null` lists Plans everywhere (the member has not picked a city). */
   /** `cityIds: null` lists Plans everywhere; a list limits them to those cities. */
-  listUpcomingPlans(query: { cityIds: string[] | null; from: Date; to: Date }): Promise<Plan[]>;
+  listUpcomingPlans(query: { cityIds: string[] | null; from: Date; to: Date; format?: 'online' }): Promise<Plan[]>;
   getPlan(planId: string): Promise<PlanDetail>;
   getUpNext(now: Date): Promise<UpNext | null>;
   /** The viewer's own Plans, soonest first (upcoming) or latest first (past). */

@@ -33,7 +33,7 @@ import {
   useSetCity,
   useUpNext,
   useWaitlistOffers,
-  useExplorePlans,
+  useOnlinePlans,
 } from '../plans/queries';
 import { CityPickerSheet } from './CityPickerSheet';
 import { filterPlans, HOME_FILTERS, type HomeFilter } from './homeFilters';
@@ -217,8 +217,8 @@ export default function HomeScreen() {
   const plans = usePlansThisWeek(cityId ? [cityId] : null);
   // A city with nothing this week: online Plans from anywhere this month, to join from home (EmptyCity).
   const emptyCity = Boolean(cityId) && plans.data?.length === 0;
-  const anywhere = useExplorePlans(null, emptyCity);
-  const fromHome = (anywhere.data ?? []).filter((p) => p.format === 'online').slice(0, 3);
+  const anywhere = useOnlinePlans(emptyCity);
+  const fromHome = (anywhere.data ?? []).slice(0, 3);
   const upNext = useUpNext();
   const offers = useWaitlistOffers();
   const [filter, setFilter] = useState<HomeFilter>('forYou');

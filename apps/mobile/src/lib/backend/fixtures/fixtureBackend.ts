@@ -1948,11 +1948,14 @@ export async function createFixtureBackend(): Promise<Backend> {
       return fixtureCities;
     },
 
-    async listUpcomingPlans({ cityIds, from, to }) {
+    async listUpcomingPlans({ cityIds, from, to, format }) {
       await call('listPlans');
       return plans(from)
         .filter(
-          (plan) => (!cityIds || cityIds.includes(plan.cityId)) && new Date(plan.startsAt) < to,
+          (plan) =>
+            (!cityIds || cityIds.includes(plan.cityId)) &&
+            new Date(plan.startsAt) < to &&
+            (!format || plan.format === format),
         )
         .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
     },

@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { BackendError } from '../../lib/backend/backend';
 import { useBackend } from '../../lib/backend/BackendProvider';
 import { clearOfflineCache } from '../../lib/offlineCache';
+import { setSavedPlansAvailable } from '../../lib/savedPlans';
 import { unregisterPush } from '../notifications/push';
 import type { Backend } from '../../lib/backend/backend';
 import type { Profile, Session } from '../../lib/backend/types';
@@ -44,6 +45,10 @@ export function useAuth(): Auth {
     staleTime: Infinity,
   });
   const session = sessionQuery.data;
+  // Error screens offer the saved Plans only to someone signed in.
+  useEffect(() => {
+    if (session !== undefined) setSavedPlansAvailable(session !== null);
+  }, [session]);
 
   const profileQuery = useQuery({
     queryKey: ['profile', session?.userId],
@@ -79,6 +84,7 @@ export function useSessionSync(): void {
       backend.onSessionChange((session) => {
         const previous = queryClient.getQueryData<Session | null>(SESSION_KEY);
         queryClient.setQueryData(SESSION_KEY, session);
+        setSavedPlansAvailable(session !== null);
         // The first notice after start is not a change of hands; a real change forgets everything
         // the last member had, in memory and on the device.
         if (previous !== undefined && previous?.userId !== session?.userId) {

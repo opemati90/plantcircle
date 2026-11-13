@@ -1025,7 +1025,7 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       }));
     },
 
-    async listUpcomingPlans({ cityIds, from, to }) {
+    async listUpcomingPlans({ cityIds, from, to, format }) {
       if (cityIds?.length === 0) return [];
       let query = client
         .from('plan_cards')
@@ -1034,6 +1034,7 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         .gte('ends_at', from.toISOString())
         .lt('starts_at', to.toISOString());
       if (cityIds) query = query.in('city_id', cityIds);
+      if (format) query = query.eq('format', format);
       const { data, error } = await query.order('starts_at').limit(UPCOMING_LIMIT);
       if (error) throw toBackendError(error);
       return parse(z.array(planCardSchema), data).map(toPlan);

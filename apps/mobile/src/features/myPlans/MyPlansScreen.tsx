@@ -97,7 +97,8 @@ export default function MyPlansScreen() {
       );
     }
     if (query.isPending) return <ListSkeleton />;
-    if (query.isError && !isOffline(query)) {
+    // A saved copy is better than an error, whatever the failure was.
+    if (query.isError && query.data === undefined) {
       const offline = errorCode(query.error) === 'network';
       return (
         <EmptyState
@@ -108,7 +109,7 @@ export default function MyPlansScreen() {
         />
       );
     }
-    const rows = query.data ?? [];
+    const rows = query.data;
     if (rows.length === 0) {
       return tab === 'past' ? (
         <InlineState title={t('myPlans.pastEmpty.title')} text={t('myPlans.pastEmpty.text')} />

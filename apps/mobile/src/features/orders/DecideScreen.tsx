@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
+import { errorCode } from '../../lib/backend/backend';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { EmptyState, FloatingActionBar, InlineState, Skeleton } from '../../components/parts';
 import { useAuth } from '../auth/useAuth';
@@ -50,7 +51,7 @@ export default function DecideScreen() {
       <View style={styles.screen}>
         <ScreenHeader backLabel={t('common.back')} onBack={back} />
         <EmptyState
-          onSavedPlans={() => { router.push('/my-plans'); }}
+          {...(errorCode(order.error) === 'not_found' ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
           title={t('errors.serverTitle')}
           text={t('errors.serverText')}
           actions={<Button label={t('common.retry')} onPress={() => void order.refetch()} />}
