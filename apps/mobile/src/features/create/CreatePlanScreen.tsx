@@ -220,7 +220,9 @@ export default function CreatePlanScreen() {
   const submitError = create.isError
     ? errorCode(create.error) === 'city_required'
       ? t('create.cityRequired')
-      : t('create.error')
+      : errorCode(create.error) === 'suspended'
+        ? t('safety.suspendedErrorDetail')
+        : t('create.error')
     : null;
 
   return (

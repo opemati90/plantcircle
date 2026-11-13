@@ -15,6 +15,8 @@ export interface FixtureWindow {
   __pcFixtures?: {
     failNext: (operation: Operation, times?: number) => void;
     freeSpot: (planId: string, offerMs?: number) => void;
+    suspend: () => void;
+    makeStaff: () => void;
   };
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
 }

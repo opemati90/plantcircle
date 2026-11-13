@@ -4,13 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
-import {
-  BellIcon,
-  ChevronRightIcon,
-  OfflineIcon,
-  PinIcon,
-  PlusIcon,
-} from '../../components/icons';
+import { AlertIcon, BellIcon, ChevronRightIcon, OfflineIcon, PinIcon, PlusIcon } from '../../components/icons';
 import { DateTile, EmptyState, Skeleton } from '../../components/parts';
 import { Photo } from '../../components/Photo';
 import { color, extra, radius, shadow, type } from '../../components/theme';
@@ -28,6 +22,7 @@ import {
 } from '../../lib/dates';
 import { currentLanguage } from '../../lib/i18n';
 import { useAuth } from '../auth/useAuth';
+import { hasNotice, isFrozen, isPaused } from '../safety/standing';
 import { getOnboarding } from '../onboarding/onboardingStore';
 import { categoryLabel, placeLabel, priceLabel, spotsLeftShort } from '../plans/planCopy';
 import { imageFocus, planImage } from '../plans/planImage';
@@ -310,6 +305,20 @@ export default function HomeScreen() {
           )}
         </View>
 
+        {hasNotice(profile) ? (
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={isFrozen(profile) && !isPaused(profile) ? t('safety.frozenBanner') : t('safety.pausedBanner')}
+            onPress={() => {
+              router.push('/suspended');
+            }}
+            style={styles.paused}
+          >
+            <AlertIcon size={18} strokeWidth={2} color="#FFFFFF" />
+            <Text style={[type(14, 'semibold', { color: '#FFFFFF' }), styles.pausedText]}>{isFrozen(profile) && !isPaused(profile) ? t('safety.frozenBanner') : t('safety.pausedBanner')}</Text>
+            <ChevronRightIcon size={16} strokeWidth={2.4} color="#FFFFFF" />
+          </Pressable>
+        ) : null}
         <View style={[styles.row, styles.heading]}>
           <Text style={type(15, 'medium', { color: color.secondary })}>
             {name
@@ -481,6 +490,8 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  paused: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingHorizontal: 14, borderRadius: 14, backgroundColor: color.ink },
+  pausedText: { flex: 1, minWidth: 0 },
   screen: { flex: 1, backgroundColor: color.surface },
   content: { gap: 18 },
   row: { paddingHorizontal: 20 },

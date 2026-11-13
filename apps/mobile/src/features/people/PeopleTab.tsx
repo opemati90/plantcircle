@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
-import { ChatIcon, ChevronRightIcon, OfflineIcon } from '../../components/icons';
+import { AlertIcon, ChatIcon, ChevronRightIcon, OfflineIcon } from '../../components/icons';
 import { EmptyState, InlineState, Skeleton } from '../../components/parts';
 import { color, extra, radius, type } from '../../components/theme';
 import { errorCode } from '../../lib/backend/backend';
@@ -95,6 +95,16 @@ export function PeopleTab() {
                 {[person.circleNames[0], person.city].filter(Boolean).join(' · ')}
               </Text>
             </View>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={t('safety.reportName', { name: person.displayName })}
+              onPress={() => {
+                router.push({ pathname: '/report', params: { type: 'person', id: person.userId, name: person.displayName, userId: person.userId } });
+              }}
+              style={styles.iconAction}
+            >
+              <AlertIcon size={18} strokeWidth={1.9} color={color.secondary} />
+            </Pressable>
             {person.connection === 'none' ? (
               <Button
                 variant="outline"

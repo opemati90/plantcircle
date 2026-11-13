@@ -4,6 +4,7 @@ import {
   isRecipeAllergen,
 } from '../types';
 import type {
+  AuditRow,
   Circle,
   CircleRequest,
   FeedbackState,
@@ -17,7 +18,11 @@ import type {
   Person,
   Recipe,
   RecipeDetail,
+  ReportReceipt,
   Session,
+  StaffAppeal,
+  StaffCase,
+  Suspension,
 } from '../types';
 import {
   fixtureAddresses,
@@ -79,6 +84,14 @@ interface State {
   /** The viewer's requests, by recipient: the first message and when it was sent. */
   directOutgoing: Record<string, { firstMessage: string; createdAt: string; clientId: string }>;
   /** Mute and pin per conversation, for this person. */
+  /** People the viewer has blocked: hidden from People, chats and requests both ways. */
+  blocked: string[];
+  /** Reports made in this session, as the staff console (dev) lists them. */
+  reports: (StaffCase & { targetUserId: string | null })[];
+  /** The viewer's own suspension, set by a staff decision in this session (dev only). */
+  suspension: Suspension | null;
+  appeals: StaffAppeal[];
+  audit: AuditRow[];
   conversationSettings: Record<string, { mutedUntil: string | null; pinned: boolean; lastReadAt?: string | null }>;
   messages: Record<string, { id: string; clientId: string; senderId: string; senderName: string; body: string; createdAt: string }[]>;
   /** The viewer's feedback on Plans, by Plan id. */
@@ -104,6 +117,10 @@ interface FixtureHooks {
     failNext: (operation: Operation, times?: number) => void;
     /** Test hook: another guest cancels; the viewer (if in line) is offered the spot. */
     freeSpot: (planId: string, offerMs?: number) => void;
+    /** Test hook: a staff decision pauses the viewer's account, as the Suspended screen shows it. */
+    suspend: () => void;
+    /** Test hook: the viewer becomes staff, so the web console opens. */
+    makeStaff: () => void;
   };
   /** Test hook: failures to simulate from the very first call after load. */
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
@@ -143,6 +160,11 @@ const EMPTY: State = {
     },
   ],
   directOutgoing: {},
+  blocked: [],
+  reports: [],
+  suspension: null,
+  appeals: [],
+  audit: [],
   conversationSettings: {},
   feedbackMine: {},
   idempotent: {},
@@ -175,6 +197,25 @@ export async function createFixtureBackend(): Promise<Backend> {
   hooks.__pcFixtures = {
     failNext: (operation, times = 1) => {
       failures.set(operation, times);
+    },
+    suspend: () => {
+      const until = new Date(Date.now() + 9 * 86_400_000).toISOString();
+      commit({
+        ...state,
+        suspension: {
+          actionId: 'action-dev-suspend',
+          action: 'suspend',
+          reason: 'Repeated messages after a member declined contact',
+          rule: 'Community Rules §3 — no unwanted contact',
+          until,
+          automated: false,
+          decidedAt: new Date().toISOString(),
+          appealStatus: null,
+        },
+      });
+    },
+    makeStaff: () => {
+      commit({ ...state, profile: state.profile ? { ...state.profile, role: 'staff' } : state.profile });
     },
     freeSpot: (planId, offerMs = OFFER_MS) => {
       const inLine = planId in state.waitlist;
@@ -212,6 +253,56 @@ export async function createFixtureBackend(): Promise<Backend> {
   function requireSession(): Session {
     if (!state.session) throw new BackendError('not_authenticated');
     return state.session;
+  }
+
+  /** The profile as the database reports it: paused while a suspension stands. */
+  function withStanding(profile: Profile | null): Profile | null {
+    if (!profile) return null;
+    const s = state.suspension;
+    const standing = s !== null && (s.until === null || Date.parse(s.until) > Date.now());
+    if (!standing) return profile;
+    return s.action === 'freeze_messages'
+      ? { ...profile, messagesFrozenUntil: s.until }
+      : { ...profile, status: 'suspended', suspendedUntil: s.until };
+  }
+
+  /** A paused account reads but cannot post, join or message, as the database trigger refuses. */
+  function requireActive(): void {
+    requireSession();
+    const p = withStanding(state.profile);
+    if (p && p.status === 'suspended' && (p.suspendedUntil === null || Date.parse(p.suspendedUntil) > Date.now())) {
+      throw new BackendError('suspended');
+    }
+  }
+
+  /** A frozen member cannot post messages, as the database trigger refuses. */
+  function requireNotFrozen(): void {
+    const p = withStanding(state.profile);
+    if (p?.messagesFrozenUntil && Date.parse(p.messagesFrozenUntil) > Date.now()) {
+      throw new BackendError('messages_frozen');
+    }
+  }
+
+  /** Contact with a blocked person is refused, as the database trigger refuses it. */
+  function requireNotBlocked(userId: string): void {
+    if (state.blocked.includes(userId)) throw new BackendError('blocked');
+  }
+
+  function requireStaff(): void {
+    requireActive();
+    if (state.profile?.role !== 'staff') throw new BackendError('forbidden');
+  }
+
+  function auditRow(action: string, targetType: string, reason: string): AuditRow {
+    return {
+      id: `audit-${Date.now()}-${state.audit.length}`,
+      actorName: myName(),
+      actorRole: 'staff',
+      action,
+      targetType,
+      reason,
+      createdAt: new Date().toISOString(),
+    };
   }
 
   /** True when this key was already processed (a retried request). */
@@ -349,7 +440,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       ...state.circlesCreated.map((c) => c.id),
     ]);
     return fixturePeople
-      .filter((p) => circleIds.has(p.circleId))
+      .filter((p) => circleIds.has(p.circleId) && !state.blocked.includes(p.person.userId))
       .map(({ person }) => ({
         ...person,
         connection: state.peopleRequested.includes(person.userId)
@@ -483,7 +574,7 @@ export async function createFixtureBackend(): Promise<Backend> {
     async getProfile() {
       await call();
       requireSession();
-      return state.profile;
+      return withStanding(state.profile);
     },
 
     async createProfile(input) {
@@ -494,9 +585,13 @@ export async function createFixtureBackend(): Promise<Backend> {
         cityId: input.cityId,
         goals: input.goals,
         peopleVisible: false,
+        status: 'active' as const,
+        suspendedUntil: null,
+        messagesFrozenUntil: null,
+        role: 'member' as const,
       };
       commit({ ...state, profile });
-      return profile;
+      return withStanding(profile) ?? profile;
     },
 
     async listMyCircles() {
@@ -526,7 +621,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async joinCircle(circleId) {
       await call();
-      requireSession();
+      requireActive();
       const circle = [...fixtureCircles, ...state.circlesCreated].find(
         (c) => c.id === circleId,
       );
@@ -545,7 +640,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async createCircle(input, key) {
       await call();
-      requireSession();
+      requireActive();
       const fingerprint = fingerprintOf(input);
       const replayed = replayKey(key, fingerprint);
       if (replayed) return replayed;
@@ -608,7 +703,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async respondToCircleRequest(requestId) {
       await call();
-      requireSession();
+      requireActive();
       const request = state.circleRequests.find((r) => r.id === requestId);
       if (!request) throw new BackendError('not_found');
       const owns = state.circlesCreated.some((c) => c.id === request.circleId);
@@ -639,7 +734,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async createRecipe(input, key) {
       await call();
-      requireSession();
+      requireActive();
       const fingerprint = fingerprintOf(input);
       const replayed = replayKey(key, fingerprint);
       if (replayed) return replayed;
@@ -682,7 +777,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async createPlan(input, key) {
       await call();
-      requireSession();
+      requireActive();
       const fingerprint = fingerprintOf(input);
       const replayed = replayKey(key, fingerprint);
       if (replayed) return replayed;
@@ -808,6 +903,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async checkInGuest(planId, userId, checkedIn, key) {
       await call();
+      requireActive();
       requireHost(planId);
       const fingerprint = `host_check_in:${planId}:${userId}:${checkedIn}`;
       const replayed = replayKey(key, fingerprint);
@@ -835,6 +931,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async endPlan(planId, key) {
       await call();
+      requireActive();
       requireHost(planId);
       const fingerprint = `host_end_plan:${planId}`;
       if (replayKey(key, fingerprint)) return;
@@ -872,7 +969,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async submitFeedback(planId, rating, comment, key) {
       await call();
-      requireSession();
+      requireActive();
       const fingerprint = `plan_feedback:${planId}:${rating}:${comment ?? ''}`;
       if (replayKey(key, fingerprint)) return;
       if (!state.plansEnded.includes(planId) || !state.goingPlanIds.includes(planId)) {
@@ -898,6 +995,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireSession();
       const { kind, refId } = conversationRef(conversationId);
       if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
+      if (kind === 'direct' && state.blocked.includes(refId)) throw new BackendError('closed_chat');
       return (state.messages[conversationId] ?? []).map((m) => ({
         id: m.id,
         senderId: m.senderId,
@@ -909,8 +1007,9 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async sendMessage(conversationId, body, clientId) {
       await call();
-      requireSession();
+      requireActive();
       const { kind, refId } = conversationRef(conversationId);
+      if (kind === 'direct') requireNotBlocked(refId);
       if (!chatMember(kind, refId)) {
         throw new BackendError('closed_chat');
       }
@@ -919,6 +1018,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       // Like the database: a client id is unique per sender across every conversation.
       const everything = Object.values(state.messages).flat();
       if (everything.some((m) => m.clientId === clientId && m.senderId === me)) return;
+      requireNotFrozen();
       const text = body.trim();
       if (Array.from(text).length < 1 || Array.from(text).length > 1000) {
         throw new BackendError('invalid_input');
@@ -948,10 +1048,12 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async requestDirect(userId, firstMessage, clientId) {
       await call();
-      requireSession();
+      requireActive();
+      requireNotBlocked(userId);
       if (state.directOpen.includes(userId)) {
         return { status: 'accepted', conversationId: `conv-direct-${userId}` };
       }
+      requireNotFrozen();
       // A request already made reads as pending, whatever the recipient decided (a decline is silent).
       // A retry with the same client id, or any request already made, reads as pending.
       if (state.directOutgoing[userId]) return { status: 'pending' };
@@ -992,7 +1094,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async respondDirectRequest(requestId, accept) {
       await call();
-      requireSession();
+      requireActive();
       const request = state.directIncoming.find((r) => r.id === requestId);
       if (!request) throw new BackendError('not_found');
       if (request.status !== 'pending') return request.status === 'accepted' ? 'accepted' : 'declined';
@@ -1029,9 +1131,10 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async setMutedUntil(conversationId, until) {
       await call();
-      requireSession();
+      requireActive();
       const { kind, refId } = conversationRef(conversationId);
       if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
+      if (kind === 'direct' && state.blocked.includes(refId)) throw new BackendError('closed_chat');
       const current = state.conversationSettings[conversationId] ?? { mutedUntil: null, pinned: false };
       commit({
         ...state,
@@ -1044,7 +1147,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async setPinned(conversationId, pinned) {
       await call();
-      requireSession();
+      requireActive();
       const { kind, refId } = conversationRef(conversationId);
       if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
       const current = state.conversationSettings[conversationId] ?? { mutedUntil: null, pinned: false };
@@ -1102,7 +1205,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async markConversationRead(conversationId, upTo) {
       await call();
-      requireSession();
+      requireActive();
       const { kind, refId } = conversationRef(conversationId);
       if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
       const current = state.conversationSettings[conversationId] ?? { mutedUntil: null, pinned: false };
@@ -1129,7 +1232,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async createOrder(input, key) {
       await call();
-      requireSession();
+      requireActive();
       const fingerprint = fingerprintOf(input);
       const replayed = replayKey(key, fingerprint);
       if (replayed) return replayed;
@@ -1250,7 +1353,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async setOrderInterest(itemId, quantity, key) {
       await call();
-      requireSession();
+      requireActive();
       const fingerprint = `order_interest:${itemId}:${quantity}`;
       if (replayKey(key, fingerprint)) return;
       const entry = Object.values(state.orders).find((o) => o.items.some((i) => i.id === itemId));
@@ -1270,7 +1373,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async decideOrder(planId, decision, key) {
       await call();
-      requireSession();
+      requireActive();
       const fingerprint = `order_decide:${planId}:${decision}`;
       const replayed = replayKey(key, fingerprint);
       if (replayed) return replayed as GroupOrder['state'];
@@ -1314,7 +1417,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async markOrderCollected(planId, key) {
       await call();
-      requireSession();
+      requireActive();
       const fingerprint = `order_collected:${planId}`;
       if (replayKey(key, fingerprint)) return;
       const entry = state.orders[planId];
@@ -1333,6 +1436,248 @@ export async function createFixtureBackend(): Promise<Backend> {
       });
     },
 
+    async blockUser(userId, key) {
+      await call();
+      requireSession();
+      const fingerprint = `block:${userId}`;
+      if (replayKey(key, fingerprint)) return;
+      const me = state.session?.userId ?? 'fixture-you';
+      if (userId === me) throw new BackendError('person_not_found');
+      // Pending contact both ways ends; the other side is told nothing.
+      const outgoing = Object.fromEntries(Object.entries(state.directOutgoing).filter(([id]) => id !== userId));
+      commit({
+        ...state,
+        blocked: state.blocked.includes(userId) ? state.blocked : [...state.blocked, userId],
+        peopleRequested: state.peopleRequested.filter((id) => id !== userId),
+        directOutgoing: outgoing,
+        directIncoming: state.directIncoming.map((r) =>
+          r.fromId === userId && r.status === 'pending' ? { ...r, status: 'declined' as const } : r,
+        ),
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: userId } },
+      });
+    },
+
+    async unblockUser(userId) {
+      await call();
+      requireSession();
+      commit({ ...state, blocked: state.blocked.filter((id) => id !== userId) });
+    },
+
+    async listBlocked() {
+      await call();
+      requireSession();
+      return state.blocked.map((userId) => ({
+        userId,
+        displayName:
+          fixturePeople.find((p) => p.person.userId === userId)?.person.displayName ??
+          state.directIncoming.find((r) => r.fromId === userId)?.fromName ??
+          userId,
+        createdAt: new Date().toISOString(),
+      }));
+    },
+
+    async createReport(input, key) {
+      await call();
+      requireSession();
+      const fingerprint = fingerprintOf(input);
+      const replayed = replayKey(key, fingerprint);
+      if (replayed) {
+        const earlier = state.reports.find((r) => r.caseRef === replayed);
+        if (!earlier) throw new BackendError('not_found');
+        return { caseRef: earlier.caseRef, severity: earlier.severity };
+      }
+      const details = input.details.trim();
+      if (!input.accuracyConfirmed || Array.from(details).length < 1 || Array.from(details).length > 2000) {
+        throw new BackendError('invalid_input');
+      }
+      const severity: ReportReceipt['severity'] =
+        input.category === 'threats' || input.category === 'stalking'
+          ? 'urgent'
+          : ['harassment', 'scam', 'unsafe_place', 'allergen_deception'].includes(input.category)
+            ? 'high'
+            : 'routine';
+      const caseRef = `PC-${3100 + state.reports.length + 1}`;
+      const receipt: ReportReceipt = { caseRef, severity };
+      const label =
+        input.targetType === 'person'
+          ? (fixturePeople.find((p) => p.person.userId === input.targetId)?.person.displayName ?? input.targetId)
+          : input.targetType === 'plan' || input.targetType === 'order'
+            ? (plans().find((candidate) => candidate.id === input.targetId)?.title ?? input.targetId)
+            : input.targetId;
+      const hours = severity === 'urgent' ? 1 : severity === 'high' ? 24 : 72;
+      commit({
+        ...state,
+        reports: [
+          {
+            id: `report-${caseRef}`,
+            caseRef,
+            targetType: input.targetType,
+            targetId: input.targetId,
+            targetLabel: label,
+            targetUserId: input.targetType === 'person' ? input.targetId : null,
+            targetUserName: input.targetType === 'person' ? label : null,
+            category: input.category,
+            severity,
+            status: 'open',
+            details,
+            slaDueAt: new Date(Date.now() + hours * 3_600_000).toISOString(),
+            createdAt: new Date().toISOString(),
+            evidenceCount: 0,
+            history: [],
+            actions: [],
+            appeal: null,
+          },
+          ...state.reports,
+        ],
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: caseRef } },
+      });
+      return receipt;
+    },
+
+    async getSuspension() {
+      await call();
+      requireSession();
+      const s = state.suspension;
+      if (!s || (s.until !== null && Date.parse(s.until) <= Date.now())) return null;
+      return s;
+    },
+
+    async createAppeal(actionId, statement, key) {
+      await call();
+      requireSession();
+      const fingerprint = `appeal:${actionId}:${statement.trim()}`;
+      if (replayKey(key, fingerprint)) return;
+      if (!state.suspension || state.suspension.actionId !== actionId) throw new BackendError('not_found');
+      if (state.suspension.appealStatus) throw new BackendError('invalid_input');
+      const text = statement.trim();
+      if (Array.from(text).length < 1 || Array.from(text).length > 2000) throw new BackendError('invalid_input');
+      commit({
+        ...state,
+        suspension: { ...state.suspension, appealStatus: 'open' },
+        appeals: [
+          ...state.appeals,
+          {
+            id: `appeal-${actionId}`,
+            caseRef: null,
+            action: state.suspension.action,
+            originalActorName: 'Dana',
+            originalReason: state.suspension.reason,
+            statement: text,
+            memberName: myName(),
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: actionId } },
+      });
+    },
+
+    async staffQueue() {
+      await call();
+      requireStaff();
+      const rank = { urgent: 0, high: 1, routine: 2 };
+      return state.reports
+        .filter((r) => ['open', 'triaged', 'appealed'].includes(r.status))
+        .sort((a, b) => rank[a.severity] - rank[b.severity] || a.createdAt.localeCompare(b.createdAt));
+    },
+
+    async staffCase(reportId) {
+      await call();
+      requireStaff();
+      const found = state.reports.find((r) => r.id === reportId);
+      if (!found) throw new BackendError('not_found');
+      return found;
+    },
+
+    async staffViewMessages(reportId, reason) {
+      await call();
+      requireStaff();
+      if (!reason.trim()) throw new BackendError('invalid_input');
+      const found = state.reports.find((r) => r.id === reportId);
+      if (!found || found.targetType !== 'message') throw new BackendError('not_found');
+      const conversationId = Object.keys(state.messages).find((c) => state.messages[c]?.some((m) => m.id === found.targetId));
+      commit({
+        ...state,
+        audit: [auditRow('staff.view_messages', 'report', reason.trim()), ...state.audit],
+      });
+      return conversationId ? [...(state.messages[conversationId] ?? [])].reverse() : [];
+    },
+
+    async staffDecide(input, key) {
+      await call();
+      requireStaff();
+      const fingerprint = `staff_decide:${input.reportId}:${input.action}`;
+      if (replayKey(key, fingerprint)) return;
+      const found = state.reports.find((r) => r.id === input.reportId);
+      if (!found) throw new BackendError('not_found');
+      if (['actioned', 'dismissed', 'closed'].includes(found.status)) throw new BackendError('invalid_input');
+      const reason = input.reason.trim();
+      if (!reason) throw new BackendError('invalid_input');
+      if (input.action === 'suspend' && (!input.until || Date.parse(input.until) <= Date.now())) {
+        throw new BackendError('invalid_input');
+      }
+      const actionId = `action-${found.caseRef}`;
+      const status = input.action === 'no_action' ? 'dismissed' : 'actioned';
+      // Dev only: a suspension in the fixture pauses the viewer's own account, so the Suspended
+      // screen can be walked through on a device.
+      const suspension: Suspension | null =
+        input.action === 'suspend' || input.action === 'ban' || input.action === 'freeze_messages'
+          ? {
+              actionId,
+              action: input.action,
+              reason,
+              rule: input.rule,
+              until: input.action === 'ban' ? null : input.until,
+              automated: false,
+              decidedAt: new Date().toISOString(),
+              appealStatus: null,
+            }
+          : state.suspension;
+      commit({
+        ...state,
+        reports: state.reports.map((r) =>
+          r.id === found.id
+            ? {
+                ...r,
+                status,
+                actions: [...r.actions, { id: actionId, action: input.action, reason, until: input.until, createdAt: new Date().toISOString() }],
+              }
+            : r,
+        ),
+        suspension,
+        audit: [auditRow(`staff.${input.action}`, 'report', reason), ...state.audit],
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: actionId } },
+      });
+    },
+
+    async staffAppeals() {
+      await call();
+      requireStaff();
+      return state.appeals;
+    },
+
+    async staffAppealDecide(appealId, uphold, reason, key) {
+      await call();
+      requireStaff();
+      const fingerprint = `staff_appeal:${appealId}:${uphold}`;
+      if (replayKey(key, fingerprint)) return;
+      if (!state.appeals.some((a) => a.id === appealId)) throw new BackendError('not_found');
+      if (!reason.trim()) throw new BackendError('invalid_input');
+      const lifted = !uphold;
+      commit({
+        ...state,
+        appeals: state.appeals.filter((a) => a.id !== appealId),
+        suspension: state.suspension ? (lifted ? null : { ...state.suspension, appealStatus: 'upheld' }) : null,
+        audit: [auditRow(uphold ? 'staff.appeal_upheld' : 'staff.appeal_reversed', 'appeal', reason.trim()), ...state.audit],
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: appealId } },
+      });
+    },
+
+    async staffAudit(limit) {
+      await call();
+      requireStaff();
+      return state.audit.slice(0, limit);
+    },
+
     async listPeople() {
       await call();
       requireSession();
@@ -1341,7 +1686,8 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async connectWithPerson(userId, key) {
       await call();
-      requireSession();
+      requireActive();
+      requireNotBlocked(userId);
       const fingerprint = `person_connect:${userId}`;
       const replayed = replayKey(key, fingerprint);
       if (replayed) return replayed as 'requested' | 'connected';
@@ -1364,14 +1710,14 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async setPeopleVisible(visible) {
       await call();
-      requireSession();
+      requireActive();
       if (!state.profile) throw new BackendError('not_found');
       commit({ ...state, profile: { ...state.profile, peopleVisible: visible } });
     },
 
     async setCity(cityId) {
       await call();
-      requireSession();
+      requireActive();
       if (!state.profile) throw new BackendError('not_found');
       commit({ ...state, profile: { ...state.profile, cityId } });
     },
@@ -1452,7 +1798,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async joinPlan(planId, key) {
       await call('joinPlan');
-      requireSession();
+      requireActive();
       if (replayed(key) || state.goingPlanIds.includes(planId)) return;
       const plan = findPlan(planId);
       if (!plan.hasOpenSpot) throw new BackendError('plan_full');
@@ -1476,7 +1822,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async joinWaitlist(planId, key) {
       await call('joinWaitlist');
-      requireSession();
+      requireActive();
       findPlan(planId);
       if (replayed(key) || planId in state.waitlist || state.goingPlanIds.includes(planId))
         return;
@@ -1485,7 +1831,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async confirmWaitlistOffer(planId, key) {
       await call('confirmOffer');
-      requireSession();
+      requireActive();
       if (state.goingPlanIds.includes(planId)) return 'going';
       const entry = state.waitlist[planId];
       if (!entry) throw new BackendError('no_offer');
@@ -1548,6 +1894,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async addBringItem(planId, item, key) {
       await call();
+      requireActive();
       requireHost(planId);
       const fingerprint = `bring_add:${planId}:${item.label.trim()}:${item.quantity}`;
       const replayed = replayKey(key, fingerprint);
@@ -1574,6 +1921,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       await call();
       const existing = state.bringCreated.find((b) => b.id === itemId);
       if (!existing) throw new BackendError('not_found');
+      requireActive();
       requireHost(existing.planId);
       const fingerprint = `bring_update:${itemId}:${item.label.trim()}:${item.quantity}`;
       if (replayKey(key, fingerprint)) return;
@@ -1597,7 +1945,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async removeBringItem(itemId, key) {
       await call();
-      requireSession();
+      requireActive();
       // A retry of a removal that already happened replays it, even though the item is gone.
       const fingerprint = `bring_remove:${itemId}`;
       if (replayKey(key, fingerprint)) return;
@@ -1615,7 +1963,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async unclaimBringItem(itemId, key) {
       await call();
-      requireSession();
+      requireActive();
       const fingerprint = `slot_unclaim:${itemId}`;
       if (replayKey(key, fingerprint)) return;
       const item =
@@ -1632,7 +1980,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async claimBringItem(itemId, key) {
       await call('claimBringItem');
-      requireSession();
+      requireActive();
       const item =
         fixtureBringItems.find((candidate) => candidate.id === itemId) ??
         state.bringCreated.find((candidate) => candidate.id === itemId);

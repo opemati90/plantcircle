@@ -7,6 +7,7 @@ import { ChevronLeftIcon, PlusIcon, SproutIcon } from '../../components/icons';
 import { EmptyState, FloatingActionBar, Skeleton } from '../../components/parts';
 import { color, extra, radius, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
+import { ReportLink } from '../safety/ReportLink';
 import { errorCode } from '../../lib/backend/backend';
 import type { OrderItem } from '../../lib/backend/types';
 import { shortDate, weekdayLong } from '../../lib/dates';
@@ -286,7 +287,11 @@ export default function OrderScreen() {
           ))}
           {saveError ? (
             <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
-              {errorCode(setInterest.error) === 'interest_closed' ? t('order.interestClosed') : t('order.error')}
+              {errorCode(setInterest.error) === 'interest_closed'
+                ? t('order.interestClosed')
+                : errorCode(setInterest.error) === 'suspended'
+                  ? t('safety.suspendedErrorDetail')
+                  : t('order.error')}
             </Text>
           ) : null}
         </View>
@@ -294,6 +299,7 @@ export default function OrderScreen() {
         <Text style={type(13, 'regular', { color: color.secondary, leading: 1.5 })}>
           {t('order.notPurchase', { name: data.organizerName })}
         </Text>
+        {organizer ? null : <ReportLink targetType="order" targetId={data.id} name={data.title} userId={data.organizerId} />}
       </ScrollView>
 
       <FloatingActionBar style={styles.bar}>

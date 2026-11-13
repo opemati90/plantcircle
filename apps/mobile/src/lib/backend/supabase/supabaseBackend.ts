@@ -32,10 +32,16 @@ import {
   toRecipe,
   planCardSchema,
   toPlan,
+  auditRowSchema,
+  staffAppealSchema,
+  staffCaseSchema,
+  staffQueueRowSchema,
+  suspensionSchema,
   type Plan,
   type Profile,
   type RsvpState,
   type Session,
+  type StaffQueueRow,
 } from '../types';
 
 function parse<T>(schema: z.ZodType<T>, data: unknown): T {
@@ -60,18 +66,39 @@ const profileRowSchema = z.object({
   city_id: z.string().nullable(),
   goals: z.array(z.string()),
   people_visible: z.boolean(),
+  status: z.enum(['active', 'suspended', 'deleted']),
+  suspended_until: z.string().nullable(),
+  messages_frozen_until: z.string().nullable(),
+  role: z.enum(['member', 'staff']),
 });
 const settingsRowSchema = z.object({
   muted_until: z.string().nullable(),
   pinned_at: z.string().nullable(),
 });
-const PROFILE_COLUMNS = 'display_name, city_id, goals, people_visible';
+const PROFILE_COLUMNS = 'display_name, city_id, goals, people_visible, status, suspended_until, messages_frozen_until, role';
+
+const toQueueRow = (row: z.infer<typeof staffQueueRowSchema>): StaffQueueRow => ({
+  id: row.id,
+  caseRef: row.case_ref,
+  targetType: row.target_type,
+  targetId: row.target_id,
+  targetLabel: row.target_label,
+  category: row.category,
+  severity: row.severity,
+  status: row.status,
+  slaDueAt: row.sla_due_at,
+  createdAt: row.created_at,
+});
 
 const toProfile = (row: z.infer<typeof profileRowSchema>): Profile => ({
   displayName: row.display_name,
   cityId: row.city_id,
   goals: row.goals,
   peopleVisible: row.people_visible,
+  status: row.status,
+  suspendedUntil: row.suspended_until,
+  messagesFrozenUntil: row.messages_frozen_until,
+  role: row.role,
 });
 
 const myRsvpSchema = z.object({
@@ -658,6 +685,134 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         })),
         collected: [...mine.values()].some((m) => m.quantity > 0) && [...mine.values()].every((m) => m.quantity === 0 || m.collected),
       };
+    },
+
+    async blockUser(userId, key) {
+      const result = await client.rpc('block_user', { p_user_id: userId, p_idempotency_key: key });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async unblockUser(userId) {
+      const result = await client.rpc('unblock_user', { p_user_id: userId });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async listBlocked() {
+      const result = await client.rpc('my_blocks');
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.array(z.object({ user_id: z.string(), display_name: z.string(), created_at: z.string() })), result.data)
+        .map((r) => ({ userId: r.user_id, displayName: r.display_name, createdAt: r.created_at }));
+    },
+
+    async createReport(input, key) {
+      const result = await client.rpc('report_create', {
+        p_target_type: input.targetType,
+        p_target_id: input.targetId,
+        p_category: input.category,
+        p_details: input.details,
+        p_accuracy_confirmed: input.accuracyConfirmed,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+      const row = parse(z.object({ case_ref: z.string(), severity: z.enum(['urgent', 'high', 'routine']) }), result.data);
+      return { caseRef: row.case_ref, severity: row.severity };
+    },
+
+    async getSuspension() {
+      const result = await client.rpc('my_suspension');
+      if (result.error) throw toBackendError(result.error);
+      if (result.data === null) return null;
+      const row = parse(suspensionSchema, result.data);
+      return {
+        actionId: row.action_id,
+        action: row.action,
+        reason: row.reason,
+        rule: row.rule,
+        until: row.until,
+        automated: row.automated,
+        decidedAt: row.decided_at,
+        appealStatus: row.appeal_status,
+      };
+    },
+
+    async createAppeal(actionId, statement, key) {
+      const result = await client.rpc('appeal_create', { p_action_id: actionId, p_statement: statement, p_idempotency_key: key });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async staffQueue() {
+      const result = await client.rpc('staff_queue');
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.array(staffQueueRowSchema), result.data).map(toQueueRow);
+    },
+
+    async staffCase(reportId) {
+      const result = await client.rpc('staff_case', { p_report_id: reportId });
+      if (result.error) throw toBackendError(result.error);
+      const row = parse(staffCaseSchema, result.data);
+      return {
+        ...toQueueRow(row),
+        details: row.details,
+        targetUserName: row.target_user_name,
+        evidenceCount: row.evidence_count,
+        history: row.history,
+        actions: row.actions.map((a) => ({ id: a.id, action: a.action, reason: a.reason, until: a.until, createdAt: a.created_at })),
+        appeal: row.appeal
+          ? { id: row.appeal.id, statement: row.appeal.statement, status: row.appeal.status, originalAction: row.appeal.original_action, originalReason: row.appeal.original_reason }
+          : null,
+      };
+    },
+
+    async staffViewMessages(reportId, reason) {
+      const result = await client.rpc('staff_view_messages', { p_report_id: reportId, p_reason: reason });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.array(messageCardSchema), result.data).map(toChatMessage);
+    },
+
+    async staffDecide(input, key) {
+      const result = await client.rpc('staff_decide', {
+        p_report_id: input.reportId,
+        p_action: input.action,
+        p_reason: input.reason,
+        p_rule: input.rule,
+        p_until: input.until,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async staffAppeals() {
+      const result = await client.rpc('staff_appeals');
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.array(staffAppealSchema), result.data).map((r) => ({
+        id: r.id,
+        caseRef: r.case_ref,
+        action: r.action,
+        originalActorName: r.original_actor_name,
+        originalReason: r.original_reason,
+        statement: r.statement,
+        memberName: r.member_name,
+        createdAt: r.created_at,
+      }));
+    },
+
+    async staffAppealDecide(appealId, uphold, reason, key) {
+      const result = await client.rpc('staff_appeal_decide', { p_appeal_id: appealId, p_uphold: uphold, p_reason: reason, p_idempotency_key: key });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async staffAudit(limit) {
+      const result = await client.rpc('staff_audit', { p_limit: limit });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.array(auditRowSchema), result.data).map((r) => ({
+        id: r.id,
+        actorName: r.actor_name,
+        actorRole: r.actor_role,
+        action: r.action,
+        targetType: r.target_type,
+        reason: r.reason,
+        createdAt: r.created_at,
+      }));
     },
 
     async createOrder(input, key) {

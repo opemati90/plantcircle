@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ChevronRightIcon } from '../../components/icons';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { color, extra, radius, type } from '../../components/theme';
 import { Toggle } from '../../components/Toggle';
@@ -52,12 +53,27 @@ export default function PrivacyScreen() {
             </Text>
           ) : null}
         </View>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => {
+            router.push('/profile/blocked');
+          }}
+          style={styles.linkRow}
+        >
+          <View style={styles.linkText}>
+            <Text style={type(17, 'semibold')}>{t('safety.blockedTitle')}</Text>
+            <Text style={type(14, 'regular', { color: color.secondary })}>{t('safety.blockedRowLead')}</Text>
+          </View>
+          <ChevronRightIcon size={18} strokeWidth={2.4} color={color.secondary} />
+        </Pressable>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, paddingHorizontal: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
+  linkText: { flex: 1, minWidth: 0, gap: 2 },
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 16 },
   card: { gap: 12, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },

@@ -11,6 +11,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { EmptyState, Skeleton } from '../../components/parts';
 import { color, extra, radius, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
+import { ReportLink } from '../safety/ReportLink';
 import { errorCode } from '../../lib/backend/backend';
 import { currentLanguage } from '../../lib/i18n';
 import { useRecipe } from './queries';
@@ -177,6 +178,7 @@ export default function RecipeScreen() {
             </View>
           ))}
         </View>
+        <ReportLink targetType="recipe" targetId={data.id} name={data.title} />
         </View>
       </ScrollView>
     </View>

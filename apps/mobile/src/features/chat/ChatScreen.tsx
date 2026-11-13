@@ -16,6 +16,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { BottomSheet, EmptyState, InlineState, Skeleton } from '../../components/parts';
 import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
+import { useBlockUser } from '../safety/queries';
 import { errorCode } from '../../lib/backend/backend';
 import type { ChatMessage } from '../../lib/backend/types';
 import { localTime } from '../../lib/dates';
@@ -46,6 +47,8 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
   const send = useSendMessage(conversationId);
   const [text, setText] = useState('');
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const block = useBlockUser();
+  const [blockKey] = useState(newIdempotencyKey);
   // One id per message text: a retry of the same text is recognised and not posted twice, while
   // edited text is a new message with a new id.
   const [clientId, setClientId] = useState(newIdempotencyKey);
@@ -159,12 +162,24 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
     );
   };
   const sendError = send.isError
-    ? errorCode(send.error) === 'rate_limited'
+    ? errorCode(send.error) === 'messages_frozen'
+      ? t('safety.frozenErrorDetail')
+      : errorCode(send.error) === 'rate_limited'
       ? t('chat.rateLimited')
       : errorCode(send.error) === 'closed_chat'
         ? t('chat.closed')
-        : t('chat.error')
+        : errorCode(send.error) === 'suspended'
+          ? t('safety.suspendedErrorDetail')
+          : errorCode(send.error) === 'blocked'
+            ? t('safety.blockedErrorDetail')
+            : t('chat.error')
     : null;
+  const reportMessage = (message: ChatMessage) => {
+    router.push({
+      pathname: '/report',
+      params: { type: 'message', id: message.id, name: message.senderName, userId: message.senderId },
+    });
+  };
 
   const shown: ChatMessage[] = messages.data ?? [];
 
@@ -224,7 +239,15 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
             const mine = message.senderId === session.userId;
             const tint = extra.tints[message.senderName.charCodeAt(0) % extra.tints.length] ?? extra.tints[0];
             return (
-              <View key={message.id} style={[styles.line, mine && styles.lineMine]}>
+              <View
+                key={message.id}
+                accessible={!mine}
+                accessibilityActions={mine ? [] : [{ name: 'report', label: t('safety.reportMessage') }]}
+                onAccessibilityAction={(event) => {
+                  if (event.nativeEvent.actionName === 'report') reportMessage(message);
+                }}
+                style={[styles.line, mine && styles.lineMine]}
+              >
                 {mine ? null : (
                   <View aria-hidden style={[styles.avatarSmall, { backgroundColor: tint.background }]}>
                     <Text allowFontScaling={false} style={type(13, 'bold', { color: tint.text })}>
@@ -238,14 +261,34 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
                       {message.senderName}
                     </Text>
                   )}
-                  <View style={[styles.bubble, mine && styles.mine]}>
+                  <Pressable
+                    disabled={mine}
+                    accessibilityRole={mine ? undefined : 'button'}
+                    accessibilityLabel={mine ? undefined : `${message.senderName}: ${message.body}`}
+                    accessibilityHint={mine ? undefined : t('safety.holdToReport')}
+                    onLongPress={() => { reportMessage(message); }}
+                    style={[styles.bubble, mine && styles.mine]}
+                  >
                     <Text style={type(16, 'regular', { leading: 1.45, color: mine ? '#FFFFFF' : color.ink })}>
                       {message.body}
                     </Text>
+                  </Pressable>
+                  <View style={[styles.meta, mine && styles.metaMine]}>
+                    <Text style={type(12, 'regular', { color: color.secondary })}>
+                      {localTime(message.createdAt)}
+                    </Text>
+                    {mine ? null : (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`${t('safety.reportMessage')}: ${message.senderName}`}
+                        onPress={() => { reportMessage(message); }}
+                        hitSlop={10}
+                        style={styles.reportLink}
+                      >
+                        <Text style={type(12, 'semibold', { color: color.secondary })}>{t('safety.reportShort')}</Text>
+                      </Pressable>
+                    )}
                   </View>
-                  <Text style={[type(12, 'regular', { color: color.secondary }), mine ? styles.timeMine : styles.time]}>
-                    {localTime(message.createdAt)}
-                  </Text>
                 </View>
               </View>
             );
@@ -279,6 +322,38 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
               prefs.pin.mutate(!settings.data?.pinned);
             }}
           />
+          {kind === 'direct' ? (
+            <>
+              <Button
+                variant="outline"
+                label={t('safety.blockPerson')}
+                disabled={block.isPending}
+                loading={block.isPending}
+                onPress={() => {
+                  block.mutate(
+                    { userId: refId, key: blockKey },
+                    {
+                      onSuccess: () => {
+                        setOptionsOpen(false);
+                        goBack();
+                      },
+                    },
+                  );
+                }}
+              />
+              <Button
+                variant="outline"
+                label={t('safety.reportPerson')}
+                onPress={() => {
+                  setOptionsOpen(false);
+                  router.push({ pathname: '/report', params: { type: 'person', id: refId, name: '', userId: refId } });
+                }}
+              />
+              {block.isError ? (
+                <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('safety.error')}</Text>
+              ) : null}
+            </>
+          ) : null}
           {settings.isError ? (
             <>
               <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
@@ -453,6 +528,9 @@ const styles = StyleSheet.create({
   senderName: { paddingLeft: 4 },
   time: { paddingLeft: 4 },
   timeMine: { alignSelf: 'flex-end', paddingRight: 4 },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingLeft: 4, minHeight: 24 },
+  metaMine: { alignSelf: 'flex-end', paddingRight: 4 },
+  reportLink: { minHeight: 24, justifyContent: 'center' },
   list: { flex: 1 },
   listContent: { paddingHorizontal: 16, paddingVertical: 12, gap: 12 },
   bubble: {

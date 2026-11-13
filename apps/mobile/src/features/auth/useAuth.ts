@@ -47,7 +47,9 @@ export function useAuth(): Auth {
       return ensureProfile(backend, session);
     },
     enabled: Boolean(session),
-    staleTime: Infinity,
+    // A suspension or a lifted one applied elsewhere should show within a minute of coming back.
+    staleTime: 60_000,
+    refetchOnWindowFocus: true,
   });
 
   return {

@@ -1,4 +1,4 @@
-import type {BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, Session, UpNext, WaitlistOffer} from './types';
+import type {AuditRow, BlockedPerson, BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, ReportInput, ReportReceipt, Session, StaffAction, StaffAppeal, StaffCase, StaffQueueRow, Suspension, UpNext, WaitlistOffer} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -21,6 +21,9 @@ export type BackendErrorCode =
   | 'person_not_found'
   | 'interest_closed'
   | 'order_not_open'
+  | 'blocked'
+  | 'suspended'
+  | 'messages_frozen'
   | 'cancelled'
   | 'invalid_response'
   | 'unknown';
@@ -131,6 +134,23 @@ export interface Backend {
     idempotencyKey: string,
   ): Promise<'going' | 'checked_in'>;
   endPlan(planId: string, idempotencyKey: string): Promise<void>;
+
+  /** Safety. Blocking is silent and mutual in effect; reports get a case reference. */
+  blockUser(userId: string, idempotencyKey: string): Promise<void>;
+  unblockUser(userId: string): Promise<void>;
+  listBlocked(): Promise<BlockedPerson[]>;
+  createReport(input: ReportInput, idempotencyKey: string): Promise<ReportReceipt>;
+  /** The statement of reasons while the account is paused; null otherwise. */
+  getSuspension(): Promise<Suspension | null>;
+  createAppeal(actionId: string, statement: string, idempotencyKey: string): Promise<void>;
+  /** Staff console (web). The database refuses anyone without the staff role. */
+  staffQueue(): Promise<StaffQueueRow[]>;
+  staffCase(reportId: string): Promise<StaffCase>;
+  staffViewMessages(reportId: string, reason: string): Promise<ChatMessage[]>;
+  staffDecide(input: { reportId: string; action: StaffAction; reason: string; rule: string | null; until: string | null }, idempotencyKey: string): Promise<void>;
+  staffAppeals(): Promise<StaffAppeal[]>;
+  staffAppealDecide(appealId: string, uphold: boolean, reason: string, idempotencyKey: string): Promise<void>;
+  staffAudit(limit: number): Promise<AuditRow[]>;
 
   /** Feedback from a guest who checked in, once the Plan has ended. */
   getFeedback(planId: string): Promise<FeedbackState>;

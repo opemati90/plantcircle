@@ -295,6 +295,12 @@ export interface Profile {
   goals: string[];
   /** Off by default. On means members of the Circles you share can see you in People. */
   peopleVisible: boolean;
+  /** Paused accounts read but cannot post, join or message; the Suspended screen says why. */
+  status: 'active' | 'suspended' | 'deleted';
+  suspendedUntil: string | null;
+  /** Messages are refused until this passes (a staff decision short of suspension). */
+  messagesFrozenUntil: string | null;
+  role: 'member' | 'staff';
 }
 
 export const PERSON_CONNECTIONS = ['none', 'requested', 'requested_by_them', 'connected'] as const;
@@ -700,4 +706,144 @@ export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
   circleName: row.circle_name,
   authorName: row.author_name,
   createdAt: row.created_at,
+});
+
+// Safety (C10). Report and block on every person, Plan, post, message and group order.
+
+export const REPORT_TARGETS = ['person', 'plan', 'circle', 'recipe', 'message', 'order'] as const;
+export type ReportTarget = (typeof REPORT_TARGETS)[number];
+export const REPORT_CATEGORIES = [
+  'harassment', 'threats', 'stalking', 'scam', 'unsafe_place', 'allergen_deception', 'accessibility', 'other',
+] as const;
+export type ReportCategory = (typeof REPORT_CATEGORIES)[number];
+
+export interface ReportInput {
+  targetType: ReportTarget;
+  targetId: string;
+  category: ReportCategory;
+  details: string;
+  accuracyConfirmed: boolean;
+}
+
+export interface ReportReceipt {
+  caseRef: string;
+  severity: 'urgent' | 'high' | 'routine';
+}
+
+export interface BlockedPerson {
+  userId: string;
+  displayName: string;
+  createdAt: string;
+}
+
+/** The statement of reasons a paused member sees. */
+export interface Suspension {
+  actionId: string;
+  action: 'suspend' | 'ban' | 'freeze_messages';
+  reason: string;
+  rule: string | null;
+  until: string | null;
+  automated: boolean;
+  decidedAt: string;
+  appealStatus: 'open' | 'upheld' | 'reversed' | null;
+}
+
+export const suspensionSchema = z.object({
+  action_id: z.string(),
+  action: z.enum(['suspend', 'ban', 'freeze_messages']),
+  reason: z.string(),
+  rule: z.string().nullable(),
+  until: z.string().nullable(),
+  automated: z.boolean(),
+  decided_at: z.string(),
+  appeal_status: z.enum(['open', 'upheld', 'reversed']).nullable(),
+});
+
+export const STAFF_ACTIONS = ['warn', 'freeze_messages', 'remove_content', 'suspend', 'ban', 'no_action'] as const;
+export type StaffAction = (typeof STAFF_ACTIONS)[number];
+
+export interface StaffQueueRow {
+  id: string;
+  caseRef: string;
+  targetType: ReportTarget;
+  targetId: string;
+  targetLabel: string | null;
+  category: ReportCategory;
+  severity: 'urgent' | 'high' | 'routine';
+  status: string;
+  slaDueAt: string;
+  createdAt: string;
+}
+
+export const staffQueueRowSchema = z.object({
+  id: z.string(),
+  case_ref: z.string(),
+  target_type: z.enum(REPORT_TARGETS),
+  target_id: z.string(),
+  target_label: z.string().nullable(),
+  category: z.enum(REPORT_CATEGORIES),
+  severity: z.enum(['urgent', 'high', 'routine']),
+  status: z.string(),
+  sla_due_at: z.string(),
+  created_at: z.string(),
+});
+
+export interface StaffCase extends StaffQueueRow {
+  details: string;
+  targetUserName: string | null;
+  evidenceCount: number;
+  history: { when: string; what: string }[];
+  actions: { id: string; action: string; reason: string; until: string | null; createdAt: string }[];
+  appeal: { id: string; statement: string; status: string; originalAction: string; originalReason: string } | null;
+}
+
+export const staffCaseSchema = staffQueueRowSchema.extend({
+  details: z.string(),
+  target_user_name: z.string().nullable(),
+  evidence_count: z.number().int(),
+  history: z.array(z.object({ when: z.string(), what: z.string() })),
+  actions: z.array(z.object({ id: z.string(), action: z.string(), reason: z.string(), until: z.string().nullable(), created_at: z.string() })),
+  appeal: z.object({ id: z.string(), statement: z.string(), status: z.string(), original_action: z.string(), original_reason: z.string() }).nullable(),
+});
+
+export interface StaffAppeal {
+  id: string;
+  caseRef: string | null;
+  action: string;
+  originalActorName: string | null;
+  originalReason: string;
+  statement: string;
+  memberName: string | null;
+  createdAt: string;
+}
+
+export const staffAppealSchema = z.object({
+  id: z.string(),
+  case_ref: z.string().nullable(),
+  action: z.string(),
+  original_actor_name: z.string().nullable(),
+  original_reason: z.string(),
+  statement: z.string(),
+  member_name: z.string().nullable(),
+  created_at: z.string(),
+});
+
+export interface AuditRow {
+  id: string;
+  actorName: string | null;
+  actorRole: string;
+  action: string;
+  targetType: string | null;
+  reason: string | null;
+  createdAt: string;
+}
+
+export const auditRowSchema = z.object({
+  id: z.string(),
+  actor_name: z.string().nullable(),
+  actor_role: z.string(),
+  action: z.string(),
+  target_type: z.string().nullable(),
+  reason: z.string().nullable(),
+  created_at: z.string(),
 });

@@ -3,15 +3,16 @@ import { useRouter, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
-import { BellIcon, ChevronRightIcon, SproutIcon, UserIcon } from '../../components/icons';
+import { AlertIcon, BellIcon, ChevronRightIcon, SproutIcon, UserIcon } from '../../components/icons';
 import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { useBackend } from '../../lib/backend/BackendProvider';
 import { useAuth } from '../auth/useAuth';
+import { hasNotice, isPaused } from '../safety/standing';
 import { usePeople } from '../people/queries';
 import { useCities, useMyCircles, useMyPlans } from '../plans/queries';
 
-type Row = { label: string; href: Href; icon?: 'bell' | 'lock' | 'user' | 'sprout' };
+type Row = { label: string; href: Href; icon?: 'bell' | 'lock' | 'user' | 'sprout' | 'alert' };
 
 /**
  * The member's own page, laid out as the design has it: title and Edit, the identity card with
@@ -40,6 +41,7 @@ export default function ProfileScreen() {
 
   const later = (section: string): Href => ({ pathname: '/profile/later', params: { section } });
   const settings: Row[] = [
+    ...(hasNotice(profile) ? [{ label: isPaused(profile) ? t('safety.pausedBanner') : t('safety.frozenBanner'), href: '/suspended' as Href, icon: 'alert' as const }] : []),
     { label: t('profile.notifications'), href: later('notifications'), icon: 'bell' },
     { label: t('profile.privacy'), href: '/profile/privacy', icon: 'lock' },
     { label: t('profile.accessibility'), href: later('accessibility'), icon: 'user' },
@@ -137,6 +139,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 function RowIcon({ icon }: { icon: Row['icon'] }) {
   const props = { size: 19, strokeWidth: 1.9, color: color.ink };
   if (icon === 'bell') return <BellIcon {...props} />;
+  if (icon === 'alert') return <AlertIcon {...props} />;
   if (icon === 'user') return <UserIcon {...props} />;
   if (icon === 'sprout') return <SproutIcon {...props} />;
   if (icon === 'lock') return <UserIcon {...props} />;

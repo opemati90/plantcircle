@@ -9,6 +9,7 @@ import { BottomSheet, EmptyState, InlineState, Skeleton } from '../../components
 import { Photo } from '../../components/Photo';
 import { color, extra, radius, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
+import { ReportLink } from '../safety/ReportLink';
 import { errorCode } from '../../lib/backend/backend';
 import type { Circle, CircleRequest } from '../../lib/backend/types';
 import { shortWhen } from '../../lib/dates';
@@ -275,6 +276,7 @@ export default function CircleScreen() {
               <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
                 {t('circles.aboutRules')}
               </Text>
+              <ReportLink targetType="circle" targetId={data.id} name={data.name} />
               {canModerate && data.access === 'request' ? (
                 <View style={styles.requests}>
                   <Text accessibilityRole="header" style={type(17, 'semibold', { tracking: -0.3 })}>

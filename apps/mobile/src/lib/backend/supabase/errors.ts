@@ -37,6 +37,21 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   interest_closed: 'interest_closed',
   order_not_open: 'order_not_open',
   order_not_ready: 'order_not_open',
+  blocked: 'blocked',
+  suspended: 'suspended',
+  messages_frozen: 'messages_frozen',
+  invalid_report: 'invalid_input',
+  target_not_found: 'not_found',
+  action_not_found: 'not_found',
+  invalid_appeal: 'invalid_input',
+  already_appealed: 'invalid_input',
+  not_staff: 'forbidden',
+  report_not_found: 'not_found',
+  report_closed: 'invalid_input',
+  reason_required: 'invalid_input',
+  appeal_not_found: 'not_found',
+  appeal_closed: 'invalid_input',
+  same_reviewer: 'forbidden',
 };
 
 export interface ErrorLike {

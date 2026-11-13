@@ -22,6 +22,7 @@ import {
 import { color, extra, radius, type } from '../../components/theme';
 import { Photo } from '../../components/Photo';
 import { useScreenInsets } from '../../components/useScreenInsets';
+import { ReportLink } from '../safety/ReportLink';
 import { errorCode } from '../../lib/backend/backend';
 import type { PlanDetail } from '../../lib/backend/types';
 import { localTime, longDate, timeRange, weekdayLong } from '../../lib/dates';
@@ -415,6 +416,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
               </Text>
             </View>
           </Section>
+          <ReportLink targetType="plan" targetId={plan.id} name={plan.title} />
         </View>
       </ScrollView>
 
