@@ -1036,3 +1036,21 @@ export const toNotification = (row: z.infer<typeof notificationRowSchema>): AppN
   readAt: row.read_at,
   createdAt: row.created_at,
 });
+
+// Web RSVP (C16): a shared link, no app needed.
+
+export interface WebRsvpInput {
+  firstName: string;
+  email: string;
+  ageConfirmed: boolean;
+}
+
+export interface WebRsvpResult {
+  /** `existing`: the email already belongs to a member, who got a sign-in link instead. */
+  status: 'going' | 'waitlisted' | 'offered' | 'existing';
+  position: number | null;
+  /** Lets a new guest cancel from the done page, without signing in. Null for `existing`. */
+  cancelToken: string | null;
+  /** Whether the confirmation email went out. */
+  emailSent: boolean;
+}

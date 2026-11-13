@@ -103,6 +103,8 @@ interface State {
   policiesPending: PendingPolicy[];
   /** In-app notification rows, newest first. */
   notifications: AppNotification[];
+  /** Guests from shared links, by cancel token (web RSVP). */
+  webGuests: Record<string, { planId: string; firstName: string; email: string; status: 'going' | 'waitlisted' | 'cancelled'; position: number | null }>;
   pushTokens: string[];
   conversationSettings: Record<string, { mutedUntil: string | null; pinned: boolean; lastReadAt?: string | null }>;
   messages: Record<string, { id: string; clientId: string; senderId: string; senderName: string; body: string; createdAt: string }[]>;
@@ -184,6 +186,7 @@ const EMPTY: State = {
   policiesPending: [],
   notifications: [],
   pushTokens: [],
+  webGuests: {},
   conversationSettings: {},
   feedbackMine: {},
   idempotent: {},
@@ -565,7 +568,8 @@ export async function createFixtureBackend(): Promise<Backend> {
   function plans(now = new Date()): Plan[] {
     return [...fixturePlans(now), ...state.plansCreated].map((plan) => {
       const freed = state.freedPlanIds.filter((id) => id === plan.id).length;
-      const going = plan.goingCount - freed + (state.goingPlanIds.includes(plan.id) ? 1 : 0);
+      const guests = Object.values(state.webGuests).filter((g) => g.planId === plan.id && g.status === 'going').length;
+      const going = plan.goingCount - freed + guests + (state.goingPlanIds.includes(plan.id) ? 1 : 0);
       const waitlistCount = plan.waitlistCount + (plan.id in state.waitlist ? 1 : 0);
       return {
         ...plan,
@@ -1486,6 +1490,50 @@ export async function createFixtureBackend(): Promise<Backend> {
         ...state,
         orders: { ...state.orders, [planId]: { ...entry, collectedBy, state: done ? 'completed' : entry.state } },
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: planId } },
+      });
+    },
+
+    async webRsvp(planId, input, key) {
+      await call('joinPlan');
+      const fingerprint = fingerprintOf({ planId, ...input });
+      const replayed = replayKey(key, fingerprint);
+      if (replayed) {
+        const earlier = state.webGuests[replayed];
+        if (!earlier) return { status: 'existing', position: null, cancelToken: null, emailSent: true };
+        return { status: earlier.status === 'cancelled' ? 'going' : earlier.status, position: earlier.position, cancelToken: replayed, emailSent: true };
+      }
+      const email = input.email.trim().toLowerCase();
+      const firstName = input.firstName.trim();
+      if (!input.ageConfirmed) throw new BackendError('age_required');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || Array.from(firstName).length < 1 || Array.from(firstName).length > 40) {
+        throw new BackendError('invalid_input');
+      }
+      const plan = findPlan(planId);
+      // The dev member's own address, or one used before, already belongs to a member.
+      if (email === 'lena@example.com' || Object.values(state.webGuests).some((g) => g.email === email)) {
+        commit({ ...state, idempotent: { ...state.idempotent, [key]: { fingerprint, id: 'existing' } } });
+        return { status: 'existing', position: null, cancelToken: null, emailSent: true };
+      }
+      const status = plan.hasOpenSpot ? 'going' : 'waitlisted';
+      const position = status === 'waitlisted' ? plan.waitlistCount + 1 : null;
+      const token = `guest-${Date.now()}-${key.slice(0, 8)}`;
+      commit({
+        ...state,
+        webGuests: { ...state.webGuests, [token]: { planId, firstName, email, status, position } },
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: token } },
+      });
+      return { status, position, cancelToken: token, emailSent: true };
+    },
+
+    async webRsvpCancel(cancelToken, key) {
+      await call('cancelRsvp');
+      if (replayKey(key, `web_cancel:${cancelToken}`)) return;
+      const guest = state.webGuests[cancelToken];
+      if (!guest) throw new BackendError('not_found');
+      commit({
+        ...state,
+        webGuests: { ...state.webGuests, [cancelToken]: { ...guest, status: 'cancelled' } },
+        idempotent: { ...state.idempotent, [key]: { fingerprint: `web_cancel:${cancelToken}`, id: cancelToken } },
       });
     },
 

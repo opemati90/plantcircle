@@ -515,7 +515,7 @@ begin
     if found then
       perform public.notify(v_row.user_id, 'address_unlocked',
         jsonb_build_object('plan_id', v_row.id, 'plan', v_row.title),
-        true, true, false, v_row.title, 'The address is ready', 'The address is ready', false);
+        true, true, true, v_row.title, 'The address is ready', 'The address is ready', false);
       v_count := v_count + 1;
     end if;
   end loop;

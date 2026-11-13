@@ -1,10 +1,10 @@
 import { createClient, type Session as SupabaseSession } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { z } from 'zod';
 import { sessionStorage } from '../../storage';
-import { BackendError, type Backend } from '../backend';
+import { BackendError, type Backend, type BackendErrorCode } from '../backend';
 import { toBackendError, type ErrorLike } from './errors';
 import { containsPattern } from './search';
 import {
@@ -86,6 +86,44 @@ const settingsRowSchema = z.object({
 });
 const PROFILE_COLUMNS = 'display_name, city_id, goals, people_visible, status, suspended_until, messages_frozen_until, role';
 
+/**
+ * Calls an Edge Function and reads its answer, including the error word in a non-2xx body
+ * (the SDK hides it behind a generic error).
+ */
+type FunctionsClient = { functions: { invoke: (name: string, options: { body: Record<string, unknown> }) => Promise<{ data: unknown; error: unknown }> } };
+
+async function invokeFunction(client: FunctionsClient, name: string, body: Record<string, unknown>): Promise<unknown> {
+  const result = await client.functions.invoke(name, { body });
+  if (result.error) {
+    const context = (result.error as { context?: unknown }).context;
+    if (context instanceof Response) {
+      const word = await context.json().then((j: unknown) => (j && typeof j === 'object' ? (j as { error?: unknown }).error : undefined)).catch(() => undefined);
+      if (typeof word === 'string') throw new BackendError(WEB_RSVP_ERRORS[word] ?? 'unknown', word);
+      if (context.status === 429) throw new BackendError('rate_limited');
+    }
+    const message = (result.error as { message?: unknown }).message;
+    throw toBackendError({ message: typeof message === 'string' ? message : 'failed to fetch' });
+  }
+  const data = result.data;
+  const word = data && typeof data === 'object' ? (data as { error?: unknown }).error : undefined;
+  if (typeof word === 'string') throw new BackendError(WEB_RSVP_ERRORS[word] ?? 'unknown', word);
+  return data;
+}
+
+/** The web-rsvp function's error words, as the app names them. */
+const WEB_RSVP_ERRORS: Record<string, BackendErrorCode> = {
+  invalid_email: 'invalid_input',
+  invalid_name: 'invalid_input',
+  invalid_input: 'invalid_input',
+  age_required: 'age_required',
+  rate_limited: 'rate_limited',
+  not_found: 'not_found',
+  plan_ended: 'plan_ended',
+  host: 'invalid_input',
+  suspended: 'suspended',
+  server: 'unknown',
+};
+
 const toQueueRow = (row: z.infer<typeof staffQueueRowSchema>): StaffQueueRow => ({
   id: row.id,
   caseRef: row.case_ref,
@@ -159,6 +197,17 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       detectSessionInUrl: false,
     },
   });
+  // On the web, the magic link a guest gets from a shared-link RSVP lands here with its tokens.
+  if (Platform.OS === 'web' && typeof globalThis.location !== 'undefined' && globalThis.location.hash.includes('access_token=')) {
+    const params = new URLSearchParams(globalThis.location.hash.slice(1));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    if (accessToken && refreshToken) {
+      void client.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }).then(() => {
+        globalThis.history.replaceState(null, '', globalThis.location.pathname + globalThis.location.search);
+      });
+    }
+  }
 
   // Only refresh tokens while the app is in the foreground.
   AppState.addEventListener('change', (state) => {
@@ -715,6 +764,23 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         })),
         collected: [...mine.values()].some((m) => m.quantity > 0) && [...mine.values()].every((m) => m.quantity === 0 || m.collected),
       };
+    },
+
+    async webRsvp(planId, input, key) {
+      const data = await invokeFunction(client, 'web-rsvp', {
+        action: 'join', plan_id: planId, first_name: input.firstName, email: input.email, age_confirmed: input.ageConfirmed, idempotency_key: key,
+      });
+      const parsed = parse(z.object({
+        status: z.enum(['going', 'waitlisted', 'offered', 'existing']),
+        position: z.number().int().nullable().optional(),
+        cancel_token: z.string().nullable().optional(),
+        email_sent: z.boolean().optional(),
+      }), data);
+      return { status: parsed.status, position: parsed.position ?? null, cancelToken: parsed.cancel_token ?? null, emailSent: parsed.email_sent ?? false };
+    },
+
+    async webRsvpCancel(cancelToken, key) {
+      await invokeFunction(client, 'web-rsvp', { action: 'cancel', token: cancelToken, idempotency_key: key });
     },
 
     async listNotifications() {

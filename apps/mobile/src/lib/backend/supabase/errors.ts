@@ -41,6 +41,7 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   suspended: 'suspended',
   messages_frozen: 'messages_frozen',
   account_deleted: 'account_deleted',
+  host_cannot_join: 'invalid_input',
   invalid_settings: 'invalid_input',
   unknown_policy_version: 'invalid_input',
   invalid_policy_set: 'invalid_input',

@@ -1,4 +1,4 @@
-import type {AppNotification, AuditRow, BlockedPerson, BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, PendingPolicy, Person, PolicyName, Plan, PlanDetail, PlanInput, Profile, ProfileInput, ProfileStats, Recipe, RecipeDetail, RecipeInput, ReportInput, ReportReceipt, Session, SettingsPatch, StaffAction, StaffAppeal, StaffCase, StaffQueueRow, Suspension, UpNext, UserSettings, WaitlistOffer} from './types';
+import type {AppNotification, AuditRow, BlockedPerson, BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, PendingPolicy, Person, PolicyName, Plan, PlanDetail, PlanInput, Profile, ProfileInput, ProfileStats, Recipe, RecipeDetail, RecipeInput, ReportInput, ReportReceipt, Session, SettingsPatch, StaffAction, StaffAppeal, StaffCase, StaffQueueRow, Suspension, UpNext, UserSettings, WaitlistOffer, WebRsvpInput, WebRsvpResult} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -25,6 +25,7 @@ export type BackendErrorCode =
   | 'suspended'
   | 'messages_frozen'
   | 'account_deleted'
+  | 'age_required'
   | 'cancelled'
   | 'invalid_response'
   | 'unknown';
@@ -139,6 +140,10 @@ export interface Backend {
     idempotencyKey: string,
   ): Promise<'going' | 'checked_in'>;
   endPlan(planId: string, idempotencyKey: string): Promise<void>;
+
+  /** Web RSVP from a shared link: no account needed up front. */
+  webRsvp(planId: string, input: WebRsvpInput, idempotencyKey: string): Promise<WebRsvpResult>;
+  webRsvpCancel(cancelToken: string, idempotencyKey: string): Promise<void>;
 
   /** Notifications: the Inbox's Updates rows and this device's push token. */
   listNotifications(): Promise<AppNotification[]>;
