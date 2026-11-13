@@ -1,4 +1,4 @@
-import type {AuditRow, BlockedPerson, BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, PendingPolicy, Person, PolicyName, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, ReportInput, ReportReceipt, Session, SettingsPatch, StaffAction, StaffAppeal, StaffCase, StaffQueueRow, Suspension, UpNext, UserSettings, WaitlistOffer} from './types';
+import type {AuditRow, BlockedPerson, BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, PendingPolicy, Person, PolicyName, Plan, PlanDetail, PlanInput, Profile, ProfileInput, ProfileStats, Recipe, RecipeDetail, RecipeInput, ReportInput, ReportReceipt, Session, SettingsPatch, StaffAction, StaffAppeal, StaffCase, StaffQueueRow, Suspension, UpNext, UserSettings, WaitlistOffer} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -65,6 +65,10 @@ export interface Backend {
   /** The member's home city. Only changes the profile; browsing other cities does not call this. */
   /** `null` is "Anywhere": no home city, so Home shows Plans from every city. */
   setCity(cityId: string | null): Promise<void>;
+  /** Name and interests, from Edit profile. The city has its own call. */
+  updateProfile(input: { displayName: string; goals: string[] }): Promise<Profile>;
+  /** Whole counts for the identity card. */
+  getProfileStats(): Promise<ProfileStats>;
 
   /** Circles anyone can see (open and request), with optional text search. */
   listCircles(query: { search: string }): Promise<Circle[]>;

@@ -56,3 +56,12 @@ describe('policy versions', () => {
     expect(anon.rows.length).toBeGreaterThan(0);
   });
 });
+
+describe('profile stats', () => {
+  it('counts whole totals, and refuses unknown goals', async () => {
+    const stats = await asUser(db, ANA, () => db.query<{ s: { plans: number; circles: number; connections: number } }>('select public.profile_stats() as s')).then((r) => r.rows[0]?.s);
+    expect(stats).toEqual({ plans: 0, circles: 0, connections: 0 });
+    await expect(asUser(db, ANA, () => db.query(`update public.profiles set goals = array['cook', 'vegan'] where id = $1`, [ANA]))).rejects.toThrow(/profiles_goals_known/);
+    await asUser(db, ANA, () => db.query(`update public.profiles set goals = array['cook', 'buy'] where id = $1`, [ANA]));
+  });
+});

@@ -33,6 +33,8 @@ import {
   planCardSchema,
   toPlan,
   auditRowSchema,
+  PROFILE_GOALS,
+  profileStatsSchema,
   pendingPolicySchema,
   toPendingPolicy,
   settingsPatchToRow,
@@ -268,6 +270,27 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       );
       if (acceptance.error) throw toBackendError(acceptance.error);
       return toProfile(parse(profileRowSchema, data));
+    },
+
+    async updateProfile(input) {
+      const userId = await requireUserId();
+      const displayName = input.displayName.trim();
+      const goals = input.goals.filter((g): g is (typeof PROFILE_GOALS)[number] => (PROFILE_GOALS as readonly string[]).includes(g));
+      if (Array.from(displayName).length < 1 || Array.from(displayName).length > 40) throw new BackendError('invalid_input');
+      const { data, error } = await client
+        .from('profiles')
+        .update({ display_name: displayName, goals })
+        .eq('id', userId)
+        .select(PROFILE_COLUMNS)
+        .single();
+      if (error) throw toBackendError(error);
+      return toProfile(parse(profileRowSchema, data));
+    },
+
+    async getProfileStats() {
+      const result = await client.rpc('profile_stats');
+      if (result.error) throw toBackendError(result.error);
+      return parse(profileStatsSchema, result.data);
     },
 
     async setCity(cityId) {

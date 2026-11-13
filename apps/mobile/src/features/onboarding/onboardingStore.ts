@@ -1,8 +1,9 @@
+import { PROFILE_GOALS } from '../../lib/backend/types';
 import { z } from 'zod';
 import { appStorage } from '../../lib/storage';
 
 /** Stable ids are stored; labels are `goals.<id>` in the copy catalogue. */
-export const GOALS = ['cook', 'meet', 'buy', 'online'] as const;
+export const GOALS = PROFILE_GOALS;
 export type Goal = (typeof GOALS)[number];
 
 const schema = z.object({

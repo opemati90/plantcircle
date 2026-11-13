@@ -3,6 +3,7 @@ import { BackendError, type Backend } from '../backend';
 import {
   DEFAULT_SETTINGS,
   isRecipeAllergen,
+  PROFILE_GOALS,
 } from '../types';
 import type {
   AuditRow,
@@ -1814,11 +1815,35 @@ export async function createFixtureBackend(): Promise<Backend> {
       commit({ ...state, profile: { ...state.profile, peopleVisible: visible } });
     },
 
+    async getProfileStats() {
+      await call();
+      requireSession();
+      return {
+        plans: new Set([...state.goingPlanIds, ...state.plansCreated.map((p) => p.id)]).size,
+        circles: new Set([...state.circlesJoined, ...state.circlesCreated.map((c) => c.id)]).size,
+        connections: visiblePeople().filter((p) => p.connection === 'connected').length,
+      };
+    },
+
     async setCity(cityId) {
       await call();
       requireActive();
       if (!state.profile) throw new BackendError('not_found');
       commit({ ...state, profile: { ...state.profile, cityId } });
+    },
+
+    async updateProfile(input) {
+      await call();
+      requireActive();
+      if (!state.profile) throw new BackendError('not_found');
+      const displayName = input.displayName.trim();
+      const goals = input.goals.filter((g) => (PROFILE_GOALS as readonly string[]).includes(g));
+      if (Array.from(displayName).length < 1 || Array.from(displayName).length > 40 || goals.length > 8) {
+        throw new BackendError('invalid_input');
+      }
+      const profile = { ...state.profile, displayName, goals };
+      commit({ ...state, profile });
+      return withStanding(profile) ?? profile;
     },
 
     async listCities() {

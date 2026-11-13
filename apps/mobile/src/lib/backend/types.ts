@@ -332,10 +332,13 @@ export const toPerson = (row: z.infer<typeof personRowSchema>): Person => ({
   connection: row.connection,
 });
 
+/** The onboarding choices; the database refuses anything else. */
+export const PROFILE_GOALS = ['cook', 'meet', 'buy', 'online'] as const;
+
 export const profileInputSchema = z.object({
   displayName: z.string().trim().min(1).max(40),
   cityId: z.string().nullable(),
-  goals: z.array(z.string().max(60)).max(8),
+  goals: z.array(z.enum(PROFILE_GOALS)).max(8),
   termsVersion: z.string().min(1).max(20),
 });
 export type ProfileInput = z.infer<typeof profileInputSchema>;
@@ -992,3 +995,10 @@ export const toPendingPolicy = (row: z.infer<typeof pendingPolicySchema>): Pendi
   url: row.url,
   acceptedVersion: row.accepted_version,
 });
+
+export interface ProfileStats {
+  plans: number;
+  circles: number;
+  connections: number;
+}
+export const profileStatsSchema = z.object({ plans: z.number().int(), circles: z.number().int(), connections: z.number().int() });
