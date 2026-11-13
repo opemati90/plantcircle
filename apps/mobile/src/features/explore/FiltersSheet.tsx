@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
 import { BottomSheet } from '../../components/parts';
 import { color, radius, size, type } from '../../components/theme';
@@ -26,17 +26,38 @@ export function FiltersSheet({
     <View style={styles.group}>
       <Text accessibilityRole="header" style={type(15, 'semibold')}>{t(`explore.filters.${key}` as 'explore.filters.when')}</Text>
       <View accessibilityRole="radiogroup" accessibilityLabel={t(`explore.filters.${key}` as 'explore.filters.when')} style={styles.segments}>
-        {options.map((option) => {
+        {options.map((option, index) => {
           const selected = draft[key] === option;
+          const pick = (next: PlanFilters[K]) => {
+            onChange({ ...draft, [key]: next });
+          };
+          // On the web a radio group moves with the arrow keys and Space, like a native one.
+          const web =
+            Platform.OS === 'web'
+              ? {
+                  onKeyDown: (event: { key: string; preventDefault: () => void }) => {
+                    const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
+                    if (step !== 0) {
+                      event.preventDefault();
+                      pick(options[(index + step + options.length) % options.length] ?? option);
+                    } else if (event.key === ' ') {
+                      event.preventDefault();
+                      pick(option);
+                    }
+                  },
+                }
+              : {};
           return (
             <Pressable
               key={option}
               accessibilityRole="radio"
               aria-checked={selected}
+              accessibilityState={{ checked: selected }}
               onPress={() => {
-                onChange({ ...draft, [key]: option });
+                pick(option);
               }}
               style={[styles.segment, selected && styles.segmentSelected]}
+              {...(web as object)}
             >
               <Text style={type(14, selected ? 'semibold' : 'medium', { color: selected ? color.ink : color.secondary })}>
                 {t(`explore.filters.${key}Options.${option}` as 'explore.filters.whenOptions.any')}
@@ -71,7 +92,7 @@ const styles = StyleSheet.create({
   body: { gap: 18 },
   group: { gap: 8 },
   segments: { flexDirection: 'row', gap: 4, padding: 4, borderRadius: 16, backgroundColor: color.fill },
-  segment: { flex: 1, minHeight: size.touchMin - 4, alignItems: 'center', justifyContent: 'center', borderRadius: 12, paddingHorizontal: 6 },
+  segment: { flex: 1, minHeight: size.touchMin, alignItems: 'center', justifyContent: 'center', borderRadius: 12, paddingHorizontal: 6 },
   segmentSelected: { backgroundColor: color.surface, borderRadius: radius.control },
   buttons: { flexDirection: 'row', gap: 10 },
   grow: { flex: 1 },

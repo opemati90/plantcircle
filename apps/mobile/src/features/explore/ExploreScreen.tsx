@@ -24,6 +24,7 @@ import { catalogs } from '@plantcircle/copy';
 import { currentLanguage } from '../../lib/i18n';
 import { activeFilterCount, filterPlans, NO_FILTERS, searchPlans, TRY_INSTEAD, type ExploreTab, type PlanFilters } from './exploreRules';
 import { FiltersSheet } from './FiltersSheet';
+import { useNow } from '../../lib/useNow';
 import { FilterIcon } from '../../components/icons';
 
 const TABS: ExploreTab[] = ['circles', 'plans', 'learn', 'people'];
@@ -52,6 +53,9 @@ function PlansTab({
     // No results, as the NoResults design has it: host it yourself, or try another word.
     return searching ? (
       <View style={styles.noResults}>
+        <Text role="status" accessibilityLiveRegion="polite" style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}>
+          {t('explore.resultsCount', { count: 0 }).toUpperCase()}
+        </Text>
         <Text accessibilityRole="header" style={type(22, 'bold', { tracking: -0.6 })}>
           {query.trim() ? t('explore.noResults.title', { query: query.trim() }) : t('explore.noResults.filtersTitle')}
         </Text>
@@ -81,7 +85,7 @@ function PlansTab({
   return (
     <View style={styles.list}>
       {searching ? (
-        <Text role="status" style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}>
+        <Text role="status" accessibilityLiveRegion="polite" style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}>
           {t('explore.resultsCount', { count: shown.length }).toUpperCase()}
         </Text>
       ) : null}
@@ -157,8 +161,10 @@ export default function ExploreScreen() {
   const [draft, setDraft] = useState<PlanFilters>(NO_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const viewerZone = Intl.DateTimeFormat(currentLanguage()).resolvedOptions().timeZone;
-  const filtered = plans.data ? filterPlans(plans.data, filters, new Date(), viewerZone) : [];
-  const draftCount = plans.data ? searchPlans(filterPlans(plans.data, draft, new Date(), viewerZone), query).length : 0;
+  // The clock ticks, so Today and the weekend roll over at midnight while Explore stays open.
+  const now = useNow();
+  const filtered = plans.data ? filterPlans(plans.data, filters, now, viewerZone) : [];
+  const draftCount = plans.data ? searchPlans(filterPlans(plans.data, draft, now, viewerZone), query).length : 0;
   const activeCount = activeFilterCount(filters);
 
   function renderContent() {
@@ -407,11 +413,11 @@ const styles = StyleSheet.create({
   filterButton: { minWidth: 48, height: 48, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: radius.control, borderWidth: 1, borderColor: color.borderControl },
   filterButtonActive: { backgroundColor: color.ink, borderColor: color.ink },
   activeChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  activeChip: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: color.fill },
+  activeChip: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: size.touchMin, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: color.fill },
   noResults: { gap: 12, paddingTop: 8 },
   noResultsCard: { gap: 8, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: color.borderControl },
   tryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tryChip: { minHeight: 40, paddingHorizontal: 14, justifyContent: 'center', borderRadius: radius.pill, borderWidth: 1, borderColor: color.borderControl },
+  tryChip: { minHeight: size.touchMin, paddingHorizontal: 16, justifyContent: 'center', borderRadius: radius.pill, borderWidth: 1, borderColor: color.borderControl },
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 20, gap: 18 },
   search: {

@@ -37,28 +37,29 @@ export const activeFilterCount = (filters: PlanFilters): number =>
   (filters.when === 'any' ? 0 : 1) + (filters.where === 'any' ? 0 : 1) + (filters.price === 'any' ? 0 : 1);
 
 /** The viewer's calendar day for an instant: "today" and "this weekend" follow their clock. */
-function dayKey(date: Date, timeZone: string): { key: string; weekday: number } {
+function dayKey(date: Date, timeZone: string): { key: string; weekday: number; ordinal: number } {
   const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }).formatToParts(date);
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
   const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday'));
-  return { key: `${get('year')}-${get('month')}-${get('day')}`, weekday };
+  // Days counted on the calendar, so DST never shifts a date.
+  const ordinal = Math.round(Date.UTC(Number(get('year')), Number(get('month')) - 1, Number(get('day'))) / 86_400_000);
+  return { key: `${get('year')}-${get('month')}-${get('day')}`, weekday, ordinal };
 }
 
 export function matchesWhen(plan: Plan, when: PlanFilters['when'], now: Date, timeZone: string): boolean {
   if (when === 'any') return true;
-  const start = new Date(plan.startsAt);
   const today = dayKey(now, timeZone);
-  const day = dayKey(start, timeZone);
-  if (when === 'today') return day.key === today.key;
-  // The coming seven days, today included.
-  const sevenDays = now.getTime() + 7 * 86_400_000;
-  if (when === 'week') return start.getTime() >= now.getTime() - 3_600_000 && start.getTime() < sevenDays;
-  // The next Saturday and Sunday (this weekend, or the one just started).
+  const day = dayKey(new Date(plan.startsAt), timeZone);
+  const offset = day.ordinal - today.ordinal;
+  if (when === 'today') return offset === 0;
+  // The rest of this calendar week, Monday to Sunday, today included.
+  if (when === 'week') {
+    const daysToSunday = (7 - today.weekday) % 7;
+    return offset >= 0 && offset <= daysToSunday;
+  }
+  // The coming Saturday and Sunday (or the Sunday that is today).
   const daysToSaturday = (6 - today.weekday + 7) % 7;
-  const saturday = new Date(now.getTime() + daysToSaturday * 86_400_000);
-  const sunday = new Date(saturday.getTime() + 86_400_000);
-  const weekendKeys = today.weekday === 0 ? [today.key] : [dayKey(saturday, timeZone).key, dayKey(sunday, timeZone).key];
-  return weekendKeys.includes(day.key);
+  return today.weekday === 0 ? offset === 0 : offset === daysToSaturday || offset === daysToSaturday + 1;
 }
 
 export const matchesWhere = (plan: Plan, where: PlanFilters['where']): boolean =>
