@@ -30,6 +30,8 @@ import { currentLanguage } from '../../lib/i18n';
 import { ProviderButtons } from '../auth/ProviderButtons';
 import { useSettings } from '../account/queries';
 import { hasPushToken } from '../notifications/push';
+import { OfflineBanner } from '../../components/OfflineBanner';
+import { isOffline } from '../../lib/offlineCache';
 import { useAuth } from '../auth/useAuth';
 import {
   addressNote,
@@ -91,7 +93,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function PlanView({ detail }: { detail: PlanDetail }) {
+function PlanView({ detail, offline = false, savedAt = null, onRetry }: { detail: PlanDetail; offline?: boolean; savedAt?: number | null; onRetry?: () => void }) {
   const { plan, rsvp, bringItems, address, meetingUrl } = detail;
   const isGoing = rsvp === 'going';
   const router = useRouter();
@@ -182,7 +184,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
     else if (failed === unclaim) unclaim.mutate(unclaim.variables);
   };
 
-  const busy = join.isPending || joinWaitlist.isPending || cancel.isPending;
+  const busy = join.isPending || joinWaitlist.isPending || cancel.isPending || offline;
   const barTitle =
     rsvp === 'offered'
       ? t('plan.offerBarTitle')
@@ -420,6 +422,11 @@ function PlanView({ detail }: { detail: PlanDetail }) {
 
           <Section title={t('plan.goodToKnow')}>
             <View style={styles.notes}>
+              {isGoing ? (
+                <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
+                  <Text style={styles.strong}>{t('offline.savedOnPhone')}</Text> {t('offline.savedOnPhoneNote')}
+                </Text>
+              ) : null}
               <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
                 <Text style={styles.strong}>{t('plan.allergens')}</Text> {allergenNote(t, plan)}
               </Text>
@@ -445,6 +452,11 @@ function PlanView({ detail }: { detail: PlanDetail }) {
         <ChevronLeftIcon strokeWidth={2.2} color="#FFFFFF" />
       </IconButton>
 
+      {offline ? (
+        <View style={[styles.offlineBar, { top: insets.headerTop + 56 }]}>
+          <OfflineBanner savedAt={savedAt} />
+        </View>
+      ) : null}
       {failureCopy ? (
         <Toast
           tone="alert"
@@ -470,6 +482,16 @@ function PlanView({ detail }: { detail: PlanDetail }) {
         />
       ) : null}
 
+      {offline ? (
+        <FloatingActionBar style={styles.bar}>
+          <View style={styles.barText}>
+            <Text style={type(18, 'bold', { tracking: -0.3 })}>{t('offline.cantChange')}</Text>
+            <Text style={type(14, 'regular', { color: color.secondary })}>{t('offline.reconnect')}</Text>
+          </View>
+          <Button variant="outline" label={t('common.retry')} onPress={() => { onRetry?.(); }} />
+        </FloatingActionBar>
+      ) : null}
+      {offline ? null : (
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
           <Text style={type(18, 'bold', { tracking: -0.3 })}>{barTitle}</Text>
@@ -535,6 +557,7 @@ function PlanView({ detail }: { detail: PlanDetail }) {
           />
         )}
       </FloatingActionBar>
+      )}
 
       <BottomSheet
         open={sheet === 'signUp'}
@@ -645,6 +668,10 @@ export default function PlanScreen() {
   if (plan.data?.plan.category === 'group_order') {
     return <Redirect href={{ pathname: '/order/[id]', params: { id: planId } }} />;
   }
+  // Offline with a saved copy: the Plan stays readable; changes wait for the connection.
+  if (isOffline(plan) && plan.data) {
+    return <PlanView detail={plan.data} offline savedAt={plan.dataUpdatedAt} onRetry={() => void plan.refetch()} />;
+  }
   if (plan.isError) {
     const code = errorCode(plan.error);
     const missing = code === 'not_found';
@@ -690,6 +717,7 @@ const CLUSTER_POSITIONS = [
 ] as const;
 
 const styles = StyleSheet.create({
+  offlineBar: { position: 'absolute', left: 16, right: 16, borderRadius: 12, overflow: 'hidden', zIndex: 2 },
   screen: { flex: 1, backgroundColor: color.surface },
   hero: { height: 420, backgroundColor: color.ink },
   heroText: { position: 'absolute', left: 24, right: 24, bottom: 30, gap: 10 },

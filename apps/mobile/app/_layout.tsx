@@ -1,4 +1,5 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack } from 'expo-router';
 import { PolicyGate } from '../src/features/legal/PolicyGate';
 import { configureForeground } from '../src/features/notifications/push';
@@ -15,17 +16,22 @@ import { loadBackend } from '../src/lib/backend';
 import { BackendError, type Backend } from '../src/lib/backend/backend';
 import { BackendProvider } from '../src/lib/backend/BackendProvider';
 import { initI18n } from '../src/lib/i18n';
+import { persistOptions } from '../src/lib/offlineCache';
 
 function createQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 30_000,
+        // Offline, a fetch fails at once (the saved copy shows) instead of waiting to resume.
+        networkMode: 'always',
+        // Persisted answers stay usable for a week offline (see offlineCache).
+        gcTime: 7 * 86_400_000,
         // Retry transient network failures once; never retry "not found" or auth errors.
         retry: (count, error) =>
           count < 1 && error instanceof BackendError && error.code === 'network',
       },
-      mutations: { retry: false },
+      mutations: { retry: false, networkMode: 'always' },
     },
   });
 }
@@ -80,7 +86,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <BackendProvider backend={startup.backend}>
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
           <SessionSync />
           <PolicyGate />
           <PushTapRouter />
@@ -103,7 +109,7 @@ export default function RootLayout() {
               ) : null}
             </View>
           </View>
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
       </BackendProvider>
     </SafeAreaProvider>
   );

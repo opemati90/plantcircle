@@ -5,6 +5,7 @@ export const NOW = new Date('2026-11-02T19:00:00+01:00');
 
 type Operation =
   | 'listPlans'
+  | 'listMyPlans'
   | 'getPlan'
   | 'joinPlan'
   | 'cancelRsvp'

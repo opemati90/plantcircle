@@ -1063,6 +1063,14 @@ export const nl: Catalog = {
     sampleOffer: 'Er kwam een plek vrij bij Vegan Ramen Workshop — bevestig binnen 2 uur',
     sampleReminder: 'Morgen 17:00 · West African Cooking Night. Jij neemt bakbananen mee.',
   },
+  offline: {
+    banner: 'Je bent offline',
+    bannerSaved: 'Je bent offline · opgeslagen om {{time}}',
+    cantChange: 'Je aanmelding kan niet gewijzigd worden',
+    reconnect: 'Maak opnieuw verbinding om te wijzigen',
+    savedOnPhone: 'Opgeslagen op deze telefoon:',
+    savedOnPhoneNote: 'tijd, adres en wat je meeneemt werken altijd offline.',
+  },
   errors: {
     offlineTitle: 'PlantCircle is niet bereikbaar',
     offlineText: 'Controleer je verbinding en probeer het opnieuw.',

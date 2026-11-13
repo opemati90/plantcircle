@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { BackendError } from '../../lib/backend/backend';
 import { useBackend } from '../../lib/backend/BackendProvider';
+import { clearOfflineCache } from '../../lib/offlineCache';
 import { unregisterPush } from '../notifications/push';
 import type { Backend } from '../../lib/backend/backend';
 import type { Profile, Session } from '../../lib/backend/types';
@@ -28,6 +30,8 @@ export interface Auth {
   profile: Profile | undefined;
   /** The profile could not be loaded after retries. */
   profileError: boolean;
+  /** The profile load failed for want of a connection (a cached copy may still show). */
+  profileErrorOffline: boolean;
   retryProfile: () => void;
   isLoading: boolean;
 }
@@ -57,6 +61,7 @@ export function useAuth(): Auth {
     session: sessionQuery.isError ? null : session,
     profile: profileQuery.data,
     profileError: profileQuery.isError,
+    profileErrorOffline: profileQuery.isError && profileQuery.error instanceof BackendError && profileQuery.error.code === 'network',
     retryProfile: () => {
       void profileQuery.refetch();
     },
@@ -74,9 +79,11 @@ export function useSessionSync(): void {
       backend.onSessionChange((session) => {
         const previous = queryClient.getQueryData<Session | null>(SESSION_KEY);
         queryClient.setQueryData(SESSION_KEY, session);
-        if (previous?.userId !== session?.userId) {
-          // Never show one member's cached data to the next person on this device.
+        // The first notice after start is not a change of hands; a real change forgets everything
+        // the last member had, in memory and on the device.
+        if (previous !== undefined && previous?.userId !== session?.userId) {
           queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'session' });
+          void clearOfflineCache();
         }
       }),
     [backend, queryClient],
@@ -91,6 +98,7 @@ export function useSignOut() {
     mutationFn: async () => {
       await unregisterPush(backend);
       await backend.signOut();
+      await clearOfflineCache();
     },
     onSuccess: () => {
       queryClient.clear();

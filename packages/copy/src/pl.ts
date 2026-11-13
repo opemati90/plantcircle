@@ -1085,6 +1085,14 @@ export const pl: Catalog = {
     sampleOffer: 'Zwolniło się miejsce na Vegan Ramen Workshop — potwierdź w ciągu 2 godzin',
     sampleReminder: 'Jutro 17:00 · West African Cooking Night. Przynosisz plantany.',
   },
+  offline: {
+    banner: 'Jesteś offline',
+    bannerSaved: 'Jesteś offline · zapisano o {{time}}',
+    cantChange: 'Nie możesz zmienić zapisu',
+    reconnect: 'Połącz się ponownie, aby go zmienić',
+    savedOnPhone: 'Zapisane na tym telefonie:',
+    savedOnPhoneNote: 'godzina, adres i co przynieść zawsze działają offline.',
+  },
   errors: {
     offlineTitle: 'Nie można połączyć się z PlantCircle',
     offlineText: 'Sprawdź połączenie i spróbuj ponownie.',

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBackend } from '../../lib/backend/BackendProvider';
 import type { SettingsPatch, UserSettings } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
+import { clearOfflineCache } from '../../lib/offlineCache';
 import { unregisterPush } from '../notifications/push';
 
 export function useSettings() {
@@ -45,6 +46,7 @@ export function useDeleteAccount() {
     mutationFn: async (key: string) => {
       await unregisterPush(backend);
       await backend.deleteAccount(key);
+      await clearOfflineCache();
     },
     onSuccess: () => {
       queryClient.clear();

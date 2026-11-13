@@ -1052,6 +1052,14 @@ export const en = {
     sampleOffer: 'A spot opened at Vegan Ramen Workshop — confirm within 2 hours',
     sampleReminder: 'Tomorrow 17:00 · West African Cooking Night. You’re bringing plantains.',
   },
+  offline: {
+    banner: 'You’re offline',
+    bannerSaved: 'You’re offline · saved at {{time}}',
+    cantChange: 'Can’t change your RSVP',
+    reconnect: 'Reconnect to update it',
+    savedOnPhone: 'Saved on this phone:',
+    savedOnPhoneNote: 'time, address and what to bring always work offline.',
+  },
   errors: {
     offlineTitle: 'Can’t reach PlantCircle',
     offlineText: 'Check your connection and try again.',

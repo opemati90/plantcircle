@@ -60,8 +60,10 @@ export function usePlan(planId: string) {
     queryKey: ['plan', planId, session?.userId ?? null],
     queryFn: () => backend.getPlan(planId),
     enabled: !isLoading,
-    // A held spot is time-critical: the Plan must be read fresh each time it is opened.
+    // A held spot is time-critical: the Plan must be read fresh each time it is opened, also
+    // when it was restored from the offline cache before the session was known.
     refetchOnMount: 'always',
+    staleTime: 0,
   });
 }
 
@@ -84,6 +86,8 @@ export function useMyPlans(scope: MyPlansScope, enabled: boolean) {
     queryFn: () => backend.listMyPlans({ scope, now: new Date() }),
     enabled: enabled && Boolean(session),
     refetchOnMount: 'always',
+    // Restored from the offline cache it is still fetched again as soon as the session is known.
+    staleTime: 0,
   });
 }
 

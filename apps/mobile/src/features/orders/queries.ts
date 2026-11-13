@@ -11,6 +11,7 @@ export function useOrder(planId: string) {
     queryFn: () => backend.getOrder(planId),
     enabled: !isLoading,
     refetchOnMount: 'always',
+    staleTime: 0,
   });
 }
 

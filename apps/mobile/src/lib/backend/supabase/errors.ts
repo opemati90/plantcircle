@@ -68,7 +68,7 @@ export interface ErrorLike {
 export function toBackendError(error: ErrorLike): BackendError {
   const domain = DOMAIN_ERRORS[error.message];
   if (domain) return new BackendError(domain, error.message);
-  if (/failed to fetch|networkerror|load failed/i.test(error.message)) {
+  if (/failed to fetch|networkerror|network request failed|load failed|internet connection appears to be offline|timed out/i.test(error.message)) {
     return new BackendError('network', error.message);
   }
   if (error.status === 429) return new BackendError('rate_limited', error.message);

@@ -1067,6 +1067,14 @@ export const fr: Catalog = {
     sampleOffer: 'Une place s’est libérée au Vegan Ramen Workshop — confirme dans les 2 heures',
     sampleReminder: 'Demain 17:00 · West African Cooking Night. Tu apportes des bananes plantain.',
   },
+  offline: {
+    banner: 'Tu es hors ligne',
+    bannerSaved: 'Tu es hors ligne · enregistré à {{time}}',
+    cantChange: 'Impossible de changer ton inscription',
+    reconnect: 'Reconnecte-toi pour la modifier',
+    savedOnPhone: 'Enregistré sur ce téléphone :',
+    savedOnPhoneNote: 'l’heure, l’adresse et quoi apporter marchent toujours hors ligne.',
+  },
   errors: {
     offlineTitle: 'Impossible de joindre PlantCircle',
     offlineText: 'Vérifie ta connexion et réessaie.',

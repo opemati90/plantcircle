@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
@@ -13,6 +13,10 @@ import { shortDate, time, weekdayShort } from '../../lib/dates';
 import { placeLabel } from '../plans/planCopy';
 import { PlanListItem } from '../plans/PlanListItem';
 import { useAuth } from '../auth/useAuth';
+import { OfflineBanner } from '../../components/OfflineBanner';
+import { isOffline } from '../../lib/offlineCache';
+import { useQueryClient } from '@tanstack/react-query';
+import { useBackend } from '../../lib/backend/BackendProvider';
 import { useMyPlans } from '../plans/queries';
 import { statusPill, type MyPlansTab } from './myPlanRules';
 
@@ -37,6 +41,20 @@ export default function MyPlansScreen() {
   const upcoming = useMyPlans('upcoming', tab === 'going');
   const past = useMyPlans('past', tab === 'past');
   const query = tab === 'past' ? past : upcoming;
+  // Each joined Plan is fetched once here, so its details are saved for offline even unopened.
+  const queryClient = useQueryClient();
+  const backend = useBackend();
+  useEffect(() => {
+    for (const item of upcoming.data ?? []) {
+      void queryClient
+        .ensureQueryData({
+          queryKey: ['plan', item.plan.id, session?.userId ?? null],
+          queryFn: () => backend.getPlan(item.plan.id),
+          staleTime: 60_000,
+        })
+        .catch(() => undefined);
+    }
+  }, [upcoming.data, queryClient, backend, session?.userId]);
 
   // A held spot goes straight to its offer; everything else opens the Plan.
   const openPlan = (item: MyPlan) => {
@@ -82,7 +100,7 @@ export default function MyPlansScreen() {
       );
     }
     if (query.isPending) return <ListSkeleton />;
-    if (query.isError) {
+    if (query.isError && !isOffline(query)) {
       const offline = errorCode(query.error) === 'network';
       return (
         <EmptyState
@@ -93,7 +111,8 @@ export default function MyPlansScreen() {
         />
       );
     }
-    if (query.data.length === 0) {
+    const rows = query.data ?? [];
+    if (rows.length === 0) {
       return tab === 'past' ? (
         <InlineState title={t('myPlans.pastEmpty.title')} text={t('myPlans.pastEmpty.text')} />
       ) : (
@@ -105,7 +124,7 @@ export default function MyPlansScreen() {
     }
     return (
       <View style={styles.list}>
-        {query.data.map((item) => {
+        {rows.map((item) => {
           const isPast = tab === 'past';
           const { plan } = item;
           const when = isPast
@@ -135,6 +154,7 @@ export default function MyPlansScreen() {
       ]}
       style={styles.screen}
     >
+      {isOffline(query) ? <OfflineBanner savedAt={query.dataUpdatedAt} /> : null}
       <View style={styles.header}>
         <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>
           {t('tabs.myPlans')}

@@ -12,6 +12,8 @@ import { errorCode } from '../../lib/backend/backend';
 import type { OrderItem } from '../../lib/backend/types';
 import { shortDate, weekdayLong } from '../../lib/dates';
 import { currentLanguage } from '../../lib/i18n';
+import { isOffline } from '../../lib/offlineCache';
+import { OfflineBanner } from '../../components/OfflineBanner';
 import { useNow } from '../../lib/useNow';
 import { useAuth } from '../auth/useAuth';
 import { newIdempotencyKey } from '../plans/queries';
@@ -67,7 +69,8 @@ export default function OrderScreen() {
       </View>
     );
   }
-  if (order.isError) {
+  const offline = isOffline(order);
+  if (order.isError && !offline) {
     const missing = errorCode(order.error) === 'not_found';
     return (
       <View style={styles.screen}>
@@ -86,9 +89,9 @@ export default function OrderScreen() {
     );
   }
 
-  const data = order.data;
+  const data = order.data as NonNullable<typeof order.data>;
   const unit = orderUnit(data);
-  const open = canChangeInterest(data, now);
+  const open = canChangeInterest(data, now) && !offline;
   const organizer = session?.userId === data.organizerId;
   const tz = data.timezone;
   const hasInterest = data.items.some((i) => i.mine > 0);
@@ -190,6 +193,7 @@ export default function OrderScreen() {
         contentContainerStyle={[styles.content, { paddingTop: insets.headerTop, paddingBottom: 170 + insets.bottom }]}
         {...(Platform.OS === 'web' ? { tabIndex: 0 as const } : {})}
       >
+        {offline ? <OfflineBanner savedAt={order.dataUpdatedAt} /> : null}
         <View style={styles.topRow}>
           {circle(t('common.back'), goBack, <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />)}
           {circle(

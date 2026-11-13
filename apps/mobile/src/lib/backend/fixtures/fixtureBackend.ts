@@ -114,6 +114,7 @@ interface State {
 
 type Operation =
   | 'listPlans'
+  | 'listMyPlans'
   | 'getPlan'
   | 'joinPlan'
   | 'cancelRsvp'
@@ -2040,7 +2041,7 @@ export async function createFixtureBackend(): Promise<Backend> {
     },
 
     async listMyPlans({ scope, now }) {
-      await call();
+      await call('listMyPlans');
       requireSession();
       const mine = plans(now).flatMap((plan): MyPlan[] => {
         const entry = liveEntry(plan.id);
