@@ -1,26 +1,47 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Button } from '../../components/Button';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, IconButton } from '../../components/Button';
+import { ChevronLeftIcon } from '../../components/icons';
 import { BottomSheet, EmptyState, InlineState, Skeleton } from '../../components/parts';
+import { Photo } from '../../components/Photo';
 import { color, extra, radius, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
-import type { CircleRequest } from '../../lib/backend/types';
+import type { Circle, CircleRequest } from '../../lib/backend/types';
+import { shortWhen } from '../../lib/dates';
 import { ProviderButtons } from '../auth/ProviderButtons';
 import { useAuth } from '../auth/useAuth';
+import { useRecipes } from '../learn/queries';
+import { PlanListItem } from '../plans/PlanListItem';
+import { welcomePhoto } from '../plans/planImage';
 import {
   newIdempotencyKey,
   useCircle,
   useCircleRequests,
+  useExplorePlans,
   useJoinCircle,
   useRespondToCircleRequest,
 } from '../plans/queries';
 import { circleMeta } from './circleRules';
 
-/** One Circle: what it is, who runs it, and the step that joins or asks to join. */
+const TABS = ['plans', 'posts', 'about'] as const;
+type Tab = (typeof TABS)[number];
+const TAB_KEY: Record<Tab, 'tabPlans' | 'tabPosts' | 'tabAbout'> = {
+  plans: 'tabPlans',
+  posts: 'tabPosts',
+  about: 'tabAbout',
+};
+
+/**
+ * A Circle, laid out as the design has it: a photo hero with the eyebrow, name, members and the
+ * join action; then the one-line description and the Plans / Posts / About tabs.
+ *
+ * Circles carry no cover photo yet (docs/16-open-questions.md), so the hero uses the app's own
+ * photo until covers exist.
+ */
 export default function CircleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
@@ -33,32 +54,22 @@ export default function CircleScreen() {
     circle.data?.viewerRole === 'owner' || circle.data?.viewerRole === 'moderator';
   const requests = useCircleRequests(id, canModerate);
   const respond = useRespondToCircleRequest();
+  const [tab, setTab] = useState<Tab>('plans');
   const [asking, setAsking] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
   const [answer, setAnswer] = useState('');
   const [key, setKey] = useState(newIdempotencyKey);
   const [decisionKeys, setDecisionKeys] = useState<Record<string, string>>({});
 
-  const back = (
-    <ScreenHeader
-      backLabel={t('common.back')}
-      onBack={() => {
-        if (router.canGoBack()) router.back();
-        else router.replace('/explore');
-      }}
-    />
-  );
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/explore');
+  };
 
   if (circle.isPending) {
     return (
-      <View
-        role="status"
-        accessibilityLabel={t('common.loading')}
-        aria-busy
-        style={styles.screen}
-      >
-        <Skeleton width="60%" height={34} radius={8} />
-        <Skeleton width="100%" height={120} radius={radius.card} />
+      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+        <Skeleton width="100%" height={360} radius={0} />
       </View>
     );
   }
@@ -66,28 +77,22 @@ export default function CircleScreen() {
     const missing = errorCode(circle.error) === 'not_found';
     return (
       <View style={styles.screen}>
-        {back}
+        <IconButton
+          label={t('common.back')}
+          onPress={goBack}
+          style={[styles.back, { top: insets.headerTop }]}
+        >
+          <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />
+        </IconButton>
         <EmptyState
           title={missing ? t('circles.notFound') : t('errors.serverTitle')}
           text={missing ? t('errors.notFoundText') : t('errors.serverText')}
           actions={
             <>
               {missing ? null : (
-                <Button
-                  label={t('common.retry')}
-                  onPress={() => {
-                    void circle.refetch();
-                  }}
-                />
+                <Button label={t('common.retry')} onPress={() => void circle.refetch()} />
               )}
-              <Button
-                variant="outline"
-                label={t('common.back')}
-                onPress={() => {
-                  if (router.canGoBack()) router.back();
-                  else router.replace('/explore');
-                }}
-              />
+              <Button variant="outline" label={t('common.back')} onPress={goBack} />
             </>
           }
         />
@@ -96,12 +101,10 @@ export default function CircleScreen() {
   }
 
   const data = circle.data;
-  // The server's view is the only source of standing, so a declined request stops showing as pending.
   const requested = data.viewerRequestPending;
   const member = data.viewerRole !== null;
-
-  // A visitor is asked to make an account first; the join then runs from here.
   const needsAccount = !session;
+
   const joinNow = () => {
     if (needsAccount) {
       setSigningUp(true);
@@ -117,11 +120,8 @@ export default function CircleScreen() {
     );
   };
   const startAsk = () => {
-    if (needsAccount) {
-      setSigningUp(true);
-      return;
-    }
-    setAsking(true);
+    if (needsAccount) setSigningUp(true);
+    else setAsking(true);
   };
   const sendRequest = () => {
     join.mutate(
@@ -151,131 +151,200 @@ export default function CircleScreen() {
     );
   };
 
+  const heroAction = member ? (
+    <Button
+      variant="inverse"
+      label={t('chat.openCircle')}
+      onPress={() => {
+        router.push({ pathname: '/chat/circle/[id]', params: { id: data.id } });
+      }}
+    />
+  ) : data.access === 'open' ? (
+    <Button variant="inverse" label={t('circles.join')} loading={join.isPending} onPress={joinNow} />
+  ) : requested ? (
+    <Button variant="inverse" label={t('circles.requested')} disabled onPress={() => undefined} />
+  ) : (
+    <Button variant="inverse" label={t('circles.askToJoin')} onPress={startAsk} />
+  );
+
   return (
     <View style={styles.screen}>
-      {back}
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: 16, paddingBottom: 40 + insets.bottom },
-        ]}
+        contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}
+        {...(Platform.OS === 'web' ? { tabIndex: 0 as const } : {})}
       >
-        <Text
-          accessibilityRole="header"
-          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
-        >
-          {data.name}
-        </Text>
-        {data.tagline ? (
-          <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
-            {data.tagline}
-          </Text>
-        ) : null}
-        <Text style={type(15, 'regular', { color: color.secondary })}>{circleMeta(t, data)}</Text>
+        <View style={styles.hero}>
+          <Photo source={welcomePhoto} />
+          <LinearGradient
+            colors={[
+              'rgba(0,0,0,0.35)',
+              'rgba(0,0,0,0)',
+              'rgba(0,0,0,0)',
+              'rgba(0,0,0,0.9)',
+              'rgba(0,0,0,0.94)',
+            ]}
+            locations={[0, 0.18, 0.3, 0.6, 1]}
+            style={StyleSheet.absoluteFill}
+          />
+          <IconButton
+            variant="glass"
+            label={t('common.back')}
+            onPress={goBack}
+            style={[styles.back, { top: insets.headerTop }]}
+          >
+            <ChevronLeftIcon strokeWidth={2.2} color="#FFFFFF" />
+          </IconButton>
+          <View style={styles.heroText}>
+            <Text style={type(13, 'semibold', { color: '#FFFFFF', tracking: 0.3 })}>
+              {data.isGlobal ? t('circles.eyebrowGlobal') : t('circles.eyebrowLocal')}
+            </Text>
+            <Text
+              accessibilityRole="header"
+              style={type(32, 'bold', { color: '#FFFFFF', tracking: -1, leading: 1.04 })}
+            >
+              {data.name}
+            </Text>
+            <View style={styles.members}>
+              <View aria-hidden style={styles.avatars}>
+                {extra.tints.map((tint, index) => (
+                  <View
+                    key={tint.background}
+                    style={[
+                      styles.avatar,
+                      { backgroundColor: tint.background, marginLeft: index === 0 ? 0 : -9 },
+                    ]}
+                  />
+                ))}
+              </View>
+              <Text style={type(14, 'medium', { color: '#FFFFFF' })}>{circleMeta(t, data)}</Text>
+            </View>
+            {heroAction}
+          </View>
+        </View>
 
-        {member ? (
-          <View style={styles.action}>
-            <Text role="status" style={type(17, 'semibold', { color: color.brand })}>
+        <View style={styles.body}>
+          {data.tagline ? (
+            <Text style={type(16, 'regular', { color: extra.bodyText, leading: 1.5 })}>
+              {data.tagline}
+            </Text>
+          ) : null}
+          {member ? (
+            <Text role="status" style={type(15, 'semibold', { color: color.brand })}>
               {t('circles.member')}
             </Text>
-            <Button
-              variant="outline"
-              label={t('chat.openCircle')}
-              onPress={() => {
-                router.push({ pathname: '/chat/circle/[id]', params: { id: data.id } });
-              }}
-            />
-          </View>
-        ) : data.access === 'open' ? (
-          <View style={styles.action}>
-            <Text style={type(15, 'regular', { color: color.secondary })}>
-              {t('circles.access.openLead')}
+          ) : null}
+          {join.isError && !asking ? (
+            <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              {t('circles.genericError')}
             </Text>
-            <Button label={t('circles.join')} loading={join.isPending} onPress={joinNow} />
-          </View>
-        ) : requested ? (
-          <Button label={t('circles.requested')} disabled onPress={() => undefined} />
-        ) : (
-          <View style={styles.action}>
-            <Text style={type(15, 'regular', { color: color.secondary })}>
-              {t('circles.access.requestLead')}
-            </Text>
-            <Button label={t('circles.askToJoin')} onPress={startAsk} />
-          </View>
-        )}
-        {join.isError && !asking ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
-            {t('circles.genericError')}
-          </Text>
-        ) : null}
+          ) : null}
 
-        {canModerate && data.access === 'request' ? (
-          <View style={styles.requests}>
-            <Text accessibilityRole="header" style={type(20, 'semibold', { tracking: -0.4 })}>
-              {t('circles.requests.title')}
-            </Text>
-            {requests.isError ? (
-              <InlineState
-                title={t('errors.serverTitle')}
-                text={t('errors.serverText')}
-                action={
-                  <Button
-                    variant="outline"
-                    label={t('common.retry')}
-                    onPress={() => {
-                      void requests.refetch();
-                    }}
-                  />
-                }
-              />
-            ) : requests.isPending ? (
-              <Skeleton width="100%" height={88} radius={radius.card} />
-            ) : requests.data.length === 0 ? (
-              <Text style={type(15, 'regular', { color: color.secondary })}>
-                {t('circles.requests.empty')}
-              </Text>
-            ) : (
-              requests.data.map((request) => (
-                <View key={request.id} style={styles.request}>
-                  <Text style={type(17, 'semibold', { tracking: -0.3 })}>
-                    {request.displayName ?? t('circles.requests.someone')}
+          <View accessibilityRole="tablist" style={styles.tabs}>
+            {TABS.map((name) => {
+              const selected = tab === name;
+              return (
+                <Pressable
+                  key={name}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected }}
+                  aria-selected={selected}
+                  onPress={() => {
+                    setTab(name);
+                  }}
+                  style={[styles.tab, selected && styles.tabSelected]}
+                >
+                  <Text
+                    style={type(15, 'semibold', { color: selected ? color.ink : color.secondary })}
+                  >
+                    {t(`circles.${TAB_KEY[name]}`)}
                   </Text>
-                  {request.answer ? (
-                    <Text style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}>
-                      {request.answer}
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {tab === 'plans' ? <PlansTab circle={data} /> : null}
+          {tab === 'posts' ? <PostsTab circleId={data.id} /> : null}
+          {tab === 'about' ? (
+            <View style={styles.about}>
+              <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
+                {data.access === 'open'
+                  ? t('circles.aboutAccessOpen')
+                  : t('circles.aboutAccessRequest')}
+              </Text>
+              <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
+                {t('circles.aboutRules')}
+              </Text>
+              {canModerate && data.access === 'request' ? (
+                <View style={styles.requests}>
+                  <Text accessibilityRole="header" style={type(17, 'semibold', { tracking: -0.3 })}>
+                    {t('circles.moderatorRequests', { count: requests.data?.length ?? 0 })}
+                  </Text>
+                  {requests.isError ? (
+                    <InlineState
+                      title={t('errors.serverTitle')}
+                      text={t('errors.serverText')}
+                      action={
+                        <Button
+                          variant="outline"
+                          label={t('common.retry')}
+                          onPress={() => void requests.refetch()}
+                        />
+                      }
+                    />
+                  ) : requests.isPending ? (
+                    <Skeleton width="100%" height={88} radius={radius.card} />
+                  ) : requests.data.length === 0 ? (
+                    <Text style={type(15, 'regular', { color: color.secondary })}>
+                      {t('circles.requests.empty')}
+                    </Text>
+                  ) : (
+                    requests.data.map((request) => (
+                      <View key={request.id} style={styles.request}>
+                        <Text style={type(17, 'semibold', { tracking: -0.3 })}>
+                          {request.displayName ?? t('circles.requests.someone')}
+                        </Text>
+                        {request.answer ? (
+                          <Text
+                            style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}
+                          >
+                            {`“${request.answer}”`}
+                          </Text>
+                        ) : null}
+                        <View style={styles.decisions}>
+                          <View style={styles.decision}>
+                            <Button
+                              variant="outline"
+                              label={t('circles.requests.decline')}
+                              disabled={respond.isPending}
+                              onPress={() => {
+                                decide(request, false);
+                              }}
+                            />
+                          </View>
+                          <View style={styles.decision}>
+                            <Button
+                              label={t('circles.requests.approve')}
+                              disabled={respond.isPending}
+                              onPress={() => {
+                                decide(request, true);
+                              }}
+                            />
+                          </View>
+                        </View>
+                      </View>
+                    ))
+                  )}
+                  {respond.isError ? (
+                    <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+                      {t('circles.genericError')}
                     </Text>
                   ) : null}
-                  <View style={styles.decisions}>
-                    <View style={styles.decision}>
-                      <Button
-                        label={t('circles.requests.approve')}
-                        disabled={respond.isPending}
-                        onPress={() => {
-                          decide(request, true);
-                        }}
-                      />
-                    </View>
-                    <View style={styles.decision}>
-                      <Button
-                        variant="outline"
-                        label={t('circles.requests.decline')}
-                        disabled={respond.isPending}
-                        onPress={() => {
-                          decide(request, false);
-                        }}
-                      />
-                    </View>
-                  </View>
                 </View>
-              ))
-            )}
-            {respond.isError ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
-                {t('circles.genericError')}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
+              ) : null}
+            </View>
+          ) : null}
+        </View>
       </ScrollView>
 
       <BottomSheet
@@ -334,12 +403,129 @@ export default function CircleScreen() {
   );
 }
 
+/** Upcoming Plans where this Circle is: its city, or online Plans for a global Circle. */
+function PlansTab({ circle }: { circle: Circle }) {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const plans = useExplorePlans(circle.isGlobal || !circle.cityId ? null : [circle.cityId]);
+  if (plans.isPending) return <Skeleton width="100%" height={96} radius={radius.card} />;
+  if (plans.isError) {
+    return (
+      <InlineState
+        title={t('errors.serverTitle')}
+        text={t('errors.serverText')}
+        action={
+          <Button variant="outline" label={t('common.retry')} onPress={() => void plans.refetch()} />
+        }
+      />
+    );
+  }
+  const shown = circle.isGlobal ? plans.data.filter((p) => p.format === 'online') : plans.data;
+  if (shown.length === 0) {
+    return (
+      <Text style={type(15, 'regular', { color: color.secondary })}>{t('circles.plansEmpty')}</Text>
+    );
+  }
+  return (
+    <View style={styles.list}>
+      {shown.slice(0, 6).map((plan) => (
+        <PlanListItem
+          key={plan.id}
+          plan={plan}
+          when={`${shortWhen(plan.startsAt, plan.timezone)} · ${plan.areaName}`}
+          onPress={() => {
+            router.push({ pathname: '/plan/[id]', params: { id: plan.id } });
+          }}
+        />
+      ))}
+    </View>
+  );
+}
+
+/** Recipes shared into this Circle, visible to its members as the Learn tab shows them. */
+function PostsTab({ circleId }: { circleId: string }) {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const recipes = useRecipes('');
+  if (recipes.isPending) return <Skeleton width="100%" height={72} radius={radius.card} />;
+  if (recipes.isError) {
+    return (
+      <InlineState
+        title={t('errors.serverTitle')}
+        text={t('errors.serverText')}
+        action={
+          <Button variant="outline" label={t('common.retry')} onPress={() => void recipes.refetch()} />
+        }
+      />
+    );
+  }
+  const shown = recipes.data.filter((r) => r.circleId === circleId);
+  if (shown.length === 0) {
+    return (
+      <Text style={type(15, 'regular', { color: color.secondary })}>{t('circles.postsEmpty')}</Text>
+    );
+  }
+  return (
+    <View style={styles.list}>
+      {shown.map((recipe) => (
+        <Pressable
+          key={recipe.id}
+          accessibilityRole="link"
+          onPress={() => {
+            router.push({ pathname: '/recipe/[id]', params: { id: recipe.id } });
+          }}
+          style={styles.post}
+        >
+          <Text style={type(13, 'regular', { color: color.secondary })}>
+            {t('learn.byline', {
+              name: recipe.authorName ?? t('circles.requests.someone'),
+              circle: recipe.circleName,
+            })}
+          </Text>
+          <Text style={type(16, 'semibold', { tracking: -0.3 })}>{recipe.title}</Text>
+          {recipe.intro ? (
+            <Text numberOfLines={2} style={type(14, 'regular', { color: color.secondary })}>
+              {recipe.intro}
+            </Text>
+          ) : null}
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   back: { position: 'absolute', left: 16, zIndex: 1 },
-  content: { paddingHorizontal: 24, gap: 16 },
-  action: { gap: 12, paddingTop: 8 },
-  requests: { gap: 12, paddingTop: 16 },
+  hero: { height: 360, backgroundColor: color.ink },
+  heroText: { position: 'absolute', left: 22, right: 22, bottom: 24, gap: 10 },
+  members: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 4 },
+  avatars: { flexDirection: 'row' },
+  avatar: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.9)',
+  },
+  body: { paddingHorizontal: 22, paddingTop: 20, gap: 18 },
+  tabs: {
+    flexDirection: 'row',
+    gap: 22,
+    borderBottomWidth: 1,
+    borderBottomColor: extra.cardBorder,
+  },
+  tab: {
+    minHeight: 44,
+    justifyContent: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabSelected: { borderBottomColor: color.ink },
+  list: { gap: 12 },
+  post: { gap: 3, paddingVertical: 6 },
+  about: { gap: 12 },
+  requests: { gap: 12, paddingTop: 8 },
   request: {
     gap: 10,
     padding: 16,

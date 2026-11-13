@@ -51,7 +51,9 @@ test('an owner reviews a request to their Circle and approves it', async ({ page
   await page.getByRole('radio', { name: /With approval/ }).click();
   await page.getByRole('button', { name: 'Create Circle' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Waiting for a decision' })).toBeVisible();
+  // Approvals live in the About tab, as the design has them.
+  await page.getByRole('tab', { name: 'About', exact: true }).click();
+  await expect(page.getByRole('heading', { name: /Moderator: 1 join request/ })).toBeVisible();
   await expect(page.getByText('Mia K.')).toBeVisible();
   await page.getByRole('button', { name: 'Approve' }).click();
   await expect(page.getByText('No one is waiting right now.')).toBeVisible();

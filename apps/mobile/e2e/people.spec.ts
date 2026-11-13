@@ -20,7 +20,9 @@ test('a member connects back with someone in a shared Circle who asked first', a
 });
 
 test('the People choice is off by default and can be turned on from Profile', async ({ page }) => {
+  // The People choice lives under Profile → Privacy.
   await signInWithEmail(page, '/profile');
+  await page.getByRole('link', { name: 'Privacy' }).click();
   const choice = page.getByRole('switch', { name: 'Show me in People' });
   // The switch is disabled until the profile has loaded; wait for it before reading its state.
   await expect(choice).toBeEnabled();
