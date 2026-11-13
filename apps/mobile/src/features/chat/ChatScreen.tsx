@@ -20,6 +20,7 @@ import { errorCode } from '../../lib/backend/backend';
 import type { ChatMessage } from '../../lib/backend/types';
 import { localTime } from '../../lib/dates';
 import { useAuth } from '../auth/useAuth';
+import { useMarkRead } from '../inbox/queries';
 import { newIdempotencyKey } from '../plans/queries';
 import {
   useConversation,
@@ -57,9 +58,15 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
   const prefs = useConversationPrefs(conversationId);
   const mutedNow = settings.data?.mutedUntil ? Date.parse(settings.data.mutedUntil) > Date.now() : false;
 
+  const markRead = useMarkRead();
+  const markReadMutate = markRead.mutate;
   useEffect(() => {
     list.current?.scrollToEnd({ animated: false });
-  }, [messages.data?.length]);
+    const newest = messages.data?.[messages.data.length - 1];
+    if (conversationId && newest) {
+      markReadMutate({ conversationId, upTo: newest.createdAt });
+    }
+  }, [messages.data, conversationId, markReadMutate]);
 
   const goBack = () => {
     if (router.canGoBack()) router.back();

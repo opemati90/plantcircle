@@ -31,7 +31,7 @@ for (const [name, path, ready] of [
   ['plan', '/plan/cooking-night', 'West African Cooking Night'],
   ['sign up', '/sign-up', 'Create your account'],
   ['full plan', '/plan/ramen-workshop', 'Vegan Ramen Workshop'],
-  ['not built', '/inbox', 'Inbox isn’t built yet'],
+  ['inbox', '/inbox', 'Inbox'],
 ] as const) {
   test(`${name}: no automatically detectable WCAG violations (incl. 7:1 contrast)`, async ({
     page,

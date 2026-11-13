@@ -75,7 +75,7 @@ interface State {
   /** The viewer's requests, by recipient: the first message and when it was sent. */
   directOutgoing: Record<string, { firstMessage: string; createdAt: string; clientId: string }>;
   /** Mute and pin per conversation, for this person. */
-  conversationSettings: Record<string, { mutedUntil: string | null; pinned: boolean }>;
+  conversationSettings: Record<string, { mutedUntil: string | null; pinned: boolean; lastReadAt?: string | null }>;
   messages: Record<string, { id: string; clientId: string; senderId: string; senderName: string; body: string; createdAt: string }[]>;
   /** The viewer's feedback on Plans, by Plan id. */
   feedbackMine: Record<string, { rating: number; comment: string | null }>;
@@ -992,6 +992,72 @@ export async function createFixtureBackend(): Promise<Backend> {
       commit({
         ...state,
         conversationSettings: { ...state.conversationSettings, [conversationId]: { ...current, pinned } },
+      });
+    },
+
+    async listInbox() {
+      await call();
+      requireSession();
+      const me = state.session?.userId ?? 'fixture-you';
+      const places: { kind: 'plan' | 'circle' | 'direct'; refId: string; title: string }[] = [
+        ...plans()
+          .filter((p) => state.goingPlanIds.includes(p.id) || state.plansCreated.some((c) => c.id === p.id))
+          .map((p) => ({ kind: 'plan' as const, refId: p.id, title: p.title })),
+        ...[...fixtureCircles, ...state.circlesCreated]
+          .filter((c) => state.circlesJoined.includes(c.id) || state.circlesCreated.some((x) => x.id === c.id))
+          .map((c) => ({ kind: 'circle' as const, refId: c.id, title: c.name })),
+        ...state.directOpen.map((id) => ({
+          kind: 'direct' as const,
+          refId: id,
+          title: fixturePeople.find((p) => p.person.userId === id)?.person.displayName ?? id,
+        })),
+      ];
+      const threads = places.map((place) => {
+        const conversationId = `conv-${place.kind}-${place.refId}`;
+        const messages = state.messages[conversationId] ?? [];
+        const last = messages[messages.length - 1];
+        const settings = state.conversationSettings[conversationId];
+        const readAt = settings?.lastReadAt ? new Date(settings.lastReadAt).getTime() : -Infinity;
+        const unread = messages.filter(
+          (m) => m.senderId !== me && new Date(m.createdAt).getTime() > readAt,
+        ).length;
+        return {
+          conversationId: messages.length > 0 || settings ? conversationId : null,
+          kind: place.kind,
+          refId: place.refId,
+          title: place.title,
+          lastBody: last?.body ?? null,
+          lastSenderName: last?.senderName ?? null,
+          lastAt: last?.createdAt ?? null,
+          unread,
+          pinned: settings?.pinned ?? false,
+          muted: settings?.mutedUntil ? new Date(settings.mutedUntil).getTime() > Date.now() : false,
+          imagePath: place.kind === 'plan' ? (plans().find((p) => p.id === place.refId)?.imagePath ?? null) : null,
+        };
+      });
+      return threads.sort((a, b) => {
+        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+        return (b.lastAt ?? '').localeCompare(a.lastAt ?? '') || a.title.localeCompare(b.title);
+      });
+    },
+
+    async markConversationRead(conversationId, upTo) {
+      await call();
+      requireSession();
+      const { kind, refId } = conversationRef(conversationId);
+      if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
+      const current = state.conversationSettings[conversationId] ?? { mutedUntil: null, pinned: false };
+      commit({
+        ...state,
+        conversationSettings: {
+          ...state.conversationSettings,
+          // Never backwards, never past what was shown.
+          [conversationId]: {
+            ...current,
+            lastReadAt:
+              current.lastReadAt && current.lastReadAt > upTo ? current.lastReadAt : upTo,
+          },
+        },
       });
     },
 

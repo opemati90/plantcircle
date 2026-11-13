@@ -544,6 +544,55 @@ export interface ConversationSettings {
   pinned: boolean;
 }
 
+export const INBOX_KINDS = ['plan', 'circle', 'direct'] as const;
+export type InboxKind = (typeof INBOX_KINDS)[number];
+
+export const inboxRowSchema = z.object({
+  conversation_id: z.string().nullable(),
+  kind: z.enum(INBOX_KINDS),
+  ref_id: z.string(),
+  title: z.string(),
+  last_body: z.string().nullable(),
+  last_sender_name: z.string().nullable(),
+  last_at: z.string().nullable(),
+  unread: z.number().int(),
+  pinned: z.boolean(),
+  muted: z.boolean(),
+  image_path: z.string().nullable(),
+});
+
+/** One line in the inbox: a chat the viewer can use, with its last message and unread count. */
+export interface InboxThread {
+  /** Null until someone opens the chat; the row still shows so the place is reachable. */
+  conversationId: string | null;
+  kind: InboxKind;
+  /** The Plan, Circle or other person the chat belongs to. */
+  refId: string;
+  title: string;
+  lastBody: string | null;
+  lastSenderName: string | null;
+  lastAt: string | null;
+  unread: number;
+  pinned: boolean;
+  muted: boolean;
+  /** A Plan's photo path, for the row's thumbnail. */
+  imagePath: string | null;
+}
+
+export const toInboxThread = (row: z.infer<typeof inboxRowSchema>): InboxThread => ({
+  conversationId: row.conversation_id,
+  kind: row.kind,
+  refId: row.ref_id,
+  title: row.title,
+  lastBody: row.last_body,
+  lastSenderName: row.last_sender_name,
+  lastAt: row.last_at,
+  unread: row.unread,
+  pinned: row.pinned,
+  muted: row.muted,
+  imagePath: row.image_path,
+});
+
 export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
   id: row.id,
   title: row.title,

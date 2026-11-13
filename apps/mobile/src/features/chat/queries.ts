@@ -46,6 +46,7 @@ export function useDirectRequests() {
     queryKey: ['directRequests', session?.userId ?? null],
     queryFn: () => backend.listDirectRequests(),
     staleTime: 0,
+    refetchInterval: 15_000,
   });
 }
 

@@ -18,6 +18,12 @@ export function recipePhoto(recipeId: string): number {
   return photos[sum % photos.length] ?? welcomePhoto;
 }
 
+/** A photo by its stored path: a remote https photo, or one bundled with the app. */
+export function imageByPath(path: string): ImageSource | number | null {
+  if (path.startsWith('https://')) return { uri: path };
+  return BUNDLED[path] ?? null;
+}
+
 export function planImage(plan: Plan): ImageSource | number | null {
   if (!plan.imagePath) return null;
   if (plan.imagePath.startsWith('https://')) return { uri: plan.imagePath };

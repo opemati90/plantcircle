@@ -1,4 +1,4 @@
-import type {BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, Guest, HostSummary, MyPlan, MyPlansScope, OfferOutcome, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, Session, UpNext, WaitlistOffer} from './types';
+import type {BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, Session, UpNext, WaitlistOffer} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -107,6 +107,10 @@ export interface Backend {
   /** Mute until a time, or unmute with null. */
   setMutedUntil(conversationId: string, until: string | null): Promise<void>;
   setPinned(conversationId: string, pinned: boolean): Promise<void>;
+  /** Every chat the viewer can use, pinned first, then newest activity. */
+  listInbox(): Promise<InboxThread[]>;
+  /** Marks read up to the newest message shown; the marker never moves back or past that. */
+  markConversationRead(conversationId: string, upTo: string): Promise<void>;
 
   /** Hosting. Only the host of the Plan can call these; the database refuses anyone else. */
   listGuests(planId: string): Promise<Guest[]>;

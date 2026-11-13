@@ -17,6 +17,8 @@ import {
   guestRowSchema,
   messageCardSchema,
   messageRequestCardSchema,
+  inboxRowSchema,
+  toInboxThread,
   personRowSchema,
   toDirectRequest,
   toChatMessage,
@@ -576,6 +578,20 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       const result = await client.rpc('conversation_pin', {
         p_conversation_id: conversationId,
         p_pinned: pinned,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async listInbox() {
+      const result = await client.rpc('inbox_threads');
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.array(inboxRowSchema), result.data).map(toInboxThread);
+    },
+
+    async markConversationRead(conversationId, upTo) {
+      const result = await client.rpc('conversation_mark_read', {
+        p_conversation_id: conversationId,
+        p_up_to: upTo,
       });
       if (result.error) throw toBackendError(result.error);
     },
