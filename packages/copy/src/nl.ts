@@ -109,6 +109,8 @@ export const nl: Catalog = {
     emptyFilter: 'Geen plannen van deze week passen bij dit filter.',
   },
   plan: {
+    spotsTotal_one: '{{count}} plek',
+    spotsTotal_other: '{{count}} plekken',
     withdrawBring: 'Terugtrekken',
     withdrawBringItem: '{{item}} terugtrekken',
     category: {
@@ -430,6 +432,7 @@ export const nl: Catalog = {
     error: 'Dat lukte niet. Probeer het opnieuw.',
     cityRequired: 'Kies eerst je woonplaats, dan kun je iets organiseren.',
     published: {
+      whatsapp: 'WhatsApp',
       shareFailed: 'Delen lukt hier niet. Kopieer de link in plaats daarvan.',
       title: 'Je plan staat online',
       lead: 'Deel het waar je mensen al zitten. Ze kunnen zich aanmelden zonder de app.',
@@ -444,6 +447,9 @@ export const nl: Catalog = {
     },
   },
   host: {
+    happeningNow: 'NU BEZIG',
+    hereCount: '{{here}} van {{total}} zijn er',
+    tapToCheckIn: 'Tik op een naam om in te checken',
     bringTitle: 'Wat meebrengen',
     bringEmpty: 'Nog niets op de lijst.',
     bringAdd: 'Iets toevoegen',

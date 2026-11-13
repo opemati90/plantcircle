@@ -109,6 +109,8 @@ export const es: Catalog = {
     emptyFilter: 'Ningún plan de esta semana coincide con este filtro.',
   },
   plan: {
+    spotsTotal_one: '{{count}} plaza',
+    spotsTotal_other: '{{count}} plazas',
     withdrawBring: 'Retirar',
     withdrawBringItem: 'Retirar {{item}}',
     category: {
@@ -426,6 +428,7 @@ export const es: Catalog = {
     error: 'No se pudo publicar. Inténtalo de nuevo.',
     cityRequired: 'Primero elige tu ciudad de residencia; después podrás organizar planes.',
     published: {
+      whatsapp: 'WhatsApp',
       shareFailed: 'No se pudo abrir el menú de compartir. Copia el enlace en su lugar.',
       title: 'Tu plan ya está publicado',
       lead: 'Compártelo donde ya están tus conocidos. Pueden apuntarse sin la app.',
@@ -440,6 +443,9 @@ export const es: Catalog = {
     },
   },
   host: {
+    happeningNow: 'AHORA MISMO',
+    hereCount: '{{here}} de {{total}} han llegado',
+    tapToCheckIn: 'Toca un nombre para registrarlo',
     bringTitle: 'Qué llevar',
     bringEmpty: 'Todavía no hay nada en la lista.',
     bringAdd: 'Añadir algo',

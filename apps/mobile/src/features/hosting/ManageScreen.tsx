@@ -1,8 +1,9 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
+import { CheckIcon } from '../../components/icons';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { BottomSheet, EmptyState, Skeleton } from '../../components/parts';
 import { color, extra, radius, type } from '../../components/theme';
@@ -117,12 +118,18 @@ export default function ManageScreen() {
           { paddingTop: 16, paddingBottom: 40 + insets.bottom },
         ]}
       >
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
-          {t('host.title')}
+        {open ? (
+          <Text style={type(13, 'semibold', { color: color.brand, tracking: 0.6 })}>
+            {t('host.happeningNow')}
+          </Text>
+        ) : null}
+        <Text accessibilityRole="header" style={type(32, 'bold', { tracking: -1, leading: 1.06 })}>
+          {open
+            ? t('host.hereCount', { here: summary.data.checkedIn, total: summary.data.going + summary.data.checkedIn })
+            : t('host.title')}
         </Text>
-        <Text style={type(17, 'semibold', { tracking: -0.3 })}>{detail.title}</Text>
         <Text style={type(15, 'regular', { color: color.secondary })}>
-          {`${longDate(detail.startsAt, detail.timezone)} · ${timeRange(detail.startsAt, detail.endsAt, detail.timezone)}`}
+          {open ? t('host.tapToCheckIn') : `${detail.title} · ${longDate(detail.startsAt, detail.timezone)} · ${timeRange(detail.startsAt, detail.endsAt, detail.timezone)}`}
         </Text>
 
         <View style={styles.summary}>
@@ -162,32 +169,43 @@ export default function ManageScreen() {
         ) : rows.length === 0 ? (
           <Text style={type(15, 'regular', { color: color.secondary })}>{t('host.guestsEmpty')}</Text>
         ) : (
-          rows.map((guest) => {
+          rows.map((guest, index) => {
             const canCheck = open && (guest.state === 'going' || guest.state === 'checked_in');
+            const checked = guest.state === 'checked_in';
+            const busy = checkIn.isPending && checkIn.variables.userId === guest.userId;
+            const tint = extra.tints[index % extra.tints.length] ?? extra.tints[0];
+            const name = checked
+              ? t('host.undoCheckInFor', { name: guest.displayName })
+              : t('host.checkInFor', { name: guest.displayName });
             return (
-              <View key={guest.userId} style={styles.guest}>
+              <Pressable
+                key={guest.userId}
+                accessibilityRole={canCheck ? 'checkbox' : 'text'}
+                accessibilityLabel={canCheck ? name : `${guest.displayName}, ${t(`host.${STATE_LABEL[guest.state]}`)}`}
+                aria-checked={canCheck ? checked : undefined}
+                disabled={!canCheck || busy}
+                onPress={() => {
+                  toggle(guest);
+                }}
+                style={styles.guestRow}
+              >
+                <View aria-hidden style={[styles.guestAvatar, { backgroundColor: tint.background }]}>
+                  <Text allowFontScaling={false} style={type(16, 'bold', { color: tint.text })}>
+                    {guest.displayName.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
                 <View style={styles.guestText}>
-                  <Text style={type(17, 'semibold', { tracking: -0.3 })}>{guest.displayName}</Text>
-                  <Text style={type(15, 'regular', { color: color.secondary })}>
+                  <Text style={type(17, 'semibold')}>{guest.displayName}</Text>
+                  <Text style={type(14, 'regular', { color: color.secondary })}>
                     {t(`host.${STATE_LABEL[guest.state]}`)}
                   </Text>
                 </View>
                 {canCheck ? (
-                  <Button
-                    variant={guest.state === 'checked_in' ? 'outline' : 'primary'}
-                    label={guest.state === 'checked_in' ? t('host.undoCheckIn') : t('host.checkIn')}
-                    accessibilityLabel={
-                      guest.state === 'checked_in'
-                        ? t('host.undoCheckInFor', { name: guest.displayName })
-                        : t('host.checkInFor', { name: guest.displayName })
-                    }
-                    loading={checkIn.isPending && checkIn.variables.userId === guest.userId}
-                    onPress={() => {
-                      toggle(guest);
-                    }}
-                  />
+                  <View aria-hidden style={[styles.ring, checked && styles.ringChecked]}>
+                    {checked ? <CheckIcon size={15} strokeWidth={3} color="#FFFFFF" /> : null}
+                  </View>
                 ) : null}
-              </View>
+              </Pressable>
             );
           })
         )}
@@ -289,6 +307,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: extra.cardBorder,
   },
-  guestText: { flex: 1, gap: 2 },
+  guestText: { flex: 1, gap: 1 },
+  guestRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    minHeight: 64,
+    borderBottomWidth: 1,
+    borderBottomColor: color.fill,
+  },
+  guestAvatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  ring: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: extra.cardBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringChecked: { backgroundColor: color.brand, borderColor: color.brand },
   end: { gap: 12, paddingTop: 16 },
 });

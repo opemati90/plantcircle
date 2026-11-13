@@ -162,6 +162,7 @@ export default function CreatePlanScreen() {
       backLabel={t('common.back')}
       onBack={back}
       caption={t('create.stepOf', { step: index + 1, total: STEPS.length })}
+      progress={{ step: index + 1, total: STEPS.length }}
     />
   );
 
@@ -548,7 +549,7 @@ function WhenStep({
       </ScrollView>
 
       <Text style={styles.label}>{t('create.startGroup')}</Text>
-      <View accessibilityRole="radiogroup" accessibilityLabel={t('create.startGroup')} style={styles.chips}>
+      <View accessibilityRole="radiogroup" accessibilityLabel={t('create.startGroup')} style={styles.timeGrid}>
         {START_MINUTES.map((minutes) => {
           const selected = draft.startMinutes === minutes;
           const ok = startsOk(minutes);
@@ -562,7 +563,7 @@ function WhenStep({
               onPress={() => {
                 onChange({ startMinutes: minutes });
               }}
-              style={[styles.chip, selected && styles.chipSelected, !ok && styles.disabled]}
+              style={[styles.timeCell, selected && styles.chipSelected, !ok && styles.disabled]}
             >
               <Text style={type(15, 'semibold', { color: selected ? color.brand : color.ink })}>
                 {startLabel(minutes)}
@@ -573,7 +574,7 @@ function WhenStep({
       </View>
 
       <Text style={styles.label}>{t('create.durationGroup')}</Text>
-      <View accessibilityRole="radiogroup" accessibilityLabel={t('create.durationGroup')} style={styles.segments}>
+      <View accessibilityRole="radiogroup" accessibilityLabel={t('create.durationGroup')} style={styles.pill}>
         {DURATION_MINUTES.map((minutes) => {
           const selected = draft.duration === minutes;
           return (
@@ -584,9 +585,9 @@ function WhenStep({
               onPress={() => {
                 onChange({ duration: minutes });
               }}
-              style={[styles.segment, selected && styles.segmentSelected]}
+              style={[styles.pillItem, selected && styles.pillItemSelected]}
             >
-              <Text style={type(15, 'semibold', { color: selected ? color.brand : color.ink })}>
+              <Text style={type(15, 'semibold', { color: color.ink })}>
                 {t('learn.minutes', { minutes })}
               </Text>
             </Pressable>
@@ -619,9 +620,9 @@ const styles = StyleSheet.create({
   },
   back: {},
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 12 },
-  title: { ...type(30, 'bold', { tracking: -0.9, leading: 1.1 }) },
+  title: { ...type(32, 'bold', { tracking: -1, leading: 1.08 }), marginTop: 32, marginBottom: 2 },
   lead: { ...type(15, 'regular', { color: color.secondary, leading: 1.5 }) },
-  label: { ...type(14, 'semibold', { color: color.secondary }), marginTop: 4 },
+  label: { ...type(17, 'semibold'), marginTop: 18, marginBottom: 2 },
   field: {
     minHeight: size.touchMin,
     paddingHorizontal: 16,
@@ -670,6 +671,19 @@ const styles = StyleSheet.create({
   },
   segmentSelected: { borderColor: color.brand, backgroundColor: color.brandTint },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  timeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  timeCell: {
+    width: '31.5%',
+    minHeight: size.touchMin,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
+  pill: { flexDirection: 'row', gap: 4, padding: 4, borderRadius: 16, backgroundColor: color.fill },
+  pillItem: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 12 },
+  pillItemSelected: { backgroundColor: color.surface },
   chip: {
     minHeight: size.touchMin,
     minWidth: size.touchMin,

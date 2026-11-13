@@ -114,6 +114,8 @@ export const fr: Catalog = {
     emptyFilter: 'Aucun plan de cette semaine ne correspond à ce filtre.',
   },
   plan: {
+    spotsTotal_one: '{{count}} place',
+    spotsTotal_other: '{{count}} places',
     withdrawBring: 'Retirer',
     withdrawBringItem: 'Retirer {{item}}',
     category: {
@@ -434,6 +436,7 @@ export const fr: Catalog = {
     error: 'Impossible de publier. Réessayez.',
     cityRequired: 'Choisissez d’abord votre ville de résidence, ensuite vous pourrez organiser.',
     published: {
+      whatsapp: 'WhatsApp',
       shareFailed: 'Impossible d’ouvrir le partage ici. Copiez le lien à la place.',
       title: 'Votre sortie est en ligne',
       lead: 'Partagez-la là où sont vos proches. Ils peuvent s’inscrire sans l’application.',
@@ -448,6 +451,9 @@ export const fr: Catalog = {
     },
   },
   host: {
+    happeningNow: 'EN CE MOMENT',
+    hereCount: '{{here}} sur {{total}} sont là',
+    tapToCheckIn: 'Touchez un nom pour le pointer',
     bringTitle: 'À apporter',
     bringEmpty: 'Rien sur la liste pour l’instant.',
     bringAdd: 'Ajouter un élément',

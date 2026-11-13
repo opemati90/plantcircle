@@ -109,6 +109,8 @@ export const pt: Catalog = {
     emptyFilter: 'Nenhum plano desta semana corresponde a este filtro.',
   },
   plan: {
+    spotsTotal_one: '{{count}} vaga',
+    spotsTotal_other: '{{count}} vagas',
     withdrawBring: 'Retirar',
     withdrawBringItem: 'Retirar {{item}}',
     category: {
@@ -425,6 +427,7 @@ export const pt: Catalog = {
     error: 'Não foi possível publicar. Tente de novo.',
     cityRequired: 'Escolha primeiro sua cidade de origem; depois você pode receber planos.',
     published: {
+      whatsapp: 'WhatsApp',
       shareFailed: 'Não foi possível abrir o compartilhamento aqui. Copie o link.',
       title: 'Seu plano está no ar',
       lead: 'Compartilhe onde seu pessoal já está. Eles podem confirmar sem o app.',
@@ -439,6 +442,9 @@ export const pt: Catalog = {
     },
   },
   host: {
+    happeningNow: 'ACONTECENDO AGORA',
+    hereCount: '{{here}} de {{total}} chegaram',
+    tapToCheckIn: 'Toque em um nome para registrar a presença',
     bringTitle: 'O que levar',
     bringEmpty: 'Ainda não há nada na lista.',
     bringAdd: 'Adicionar algo',

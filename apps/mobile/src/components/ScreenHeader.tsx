@@ -12,24 +12,44 @@ export function ScreenHeader({
   backLabel,
   onBack,
   caption,
+  progress,
 }: {
   backLabel: string;
   onBack: () => void;
   caption?: string;
+  /** Progress through a flow: filled segments out of the total, drawn beside the back circle. */
+  progress?: { step: number; total: number };
 }) {
   const insets = useScreenInsets();
   return (
     <View style={[styles.wrap, { paddingTop: insets.headerTop }]}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={backLabel}
-        onPress={onBack}
-        hitSlop={8}
-        style={styles.back}
-      >
-        <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />
-      </Pressable>
-      {caption ? (
+      <View style={styles.row}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={backLabel}
+          onPress={onBack}
+          hitSlop={8}
+          style={styles.back}
+        >
+          <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />
+        </Pressable>
+        {progress ? (
+          <View
+            accessibilityRole="progressbar"
+            accessibilityLabel={caption}
+            accessibilityValue={{ min: 0, max: progress.total, now: progress.step }}
+            style={styles.segments}
+          >
+            {Array.from({ length: progress.total }, (_, index) => (
+              <View
+                key={index}
+                style={[styles.segment, index < progress.step && styles.segmentDone]}
+              />
+            ))}
+          </View>
+        ) : null}
+      </View>
+      {caption && !progress ? (
         <Text style={type(14, 'semibold', { color: color.secondary })}>{caption}</Text>
       ) : null}
     </View>
@@ -38,6 +58,10 @@ export function ScreenHeader({
 
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 24, paddingBottom: 8, gap: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  segments: { flex: 1, flexDirection: 'row', gap: 5 },
+  segment: { flex: 1, height: 3, borderRadius: 3, backgroundColor: color.fill },
+  segmentDone: { backgroundColor: color.ink },
   back: {
     width: 44,
     height: 44,

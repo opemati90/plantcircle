@@ -30,16 +30,18 @@ test('a host checks a guest in, undoes it, and sees the summary change', async (
   await expect(page.getByRole('heading', { name: 'Your Plan is live' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Manage' }).click();
-  await expect(page.getByRole('heading', { name: 'Manage this Plan' })).toBeVisible();
+  // Inside the check-in window the heading counts who is here.
+  await expect(page.getByRole('heading', { name: '0 of 2 are here' })).toBeVisible();
   await expect(page.getByText('Mia K.')).toBeVisible();
   await expect(page.getByText('Lena', { exact: true })).toBeVisible();
   await expect(page.getByText('On the waitlist')).toBeVisible();
   await expect(page.getByText('You can end the Plan once it starts.')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Check in Mia K.' }).click();
-  await expect(page.getByRole('button', { name: 'Undo check-in for Mia K.' })).toBeVisible();
+  await page.getByRole('checkbox', { name: 'Check in Mia K.' }).click();
+  await expect(page.getByRole('checkbox', { name: 'Undo check-in for Mia K.' })).toBeChecked();
+  await expect(page.getByRole('heading', { name: '1 of 2 are here' })).toBeVisible();
   await expect(page.getByText('Checked in', { exact: true }).first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Undo check-in for Mia K.' }).click();
-  await expect(page.getByRole('button', { name: 'Check in Mia K.' })).toBeVisible();
+  await page.getByRole('checkbox', { name: 'Undo check-in for Mia K.' }).click();
+  await expect(page.getByRole('checkbox', { name: 'Check in Mia K.' })).not.toBeChecked();
 });

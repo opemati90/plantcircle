@@ -49,7 +49,7 @@ Working rules from the owner:
 | G7 | Autocomplete in the city picker: type to filter cities and countries, case and accent-insensitive; search resets on each open; no-match message. Codex audit (3 rounds) fixed the name mismatch and the reset. | done |
 | G9 | Arrow-key movement between city options on the web renderer. Deferred on purpose: the product is mobile-first and native uses Tab. Revisit with the web RSVP page (C16). | deferred (decision) |
 | G10 | Onboarding city step grouped by country with the picker's grouping and names. Codex audit: sound. | done |
-| G11 | Home + button overlaps the featured card's "3 spots" chip. The button's position already matches the design (right 22, bottom 104); the overlap depends on the card's position in our layout, so it is checked side by side in D1. | moved to D1 |
+| G11 | Home + button overlaps the featured card's chip. Checked in D1 at 390×844: the button sits below the card, beside the 'Near you' heading, as in the design. | done |
 
 ## C. Missing v1 features (from docs/01-mvp-scope.md, v1 list)
 
@@ -80,7 +80,7 @@ Owner asked for Circles, Learn and People, end to end. The rest follow in backlo
 
 | # | Item | Status |
 |---|------|--------|
-| D1 | Side-by-side check against the design (390×844), verified in screenshots. Done: shared `ScreenHeader` with status-bar clearance; Circle page (photo hero, tabs); Profile (identity card, stats, impact, groups; People switch under Privacy); recipe page (photo hero, chips); Learn (photo grid); People (compact rows, one action each, Message once connected); chat (compact bar, options sheet for mute and pin, avatar bubbles). Placeholders to resolve: Circles and recipes have no cover photo column (bundled photos chosen by id); the Circle Plans tab shows the city's Plans because Plans carry no circle_id; the 'Cook with the world' card and Filters button on Explore are v1.1. Still to compare: Manage, Published, create wizard steps 3–6, My Plans, Home featured card (G11). | doing |
+| D1 | Side-by-side check against the design (390×844), verified in screenshots. Done: shared `ScreenHeader` (status-bar clearance, progress segments for flows); Circle page; Profile; recipe; Learn grid; People rows; chat; create wizard (progress bar, 32pt titles, 3-column time grid, segmented duration); Published (centred check, Plan card, link row with inline Copy, share tiles, floating bar with Manage); Manage ("n of total are here" during the window, tappable guest rows with a check ring); My Plans and Home matched already; the + button no longer overlaps the featured card (G11 closed). Placeholders to resolve: no cover photo column for Circles and recipes; Circle Plans tab shows the city's Plans (no circle_id on Plans); Explore's 'Cook with the world' and Filters are v1.1; 'Other date' picker in the wizard replaced by a 14-day strip; Published has no Circle share tile until Plans have a Circle. | done |
 | D2 | Card radius: design uses 22; app uses the 20 token. Decide and record. | todo |
 | D5 | Android active tab pill had square corners (radius 999 on a 52×30 view). Fixed with radius 15; verified on emulator. | done |
 | D3 | Decluttering pass: remove duplicate status text, align spacing to the design's 18/20 rhythm. | todo |

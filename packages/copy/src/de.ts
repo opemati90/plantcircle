@@ -109,6 +109,8 @@ export const de: Catalog = {
     emptyFilter: 'Diese Woche passt kein Plan zu diesem Filter.',
   },
   plan: {
+    spotsTotal_one: '{{count}} Platz',
+    spotsTotal_other: '{{count}} Plätze',
     withdrawBring: 'Zurückziehen',
     withdrawBringItem: '{{item}} zurückziehen',
     category: {
@@ -432,6 +434,7 @@ export const de: Catalog = {
     error: 'Das hat nicht geklappt. Bitte versuch es noch einmal.',
     cityRequired: 'Wähl zuerst deine Heimatstadt, dann kannst du etwas veranstalten.',
     published: {
+      whatsapp: 'WhatsApp',
       shareFailed: 'Teilen ist hier gerade nicht möglich. Kopier den Link stattdessen.',
       title: 'Deine Runde ist online',
       lead: 'Teile sie dort, wo deine Leute schon sind. Sie können ohne App zusagen.',
@@ -446,6 +449,9 @@ export const de: Catalog = {
     },
   },
   host: {
+    happeningNow: 'LÄUFT GERADE',
+    hereCount: '{{here}} von {{total}} sind da',
+    tapToCheckIn: 'Tipp auf einen Namen, um einzuchecken',
     bringTitle: 'Was mitgebracht werden kann',
     bringEmpty: 'Noch nichts auf der Liste.',
     bringAdd: 'Etwas hinzufügen',

@@ -109,6 +109,8 @@ export const it: Catalog = {
     emptyFilter: 'Nessun piano di questa settimana corrisponde a questo filtro.',
   },
   plan: {
+    spotsTotal_one: '{{count}} posto',
+    spotsTotal_other: '{{count}} posti',
     withdrawBring: 'Ritira',
     withdrawBringItem: 'Ritira {{item}}',
     category: {
@@ -426,6 +428,7 @@ export const it: Catalog = {
     error: 'Non è stato possibile pubblicare. Riprova.',
     cityRequired: 'Scegli prima la tua città di residenza, poi potrai organizzare.',
     published: {
+      whatsapp: 'WhatsApp',
       shareFailed: 'Non è possibile aprire la condivisione qui. Copia il link.',
       title: 'Il tuo incontro è online',
       lead: 'Condividilo dove sono già le tue persone. Possono iscriversi senza l’app.',
@@ -440,6 +443,9 @@ export const it: Catalog = {
     },
   },
   host: {
+    happeningNow: 'IN CORSO',
+    hereCount: '{{here}} di {{total}} sono qui',
+    tapToCheckIn: 'Tocca un nome per registrare la presenza',
     bringTitle: 'Da portare',
     bringEmpty: 'Nessun elemento in lista.',
     bringAdd: 'Aggiungi qualcosa',

@@ -104,6 +104,8 @@ export const en = {
     emptyFilter: 'No Plans match this filter this week.',
   },
   plan: {
+    spotsTotal_one: '{{count}} spot',
+    spotsTotal_other: '{{count}} spots',
     withdrawBring: 'Withdraw',
     withdrawBringItem: 'Withdraw {{item}}',
     category: {
@@ -419,6 +421,7 @@ export const en = {
     error: 'Couldn’t publish that. Try again.',
     cityRequired: 'Choose your home city first, then you can host.',
     published: {
+      whatsapp: 'WhatsApp',
       shareFailed: 'Couldn’t open sharing here. Copy the link instead.',
       title: 'Your Plan is live',
       lead: 'Share it where your people already are. They can RSVP without the app.',
@@ -433,6 +436,9 @@ export const en = {
     },
   },
   host: {
+    happeningNow: 'HAPPENING NOW',
+    hereCount: '{{here}} of {{total}} are here',
+    tapToCheckIn: 'Tap a name to check them in',
     bringTitle: 'Things to bring',
     bringEmpty: 'Nothing on the list yet.',
     bringAdd: 'Add something',

@@ -115,6 +115,8 @@ export const pl: Catalog = {
     emptyFilter: 'Żaden plan z tego tygodnia nie pasuje do tego filtra.',
   },
   plan: {
+    spotsTotal_one: '{{count}} miejsce',
+    spotsTotal_other: '{{count}} miejsc',
     withdrawBring: 'Wycofaj',
     withdrawBringItem: 'Wycofaj {{item}}',
     category: {
@@ -446,6 +448,7 @@ export const pl: Catalog = {
     error: 'Nie udało się opublikować. Spróbuj ponownie.',
     cityRequired: 'Najpierw wybierz swoje miasto, potem możesz organizować spotkania.',
     published: {
+      whatsapp: 'WhatsApp',
       shareFailed: 'Nie udało się otworzyć udostępniania. Skopiuj link.',
       title: 'Twoje spotkanie jest opublikowane',
       lead: 'Udostępnij je tam, gdzie są Twoi ludzie. Mogą się zapisać bez aplikacji.',
@@ -460,6 +463,9 @@ export const pl: Catalog = {
     },
   },
   host: {
+    happeningNow: 'TRWA TERAZ',
+    hereCount: '{{here}} z {{total}} już jest',
+    tapToCheckIn: 'Dotknij imienia, aby zameldować',
     bringTitle: 'Do przyniesienia',
     bringEmpty: 'Na liście nic jeszcze nie ma.',
     bringAdd: 'Dodaj coś',
