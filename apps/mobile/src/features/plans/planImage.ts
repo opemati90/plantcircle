@@ -11,6 +11,13 @@ const BUNDLED: Record<string, number> = {
 
 export const welcomePhoto = BUNDLED['/images/cooking-together.jpg'] as number;
 
+/** Recipes carry no cover photo yet (docs/16-open-questions.md): a bundled photo chosen by id. */
+export function recipePhoto(recipeId: string): number {
+  const photos = Object.values(BUNDLED);
+  const sum = Array.from(recipeId).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return photos[sum % photos.length] ?? welcomePhoto;
+}
+
 export function planImage(plan: Plan): ImageSource | number | null {
   if (!plan.imagePath) return null;
   if (plan.imagePath.startsWith('https://')) return { uri: plan.imagePath };

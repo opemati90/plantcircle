@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
-import { OfflineIcon } from '../../components/icons';
+import { ChatIcon, ChevronRightIcon, OfflineIcon } from '../../components/icons';
 import { EmptyState, InlineState, Skeleton } from '../../components/parts';
 import { color, extra, radius, type } from '../../components/theme';
 import { errorCode } from '../../lib/backend/backend';
@@ -69,28 +69,30 @@ export function PeopleTab() {
 
   return (
     <View style={styles.list}>
-      <Button
-        variant="outline"
-        label={t('direct.requestsButton')}
+      <Pressable
+        accessibilityRole="link"
         onPress={() => {
           router.push('/messages/requests');
         }}
-      />
-      <Text style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}>
-        {t('people.lead')}
-      </Text>
+        style={styles.requests}
+      >
+        <Text style={[type(16, 'semibold'), styles.grow]}>{t('direct.requestsButton')}</Text>
+        <ChevronRightIcon size={16} strokeWidth={2.4} color={color.secondary} />
+      </Pressable>
       {people.data.length === 0 ? (
         <InlineState title={t('people.empty.title')} text={t('people.empty.text')} />
       ) : (
         people.data.map((person) => (
           <View key={person.userId} style={styles.row}>
+            <View aria-hidden style={[styles.avatar, { backgroundColor: extra.tints[1].background }]}>
+              <Text allowFontScaling={false} style={type(17, 'bold', { color: extra.tints[1].text })}>
+                {person.displayName.charAt(0).toUpperCase()}
+              </Text>
+            </View>
             <View style={styles.text}>
-              <Text style={type(17, 'semibold', { tracking: -0.3 })}>{person.displayName}</Text>
-              {person.city ? (
-                <Text style={type(15, 'regular', { color: color.secondary })}>{person.city}</Text>
-              ) : null}
-              <Text style={type(15, 'regular', { color: color.secondary })}>
-                {t('people.inCircles', { circles: person.circleNames.join(', ') })}
+              <Text style={type(16, 'semibold', { tracking: -0.3 })}>{person.displayName}</Text>
+              <Text numberOfLines={1} style={type(14, 'regular', { color: color.secondary })}>
+                {[person.circleNames[0], person.city].filter(Boolean).join(' · ')}
               </Text>
             </View>
             {person.connection === 'none' ? (
@@ -112,29 +114,28 @@ export function PeopleTab() {
                   act(person);
                 }}
               />
-            ) : (
-              <Text
-                role="status"
-                style={type(15, 'semibold', {
-                  color: person.connection === 'connected' ? color.brand : color.secondary,
-                })}
+            ) : person.connection === 'connected' ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${t('direct.messageButton')} ${person.displayName}`}
+                onPress={() => {
+                  router.push({ pathname: '/chat/direct/[id]', params: { id: person.userId } });
+                }}
+                style={styles.iconAction}
               >
-                {person.connection === 'connected'
-                  ? t('people.connected')
-                  : t('people.requested')}
+                <ChatIcon size={20} strokeWidth={1.9} color={color.ink} />
+              </Pressable>
+            ) : (
+              <Text role="status" style={type(14, 'semibold', { color: color.secondary })}>
+                {t('people.requested')}
               </Text>
             )}
-            <Button
-              variant="outline"
-              label={t('direct.messageButton')}
-              accessibilityLabel={`${t('direct.messageButton')} ${person.displayName}`}
-              onPress={() => {
-                router.push({ pathname: '/chat/direct/[id]', params: { id: person.userId } });
-              }}
-            />
           </View>
         ))
       )}
+      <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>
+        {t('people.lead')}
+      </Text>
       {connect.isError ? (
         <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
           {t('people.error')}
@@ -146,13 +147,25 @@ export function PeopleTab() {
 
 const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingTop: 12, gap: 12 },
-  row: {
+  requests: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
-    padding: 16,
+    minHeight: 56,
+    paddingHorizontal: 16,
     borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: extra.cardBorder,
-    backgroundColor: color.surface,
+    backgroundColor: color.fill,
   },
-  text: { gap: 4 },
+  grow: { flex: 1 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56 },
+  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  text: { flex: 1, minWidth: 0, gap: 2 },
+  iconAction: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: color.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

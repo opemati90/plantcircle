@@ -16,7 +16,8 @@ test('a member connects back with someone in a shared Circle who asked first', a
   await page.getByRole('tab', { name: 'People', exact: true }).click();
   await expect(page.getByText('Mia K.')).toBeVisible();
   await page.getByRole('button', { name: 'Connect back' }).click();
-  await expect(page.getByText('Connected', { exact: true })).toBeVisible();
+  // Once connected, the row offers Message in place of the connect action.
+  await expect(page.getByRole('button', { name: 'Message Mia K.' })).toBeVisible();
 });
 
 test('the People choice is off by default and can be turned on from Profile', async ({ page }) => {

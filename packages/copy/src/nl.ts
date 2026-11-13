@@ -300,6 +300,7 @@ export const nl: Catalog = {
     },
   },
   learn: {
+    eyebrow: 'RECEPT',
     searchLabel: 'Recepten zoeken',
     searchPlaceholder: 'Recepten zoeken',
     empty: {
@@ -498,6 +499,8 @@ export const nl: Catalog = {
     leave: 'Feedback geven',
   },
   chat: {
+    more: 'Meer',
+    options: 'Chatopties',
     tooLong: 'Dat is te lang. Blijf onder de 1.000 tekens.',
     circleLead: 'Alleen leden van deze kring kunnen hier lezen en schrijven.',
     circleEmptyText: 'Zeg hallo tegen je kring.',

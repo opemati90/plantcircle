@@ -296,6 +296,7 @@ export const it: Catalog = {
     },
   },
   learn: {
+    eyebrow: 'RICETTA',
     searchLabel: 'Cerca ricette',
     searchPlaceholder: 'Cerca ricette',
     empty: {
@@ -494,6 +495,8 @@ export const it: Catalog = {
     leave: 'Lascia un feedback',
   },
   chat: {
+    more: 'Altro',
+    options: 'Opzioni della chat',
     tooLong: 'È troppo lungo. Restate sotto i 1.000 caratteri.',
     circleLead: 'Qui possono leggere e scrivere solo i membri di questo circolo.',
     circleEmptyText: 'Saluta il tuo circolo.',

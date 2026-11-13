@@ -304,6 +304,7 @@ export const fr: Catalog = {
     },
   },
   learn: {
+    eyebrow: 'RECETTE',
     searchLabel: 'Rechercher des recettes',
     searchPlaceholder: 'Rechercher des recettes',
     empty: {
@@ -502,6 +503,8 @@ export const fr: Catalog = {
     leave: 'Donner un avis',
   },
   chat: {
+    more: 'Plus',
+    options: 'Options de la discussion',
     tooLong: 'C’est trop long. Restez sous 1 000 caractères.',
     circleLead: 'Seuls les membres de ce cercle peuvent lire et écrire ici.',
     circleEmptyText: 'Dites bonjour à votre cercle.',

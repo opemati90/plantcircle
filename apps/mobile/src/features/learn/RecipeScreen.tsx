@@ -1,8 +1,12 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Button } from '../../components/Button';
+import { Button, IconButton } from '../../components/Button';
+import { ChevronLeftIcon } from '../../components/icons';
+import { Photo } from '../../components/Photo';
+import { recipePhoto } from '../plans/planImage';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { EmptyState, Skeleton } from '../../components/parts';
 import { color, extra, radius, type } from '../../components/theme';
@@ -10,7 +14,7 @@ import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
 import { currentLanguage } from '../../lib/i18n';
 import { useRecipe } from './queries';
-import { allergenNames, formatQuantity, recipeMeta, scaleQuantity } from './recipeRules';
+import { allergenNames, formatQuantity, scaleQuantity } from './recipeRules';
 import { Stepper } from '../../components/Stepper';
 
 const MIN_SERVINGS = 1;
@@ -25,15 +29,11 @@ export default function RecipeScreen() {
   const recipe = useRecipe(id);
   const [servings, setServings] = useState<number | null>(null);
 
-  const back = (
-    <ScreenHeader
-      backLabel={t('common.back')}
-      onBack={() => {
-        if (router.canGoBack()) router.back();
-        else router.replace('/explore');
-      }}
-    />
-  );
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/explore');
+  };
+  const back = <ScreenHeader backLabel={t('common.back')} onBack={goBack} />;
 
   if (recipe.isPending) {
     return (
@@ -76,30 +76,54 @@ export default function RecipeScreen() {
 
   return (
     <View style={styles.screen}>
-      {back}
-      <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: 16, paddingBottom: 40 + insets.bottom },
-        ]}
-      >
-        {data.cuisine ? (
-          <Text style={type(13, 'semibold', { color: color.secondary, tracking: 0.6 })}>
-            {data.cuisine.toUpperCase()}
-          </Text>
-        ) : null}
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
-          {data.title}
-        </Text>
-        <Text style={type(15, 'regular', { color: color.secondary })}>
-          {t('learn.byline', {
-            name: data.authorName ?? t('circles.requests.someone'),
-            circle: data.circleName,
-          })}
-        </Text>
-        <Text style={type(15, 'regular', { color: color.secondary })}>{recipeMeta(t, data)}</Text>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}>
+        <View style={styles.hero}>
+          <Photo source={recipePhoto(data.id)} />
+          <LinearGradient
+            colors={['rgba(0,0,0,0.35)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.9)', 'rgba(0,0,0,0.94)']}
+            locations={[0, 0.18, 0.3, 0.6, 1]}
+            style={StyleSheet.absoluteFill}
+          />
+          <IconButton
+            variant="glass"
+            label={t('common.back')}
+            onPress={goBack}
+            style={[styles.back, { top: insets.headerTop }]}
+          >
+            <ChevronLeftIcon strokeWidth={2.2} color="#FFFFFF" />
+          </IconButton>
+          <View style={styles.heroText}>
+            <Text style={type(13, 'semibold', { color: 'rgba(255,255,255,0.8)', tracking: 0.6 })}>
+              {data.cuisine ? `${t('learn.eyebrow')} · ${data.cuisine.toUpperCase()}` : t('learn.eyebrow')}
+            </Text>
+            <Text
+              accessibilityRole="header"
+              style={type(34, 'bold', { color: '#FFFFFF', tracking: -1.2, leading: 1.02 })}
+            >
+              {data.title}
+            </Text>
+            <Text style={type(16, 'regular', { color: 'rgba(255,255,255,0.88)' })}>
+              {t('learn.byline', {
+                name: data.authorName ?? t('circles.requests.someone'),
+                circle: data.circleName,
+              })}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.content}>
+        <View style={styles.chips}>
+          {data.minutes !== null ? (
+            <View style={styles.chip}>
+              <Text style={type(14, 'semibold')}>{t('learn.minutes', { minutes: data.minutes })}</Text>
+            </View>
+          ) : null}
+          <View style={styles.chip}>
+            <Text style={type(14, 'semibold')}>{t('learn.serves', { servings: data.serves })}</Text>
+          </View>
+        </View>
         {data.intro ? (
-          <Text style={type(17, 'regular', { color: color.ink, leading: 1.5 })}>{data.intro}</Text>
+          <Text style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}>{data.intro}</Text>
         ) : null}
 
         <View style={styles.allergens}>
@@ -153,6 +177,7 @@ export default function RecipeScreen() {
             </View>
           ))}
         </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -161,7 +186,11 @@ export default function RecipeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   back: { position: 'absolute', left: 16, zIndex: 1 },
-  content: { paddingHorizontal: 24, gap: 12 },
+  hero: { height: 400, backgroundColor: color.ink },
+  heroText: { position: 'absolute', left: 24, right: 24, bottom: 30, gap: 10 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: { minHeight: 32, paddingHorizontal: 12, justifyContent: 'center', borderRadius: radius.pill, backgroundColor: color.fill },
+  content: { paddingHorizontal: 24, paddingTop: 24, gap: 14 },
   allergens: {
     padding: 14,
     borderRadius: radius.card,

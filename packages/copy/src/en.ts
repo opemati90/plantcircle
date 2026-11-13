@@ -289,6 +289,7 @@ export const en = {
     },
   },
   learn: {
+    eyebrow: 'RECIPE',
     searchLabel: 'Search recipes',
     searchPlaceholder: 'Search recipes',
     empty: {
@@ -487,6 +488,8 @@ export const en = {
     leave: 'Leave feedback',
   },
   chat: {
+    more: 'More',
+    options: 'Chat options',
     tooLong: 'That’s too long. Keep it under 1,000 characters.',
     circleLead: 'Only members of this Circle can read and post here.',
     circleEmptyText: 'Say hello to your Circle.',

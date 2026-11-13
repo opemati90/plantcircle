@@ -1,10 +1,19 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type ScrollViewInstance,
+} from 'react-native';
 import { Button } from '../../components/Button';
+import { ChevronLeftIcon } from '../../components/icons';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { EmptyState, InlineState, Skeleton } from '../../components/parts';
+import { BottomSheet, EmptyState, InlineState, Skeleton } from '../../components/parts';
 import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
@@ -35,6 +44,7 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
   const messages = useMessages(conversationId);
   const send = useSendMessage(conversationId);
   const [text, setText] = useState('');
+  const [optionsOpen, setOptionsOpen] = useState(false);
   // One id per message text: a retry of the same text is recognised and not posted twice, while
   // edited text is a new message with a new id.
   const [clientId, setClientId] = useState(newIdempotencyKey);
@@ -51,15 +61,11 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
     list.current?.scrollToEnd({ animated: false });
   }, [messages.data?.length]);
 
-  const back = (
-    <ScreenHeader
-      backLabel={t('common.back')}
-      onBack={() => {
-        if (router.canGoBack()) router.back();
-        else router.replace('/home');
-      }}
-    />
-  );
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/home');
+  };
+  const back = <ScreenHeader backLabel={t('common.back')} onBack={goBack} />;
 
   if (session === undefined) {
     return <View style={styles.screen} />;
@@ -157,45 +163,33 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
 
   return (
     <View style={styles.screen}>
-      {back}
-      <View style={[styles.header, { paddingTop: 8 }]}>
-        <Text accessibilityRole="header" style={type(24, 'bold', { tracking: -0.6 })}>
-          {kind === 'plan' ? t('chat.openPlan') : kind === 'circle' ? t('chat.openCircle') : t('direct.messageButton')}
-        </Text>
-        {lead ? (
-          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>{lead}</Text>
-        ) : null}
-        <View style={styles.controls}>
-          <Button
-            variant="outline"
-            label={mutedNow ? t('direct.unmute') : t('direct.mute8')}
-            disabled={!settings.data || prefs.mute.isPending}
-            onPress={() => {
-              prefs.mute.mutate(mutedNow ? null : new Date(Date.now() + 8 * 3_600_000).toISOString());
-            }}
-          />
-          <Button
-            variant="outline"
-            label={settings.data?.pinned ? t('direct.unpin') : t('direct.pin')}
-            disabled={!settings.data || prefs.pin.isPending}
-            onPress={() => {
-              prefs.pin.mutate(!settings.data?.pinned);
-            }}
-          />
-        </View>
-        {settings.isError ? (
-          <View style={styles.controls}>
-            <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
-              {t('direct.prefsError')}
-            </Text>
-            <Button variant="outline" label={t('common.retry')} onPress={() => void settings.refetch()} />
-          </View>
-        ) : null}
-        {prefs.mute.isError || prefs.pin.isError ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
-            {t('direct.prefsError')}
+      <View style={[styles.bar, { paddingTop: insets.headerTop }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          onPress={goBack}
+          style={styles.circle}
+        >
+          <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />
+        </Pressable>
+        <View style={styles.barText}>
+          <Text numberOfLines={1} accessibilityRole="header" style={type(17, 'semibold', { tracking: -0.3 })}>
+            {kind === 'plan' ? t('chat.openPlan') : kind === 'circle' ? t('chat.openCircle') : t('direct.messageButton')}
           </Text>
-        ) : null}
+          {lead ? (
+            <Text numberOfLines={1} style={type(13, 'regular', { color: color.secondary })}>{lead}</Text>
+          ) : null}
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('chat.more')}
+          onPress={() => {
+            setOptionsOpen(true);
+          }}
+          style={styles.circle}
+        >
+          <Text style={type(20, 'bold', { color: color.ink })}>···</Text>
+        </Pressable>
       </View>
 
       <ScrollView
@@ -221,17 +215,78 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
         ) : (
           shown.map((message) => {
             const mine = message.senderId === session.userId;
+            const tint = extra.tints[message.senderName.charCodeAt(0) % extra.tints.length] ?? extra.tints[0];
             return (
-              <View key={message.id} style={[styles.bubble, mine && styles.mine]}>
-                <Text style={type(13, 'semibold', { color: color.secondary })}>
-                  {`${message.senderName} · ${localTime(message.createdAt)}`}
-                </Text>
-                <Text style={type(17, 'regular', { leading: 1.45 })}>{message.body}</Text>
+              <View key={message.id} style={[styles.line, mine && styles.lineMine]}>
+                {mine ? null : (
+                  <View aria-hidden style={[styles.avatarSmall, { backgroundColor: tint.background }]}>
+                    <Text allowFontScaling={false} style={type(13, 'bold', { color: tint.text })}>
+                      {message.senderName.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+                <View style={styles.stack}>
+                  {mine ? null : (
+                    <Text style={[type(13, 'semibold', { color: color.secondary }), styles.senderName]}>
+                      {message.senderName}
+                    </Text>
+                  )}
+                  <View style={[styles.bubble, mine && styles.mine]}>
+                    <Text style={type(16, 'regular', { leading: 1.45, color: mine ? '#FFFFFF' : color.ink })}>
+                      {message.body}
+                    </Text>
+                  </View>
+                  <Text style={[type(12, 'regular', { color: color.secondary }), mine ? styles.timeMine : styles.time]}>
+                    {localTime(message.createdAt)}
+                  </Text>
+                </View>
               </View>
             );
           })
         )}
       </ScrollView>
+
+      <BottomSheet
+        open={optionsOpen}
+        onClose={() => {
+          setOptionsOpen(false);
+        }}
+        title={t('chat.options')}
+      >
+        <View style={styles.options}>
+          <Button
+            variant="outline"
+            label={mutedNow ? t('direct.unmute') : t('direct.mute8')}
+            disabled={!settings.data || prefs.mute.isPending}
+            loading={prefs.mute.isPending}
+            onPress={() => {
+              prefs.mute.mutate(mutedNow ? null : new Date(Date.now() + 8 * 3_600_000).toISOString());
+            }}
+          />
+          <Button
+            variant="outline"
+            label={settings.data?.pinned ? t('direct.unpin') : t('direct.pin')}
+            disabled={!settings.data || prefs.pin.isPending}
+            loading={prefs.pin.isPending}
+            onPress={() => {
+              prefs.pin.mutate(!settings.data?.pinned);
+            }}
+          />
+          {settings.isError ? (
+            <>
+              <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                {t('direct.prefsError')}
+              </Text>
+              <Button variant="outline" label={t('common.retry')} onPress={() => void settings.refetch()} />
+            </>
+          ) : null}
+          {prefs.mute.isError || prefs.pin.isError ? (
+            <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+              {t('direct.prefsError')}
+            </Text>
+          ) : null}
+        </View>
+      </BottomSheet>
 
       <View style={[styles.composer, { paddingBottom: 12 + insets.bottom }]}>
         {tooLong ? (
@@ -364,19 +419,43 @@ export function DirectChat() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   back: { position: 'absolute', left: 16, zIndex: 1 },
-  header: { paddingHorizontal: 20, gap: 4, paddingBottom: 8 },
-  controls: { flexDirection: 'row', gap: 10, paddingTop: 6 },
-  list: { flex: 1 },
-  listContent: { paddingHorizontal: 20, paddingVertical: 12, gap: 10 },
-  bubble: {
-    gap: 4,
-    padding: 12,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: extra.cardBorder,
-    maxWidth: '85%',
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: extra.cardBorder,
   },
-  mine: { alignSelf: 'flex-end', backgroundColor: color.brandTint, borderColor: color.brandTint },
+  barText: { flex: 1, minWidth: 0, gap: 1 },
+  circle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: color.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  header: { paddingHorizontal: 20, gap: 4, paddingBottom: 8 },
+  options: { gap: 12 },
+  line: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, maxWidth: '86%' },
+  lineMine: { alignSelf: 'flex-end', flexDirection: 'row-reverse' },
+  avatarSmall: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  stack: { gap: 3, flexShrink: 1 },
+  senderName: { paddingLeft: 4 },
+  time: { paddingLeft: 4 },
+  timeMine: { alignSelf: 'flex-end', paddingRight: 4 },
+  list: { flex: 1 },
+  listContent: { paddingHorizontal: 16, paddingVertical: 12, gap: 12 },
+  bubble: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 18,
+    borderBottomLeftRadius: 6,
+    backgroundColor: color.fill,
+  },
+  mine: { backgroundColor: color.ink, borderBottomLeftRadius: 18, borderBottomRightRadius: 6 },
   composer: { paddingHorizontal: 20, paddingTop: 8, gap: 8, borderTopWidth: 1, borderTopColor: extra.cardBorder },
   row: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
   input: {

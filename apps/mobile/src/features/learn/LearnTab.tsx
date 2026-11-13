@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Photo } from '../../components/Photo';
+import { recipePhoto } from '../plans/planImage';
 import { Button } from '../../components/Button';
 import { OfflineIcon } from '../../components/icons';
 import { EmptyState, InlineState, Skeleton } from '../../components/parts';
@@ -62,34 +64,40 @@ export function LearnTab({ query }: { query: string }) {
           <InlineState title={t('learn.empty.title')} text={t('learn.empty.text')} />
         )
       ) : (
-        recipes.data.map((recipe) => (
-          <Pressable
-            key={recipe.id}
-            accessibilityRole="link"
-            onPress={() => {
-              open(recipe);
-            }}
-            style={styles.row}
-          >
-            <Text style={type(17, 'semibold', { tracking: -0.3 })}>{recipe.title}</Text>
-            <Text style={type(15, 'regular', { color: color.secondary })}>
-              {t('learn.byline', {
-                name: recipe.authorName ?? t('circles.requests.someone'),
-                circle: recipe.circleName,
-              })}
-            </Text>
-            <Text style={type(15, 'regular', { color: color.secondary })}>
-              {recipeMeta(t, recipe)}
-            </Text>
-            <Text
-              style={type(14, 'semibold', {
-                color: recipe.allergensConfirmed ? color.secondary : color.danger,
-              })}
+        <View style={styles.grid}>
+          {recipes.data.map((recipe) => (
+            <Pressable
+              key={recipe.id}
+              accessibilityRole="link"
+              accessibilityLabel={`${recipe.title}. ${recipeMeta(t, recipe)}. ${allergenLine(t, recipe)}`}
+              onPress={() => {
+                open(recipe);
+              }}
+              style={styles.tile}
             >
-              {allergenLine(t, recipe)}
-            </Text>
-          </Pressable>
-        ))
+              <View style={styles.photo}>
+                <Photo source={recipePhoto(recipe.id)} />
+              </View>
+              <Text numberOfLines={2} style={type(16, 'semibold', { tracking: -0.3 })}>
+                {recipe.title}
+              </Text>
+              <Text numberOfLines={1} style={type(14, 'regular', { color: color.secondary })}>
+                {t('learn.byline', {
+                  name: recipe.authorName ?? t('circles.requests.someone'),
+                  circle: recipe.circleName,
+                })}
+              </Text>
+              <Text
+                numberOfLines={2}
+                style={type(13, 'semibold', {
+                  color: recipe.allergensConfirmed ? color.secondary : color.danger,
+                })}
+              >
+                {allergenLine(t, recipe)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       )}
     </View>
   );
@@ -97,12 +105,7 @@ export function LearnTab({ query }: { query: string }) {
 
 const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingTop: 12, gap: 12 },
-  row: {
-    gap: 4,
-    padding: 16,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: extra.cardBorder,
-    backgroundColor: color.surface,
-  },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
+  tile: { width: '47%', gap: 6 },
+  photo: { height: 140, borderRadius: radius.card, overflow: 'hidden', backgroundColor: extra.skeleton },
 });

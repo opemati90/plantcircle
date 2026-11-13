@@ -302,6 +302,7 @@ export const de: Catalog = {
     },
   },
   learn: {
+    eyebrow: 'REZEPT',
     searchLabel: 'Rezepte suchen',
     searchPlaceholder: 'Rezepte suchen',
     empty: {
@@ -500,6 +501,8 @@ export const de: Catalog = {
     leave: 'Feedback geben',
   },
   chat: {
+    more: 'Mehr',
+    options: 'Chat-Optionen',
     tooLong: 'Das ist zu lang. Bleib unter 1.000 Zeichen.',
     circleLead: 'Nur Mitglieder dieses Kreises können hier lesen und schreiben.',
     circleEmptyText: 'Sag deinem Kreis Hallo.',

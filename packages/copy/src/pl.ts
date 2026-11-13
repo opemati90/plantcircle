@@ -316,6 +316,7 @@ export const pl: Catalog = {
     },
   },
   learn: {
+    eyebrow: 'PRZEPIS',
     searchLabel: 'Szukaj przepisów',
     searchPlaceholder: 'Szukaj przepisów',
     empty: {
@@ -514,6 +515,8 @@ export const pl: Catalog = {
     leave: 'Zostaw opinię',
   },
   chat: {
+    more: 'Więcej',
+    options: 'Opcje czatu',
     tooLong: 'To za długie. Zmieść się w 1000 znakach.',
     circleLead: 'Tutaj mogą czytać i pisać tylko członkowie tego kręgu.',
     circleEmptyText: 'Przywitaj się ze swoim kręgiem.',
