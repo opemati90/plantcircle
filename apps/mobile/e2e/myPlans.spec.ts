@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail } from './support';
+import { freezeTime, signInWithEmail, dismissNotificationPrompt } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
@@ -21,6 +21,7 @@ test('a joined Plan appears under Going, and a waitlisted one shows its place in
 
   await page.getByRole('link', { name: /West African Cooking Night/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
+  await dismissNotificationPrompt(page);
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
 
   await page.goto('/my-plans');
@@ -34,6 +35,7 @@ test('a joined Plan appears under Going, and a waitlisted one shows its place in
 
   await page.goto('/plan/ramen-workshop');
   await page.getByRole('button', { name: 'Join waitlist' }).click();
+  await dismissNotificationPrompt(page);
   await expect(page.getByRole('button', { name: 'On the waitlist ✓' })).toBeVisible();
 
   await page.goto('/my-plans');

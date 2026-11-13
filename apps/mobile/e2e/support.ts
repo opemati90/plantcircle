@@ -40,3 +40,13 @@ export async function signInWithEmail(page: Page, next = '/home'): Promise<void>
     await expect(page).not.toHaveURL(/privacy-choices/);
   }
 }
+
+/** The notifications prompt follows the first RSVP; specs that join dismiss it when it shows. */
+export async function dismissNotificationPrompt(page: Page): Promise<void> {
+  const notNow = page.getByRole('button', { name: 'Not now' });
+  await notNow.waitFor({ state: 'visible', timeout: 4000 }).catch(() => undefined);
+  if (await notNow.isVisible()) {
+    await notNow.click();
+    await expect(notNow).toHaveCount(0);
+  }
+}

@@ -1002,3 +1002,37 @@ export interface ProfileStats {
   connections: number;
 }
 export const profileStatsSchema = z.object({ plans: z.number().int(), circles: z.number().int(), connections: z.number().int() });
+
+// Notifications (C14). In-app rows the Inbox shows under Updates.
+
+export const NOTIFICATION_TYPES = [
+  'rsvp_confirmed', 'reminder_day_before', 'reminder_2h', 'address_unlocked', 'waitlist_offer', 'plan_changed',
+  'plan_cancelled', 'plan_on_hold', 'new_message', 'message_request', 'circle_approved', 'order_closing',
+  'order_decision', 'order_ready', 'report_update', 'moderation_notice',
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export interface AppNotification {
+  id: string;
+  /** One of NOTIFICATION_TYPES; unknown kinds from a newer server show as a plain update. */
+  type: string;
+  payload: Record<string, unknown>;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export const notificationRowSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  payload: z.record(z.string(), z.unknown()),
+  read_at: z.string().nullable(),
+  created_at: z.string(),
+});
+
+export const toNotification = (row: z.infer<typeof notificationRowSchema>): AppNotification => ({
+  id: row.id,
+  type: row.type,
+  payload: row.payload,
+  readAt: row.read_at,
+  createdAt: row.created_at,
+});

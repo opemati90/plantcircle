@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { PolicyGate } from '../src/features/legal/PolicyGate';
+import { configureForeground } from '../src/features/notifications/push';
+import { PushTapRouter } from '../src/features/notifications/PushTapRouter';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -49,6 +51,8 @@ function StartupFailed() {
 
 type Startup = { backend: Backend } | { failed: true } | null;
 
+configureForeground();
+
 export default function RootLayout() {
   const [startup, setStartup] = useState<Startup>(null);
   const [queryClient] = useState(createQueryClient);
@@ -79,6 +83,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <SessionSync />
           <PolicyGate />
+          <PushTapRouter />
           <StatusBar style="auto" />
           {/* Phones use the full width; larger screens keep the phone layout centred. */}
           <View style={styles.backdrop}>

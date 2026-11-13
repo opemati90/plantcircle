@@ -3,24 +3,27 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
-import { ChevronRightIcon, UserIcon } from '../../components/icons';
+import { BellIcon, ChevronRightIcon, UserIcon } from '../../components/icons';
 import { EmptyState, InlineState, Skeleton } from '../../components/parts';
 import { Photo } from '../../components/Photo';
 import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
-import type { InboxKind, InboxThread } from '../../lib/backend/types';
+import type { AppNotification, InboxKind, InboxThread } from '../../lib/backend/types';
 import { isToday, localTime, shortDate } from '../../lib/dates';
 import { currentLanguage } from '../../lib/i18n';
 import { useAuth } from '../auth/useAuth';
 import { useDirectRequests } from '../chat/queries';
 import { imageByPath, welcomePhoto } from '../plans/planImage';
+import { describeNotification } from '../notifications/notificationCopy';
+import { useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications } from '../notifications/queries';
 import { useInbox } from './queries';
 
-type Filter = 'all' | InboxKind;
-const FILTERS: Filter[] = ['all', 'plan', 'circle', 'direct'];
+type Filter = 'all' | InboxKind | 'updates';
+const FILTERS: Filter[] = ['all', 'updates', 'plan', 'circle', 'direct'];
 const FILTER_KEY: Record<Filter, string> = {
   all: 'inbox.filterAll',
+  updates: 'inbox.filterUpdates',
   plan: 'inbox.filterPlans',
   circle: 'inbox.filterCircles',
   direct: 'inbox.filterDirect',
@@ -39,7 +42,17 @@ export default function InboxScreen() {
   const { session } = useAuth();
   const inbox = useInbox(Boolean(session));
   const requests = useDirectRequests();
+  const notifications = useNotifications(Boolean(session));
+  const markRead = useMarkNotificationRead();
+  const markAll = useMarkAllNotificationsRead();
   const [filter, setFilter] = useState<Filter>('all');
+  const unreadUpdates = notifications.data?.filter((n) => !n.readAt).length ?? 0;
+
+  const openNotification = (n: AppNotification) => {
+    const { href } = describeNotification(t, n);
+    if (!n.readAt) markRead.mutate(n.id);
+    if (href) router.push(href);
+  };
 
   const threadHref = (thread: InboxThread): Href =>
     thread.kind === 'plan'
@@ -81,6 +94,29 @@ export default function InboxScreen() {
           text={errorCode(inbox.error) === 'network' ? t('errors.offlineText') : t('errors.serverText')}
           actions={<Button label={t('common.tryAgain')} onPress={() => void inbox.refetch()} />}
         />
+      );
+    }
+    if (filter === 'updates') {
+      const rows = notifications.data ?? [];
+      if (notifications.isError) {
+        return (
+          <InlineState title={t('errors.serverTitle')} text={t('errors.serverText')} action={<Button variant="outline" label={t('common.retry')} onPress={() => void notifications.refetch()} />} />
+        );
+      }
+      if (rows.length === 0) {
+        return <InlineState title={t('notify.emptyTitle')} text={t('notify.emptyText')} />;
+      }
+      return (
+        <View>
+          {unreadUpdates > 0 ? (
+            <View style={styles.markAll}>
+              <Button variant="ghost" label={t('notify.markAllRead')} loading={markAll.isPending} onPress={() => { markAll.mutate(); }} />
+            </View>
+          ) : null}
+          {rows.map((n) => (
+            <NotificationRow key={n.id} notification={n} onPress={() => { openNotification(n); }} />
+          ))}
+        </View>
       );
     }
     const shown = inbox.data.filter((thread) => filter === 'all' || thread.kind === filter);
@@ -142,7 +178,7 @@ export default function InboxScreen() {
               style={[styles.filter, selected && styles.filterSelected]}
             >
               <Text style={type(15, 'semibold', { color: selected ? color.surface : color.ink })}>
-                {t(FILTER_KEY[item])}
+                {item === 'updates' && unreadUpdates > 0 ? `${t(FILTER_KEY[item])} · ${unreadUpdates}` : t(FILTER_KEY[item])}
               </Text>
             </Pressable>
           );
@@ -177,6 +213,34 @@ export default function InboxScreen() {
 
       {body()}
     </ScrollView>
+  );
+}
+
+function NotificationRow({ notification, onPress }: { notification: AppNotification; onPress: () => void }) {
+  const { t } = useTranslation();
+  const { title, note } = describeNotification(t, notification);
+  const when = isToday(notification.createdAt, new Date())
+    ? localTime(notification.createdAt)
+    : shortDate(notification.createdAt, Intl.DateTimeFormat(currentLanguage()).resolvedOptions().timeZone);
+  return (
+    <Pressable
+      accessibilityRole="link"
+      accessibilityLabel={`${title}. ${note}${notification.readAt ? '' : `. ${t('notify.unread')}`}`}
+      onPress={onPress}
+      style={styles.row}
+    >
+      <View style={[styles.updateIcon, !notification.readAt && styles.updateIconUnread]}>
+        <BellIcon size={18} strokeWidth={1.9} color={notification.readAt ? color.secondary : color.brand} />
+      </View>
+      <View style={styles.grow}>
+        <View style={styles.rowHead}>
+          <Text numberOfLines={2} style={[type(16, notification.readAt ? 'medium' : 'semibold', { tracking: -0.2 }), styles.grow]}>{title}</Text>
+          <Text style={type(13, 'regular', { color: color.secondary })}>{when}</Text>
+        </View>
+        {note ? <Text numberOfLines={2} style={type(14, 'regular', { color: color.secondary })}>{note}</Text> : null}
+      </View>
+      {notification.readAt ? null : <View aria-hidden style={styles.dot} />}
+    </Pressable>
   );
 }
 
@@ -273,6 +337,10 @@ const styles = StyleSheet.create({
   },
   grow: { flex: 1, minWidth: 0 },
   list: { gap: 12 },
+  rowHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  updateIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: color.fill, alignItems: 'center', justifyContent: 'center' },
+  updateIconUnread: { backgroundColor: color.brandTint },
+  markAll: { alignItems: 'flex-end' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

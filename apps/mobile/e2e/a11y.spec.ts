@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { freezeTime, signInWithEmail, type FixtureWindow } from './support';
+import { freezeTime, signInWithEmail, type FixtureWindow, dismissNotificationPrompt } from './support';
 
 // Automated scan of the web rendering only. Screen-reader behaviour, Dynamic Type
 // and Reduce Motion must be checked on devices (docs/09-accessibility.md).
@@ -59,6 +59,7 @@ test('verify-email, the joined Plan and the sign-up sheet have no detectable vio
   await expectNoViolations(page);
 
   await signInWithEmail(page, '/plan/cooking-night?join=1');
+  await dismissNotificationPrompt(page);
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
   await expectNoViolations(page);
 });
@@ -66,6 +67,7 @@ test('verify-email, the joined Plan and the sign-up sheet have no detectable vio
 test('the waitlist offer screen has no detectable violations', async ({ page }) => {
   await signInWithEmail(page, '/plan/ramen-workshop');
   await page.getByRole('button', { name: 'Join waitlist' }).click();
+  await dismissNotificationPrompt(page);
   await expect(page.getByRole('button', { name: 'On the waitlist ✓' })).toBeVisible();
   await page.evaluate(() =>
     (globalThis as FixtureWindow).__pcFixtures?.freeSpot('ramen-workshop'),

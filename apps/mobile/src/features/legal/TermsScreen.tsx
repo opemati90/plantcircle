@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -10,8 +9,7 @@ import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import type { PolicyName } from '../../lib/backend/types';
 import { longDate } from '../../lib/dates';
-import { useBackend } from '../../lib/backend/BackendProvider';
-import { useAuth } from '../auth/useAuth';
+import { useAuth, useSignOut } from '../auth/useAuth';
 import { useAcceptPolicies, usePendingPolicies } from './queries';
 
 const URLS: Record<PolicyName, string> = {
@@ -30,17 +28,9 @@ export default function TermsScreen() {
   const insets = useScreenInsets();
   const router = useRouter();
   const { session, profileError, retryProfile } = useAuth();
-  const backend = useBackend();
-  const queryClient = useQueryClient();
   const pending = usePendingPolicies();
   const accept = useAcceptPolicies();
-  const logout = useMutation({
-    mutationFn: () => backend.signOut(),
-    onSuccess: () => {
-      queryClient.clear();
-      router.replace('/welcome');
-    },
-  });
+  const logout = useSignOut();
   const [linkFailed, setLinkFailed] = useState<string | null>(null);
   const blocking = pending.data?.some((p) => p.blocking) ?? false;
 
@@ -62,7 +52,7 @@ export default function TermsScreen() {
     );
   }
   // Sign-out stays reachable in every failed state: the gate keeps Profile closed meanwhile.
-  const signOutButton = <Button variant="ghost" label={t('auth.signOut')} loading={logout.isPending} onPress={() => { logout.mutate(); }} />;
+  const signOutButton = <Button variant="ghost" label={t('auth.signOut')} loading={logout.isPending} onPress={() => { logout.mutate(undefined, { onSuccess: () => { router.replace('/welcome'); } }); }} />;
   if (profileError) {
     return (
       <View style={styles.screen}>
@@ -156,7 +146,7 @@ export default function TermsScreen() {
                 }}
               />
               {blocking ? (
-                <Button variant="ghost" label={t('auth.signOut')} loading={logout.isPending} onPress={() => { logout.mutate(); }} />
+                <Button variant="ghost" label={t('auth.signOut')} loading={logout.isPending} onPress={() => { logout.mutate(undefined, { onSuccess: () => { router.replace('/welcome'); } }); }} />
               ) : null}
               {logout.isError ? (
                 <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('auth.signOutFailed')}</Text>

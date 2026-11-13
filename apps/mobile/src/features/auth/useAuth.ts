@@ -1,6 +1,7 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useBackend } from '../../lib/backend/BackendProvider';
+import { unregisterPush } from '../notifications/push';
 import type { Backend } from '../../lib/backend/backend';
 import type { Profile, Session } from '../../lib/backend/types';
 import { getOnboarding } from '../onboarding/onboardingStore';
@@ -80,4 +81,19 @@ export function useSessionSync(): void {
       }),
     [backend, queryClient],
   );
+}
+
+/** Signing out also forgets this device's push token, so the next person here gets nothing of ours. */
+export function useSignOut() {
+  const backend = useBackend();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      await unregisterPush(backend);
+      await backend.signOut();
+    },
+    onSuccess: () => {
+      queryClient.clear();
+    },
+  });
 }

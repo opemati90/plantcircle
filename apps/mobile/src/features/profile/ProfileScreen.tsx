@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -8,7 +8,7 @@ import { AlertIcon, BellIcon, ChevronRightIcon, SproutIcon, UserIcon } from '../
 import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { useBackend } from '../../lib/backend/BackendProvider';
-import { useAuth } from '../auth/useAuth';
+import { useAuth, useSignOut } from '../auth/useAuth';
 import { hasNotice, isPaused } from '../safety/standing';
 import { useCities } from '../plans/queries';
 
@@ -31,7 +31,7 @@ export default function ProfileScreen() {
     queryFn: () => backend.getProfileStats(),
     enabled: Boolean(session),
   });
-  const logout = useMutation({ mutationFn: () => backend.signOut() });
+  const logout = useSignOut();
 
   const name = profile?.displayName ?? t('tabs.profile');
   const city = cities.data?.find((c) => c.id === profile?.cityId)?.name ?? null;

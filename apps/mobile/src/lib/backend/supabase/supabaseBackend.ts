@@ -33,6 +33,8 @@ import {
   planCardSchema,
   toPlan,
   auditRowSchema,
+  notificationRowSchema,
+  toNotification,
   PROFILE_GOALS,
   profileStatsSchema,
   pendingPolicySchema,
@@ -713,6 +715,32 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         })),
         collected: [...mine.values()].some((m) => m.quantity > 0) && [...mine.values()].every((m) => m.quantity === 0 || m.collected),
       };
+    },
+
+    async listNotifications() {
+      const result = await client.rpc('notifications_list', { p_limit: 100 });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.array(notificationRowSchema), result.data).map(toNotification);
+    },
+
+    async markNotificationRead(id) {
+      const result = await client.rpc('notification_mark_read', { p_id: id });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async markAllNotificationsRead() {
+      const result = await client.rpc('notifications_mark_all_read');
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async registerPushToken(token, platform) {
+      const result = await client.rpc('push_token_register', { p_token: token, p_platform: platform });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async removePushToken(token) {
+      const result = await client.rpc('push_token_remove', { p_token: token });
+      if (result.error) throw toBackendError(result.error);
     },
 
     async getPendingPolicies() {

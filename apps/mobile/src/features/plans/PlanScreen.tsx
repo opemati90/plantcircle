@@ -28,6 +28,8 @@ import type { PlanDetail } from '../../lib/backend/types';
 import { localTime, longDate, timeRange, weekdayLong } from '../../lib/dates';
 import { currentLanguage } from '../../lib/i18n';
 import { ProviderButtons } from '../auth/ProviderButtons';
+import { useSettings } from '../account/queries';
+import { hasPushToken } from '../notifications/push';
 import { useAuth } from '../auth/useAuth';
 import {
   addressNote,
@@ -126,8 +128,19 @@ function PlanView({ detail }: { detail: PlanDetail }) {
   }, [notice]);
 
   /** Takes a spot, or a place in line when there is no spot to take. */
-  const enter = () => {
-    (full ? joinWaitlist : join).mutate(newIdempotencyKey());
+  const settings = useSettings();
+  // Notifications are asked for after the first RSVP, never at sign-up: once this device is
+  // registered the question is over; "Not now" asks again after 14 days.
+  const afterRsvp = () => {
+    const dismissed = settings.data?.notifPromptDismissedAt;
+    const askAgain = !dismissed || Date.now() - Date.parse(dismissed) > 14 * 86_400_000;
+    if (!settings.data || !askAgain) return;
+    void hasPushToken().then((registered) => {
+      if (!registered) router.push('/notifications-prompt');
+    });
+  };
+  const enter = (key = newIdempotencyKey()) => {
+    (full ? joinWaitlist : join).mutate(key, { onSuccess: afterRsvp });
   };
   const startJoin = () => {
     if (!session) setSheet('signUp');
@@ -161,9 +174,9 @@ function PlanView({ detail }: { detail: PlanDetail }) {
           : null;
   // A retry re-sends the same idempotency key, so it can never apply twice.
   const retry = () => {
-    if (failed === join && join.variables) join.mutate(join.variables);
+    if (failed === join && join.variables) join.mutate(join.variables, { onSuccess: afterRsvp });
     else if (failed === joinWaitlist && joinWaitlist.variables) {
-      joinWaitlist.mutate(joinWaitlist.variables);
+      joinWaitlist.mutate(joinWaitlist.variables, { onSuccess: afterRsvp });
     } else if (failed === cancel && cancel.variables) cancel.mutate(cancel.variables);
     else if (failed === claim) claim.mutate(claim.variables);
     else if (failed === unclaim) unclaim.mutate(unclaim.variables);

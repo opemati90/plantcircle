@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail, type FixtureWindow } from './support';
+import { freezeTime, signInWithEmail, type FixtureWindow, dismissNotificationPrompt } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
@@ -51,6 +51,8 @@ test('first run: pick a city, browse, sign up with an email code, join, bring so
   await page.getByRole('button', { name: 'Verify' }).click();
   // The first sign-in asks the privacy choices once; the visitor keeps only what is needed.
   await page.getByRole('button', { name: 'Only needed' }).click();
+  // The first RSVP asks for notifications once.
+  await dismissNotificationPrompt(page);
 
   // Back on the Plan, and the join the visitor asked for has been completed.
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
@@ -95,6 +97,7 @@ test('continue with Apple from the sheet signs in and joins', async ({ page }) =
   await expect(page.getByRole('button', { name: 'Continue with Apple' })).toBeDisabled();
   await page.getByRole('checkbox', { name: 'I’m 18 or older' }).click();
   await page.getByRole('button', { name: 'Continue with Apple' }).click();
+  await dismissNotificationPrompt(page);
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
 });
 
@@ -102,6 +105,7 @@ test('a failed RSVP is reported, holds no spot, and can be retried', async ({ pa
   await signInWithEmail(page, '/plan/cooking-night');
   await page.evaluate(() => (globalThis as FixtureWindow).__pcFixtures?.failNext('joinPlan'));
   await page.getByRole('button', { name: 'Join', exact: true }).click();
+  await dismissNotificationPrompt(page);
 
   const alert = page.getByRole('alert');
   await expect(alert).toContainText('Couldn’t save your RSVP');
@@ -110,6 +114,7 @@ test('a failed RSVP is reported, holds no spot, and can be retried', async ({ pa
   await expect(page.getByText('Check your connection')).toBeVisible();
 
   await alert.getByRole('button', { name: 'Retry' }).click();
+  await dismissNotificationPrompt(page);
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
   await expect(page.getByRole('alert')).toHaveCount(0);
 });

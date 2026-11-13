@@ -6,6 +6,7 @@ import {
   PROFILE_GOALS,
 } from '../types';
 import type {
+  AppNotification,
   AuditRow,
   Circle,
   CircleRequest,
@@ -100,6 +101,9 @@ interface State {
   settings: UserSettings | null;
   /** Policy versions published in this session (dev hook) and not yet accepted. */
   policiesPending: PendingPolicy[];
+  /** In-app notification rows, newest first. */
+  notifications: AppNotification[];
+  pushTokens: string[];
   conversationSettings: Record<string, { mutedUntil: string | null; pinned: boolean; lastReadAt?: string | null }>;
   messages: Record<string, { id: string; clientId: string; senderId: string; senderName: string; body: string; createdAt: string }[]>;
   /** The viewer's feedback on Plans, by Plan id. */
@@ -177,6 +181,8 @@ const EMPTY: State = {
   audit: [],
   settings: null,
   policiesPending: [],
+  notifications: [],
+  pushTokens: [],
   conversationSettings: {},
   feedbackMine: {},
   idempotent: {},
@@ -255,6 +261,9 @@ export async function createFixtureBackend(): Promise<Backend> {
       const inLine = planId in state.waitlist;
       commit({
         ...state,
+        notifications: inLine
+          ? notifyMe('waitlist_offer', { plan_id: planId, plan: plans().find((p) => p.id === planId)?.title ?? planId })
+          : state.notifications,
         freedPlanIds: [...state.freedPlanIds, planId],
         waitlist: inLine
           ? {
@@ -441,6 +450,14 @@ export async function createFixtureBackend(): Promise<Backend> {
       pickupAddress: organizer || (hasInterest && ['locked', 'ready', 'completed'].includes(st)) ? entry.pickupAddressValue : null,
       collected: me !== null && entry.collectedBy.includes(me),
     };
+  }
+
+  /** An in-app row, as the database trigger writes one. */
+  function notifyMe(type: string, payload: Record<string, unknown>): AppNotification[] {
+    return [
+      { id: `notif-${Date.now()}-${state.notifications.length}`, type, payload, readAt: null, createdAt: new Date().toISOString() },
+      ...state.notifications,
+    ];
   }
 
   /** Only the host of a Plan may see its guests and summary. */
@@ -1471,6 +1488,37 @@ export async function createFixtureBackend(): Promise<Backend> {
       });
     },
 
+    async listNotifications() {
+      await call();
+      requireSession();
+      return state.notifications;
+    },
+
+    async markNotificationRead(id) {
+      await call();
+      requireSession();
+      commit({ ...state, notifications: state.notifications.map((n) => (n.id === id && !n.readAt ? { ...n, readAt: new Date().toISOString() } : n)) });
+    },
+
+    async markAllNotificationsRead() {
+      await call();
+      requireSession();
+      const at = new Date().toISOString();
+      commit({ ...state, notifications: state.notifications.map((n) => (n.readAt ? n : { ...n, readAt: at })) });
+    },
+
+    async registerPushToken(token) {
+      await call();
+      requireSession();
+      if (!state.pushTokens.includes(token)) commit({ ...state, pushTokens: [...state.pushTokens, token] });
+    },
+
+    async removePushToken(token) {
+      await call();
+      requireSession();
+      commit({ ...state, pushTokens: state.pushTokens.filter((t) => t !== token) });
+    },
+
     async getPendingPolicies() {
       await call();
       requireSession();
@@ -1926,7 +1974,11 @@ export async function createFixtureBackend(): Promise<Backend> {
       if (replayed(key) || state.goingPlanIds.includes(planId)) return;
       const plan = findPlan(planId);
       if (!plan.hasOpenSpot) throw new BackendError('plan_full');
-      commit({ ...state, goingPlanIds: [...state.goingPlanIds, planId] });
+      commit({
+        ...state,
+        goingPlanIds: [...state.goingPlanIds, planId],
+        notifications: notifyMe('rsvp_confirmed', { plan_id: planId, plan: plan.title }),
+      });
     },
 
     async cancelRsvp(planId, key) {

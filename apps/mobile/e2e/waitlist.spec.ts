@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { freezeTime, NOW, signInWithEmail, type FixtureWindow } from './support';
+import { freezeTime, NOW, signInWithEmail, type FixtureWindow, dismissNotificationPrompt } from './support';
 
 const RAMEN = '/plan/ramen-workshop';
 
@@ -10,6 +10,7 @@ const anotherGuestCancels = (page: Page) =>
 async function joinWaitlist(page: Page): Promise<void> {
   await signInWithEmail(page, RAMEN);
   await page.getByRole('button', { name: 'Join waitlist' }).click();
+  await dismissNotificationPrompt(page);
   await expect(page.getByRole('button', { name: 'On the waitlist ✓' })).toBeVisible();
 }
 
@@ -29,6 +30,7 @@ test('a full Plan explains the waitlist; joining it starts at sign-up for a visi
   await page.getByRole('button', { name: 'Join waitlist' }).click();
   await page.getByRole('checkbox', { name: 'I’m 18 or older' }).click();
   await page.getByRole('button', { name: 'Continue with Apple' }).click();
+  await dismissNotificationPrompt(page);
 
   // The action that triggered sign-up is resumed.
   await expect(page.getByRole('button', { name: 'On the waitlist ✓' })).toBeVisible();
@@ -113,7 +115,9 @@ test('a failed waitlist join is reported and can be retried', async ({ page }) =
     (globalThis as FixtureWindow).__pcFixtures?.failNext('joinWaitlist'),
   );
   await page.getByRole('button', { name: 'Join waitlist' }).click();
+  await dismissNotificationPrompt(page);
   await expect(page.getByRole('alert')).toContainText('Couldn’t save your RSVP');
   await page.getByRole('alert').getByRole('button', { name: 'Retry' }).click();
+  await dismissNotificationPrompt(page);
   await expect(page.getByRole('button', { name: 'On the waitlist ✓' })).toBeVisible();
 });
