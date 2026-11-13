@@ -200,6 +200,7 @@ export const circleCardSchema = z.object({
   member_count: z.number().int(),
   viewer_role: z.enum(['member', 'moderator', 'owner']).nullable(),
   viewer_request: z.string().nullable(),
+  owner_name: z.string().nullable().optional(),
 });
 
 /** A Circle as listed publicly, with the viewer's own standing in it. */
@@ -216,6 +217,8 @@ export interface Circle {
   viewerRole: CircleRole | null;
   /** The viewer has asked to join and is waiting for a decision. */
   viewerRequestPending: boolean;
+  /** Who moderates it (the owner), for the request screen. */
+  ownerName: string | null;
 }
 
 export const toCircle = (row: z.infer<typeof circleCardSchema>): Circle => ({
@@ -230,6 +233,7 @@ export const toCircle = (row: z.infer<typeof circleCardSchema>): Circle => ({
   memberCount: row.member_count,
   viewerRole: row.viewer_role,
   viewerRequestPending: row.viewer_request === 'pending',
+  ownerName: row.owner_name ?? null,
 });
 
 export const circleRequestSchema = z.object({

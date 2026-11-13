@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, IconButton } from '../../components/Button';
 import { ChevronLeftIcon } from '../../components/icons';
 import { BottomSheet, EmptyState, InlineState, Skeleton } from '../../components/parts';
@@ -56,9 +56,7 @@ export default function CircleScreen() {
   const requests = useCircleRequests(id, canModerate);
   const respond = useRespondToCircleRequest();
   const [tab, setTab] = useState<Tab>('plans');
-  const [asking, setAsking] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
-  const [answer, setAnswer] = useState('');
   const [key, setKey] = useState(newIdempotencyKey);
   const [decisionKeys, setDecisionKeys] = useState<Record<string, string>>({});
 
@@ -123,18 +121,7 @@ export default function CircleScreen() {
   };
   const startAsk = () => {
     if (needsAccount) setSigningUp(true);
-    else setAsking(true);
-  };
-  const sendRequest = () => {
-    join.mutate(
-      { answer: answer.trim() || null, key },
-      {
-        onSuccess: () => {
-          setAsking(false);
-          setKey(newIdempotencyKey());
-        },
-      },
-    );
+    else router.push({ pathname: '/circle/[id]/request', params: { id: data.id } });
   };
   // A retry of the same decision reuses its key, so a lost response cannot make it look failed.
   const decide = (request: CircleRequest, approve: boolean) => {
@@ -235,7 +222,7 @@ export default function CircleScreen() {
               {t('circles.member')}
             </Text>
           ) : null}
-          {join.isError && !asking ? (
+          {join.isError ? (
             <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
               {t('circles.genericError')}
             </Text>
@@ -374,34 +361,6 @@ export default function CircleScreen() {
         />
       </BottomSheet>
 
-      <BottomSheet
-        open={asking}
-        onClose={() => {
-          setAsking(false);
-        }}
-        title={t('circles.requestTitle', { name: data.name })}
-        lead={data.joinQuestion ?? t('circles.requestLead')}
-      >
-        <View style={styles.sheet}>
-          <Text style={type(14, 'semibold', { color: color.secondary })}>
-            {t('circles.answerLabel')}
-          </Text>
-          <TextInput
-            accessibilityLabel={t('circles.answerLabel')}
-            value={answer}
-            onChangeText={setAnswer}
-            multiline
-            maxLength={300}
-            style={[styles.answer, type(17)]}
-          />
-          {join.isError ? (
-            <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
-              {t('circles.genericError')}
-            </Text>
-          ) : null}
-          <Button label={t('circles.send')} loading={join.isPending} onPress={sendRequest} />
-        </View>
-      </BottomSheet>
     </View>
   );
 }

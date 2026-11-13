@@ -9,6 +9,7 @@ import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
 import type { CircleAccess } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
+import { useCities } from '../plans/queries';
 import { newIdempotencyKey, useCreateCircle } from '../plans/queries';
 
 const ACCESS: CircleAccess[] = ['open', 'request'];
@@ -20,6 +21,9 @@ export default function CreateCircleScreen() {
   const router = useRouter();
   const { session, profile, profileError, retryProfile } = useAuth();
   const create = useCreateCircle();
+  const cities = useCities();
+  // The Circle belongs to the member's home city, as the design's footer says.
+  const cityName = cities.data?.find((c) => c.id === profile?.cityId)?.name ?? null;
   const [name, setName] = useState('');
   const [tagline, setTagline] = useState('');
   const [access, setAccess] = useState<CircleAccess>('open');
@@ -184,6 +188,20 @@ export default function CreateCircleScreen() {
           </Text>
         ) : null}
 
+        {cityName ? (
+          <View style={styles.where}>
+            <Text style={[type(15, 'medium'), styles.whereText]}>{t('circles.createWhere', { city: cityName })}</Text>
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => {
+                router.push('/profile/edit');
+              }}
+              style={styles.whereLink}
+            >
+              <Text style={type(15, 'semibold', { color: color.brand })}>{t('circles.changeInSettings')}</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <Button
           label={t('circles.save')}
           disabled={!valid}
@@ -198,6 +216,9 @@ export default function CreateCircleScreen() {
 const label = { ...type(14, 'semibold', { color: color.secondary }), marginTop: 4 };
 
 const styles = StyleSheet.create({
+  where: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingTop: 6 },
+  whereText: { flexShrink: 1 },
+  whereLink: { minHeight: 44, justifyContent: 'center' },
   screen: { flex: 1, backgroundColor: color.surface },
   back: { position: 'absolute', left: 16, zIndex: 1 },
   content: { paddingHorizontal: 24, gap: 12 },

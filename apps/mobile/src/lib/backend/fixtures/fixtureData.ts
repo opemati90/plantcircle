@@ -225,6 +225,7 @@ export const fixtureCircles: Circle[] = [
     memberCount: 42,
     viewerRole: null,
     viewerRequestPending: false,
+    ownerName: 'Ama O.',
   },
   {
     id: 'budget-plant-cooking',
@@ -238,6 +239,7 @@ export const fixtureCircles: Circle[] = [
     memberCount: 18,
     viewerRole: null,
     viewerRequestPending: false,
+    ownerName: 'Jonas K.',
   },
   {
     id: 'new-to-plant-based',
@@ -251,6 +253,7 @@ export const fixtureCircles: Circle[] = [
     memberCount: 120,
     viewerRole: null,
     viewerRequestPending: false,
+    ownerName: 'Mia S.',
   },
 ];
 

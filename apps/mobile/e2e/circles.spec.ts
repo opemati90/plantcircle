@@ -21,8 +21,16 @@ test('a member joins an open Circle and asks to join one that needs approval', a
   await page.getByRole('tab', { name: 'Circles', exact: true }).click();
   await page.getByRole('link', { name: /Budget Plant Cooking/ }).click();
   await page.getByRole('button', { name: 'Ask to join' }).click();
-  await page.getByRole('textbox', { name: 'Your answer' }).fill('I cook on Sundays');
-  await page.getByRole('button', { name: 'Send request' }).click();
+  // The request screen, as the CircleRequest design has it.
+  await expect(page.getByText('LOCAL CIRCLE · APPROVAL NEEDED')).toBeVisible();
+  await expect(page.getByText('Private Circle')).toBeVisible();
+  await expect(page.getByText('Moderated by Jonas K.')).toBeVisible();
+  await expect(page.getByText('THE MODERATORS ASK')).toBeVisible();
+  await page.getByRole('textbox').fill('I cook on Sundays');
+  await expect(page.getByText('17 / 300')).toBeVisible();
+  await page.getByRole('button', { name: 'Request to join' }).click();
+  await expect(page.getByRole('heading', { name: 'Request sent' })).toBeVisible();
+  await page.getByRole('button', { name: 'Open the Circle' }).click();
   await expect(page.getByRole('button', { name: 'Request sent' })).toBeVisible();
 });
 

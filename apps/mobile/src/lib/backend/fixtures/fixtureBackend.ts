@@ -719,6 +719,7 @@ export async function createFixtureBackend(): Promise<Backend> {
         memberCount: 1,
         viewerRole: 'owner',
         viewerRequestPending: false,
+        ownerName: myName(),
       };
       // A request Circle opens with one waiting request, so the approval flow can be tried locally.
       const seeded =
