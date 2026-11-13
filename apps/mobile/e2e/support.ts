@@ -32,4 +32,9 @@ export async function signInWithEmail(page: Page, next = '/home'): Promise<void>
   await page.getByRole('textbox', { name: '6-digit code' }).fill('000000');
   await page.getByRole('button', { name: 'Verify' }).click();
   await expect(page).not.toHaveURL(/verify/);
+  // The first sign-in asks the privacy choices once; "Only needed" is the default answer.
+  if (page.url().includes('/privacy-choices')) {
+    await page.getByRole('button', { name: 'Only needed' }).click();
+    await expect(page).not.toHaveURL(/privacy-choices/);
+  }
 }

@@ -33,6 +33,9 @@ import {
   planCardSchema,
   toPlan,
   auditRowSchema,
+  settingsPatchToRow,
+  settingsSchema,
+  toSettings,
   staffAppealSchema,
   staffCaseSchema,
   staffQueueRowSchema,
@@ -685,6 +688,29 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         })),
         collected: [...mine.values()].some((m) => m.quantity > 0) && [...mine.values()].every((m) => m.quantity === 0 || m.collected),
       };
+    },
+
+    async getSettings() {
+      const result = await client.rpc('settings_get');
+      if (result.error) throw toBackendError(result.error);
+      return toSettings(parse(settingsSchema, result.data));
+    },
+
+    async updateSettings(patch) {
+      const result = await client.rpc('settings_update', { p_patch: settingsPatchToRow(patch) });
+      if (result.error) throw toBackendError(result.error);
+      return toSettings(parse(settingsSchema, result.data));
+    },
+
+    async requestDataExport(key) {
+      const result = await client.rpc('data_export_request', { p_idempotency_key: key });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.object({ requested_at: z.string() }), result.data).requested_at;
+    },
+
+    async deleteAccount(key) {
+      const result = await client.rpc('account_delete', { p_idempotency_key: key });
+      if (result.error) throw toBackendError(result.error);
     },
 
     async blockUser(userId, key) {

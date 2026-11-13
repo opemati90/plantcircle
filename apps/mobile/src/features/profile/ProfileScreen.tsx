@@ -42,14 +42,14 @@ export default function ProfileScreen() {
   const later = (section: string): Href => ({ pathname: '/profile/later', params: { section } });
   const settings: Row[] = [
     ...(hasNotice(profile) ? [{ label: isPaused(profile) ? t('safety.pausedBanner') : t('safety.frozenBanner'), href: '/suspended' as Href, icon: 'alert' as const }] : []),
-    { label: t('profile.notifications'), href: later('notifications'), icon: 'bell' },
+    { label: t('profile.notifications'), href: '/profile/notifications', icon: 'bell' },
     { label: t('profile.privacy'), href: '/profile/privacy', icon: 'lock' },
-    { label: t('profile.accessibility'), href: later('accessibility'), icon: 'user' },
+    { label: t('profile.accessibility'), href: '/profile/accessibility', icon: 'user' },
   ];
   const hosting: Row[] = [{ label: t('profile.hostLevel'), href: later('hostLevel'), icon: 'sprout' }];
   const about: Row[] = [
     { label: t('profile.terms'), href: later('terms') },
-    { label: t('profile.accountData'), href: later('accountData') },
+    { label: t('profile.accountData'), href: '/profile/account' },
   ];
 
   return (

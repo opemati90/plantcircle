@@ -710,7 +710,7 @@ export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
 
 // Safety (C10). Report and block on every person, Plan, post, message and group order.
 
-export const REPORT_TARGETS = ['person', 'plan', 'circle', 'recipe', 'message', 'order'] as const;
+export const REPORT_TARGETS = ['person', 'plan', 'circle', 'recipe', 'message', 'order', 'app'] as const;
 export type ReportTarget = (typeof REPORT_TARGETS)[number];
 export const REPORT_CATEGORIES = [
   'harassment', 'threats', 'stalking', 'scam', 'unsafe_place', 'allergen_deception', 'accessibility', 'other',
@@ -847,3 +847,109 @@ export const auditRowSchema = z.object({
   reason: z.string().nullable(),
   created_at: z.string(),
 });
+
+// Account (C11). Privacy choices, notification settings, a copy of your data, delete.
+
+export interface UserSettings {
+  analyticsConsent: boolean;
+  personalisationConsent: boolean;
+  /** Null until the person has answered the privacy choices once. */
+  consentDecidedAt: string | null;
+  notifReminders: boolean;
+  notifWaitlist: boolean;
+  notifDirect: boolean;
+  notifChats: boolean;
+  quietHours: boolean;
+  quietStart: number;
+  quietEnd: number;
+  lockScreenText: boolean;
+  notifPromptDismissedAt: string | null;
+  /** When a copy of the data was asked for and not yet sent. */
+  exportRequestedAt: string | null;
+}
+
+export type SettingsPatch = Partial<
+  Pick<
+    UserSettings,
+    | 'analyticsConsent'
+    | 'personalisationConsent'
+    | 'notifReminders'
+    | 'notifWaitlist'
+    | 'notifDirect'
+    | 'notifChats'
+    | 'quietHours'
+    | 'quietStart'
+    | 'quietEnd'
+    | 'lockScreenText'
+  >
+> & { notifPromptDismissed?: boolean };
+
+export const settingsSchema = z.object({
+  analytics_consent: z.boolean(),
+  personalisation_consent: z.boolean(),
+  consent_decided_at: z.string().nullable(),
+  notif_reminders: z.boolean(),
+  notif_waitlist: z.boolean(),
+  notif_direct: z.boolean(),
+  notif_chats: z.boolean(),
+  quiet_hours: z.boolean(),
+  quiet_start: z.number().int(),
+  quiet_end: z.number().int(),
+  lock_screen_text: z.boolean(),
+  notif_prompt_dismissed_at: z.string().nullable(),
+  export_requested_at: z.string().nullable(),
+});
+
+export const toSettings = (row: z.infer<typeof settingsSchema>): UserSettings => ({
+  analyticsConsent: row.analytics_consent,
+  personalisationConsent: row.personalisation_consent,
+  consentDecidedAt: row.consent_decided_at,
+  notifReminders: row.notif_reminders,
+  notifWaitlist: row.notif_waitlist,
+  notifDirect: row.notif_direct,
+  notifChats: row.notif_chats,
+  quietHours: row.quiet_hours,
+  quietStart: row.quiet_start,
+  quietEnd: row.quiet_end,
+  lockScreenText: row.lock_screen_text,
+  notifPromptDismissedAt: row.notif_prompt_dismissed_at,
+  exportRequestedAt: row.export_requested_at,
+});
+
+export const DEFAULT_SETTINGS: UserSettings = {
+  analyticsConsent: false,
+  personalisationConsent: false,
+  consentDecidedAt: null,
+  notifReminders: true,
+  notifWaitlist: true,
+  notifDirect: true,
+  notifChats: true,
+  quietHours: true,
+  quietStart: 22,
+  quietEnd: 8,
+  lockScreenText: false,
+  notifPromptDismissedAt: null,
+  exportRequestedAt: null,
+};
+
+/** The patch as the database takes it (snake case, only the keys given). */
+export function settingsPatchToRow(patch: SettingsPatch): Record<string, boolean | number> {
+  const map: Record<keyof SettingsPatch, string> = {
+    analyticsConsent: 'analytics_consent',
+    personalisationConsent: 'personalisation_consent',
+    notifReminders: 'notif_reminders',
+    notifWaitlist: 'notif_waitlist',
+    notifDirect: 'notif_direct',
+    notifChats: 'notif_chats',
+    quietHours: 'quiet_hours',
+    quietStart: 'quiet_start',
+    quietEnd: 'quiet_end',
+    lockScreenText: 'lock_screen_text',
+    notifPromptDismissed: 'notif_prompt_dismissed',
+  };
+  const row: Record<string, boolean | number> = {};
+  for (const [k, v] of Object.entries(patch) as [keyof SettingsPatch, boolean | number | undefined][]) {
+    if (v !== undefined) row[map[k]] = v;
+  }
+  return row;
+}

@@ -59,8 +59,12 @@ export default function VerifyEmailScreen() {
   const verify = useMutation({
     mutationFn: (input: { email: string; code: string }) =>
       backend.verifyEmailCode(input.email, input.code),
-    onSuccess: () => {
-      router.dismissTo(next);
+    onSuccess: async () => {
+      // Once, after the account exists: the privacy choices. Settings default to "only needed",
+      // so a failure here just means the question is asked again from Profile.
+      const decided = await backend.getSettings().then((s) => s.consentDecidedAt !== null).catch(() => true);
+      if (decided) router.dismissTo(next);
+      else router.dismissTo({ pathname: '/privacy-choices', params: { next } });
     },
   });
   const resend = useMutation({

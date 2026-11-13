@@ -56,6 +56,19 @@ export default function PrivacyScreen() {
         <Pressable
           accessibilityRole="link"
           onPress={() => {
+            router.push({ pathname: '/privacy-choices', params: { from: 'profile' } });
+          }}
+          style={styles.linkRow}
+        >
+          <View style={styles.linkText}>
+            <Text style={type(17, 'semibold')}>{t('account.privacyChoicesTitle')}</Text>
+            <Text style={type(14, 'regular', { color: color.secondary })}>{t('account.privacyChoicesRow')}</Text>
+          </View>
+          <ChevronRightIcon size={18} strokeWidth={2.4} color={color.secondary} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => {
             router.push('/profile/blocked');
           }}
           style={styles.linkRow}

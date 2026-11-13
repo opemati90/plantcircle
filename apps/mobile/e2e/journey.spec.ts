@@ -45,6 +45,8 @@ test('first run: pick a city, browse, sign up with an email code, join, bring so
   await expect(page.getByRole('alert')).toContainText('That code didn’t work');
   await page.getByRole('textbox', { name: '6-digit code' }).fill('000000');
   await page.getByRole('button', { name: 'Verify' }).click();
+  // The first sign-in asks the privacy choices once; the visitor keeps only what is needed.
+  await page.getByRole('button', { name: 'Only needed' }).click();
 
   // Back on the Plan, and the join the visitor asked for has been completed.
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();

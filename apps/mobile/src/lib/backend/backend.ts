@@ -1,4 +1,4 @@
-import type {AuditRow, BlockedPerson, BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, ReportInput, ReportReceipt, Session, StaffAction, StaffAppeal, StaffCase, StaffQueueRow, Suspension, UpNext, WaitlistOffer} from './types';
+import type {AuditRow, BlockedPerson, BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, ReportInput, ReportReceipt, Session, SettingsPatch, StaffAction, StaffAppeal, StaffCase, StaffQueueRow, Suspension, UpNext, UserSettings, WaitlistOffer} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -24,6 +24,7 @@ export type BackendErrorCode =
   | 'blocked'
   | 'suspended'
   | 'messages_frozen'
+  | 'account_deleted'
   | 'cancelled'
   | 'invalid_response'
   | 'unknown';
@@ -134,6 +135,14 @@ export interface Backend {
     idempotencyKey: string,
   ): Promise<'going' | 'checked_in'>;
   endPlan(planId: string, idempotencyKey: string): Promise<void>;
+
+  /** Account. Settings exist with their defaults from the first read; consent is off by default. */
+  getSettings(): Promise<UserSettings>;
+  updateSettings(patch: SettingsPatch): Promise<UserSettings>;
+  /** A copy of your data, emailed within 48 hours. Returns when it was asked for. */
+  requestDataExport(idempotencyKey: string): Promise<string>;
+  /** Delete for good: anonymises now and releases what others wait for. The caller signs out after. */
+  deleteAccount(idempotencyKey: string): Promise<void>;
 
   /** Safety. Blocking is silent and mutual in effect; reports get a case reference. */
   blockUser(userId: string, idempotencyKey: string): Promise<void>;

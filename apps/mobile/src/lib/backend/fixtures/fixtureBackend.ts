@@ -1,6 +1,7 @@
 import { appStorage } from '../../storage';
 import { BackendError, type Backend } from '../backend';
 import {
+  DEFAULT_SETTINGS,
   isRecipeAllergen,
 } from '../types';
 import type {
@@ -23,6 +24,7 @@ import type {
   StaffAppeal,
   StaffCase,
   Suspension,
+  UserSettings,
 } from '../types';
 import {
   fixtureAddresses,
@@ -92,6 +94,8 @@ interface State {
   suspension: Suspension | null;
   appeals: StaffAppeal[];
   audit: AuditRow[];
+  /** Privacy choices and notification settings; null until first read. */
+  settings: UserSettings | null;
   conversationSettings: Record<string, { mutedUntil: string | null; pinned: boolean; lastReadAt?: string | null }>;
   messages: Record<string, { id: string; clientId: string; senderId: string; senderName: string; body: string; createdAt: string }[]>;
   /** The viewer's feedback on Plans, by Plan id. */
@@ -165,6 +169,7 @@ const EMPTY: State = {
   suspension: null,
   appeals: [],
   audit: [],
+  settings: null,
   conversationSettings: {},
   feedbackMine: {},
   idempotent: {},
@@ -1434,6 +1439,57 @@ export async function createFixtureBackend(): Promise<Backend> {
         orders: { ...state.orders, [planId]: { ...entry, collectedBy, state: done ? 'completed' : entry.state } },
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: planId } },
       });
+    },
+
+    async getSettings() {
+      await call();
+      requireSession();
+      const current = state.settings ?? DEFAULT_SETTINGS;
+      if (!state.settings) commit({ ...state, settings: current });
+      return current;
+    },
+
+    async updateSettings(patch) {
+      await call();
+      requireSession();
+      const current = state.settings ?? DEFAULT_SETTINGS;
+      const { notifPromptDismissed, ...rest } = patch;
+      const decided = 'analyticsConsent' in rest || 'personalisationConsent' in rest;
+      const next: UserSettings = {
+        ...current,
+        ...rest,
+        consentDecidedAt: decided ? new Date().toISOString() : current.consentDecidedAt,
+        notifPromptDismissedAt: notifPromptDismissed ? new Date().toISOString() : current.notifPromptDismissedAt,
+      };
+      if (next.quietStart < 0 || next.quietStart > 23 || next.quietEnd < 0 || next.quietEnd > 23) {
+        throw new BackendError('invalid_input');
+      }
+      commit({ ...state, settings: next });
+      return next;
+    },
+
+    async requestDataExport(key) {
+      await call();
+      requireSession();
+      const fingerprint = 'data_export';
+      const replayed = replayKey(key, fingerprint);
+      const current = state.settings ?? DEFAULT_SETTINGS;
+      if (replayed) return replayed;
+      const at = current.exportRequestedAt ?? new Date().toISOString();
+      commit({
+        ...state,
+        settings: { ...current, exportRequestedAt: at },
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: at } },
+      });
+      return at;
+    },
+
+    async deleteAccount(key) {
+      await call();
+      requireSession();
+      if (replayKey(key, 'account_delete')) return;
+      // Everything of this person's goes; the dev session ends with it, like a sign-out.
+      commit(EMPTY, true);
     },
 
     async blockUser(userId, key) {

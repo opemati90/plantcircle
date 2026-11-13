@@ -15,7 +15,7 @@ export function ReportLink({
   name,
   userId,
 }: {
-  targetType: ReportTarget;
+  targetType: Exclude<ReportTarget, 'app'>;
   targetId: string;
   name: string;
   userId?: string;
