@@ -105,8 +105,8 @@ Owner asked for Circles, Learn and People, end to end. The rest follow in backlo
 | F2 | My Plans flow on device. | verified (iOS) |
 | F3 | Explore flow on device. | todo |
 | F4 | Supabase staging project and migration applied; real RLS tests. | blocked (owner account) |
-| F5 | Dev-only free-spot route and fixture hooks excluded from release builds. | todo (verify) |
-| F6 | README and handover updated after each increment. | todo |
+| F5 | Dev-only free-spot route and fixture hooks excluded from release builds. Verified: the fixture backend is a dynamic import behind `__DEV__` and the dev route acts only under `__DEV__`; a production web export (no Supabase env) contains no fixture data, `__pcFixtures` or simulated-failure strings. | done |
+| F6 | README and handover updated after each increment. README rewritten to the current state (layout, areas, checks, verified/not verified, owner's launch list); HANDOVER §1 and §5–9, test hooks and history updated (14 November 2026). | done |
 
 ## Owner decisions still open
 

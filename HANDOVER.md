@@ -4,7 +4,7 @@ Read this first if you are picking up the project, whether you're a person or a 
 agent. It covers what the project is, the owner's instructions, what has been decided and
 built, how to check it, and what is next.
 
-_Last updated: 12 November 2026 · branch `expo-mobile` · repository
+_Last updated: 14 November 2026 · branch `expo-mobile` · repository
 `github.com/opemati90/plantcircle`_
 
 ---
@@ -19,9 +19,13 @@ to a city, country, currency or language.
 - **Stack (decided by the owner):** Expo (React Native, TypeScript, Expo Router), Supabase
   (Postgres, Auth, Storage, Realtime, row-level security), Edge Functions, TanStack Query,
   i18next. The full list is in `CLAUDE.md`.
-- **Status:** early v1. One end-to-end journey is built and tested, plus the waitlist. About
-  12 of the 60 v1 screens exist. **Nothing has run on a phone or against a real Supabase
-  project yet.**
+- **Status:** v1 features built end to end against the dev fixture backend and an in-process
+  Postgres (PGlite): Plans, waitlist, creation, hosting, Circles, recipes, People, chats and
+  direct messages, Inbox, group orders, safety (report, block, suspension, staff console),
+  account and privacy, Terms versions and the under-18 gate, notifications, offline, the
+  shared-link web RSVP, Explore filters, and the designed loading/empty/error states.
+  **Not yet run against a real Supabase project**; Maestro flows have run on the iOS
+  simulator.
 
 ---
 
@@ -150,155 +154,73 @@ condensed:
 
 ## 5. How to run and check it
 
-Requirements: Node 22+ and pnpm 10.
+See `README.md` (Getting started). Last results, 14 November 2026, on macOS:
 
-```bash
-pnpm install
-```
-
-```bash
-pnpm dev
-```
-
-With no environment variables, a development build uses the **dev fixture backend**: sample
-data from the prototype, labelled "Dev fixtures" on screen, email code `000000`. To use a
-real backend, copy `apps/mobile/.env.example` to `apps/mobile/.env` and set
-`EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`. Only the anon key belongs in
-the app.
-
-Run everything that checks the code (format, lint, typecheck, unit + component tests,
-database tests):
-
-```bash
-pnpm check
-```
-
-Browser smoke and accessibility tests through Expo's web renderer:
-
-```bash
-pnpm --filter @plantcircle/mobile web:smoke
-```
-
-Device flows (Maestro, needs a simulator and a development build; never run so far):
-
-```bash
-pnpm e2e
-```
-
-Last results, 12 November 2026, in a Linux cloud container:
-
-| Check                                                                  | Result  |
-| ---------------------------------------------------------------------- | ------- |
-| Format, lint (strict type-checked), typecheck                          | pass    |
-| Database tests (PGlite: real Postgres, in process)                     | 35 pass |
-| Unit + component tests (Jest, Testing Library)                         | 29 pass |
-| Browser tests incl. axe WCAG A/AA/AAA-contrast scans, German, waitlist | 28 pass |
+| Check                                                              | Result   |
+| ------------------------------------------------------------------ | -------- |
+| Format, lint (strict type-checked), typecheck                      | pass     |
+| Database tests (PGlite: real Postgres, in process)                 | 171 pass |
+| Unit + component tests (Jest, Testing Library, catalogue parity)   | 80 pass  |
+| Browser journeys incl. axe WCAG scans (Expo web renderer, 390×844) | 74 pass  |
+| Production web export contains no fixture data or test hooks (F5)  | pass     |
 
 ---
 
 ## 6. What is built
 
-**Journey:** Welcome → goals → city (or skip) → Home → Plan → sign up (Apple / Google /
-6-digit email code) → the action that triggered sign-up is resumed → bring something →
-cancel.
+Everything is recorded row by row, with decisions and what was left for later, in
+`docs/superpowers/plans/2026-11-12-remaining-work.md` (C1–C18, D1–D6, E, F). In short:
 
-**Waitlist (AC-17/18/19):**
-
-- First in, first out.
-- A freed spot is offered to the first person for 2 hours. If they decline or it expires, it
-  passes on.
-- Inside the last 6 hours before the start, the spot is offered to everyone in line and the
-  first to confirm wins.
-- Confirmed guests can never exceed capacity.
-- Screens: Plan full → "Join waitlist" with your place in line, the waitlist-offer screen
-  with its countdown, and an offer card on Home.
-
-**Screens from the v1 list that exist:** Welcome & onboarding, Home, Loading skeleton, Plan
-detail & RSVP (with sign-up sheet), RSVP failed, Plan full → waitlist, Waitlist spot offered,
-Create account, Verify email, Server error layout. Explore, My Plans, Inbox, Profile and Start
-a Plan are honest "isn't built yet" screens; Profile has sign-out.
-
-**Database** (`supabase/migrations`):
-
-- **Tables:** `cities`, `profiles`, `policy_acceptances`, `idempotency_keys`, `plans`,
-  `plan_private`, `rsvps`, `bring_items`, `bring_claims`.
-- **Views:** `plan_cards`, `bring_item_cards`, `my_rsvps`.
-- **RPCs:** `join_plan`, `cancel_rsvp`, `claim_bring_item`, `join_waitlist`,
-  `confirm_waitlist_offer`, and `expire_waitlist_offers` (scheduler only).
-- RLS is on everywhere and default grants are revoked.
-
-**Code map:**
-
-```
-apps/mobile/app/            routes (expo-router), thin
-apps/mobile/src/components/ design-system components (Button, TabBar, BottomSheet, Toast, …)
-apps/mobile/src/features/   onboarding · auth · home · plans (screens + pure, tested rules)
-apps/mobile/src/lib/        backend contract + Supabase adapter + dev fixtures, i18n, dates, storage
-apps/mobile/e2e/            Playwright (web renderer) + maestro/ (device flows)
-packages/tokens, copy       design tokens; en/de catalogues
-supabase/                   migrations + database tests
-```
+- **Migrations** (`supabase/migrations`, one per area): core and waitlist, circles, recipes,
+  people, Plan creation, hosting, bring items, chat, direct messages, inbox, group orders,
+  safety, account, policies, profile stats, notifications, web RSVP, Circle owner. Every table
+  has RLS with revoked defaults; every state change is an RPC in one transaction with an
+  idempotency key; tests in `supabase/tests`.
+- **Edge Functions** (`supabase/functions`): `push-dispatch`, `cron-reminders`, `web-rsvp`
+  (see its README).
+- **App:** the areas listed in `README.md`, built to the design canvas export
+  (`prototype-source/screens`), in eight languages.
 
 ---
 
 ## 7. Verified, unverified, blocked
 
-**Verified here:** every check in §5, and side-by-side screenshots of 6 screens against the
-prototype at 390×844 (Expo web).
+**Verified:** every check in §5; screenshots against the design export; a read-only Codex
+audit per feature with each confirmed finding fixed; Maestro offered-spot (iOS and Android)
+and My Plans (iOS) flows.
 
-**Not verified:**
+**Not verified:** a Supabase project (RLS and RPCs on PGlite only); the Edge Functions
+(written, not deployed); push delivery and email; Sign in with Apple/Google; VoiceOver and
+TalkBack on devices; concurrent sessions; translations by native speakers (E2).
 
-- **No native run at all.** iOS and Android builds, blur, safe areas, the keyboard, Sign in
-  with Apple/Google, secure storage, deep links, VoiceOver/TalkBack, Dynamic Type at 200% and
-  Reduce Motion are all untested on devices.
-- **Never run against Supabase.** It has only been tested on PGlite.
-- Native and OAuth code was written against the installed packages' types, because the Expo
-  and Supabase docs were blocked in the build environment. Review `supabaseBackend.ts` and
-  `storage.ts` against current docs.
-- **CI** (`.github/workflows/ci.yml`) only runs on `main` and on pull requests, so it has
-  **never run** for the mobile code.
-- German strings not taken from the prototype's German screens need a native speaker.
-
-**Blocked on the owner:** see §10.
+**Blocked on the owner:** Supabase project and accounts (F4), native-speaker review (E2).
 
 ---
 
 ## 8. Known gaps and risks
 
-- **Waitlist.** Without notifications nobody is told a spot was offered, and without a
-  per-minute job calling `expire_waitlist_offers()` offers are only passed on when someone
-  opens that Plan.
-- **Launch requirements not started:** report/block + staff console + audit log, privacy
-  choices, account export and deletion, Terms/Privacy, offline cache, notifications, web RSVP
-  (Next.js `apps/web`), Sentry, PostHog.
-- **Schema is provisional** until `docs/05`, `06` and `07` arrive.
-- **Placeholders introduced:**
-  - Policy version `2026-11`.
-  - Bundle id `app.plantcircle.mobile` and scheme `plantcircle://`.
-  - Display name for email sign-ups comes from the email address (no name step yet).
-  - Some prototype colours are not tokens yet (`extra` in `src/components/theme.ts`).
-
-  All of these belong in `docs/16-open-questions.md` once that file exists.
-
-- **Deviations from the prototype** are listed in `README.md` with reasons.
+- **Email:** magic links go through Supabase Auth; other emails (offers, address, cancellations)
+  are queued with `email = true` and wait for an `email-send` function.
+- **Push copy is English** (the in-app Updates rows are localised); per-language push needs a
+  language on the profile.
+- **Not built (v1.1 or Later by scope):** monetisation, impact, global editions and online
+  classes, shops, host program, AI features, Circle cover photos, the language filter, saved
+  searches, Realtime (the Inbox polls every 15 s).
+- **Placeholders:** policy version `2026-11`; bundle id `app.plantcircle.mobile` and scheme
+  `plantcircle://`; legal URLs under `plantcircle.app/legal/*`; store links; the accessibility
+  statement's “last checked” date.
 
 ---
 
 ## 9. Recommended next steps, in order
 
-1. **Get the missing docs into the repo** (`docs/05`–`16`, `prototype-source/`), then
-   reconcile the schema with `05`/`06`/`07` and follow `15-backlog.md`.
-2. **Run it on devices:** an EAS development build or local simulators. Run the Maestro flow,
-   fix native issues, and check the `Slot` tab layout.
-3. **Create the Supabase project (EU region)** once the owner approves. Configure email OTP,
-   Apple and Google, apply the migrations, schedule `expire_waitlist_offers()`, and run the
-   journey for real.
-4. **Notifications** (Expo push + email), so the waitlist actually works.
-5. **Safety:** report sheet → details → done, block, the staff console, the audit log.
-6. **Account:** privacy choices, notification settings, export and delete, Terms update.
-7. **Remaining v1 tabs and flows:** My Plans, Explore/search, Start a Plan, Circles, chat,
-   group orders, recipes.
-8. **Merge decision** for `expo-mobile` → `main` (§10), so CI starts running.
+1. **Supabase project (EU):** apply the migrations, deploy and schedule the Edge Functions,
+   configure email OTP, Apple and Google; run the journeys for real (F4).
+2. **`email-send`** for the queued email rows, then the address-day-before email.
+3. **Devices:** run every Maestro flow on iOS and Android (Explore F3, plurals E3), with
+   VoiceOver/TalkBack and Dynamic Type at 200%.
+4. **Native-speaker review** of de, es, pt, fr, pl, it, nl (E2).
+5. **Merge decision** for `expo-mobile` → `main` (§10), so CI runs.
 
 ---
 
@@ -325,10 +247,14 @@ prototype at 390×844 (Expo web).
   `node_modules/expo/bundledNativeModules.json`.
 - **Playwright** is pinned to 1.63.0 via `overrides` so axe and Playwright share one version.
   In sandboxed images, set `PW_CHROMIUM_PATH` to a pre-installed Chromium.
-- **Dev fixture test hooks:**
+- **Dev fixture test hooks** (dev builds only; absent from release bundles):
   - `globalThis.__pcFixtures.failNext(op)` simulates a network failure.
   - `globalThis.__pcFixtures.freeSpot(planId)` simulates another guest cancelling.
-  - `__pcFixtureFailures` simulates failures from the first call after load.
+  - `suspend()`, `makeStaff()`, `publishTerms()` walk the safety and Terms flows.
+  - `__pcFixtureFailures` simulates failures from the first call after load (set it with
+    `page.addInitScript` before a navigation).
+- **Specs that join a Plan** dismiss the notifications prompt with `dismissNotificationPrompt`
+  from `e2e/support.ts`; first sign-in answers the privacy choices in `signInWithEmail`.
 - **Database tests:** `supabase/tests/harness.ts` recreates the parts of Supabase the
   migrations need (`anon`/`authenticated` roles, `auth.uid()`, default grants). Every new
   table needs RLS, revoked defaults, minimal grants and a test.
@@ -352,3 +278,7 @@ prototype at 390×844 (Expo web).
    layout, with schema updates for cities, `reveal_at`, policy acceptances and idempotency.
 3. Added **English and German** copy and removed every hard-coded string.
 4. Received `docs/04-screens.md`; aligned the routes and built the **waitlist**.
+5. Received the full documents and the design canvas export; built C1–C18 in order with a
+   Codex audit per step (Circles, recipes, People, Plan creation, hosting, chats, Inbox, group
+   orders, safety, account, policies, profile, notifications, offline, web RSVP, Explore
+   filters), then the designed states and the Circle request screen (13–14 November 2026).
