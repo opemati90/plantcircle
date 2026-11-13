@@ -15,6 +15,9 @@
     "web:visual": "playwright test --project=visual --trace off"
   },
   "dependencies": {
+    "@formatjs/intl-getcanonicallocales": "3.3.1",
+    "@formatjs/intl-locale": "5.4.3",
+    "@formatjs/intl-pluralrules": "7.0.4",
     "@plantcircle/copy": "workspace:*",
     "@plantcircle/tokens": "workspace:*",
     "@react-native-async-storage/async-storage": "2.2.0",

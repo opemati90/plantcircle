@@ -30,6 +30,9 @@ appId: app.plantcircle.mobile
 - inputText: '000000'
 - tapOn: 'Verify'
 - tapOn: 'Only needed'
+- tapOn:
+    text: 'Not now'
+    optional: true
 - assertVisible: 'You’re going'
 - assertVisible: 'You and 4 others are going'
 - tapOn: 'You’re going'

@@ -24,6 +24,9 @@ appId: app.plantcircle.mobile
 - inputText: '000000'
 - tapOn: 'Verify'
 - tapOn: 'Only needed'
+- tapOn:
+    text: 'Not now'
+    optional: true
 - assertVisible: 'You’re going'
 - openLink: plantcircle://my-plans
 - assertVisible: 'Going'

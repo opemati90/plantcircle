@@ -301,6 +301,7 @@ export default function ExploreScreen() {
         />
         {tab === 'plans' ? (
           <Pressable
+            testID="explore-filters"
             accessibilityRole="button"
             accessibilityLabel={activeCount > 0 ? t('explore.filters.buttonActive', { count: activeCount }) : t('explore.filters.button')}
             onPress={() => {

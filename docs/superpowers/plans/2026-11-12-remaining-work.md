@@ -95,7 +95,7 @@ Owner asked for Circles, Learn and People, end to end. The rest follow in backlo
 |---|------|--------|
 | E1 | Six new catalogues (es, pt, fr, pl, it, nl) with full key parity. | done |
 | E2 | Native speaker review of all first-pass translations (de, es, pt, fr, pl, it, nl). | todo (owner) |
-| E3 | Plural and ordinal rules verified on device for Polish and French. | todo |
+| E3 | Plural and ordinal rules verified on device for Polish and French. | done 2026-11-14: `e2e/maestro/plurals.yaml` passes on iPhone 17. Finding: Hermes gave Polish 14 the “few” form (“14 osoby idą”); fixed with the formatjs Intl.PluralRules polyfill (forced, 8 locales) in `src/lib/i18n.ts`. |
 
 ## F. Verification and release
 
@@ -103,7 +103,7 @@ Owner asked for Circles, Learn and People, end to end. The rest follow in backlo
 |---|------|--------|
 | F1 | Offered-spot flow on iOS and Android device (Maestro). | verified (iOS); Android passed (29 steps) |
 | F2 | My Plans flow on device. | verified (iOS) |
-| F3 | Explore flow on device. | todo |
+| F3 | Explore flow on device. | done 2026-11-14: `e2e/maestro/explore.yaml` passes on iPhone 17 (browse, search, filter Online, clear, Circles/Learn/People tabs). Filter button got `testID="explore-filters"`; Maestro’s hideKeyboard tapped through onto a result, so the flow presses Enter instead. |
 | F4 | Supabase staging project and migration applied; real RLS tests. | blocked (owner account) |
 | F5 | Dev-only free-spot route and fixture hooks excluded from release builds. Verified: the fixture backend is a dynamic import behind `__DEV__` and the dev route acts only under `__DEV__`; a production web export (no Supabase env) contains no fixture data, `__pcFixtures` or simulated-failure strings. | done |
 | F6 | README and handover updated after each increment. README rewritten to the current state (layout, areas, checks, verified/not verified, owner's launch list); HANDOVER §1 and §5–9, test hooks and history updated (14 November 2026). | done |

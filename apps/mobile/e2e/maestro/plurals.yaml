@@ -1,0 +1,21 @@
+# Plural forms on a device (E3), read through Hermes' Intl.PluralRules:
+# Polish 4 → few ("osoby idą"), 14 → many ("osób idzie"); French 4 → other ("personnes viennent").
+#   maestro test apps/mobile/e2e/maestro/plurals.yaml
+appId: app.plantcircle.mobile
+---
+- launchApp:
+    clearState: true
+- tapOn: 'Language.*'
+- tapOn: 'Polski'
+- assertVisible: 'Znajdź swoich ludzi.'
+- openLink: plantcircle://plan/cooking-night
+- assertVisible: '4 osoby idą'
+- openLink: plantcircle://plan/sunday-potluck
+- assertVisible: '14 osób idzie'
+- launchApp:
+    clearState: true
+- tapOn: 'Language.*'
+- tapOn: 'Français'
+- assertVisible: 'Trouve ta bande.'
+- openLink: plantcircle://plan/cooking-night
+- assertVisible: '4 personnes viennent'

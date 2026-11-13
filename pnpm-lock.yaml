@@ -17,6 +17,15 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@formatjs/intl-getcanonicallocales':
+        specifier: 3.3.1
+        version: 3.3.1
+      '@formatjs/intl-locale':
+        specifier: 5.4.3
+        version: 5.4.3
+      '@formatjs/intl-pluralrules':
+        specifier: 7.0.4
+        version: 7.0.4
       '@plantcircle/copy':
         specifier: workspace:*
         version: link:../../packages/copy
@@ -950,6 +959,27 @@ packages:
   '@expo/xcpretty@4.4.7':
     resolution: {integrity: sha512-EbxYllZ7/ozONVZd425cm4XnolfW+AmSFT5aP7Jdno6oc3WrYQcHz2CO20z/2rwWwYgztmV2PXvYH+BQ8YFjqg==}
     hasBin: true
+
+  '@formatjs/bigdecimal@0.2.10':
+    resolution: {integrity: sha512-npIs6UARNOg5amJY5UOVsd6HUQQfzYjet0sa0SWIqzsnVhxLSpaIx2DjoIVrr/vqmjURjvroeW6dItjfy3Uf8A==}
+
+  '@formatjs/fast-memoize@3.1.7':
+    resolution: {integrity: sha512-zXfhLpvA6T7+efdt9JLbBwZ00tT7NsBMDVnDu8rpHeNNv8KfRZAMo2gkG0k9lK/Nzc//3kJ9pImsfuJxk3KhUA==}
+
+  '@formatjs/intl-getcanonicallocales@3.3.1':
+    resolution: {integrity: sha512-GkXdVwb/4Y9qJaZ19BguPv2i9Vr+z5MrlmFa/9HR7WK2tMcCWZathuGhn7W/V3sFqUdAVB3uvmGuOxXwc61DJQ==}
+
+  '@formatjs/intl-locale@5.4.3':
+    resolution: {integrity: sha512-YdxSbfDifRIew7mukcwITPlhkomfHCcSzzbjEJqOGbod4wrfdUN7SmiZQU2Lr8zs/q/15ntZsthJ8NsW3P30mA==}
+
+  '@formatjs/intl-localematcher@0.10.1':
+    resolution: {integrity: sha512-gBqglQK9rXuHsLmM8wzTMBy4Xo4d0jamirIVKuEL8F1rwbskWdpMA1kZarSkny+uvr5q/K6GSzE0Rcq1wZLl3g==}
+
+  '@formatjs/intl-pluralrules@7.0.4':
+    resolution: {integrity: sha512-EeQ8YUs1QOpYLUiNHkHfR1rsOMtQUBQXEQwR9WmJRWfzvVXeYZ7vBeMARtlb2KuHUgdmfXjoin5oNn68hjyrEQ==}
+
+  '@formatjs/intl-supportedvaluesof@3.0.1':
+    resolution: {integrity: sha512-+9TU+8tqsUqobFzQJEvfQ8Yukt1PYgL5WxYi/yW+hWVNx422wEo/TlVRLvIfdYqlVS048jfyu8piNagfhOV+2A==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -5922,6 +5952,30 @@ snapshots:
       '@babel/code-frame': 7.29.7
       chalk: 4.1.2
       js-yaml: 4.3.2
+
+  '@formatjs/bigdecimal@0.2.10': {}
+
+  '@formatjs/fast-memoize@3.1.7': {}
+
+  '@formatjs/intl-getcanonicallocales@3.3.1': {}
+
+  '@formatjs/intl-locale@5.4.3':
+    dependencies:
+      '@formatjs/intl-getcanonicallocales': 3.3.1
+      '@formatjs/intl-supportedvaluesof': 3.0.1
+
+  '@formatjs/intl-localematcher@0.10.1':
+    dependencies:
+      '@formatjs/fast-memoize': 3.1.7
+
+  '@formatjs/intl-pluralrules@7.0.4':
+    dependencies:
+      '@formatjs/bigdecimal': 0.2.10
+      '@formatjs/intl-localematcher': 0.10.1
+
+  '@formatjs/intl-supportedvaluesof@3.0.1':
+    dependencies:
+      '@formatjs/fast-memoize': 3.1.7
 
   '@humanfs/core@0.19.2':
     dependencies:
