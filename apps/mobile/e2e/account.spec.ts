@@ -8,6 +8,7 @@ test.beforeEach(async ({ page }) => {
 /** Signs in without answering the privacy choices, so the test can see them. */
 async function signInToChoices(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/sign-up?next=%2Fhome');
+  await page.getByRole('checkbox', { name: 'I’m 18 or older' }).click();
   await page.getByRole('textbox', { name: 'Email' }).fill('lena@example.com');
   await page.getByRole('button', { name: 'Continue with email' }).click();
   await page.getByRole('textbox', { name: '6-digit code' }).fill('000000');

@@ -48,7 +48,7 @@ export default function ProfileScreen() {
   ];
   const hosting: Row[] = [{ label: t('profile.hostLevel'), href: later('hostLevel'), icon: 'sprout' }];
   const about: Row[] = [
-    { label: t('profile.terms'), href: later('terms') },
+    { label: t('profile.terms'), href: '/legal/terms' },
     { label: t('profile.accountData'), href: '/profile/account' },
   ];
 

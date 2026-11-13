@@ -953,3 +953,42 @@ export function settingsPatchToRow(patch: SettingsPatch): Record<string, boolean
   }
   return row;
 }
+
+// Policies (C12). Versioned Terms, Community Rules and Privacy Policy.
+
+export const POLICIES = ['terms', 'community_rules', 'privacy'] as const;
+export type PolicyName = (typeof POLICIES)[number];
+
+export interface PendingPolicy {
+  policy: PolicyName;
+  version: string;
+  effectiveAt: string;
+  required: boolean;
+  /** Required and already in effect: the app waits for the acceptance. */
+  blocking: boolean;
+  summary: { title: string; note: string }[];
+  url: string | null;
+  acceptedVersion: string | null;
+}
+
+export const pendingPolicySchema = z.object({
+  policy: z.enum(POLICIES),
+  version: z.string(),
+  effective_at: z.string(),
+  required: z.boolean(),
+  blocking: z.boolean(),
+  summary: z.array(z.object({ title: z.string(), note: z.string() })),
+  url: z.string().nullable(),
+  accepted_version: z.string().nullable(),
+});
+
+export const toPendingPolicy = (row: z.infer<typeof pendingPolicySchema>): PendingPolicy => ({
+  policy: row.policy,
+  version: row.version,
+  effectiveAt: row.effective_at,
+  required: row.required,
+  blocking: row.blocking,
+  summary: row.summary,
+  url: row.url,
+  acceptedVersion: row.accepted_version,
+});

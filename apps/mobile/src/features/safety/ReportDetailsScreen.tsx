@@ -1,12 +1,12 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '../../components/Button';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { CheckIcon } from '../../components/icons';
+import { Checkbox } from '../../components/Checkbox';
 import { InlineState } from '../../components/parts';
-import { color, extra, radius, size, type } from '../../components/theme';
+import { color, extra, radius, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
 import { REPORT_CATEGORIES, REPORT_TARGETS } from '../../lib/backend/types';
@@ -107,19 +107,11 @@ export default function ReportDetailsScreen() {
           {t('safety.characters', { count: length, max: MAX })}
         </Text>
 
-        <Pressable
-          accessibilityRole="checkbox"
-          aria-checked={confirmed}
-          onPress={() => {
-            setConfirmed((c) => !c);
-          }}
-          style={styles.check}
-        >
-          <View style={[styles.box, confirmed && styles.boxChecked]}>
-            {confirmed ? <CheckIcon size={16} strokeWidth={3} color="#FFFFFF" /> : null}
-          </View>
-          <Text style={[type(16, 'medium', { leading: 1.4 }), styles.checkText]}>{t('safety.accurate')}</Text>
-        </Pressable>
+        <Checkbox
+          label={t('safety.accurate')}
+          value={confirmed}
+          onValueChange={setConfirmed}
+        />
 
         {create.isError ? (
           <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
@@ -143,10 +135,6 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 12 },
   label: { ...type(17, 'semibold'), marginTop: 14 },
   field: { minHeight: 150, padding: 16, borderRadius: radius.control, borderWidth: 1, borderColor: extra.cardBorder, color: color.ink },
-  check: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.touchMin, paddingVertical: 6, marginTop: 8 },
-  box: { width: 26, height: 26, borderRadius: 7, borderWidth: 2, borderColor: extra.cardBorder, alignItems: 'center', justifyContent: 'center' },
-  boxChecked: { backgroundColor: color.ink, borderColor: color.ink },
-  checkText: { flex: 1 },
   footer: { paddingTop: 16, gap: 10 },
   hint: { textAlign: 'center' },
 });

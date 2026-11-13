@@ -27,6 +27,7 @@ test('a full Plan explains the waitlist; joining it starts at sign-up for a visi
   await expect(page.getByRole('heading', { name: 'How the waitlist works' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Join waitlist' }).click();
+  await page.getByRole('checkbox', { name: 'I’m 18 or older' }).click();
   await page.getByRole('button', { name: 'Continue with Apple' }).click();
 
   // The action that triggered sign-up is resumed.

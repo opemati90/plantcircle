@@ -42,6 +42,8 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   messages_frozen: 'messages_frozen',
   account_deleted: 'account_deleted',
   invalid_settings: 'invalid_input',
+  unknown_policy_version: 'invalid_input',
+  invalid_policy_set: 'invalid_input',
   invalid_report: 'invalid_input',
   target_not_found: 'not_found',
   action_not_found: 'not_found',

@@ -1,4 +1,4 @@
-import type {AuditRow, BlockedPerson, BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, ReportInput, ReportReceipt, Session, SettingsPatch, StaffAction, StaffAppeal, StaffCase, StaffQueueRow, Suspension, UpNext, UserSettings, WaitlistOffer} from './types';
+import type {AuditRow, BlockedPerson, BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, PendingPolicy, Person, PolicyName, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, ReportInput, ReportReceipt, Session, SettingsPatch, StaffAction, StaffAppeal, StaffCase, StaffQueueRow, Suspension, UpNext, UserSettings, WaitlistOffer} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -135,6 +135,11 @@ export interface Backend {
     idempotencyKey: string,
   ): Promise<'going' | 'checked_in'>;
   endPlan(planId: string, idempotencyKey: string): Promise<void>;
+
+  /** Policies. New versions the member has not accepted; a blocking one gates the app. */
+  getPendingPolicies(): Promise<PendingPolicy[]>;
+  /** Accepts exactly the versions shown. Returns how many were recorded. */
+  acceptPolicies(versions: { policy: PolicyName; version: string }[]): Promise<number>;
 
   /** Account. Settings exist with their defaults from the first read; consent is off by default. */
   getSettings(): Promise<UserSettings>;

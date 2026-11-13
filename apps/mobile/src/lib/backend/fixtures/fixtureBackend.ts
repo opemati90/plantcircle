@@ -23,6 +23,7 @@ import type {
   Session,
   StaffAppeal,
   StaffCase,
+  PendingPolicy,
   Suspension,
   UserSettings,
 } from '../types';
@@ -96,6 +97,8 @@ interface State {
   audit: AuditRow[];
   /** Privacy choices and notification settings; null until first read. */
   settings: UserSettings | null;
+  /** Policy versions published in this session (dev hook) and not yet accepted. */
+  policiesPending: PendingPolicy[];
   conversationSettings: Record<string, { mutedUntil: string | null; pinned: boolean; lastReadAt?: string | null }>;
   messages: Record<string, { id: string; clientId: string; senderId: string; senderName: string; body: string; createdAt: string }[]>;
   /** The viewer's feedback on Plans, by Plan id. */
@@ -125,6 +128,8 @@ interface FixtureHooks {
     suspend: () => void;
     /** Test hook: the viewer becomes staff, so the web console opens. */
     makeStaff: () => void;
+    /** Test hook: a new Terms version takes effect now, so the update gate shows. */
+    publishTerms: () => void;
   };
   /** Test hook: failures to simulate from the very first call after load. */
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
@@ -170,6 +175,7 @@ const EMPTY: State = {
   appeals: [],
   audit: [],
   settings: null,
+  policiesPending: [],
   conversationSettings: {},
   feedbackMine: {},
   idempotent: {},
@@ -221,6 +227,28 @@ export async function createFixtureBackend(): Promise<Backend> {
     },
     makeStaff: () => {
       commit({ ...state, profile: state.profile ? { ...state.profile, role: 'staff' } : state.profile });
+    },
+    publishTerms: () => {
+      if (state.policiesPending.some((p) => p.version === '2026-12')) return;
+      commit({
+        ...state,
+        policiesPending: [
+          {
+            policy: 'terms',
+            version: '2026-12',
+            effectiveAt: new Date().toISOString(),
+            required: true,
+            blocking: true,
+            summary: [
+              { title: 'Paid workshops', note: 'How booking, refunds and payouts work' },
+              { title: 'AI features', note: 'Which tools use AI and how they’re labelled' },
+              { title: 'Reports and appeals', note: 'How we decide and how to challenge it' },
+            ],
+            url: 'https://plantcircle.app/legal/terms',
+            acceptedVersion: '2026-11',
+          },
+        ],
+      });
     },
     freeSpot: (planId, offerMs = OFFER_MS) => {
       const inLine = planId in state.waitlist;
@@ -1440,6 +1468,20 @@ export async function createFixtureBackend(): Promise<Backend> {
         orders: { ...state.orders, [planId]: { ...entry, collectedBy, state: done ? 'completed' : entry.state } },
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: planId } },
       });
+    },
+
+    async getPendingPolicies() {
+      await call();
+      requireSession();
+      return state.policiesPending;
+    },
+
+    async acceptPolicies(versions) {
+      await call();
+      requireSession();
+      const accepted = state.policiesPending.filter((p) => versions.some((v) => v.policy === p.policy && v.version === p.version));
+      commit({ ...state, policiesPending: state.policiesPending.filter((p) => !accepted.includes(p)) });
+      return accepted.length;
     },
 
     async getSettings() {

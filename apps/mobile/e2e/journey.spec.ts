@@ -32,7 +32,11 @@ test('first run: pick a city, browse, sign up with an email code, join, bring so
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Save your spot' })).toBeVisible();
   await page.getByRole('link', { name: 'Use email instead' }).click();
+  await expect(page.getByRole('heading', { name: 'Save your spot' })).toHaveCount(0);
 
+  // Nothing continues before the age confirmation; then an empty email is caught inline.
+  await expect(page.getByRole('button', { name: 'Continue with email' })).toBeDisabled();
+  await page.getByRole('checkbox', { name: 'I’m 18 or older' }).click();
   await page.getByRole('button', { name: 'Continue with email' }).click();
   await expect(page.getByRole('alert')).toHaveText('Enter a valid email address.');
   await page.getByRole('textbox', { name: 'Email' }).fill('lena@example.com');
@@ -88,6 +92,8 @@ test('skipping the city shows Plans everywhere, with no city in the title', asyn
 test('continue with Apple from the sheet signs in and joins', async ({ page }) => {
   await page.goto('/plan/cooking-night');
   await page.getByRole('button', { name: 'Join', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Continue with Apple' })).toBeDisabled();
+  await page.getByRole('checkbox', { name: 'I’m 18 or older' }).click();
   await page.getByRole('button', { name: 'Continue with Apple' }).click();
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
 });

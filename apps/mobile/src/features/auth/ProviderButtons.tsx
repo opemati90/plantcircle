@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
@@ -6,15 +7,20 @@ import { AppleIcon, GoogleIcon } from '../../components/icons';
 import { color, type } from '../../components/theme';
 import { errorCode, type OAuthProvider } from '../../lib/backend/backend';
 import { useBackend } from '../../lib/backend/BackendProvider';
+import { AgeConfirm } from './AgeConfirm';
 
 interface Props {
+  /** The parent's own age confirmation; when absent the buttons show one themselves. */
+  adult?: boolean;
   /** Called once the person is signed in. */
   onSignedIn: () => void;
   gap?: number;
 }
 
 /** "Continue with Apple / Google". */
-export function ProviderButtons({ onSignedIn, gap = 10 }: Props) {
+export function ProviderButtons({ onSignedIn, gap = 10, adult }: Props) {
+  const [ownAdult, setOwnAdult] = useState(false);
+  const confirmed = adult ?? ownAdult;
   const backend = useBackend();
   const { t } = useTranslation();
   const signIn = useMutation({
@@ -26,10 +32,11 @@ export function ProviderButtons({ onSignedIn, gap = 10 }: Props) {
 
   return (
     <View style={{ gap }}>
+      {adult === undefined ? <AgeConfirm value={ownAdult} onValueChange={setOwnAdult} /> : null}
       <Button
         label={t('auth.apple')}
         icon={<AppleIcon />}
-        disabled={signIn.isPending}
+        disabled={signIn.isPending || !confirmed}
         onPress={() => {
           signIn.mutate('apple');
         }}
@@ -38,7 +45,7 @@ export function ProviderButtons({ onSignedIn, gap = 10 }: Props) {
         variant="outline"
         label={t('auth.google')}
         icon={<GoogleIcon />}
-        disabled={signIn.isPending}
+        disabled={signIn.isPending || !confirmed}
         onPress={() => {
           signIn.mutate('google');
         }}

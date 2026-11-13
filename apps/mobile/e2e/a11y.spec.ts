@@ -52,6 +52,7 @@ test('verify-email, the joined Plan and the sign-up sheet have no detectable vio
   await expectNoViolations(page, ['aria-allowed-attr']);
 
   await page.goto('/sign-up');
+  await page.getByRole('checkbox', { name: 'I’m 18 or older' }).click();
   await page.getByRole('textbox', { name: 'Email' }).fill('lena@example.com');
   await page.getByRole('button', { name: 'Continue with email' }).click();
   await expect(page.getByRole('heading', { name: 'Check your email' })).toBeVisible();

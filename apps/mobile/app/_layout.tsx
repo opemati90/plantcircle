@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
+import { PolicyGate } from '../src/features/legal/PolicyGate';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -77,6 +78,7 @@ export default function RootLayout() {
       <BackendProvider backend={startup.backend}>
         <QueryClientProvider client={queryClient}>
           <SessionSync />
+          <PolicyGate />
           <StatusBar style="auto" />
           {/* Phones use the full width; larger screens keep the phone layout centred. */}
           <View style={styles.backdrop}>

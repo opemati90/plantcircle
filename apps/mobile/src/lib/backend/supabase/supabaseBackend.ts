@@ -33,6 +33,8 @@ import {
   planCardSchema,
   toPlan,
   auditRowSchema,
+  pendingPolicySchema,
+  toPendingPolicy,
   settingsPatchToRow,
   settingsSchema,
   toSettings,
@@ -688,6 +690,18 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         })),
         collected: [...mine.values()].some((m) => m.quantity > 0) && [...mine.values()].every((m) => m.quantity === 0 || m.collected),
       };
+    },
+
+    async getPendingPolicies() {
+      const result = await client.rpc('policies_pending');
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.array(pendingPolicySchema), result.data).map(toPendingPolicy);
+    },
+
+    async acceptPolicies(versions) {
+      const result = await client.rpc('policies_accept', { p_versions: versions });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.number().int(), result.data);
     },
 
     async getSettings() {

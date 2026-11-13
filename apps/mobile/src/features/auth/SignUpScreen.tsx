@@ -20,6 +20,7 @@ import { errorCode } from '../../lib/backend/backend';
 import { useBackend } from '../../lib/backend/BackendProvider';
 import { emailSchema } from '../../lib/backend/types';
 import { safeNextPath } from './authRules';
+import { AgeConfirm } from './AgeConfirm';
 import { ProviderButtons } from './ProviderButtons';
 import { useAuth } from './useAuth';
 
@@ -33,6 +34,7 @@ export default function SignUpScreen() {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [invalid, setInvalid] = useState(false);
+  const [adult, setAdult] = useState(false);
 
   const requestCode = useMutation({
     mutationFn: (address: string) => backend.requestEmailCode(address),
@@ -45,6 +47,7 @@ export default function SignUpScreen() {
   if (session) return <Redirect href={{ pathname: '/privacy-choices', params: { next } }} />;
 
   const submit = () => {
+    if (!adult) return;
     const parsed = emailSchema.safeParse(email.trim());
     setInvalid(!parsed.success);
     if (parsed.success) requestCode.mutate(parsed.data);
@@ -95,7 +98,9 @@ export default function SignUpScreen() {
             {t('auth.createLead')}
           </Text>
         </View>
+        <AgeConfirm value={adult} onValueChange={setAdult} />
         <ProviderButtons
+          adult={adult}
           onSignedIn={() => {
             router.replace({ pathname: '/privacy-choices', params: { next } });
           }}
@@ -127,10 +132,10 @@ export default function SignUpScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('auth.continueEmail')}
-              aria-disabled={requestCode.isPending}
-              disabled={requestCode.isPending}
+              aria-disabled={requestCode.isPending || !adult}
+              disabled={requestCode.isPending || !adult}
               onPress={submit}
-              style={[styles.submit, requestCode.isPending && styles.dim]}
+              style={[styles.submit, (requestCode.isPending || !adult) && styles.dim]}
             >
               <ChevronRightIcon size={20} strokeWidth={2.6} color="#FFFFFF" />
             </Pressable>

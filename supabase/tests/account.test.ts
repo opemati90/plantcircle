@@ -117,7 +117,7 @@ describe('deleting the account', () => {
     await expect(asUser(db, ANA, () => db.query(`update public.profiles set display_name = 'Ana' where id = $1`, [ANA]))).rejects.toThrow(/account_deleted/);
     await expect(asUser(db, ANA, () => db.query('select public.settings_update($1)', ['{"notif_direct": false}']))).rejects.toThrow(/account_deleted/);
     await expect(asUser(db, ANA, () => db.query('select public.data_export_request($1)', [key()]))).rejects.toThrow(/account_deleted/);
-    await expect(asUser(db, ANA, () => db.query(`insert into public.policy_acceptances (user_id, policy, version) values ($1, 'terms', '2027-01')`, [ANA]))).rejects.toThrow(/account_deleted/);
+    await expect(asUser(db, ANA, () => db.query(`insert into public.policy_acceptances (user_id, policy, version) values ($1, 'terms', '2026-11')`, [ANA]))).rejects.toThrow(/account_deleted/);
     // Nobody reaches the stub by direct message either.
     await expect(asUser(db, BEN, () => db.query('select public.conversation_open($1, $2)', ['direct', ANA]))).rejects.toThrow(/not_member/);
   });

@@ -17,6 +17,7 @@ export interface FixtureWindow {
     freeSpot: (planId: string, offerMs?: number) => void;
     suspend: () => void;
     makeStaff: () => void;
+    publishTerms: () => void;
   };
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
 }
@@ -27,6 +28,7 @@ export async function freezeTime(page: Page): Promise<void> {
 
 export async function signInWithEmail(page: Page, next = '/home'): Promise<void> {
   await page.goto(`/sign-up?next=${encodeURIComponent(next)}`);
+  await page.getByRole('checkbox', { name: 'I’m 18 or older' }).click();
   await page.getByRole('textbox', { name: 'Email' }).fill('lena@example.com');
   await page.getByRole('button', { name: 'Continue with email' }).click();
   await page.getByRole('textbox', { name: '6-digit code' }).fill('000000');
