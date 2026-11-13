@@ -40,7 +40,7 @@ export default function BlockedScreen() {
         ) : blocked.isPending ? (
           <Skeleton width="100%" height={64} radius={radius.card} />
         ) : blocked.isError ? (
-          <EmptyState title={t('errors.serverTitle')} text={t('errors.serverText')} actions={<Button label={t('common.retry')} onPress={() => void blocked.refetch()} />} />
+          <EmptyState onSavedPlans={() => { router.push('/my-plans'); }} title={t('errors.serverTitle')} text={t('errors.serverText')} actions={<Button label={t('common.retry')} onPress={() => void blocked.refetch()} />} />
         ) : blocked.data.length === 0 ? (
           <InlineState title={t('safety.blockedEmptyTitle')} text={t('safety.blockedEmptyText')} />
         ) : (

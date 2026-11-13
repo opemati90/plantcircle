@@ -90,6 +90,7 @@ export default function FeedbackScreen() {
       <View style={styles.screen}>
         {back}
         <EmptyState
+          onSavedPlans={() => { router.push('/my-plans'); }}
           title={t('errors.serverTitle')}
           text={t('errors.serverText')}
           actions={<Button label={t('common.retry')} onPress={() => void feedback.refetch()} />}

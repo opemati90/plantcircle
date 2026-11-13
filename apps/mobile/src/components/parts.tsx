@@ -223,11 +223,19 @@ interface EmptyStateProps {
   icon?: ReactNode;
   /** Always offer a next step. */
   actions: ReactNode;
+  /**
+   * Server and connection errors, as the ServerError design has it: "Your Plans still work",
+   * leading to My Plans, which is saved on the phone. Pass the handler that opens it.
+   */
+  onSavedPlans?: () => void;
+  /** A short reference for support ("Error reference: …"), when the failure carried one. */
+  reference?: string | null;
 }
 
 /** Full-screen state: errors, missing content, areas that are not built yet. */
-export function EmptyState({ title, text, icon, actions }: EmptyStateProps) {
+export function EmptyState({ title, text, icon, actions, onSavedPlans, reference }: EmptyStateProps) {
   const { headerTop } = useScreenInsets();
+  const { t } = useTranslation();
   return (
     <View style={[styles.empty, { paddingTop: headerTop + 56 }]}>
       <View style={styles.emptyBody}>
@@ -243,6 +251,17 @@ export function EmptyState({ title, text, icon, actions }: EmptyStateProps) {
         <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
           {text}
         </Text>
+        {onSavedPlans ? (
+          <Pressable accessibilityRole="link" onPress={onSavedPlans} style={styles.savedCard}>
+            <View style={styles.savedText}>
+              <Text style={type(16, 'semibold')}>{t('errors.savedTitle')}</Text>
+              <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{t('errors.savedText')}</Text>
+            </View>
+          </Pressable>
+        ) : null}
+        {reference ? (
+          <Text style={type(13, 'regular', { color: color.secondary })}>{t('errors.reference', { ref: reference })}</Text>
+        ) : null}
       </View>
       <View style={styles.emptyActions}>{actions}</View>
     </View>
@@ -340,6 +359,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyActions: { gap: 10 },
+  savedCard: { minHeight: size.touchMin, padding: 16, borderRadius: radius.card, backgroundColor: color.fill, marginTop: 6 },
+  savedText: { gap: 3 },
 });
 
 /** A message inside a screen that keeps its other controls usable: empty, error and "later" states. */

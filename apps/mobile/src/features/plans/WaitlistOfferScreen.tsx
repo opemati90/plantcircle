@@ -285,6 +285,7 @@ export default function WaitlistOfferScreen() {
     const offline = errorCode(plan.error) === 'network';
     return (
       <EmptyState
+        onSavedPlans={() => { router.push('/my-plans'); }}
         title={offline ? t('errors.offlineTitle') : t('errors.serverTitle')}
         text={offline ? t('errors.offlineText') : t('errors.serverText')}
         actions={

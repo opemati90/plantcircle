@@ -677,6 +677,7 @@ export default function PlanScreen() {
     const missing = code === 'not_found';
     return (
       <EmptyState
+        {...(missing ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
         title={
           missing
             ? t('plan.unavailableTitle')

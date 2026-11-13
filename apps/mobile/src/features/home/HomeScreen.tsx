@@ -22,6 +22,7 @@ import {
 } from '../../lib/dates';
 import { currentLanguage } from '../../lib/i18n';
 import { useAuth } from '../auth/useAuth';
+import { PlanListItem } from '../plans/PlanListItem';
 import { hasNotice, isFrozen, isPaused } from '../safety/standing';
 import { getOnboarding } from '../onboarding/onboardingStore';
 import { categoryLabel, placeLabel, priceLabel, spotsLeftShort } from '../plans/planCopy';
@@ -32,6 +33,7 @@ import {
   useSetCity,
   useUpNext,
   useWaitlistOffers,
+  useExplorePlans,
 } from '../plans/queries';
 import { CityPickerSheet } from './CityPickerSheet';
 import { filterPlans, HOME_FILTERS, type HomeFilter } from './homeFilters';
@@ -213,6 +215,10 @@ export default function HomeScreen() {
   const cities = useCities();
   const cityName = cities.data?.find((city) => city.id === cityId)?.name ?? null;
   const plans = usePlansThisWeek(cityId ? [cityId] : null);
+  // A city with nothing this week: online Plans from anywhere this month, to join from home (EmptyCity).
+  const emptyCity = Boolean(cityId) && plans.data?.length === 0;
+  const anywhere = useExplorePlans(null, emptyCity);
+  const fromHome = (anywhere.data ?? []).filter((p) => p.format === 'online').slice(0, 3);
   const upNext = useUpNext();
   const offers = useWaitlistOffers();
   const [filter, setFilter] = useState<HomeFilter>('forYou');
@@ -235,6 +241,7 @@ export default function HomeScreen() {
     const offline = errorCode(plans.error) === 'network';
     return (
       <EmptyState
+        onSavedPlans={() => { router.push('/my-plans'); }}
         title={offline ? t('errors.offlineTitle') : t('errors.serverTitle')}
         text={offline ? t('errors.offlineText') : t('errors.serverText')}
         {...(offline ? { icon: <OfflineIcon size={36} strokeWidth={1.7} /> } : {})}
@@ -395,6 +402,43 @@ export default function HomeScreen() {
               openPlan(featured);
             }}
           />
+        ) : emptyCity && cityName ? (
+          <View style={[styles.row, styles.emptyCity]}>
+            <Text accessibilityRole="header" aria-level={2} style={type(26, 'bold', { tracking: -0.8, leading: 1.1 })}>
+              {t('home.emptyCityTitle', { city: cityName })}
+            </Text>
+            <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{t('home.emptyCityText')}</Text>
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => {
+                router.push('/create');
+              }}
+              style={styles.emptyCityCard}
+            >
+              <View style={styles.emptyCityCardText}>
+                <Text style={type(17, 'semibold')}>{t('home.startOwnTitle')}</Text>
+                <Text style={type(14, 'regular', { color: color.secondary })}>{t('home.startOwnText')}</Text>
+              </View>
+              <Text style={[type(15, 'semibold', { color: '#FFFFFF' }), styles.emptyCityAction]}>{t('home.startOwnAction')}</Text>
+            </Pressable>
+            {fromHome.length > 0 ? (
+              <>
+                <Text accessibilityRole="header" aria-level={2} style={[type(20, 'bold', { tracking: -0.5 }), styles.fromHomeTitle]}>
+                  {t('home.joinFromHome')}
+                </Text>
+                {fromHome.map((plan) => (
+                  <PlanListItem
+                    key={plan.id}
+                    plan={plan}
+                    when={`${weekdayShort(plan.startsAt, plan.timezone)} ${time(plan.startsAt, plan.timezone)} · ${placeLabel(t, plan)}`}
+                    onPress={() => {
+                      openPlan(plan);
+                    }}
+                  />
+                ))}
+              </>
+            ) : null}
+          </View>
         ) : (
           <Text
             style={[styles.row, type(17, 'regular', { color: color.secondary, leading: 1.5 })]}
@@ -490,6 +534,11 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  emptyCity: { gap: 12 },
+  emptyCityCard: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 72, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
+  emptyCityCardText: { flex: 1, minWidth: 0, gap: 2 },
+  emptyCityAction: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: radius.pill, backgroundColor: color.ink, overflow: 'hidden' },
+  fromHomeTitle: { marginTop: 12 },
   paused: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingHorizontal: 14, borderRadius: 14, backgroundColor: color.ink },
   pausedText: { flex: 1, minWidth: 0 },
   screen: { flex: 1, backgroundColor: color.surface },

@@ -103,6 +103,12 @@ export const en = {
     cityFailed: 'Couldn’t change your city. Try again.',
     emptyWeek: 'Nothing is planned this week yet.',
     emptyFilter: 'No Plans match this filter this week.',
+    emptyCityTitle: 'Be the first in {{city}}',
+    emptyCityText: 'No tables here yet. You can start one, or cook with others online from home.',
+    startOwnTitle: 'Start your own Plan',
+    startOwnText: 'A potluck, a cooking night or a group order',
+    startOwnAction: 'Create',
+    joinFromHome: 'Join from home',
   },
   plan: {
     spotsTotal_one: '{{count}} spot',
@@ -1136,6 +1142,9 @@ export const en = {
     doneNoEmail: 'We couldn’t send the confirmation email; your spot is reserved all the same.',
   },
   errors: {
+    savedTitle: 'Your Plans still work',
+    savedText: 'Times, addresses and what you’re bringing are saved on your phone.',
+    reference: 'Error reference: {{ref}} · we’ve been notified',
     offlineTitle: 'Can’t reach PlantCircle',
     offlineText: 'Check your connection and try again.',
     serverTitle: 'Something went wrong on our side',

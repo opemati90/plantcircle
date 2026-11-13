@@ -124,6 +124,7 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
       <View style={styles.screen}>
         {back}
         <EmptyState
+          {...(closed ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
           title={closed ? t('chat.closed') : t('errors.serverTitle')}
           text={closed ? (lead ?? t('chat.lead')) : t('errors.serverText')}
           actions={
@@ -225,6 +226,7 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
           <Skeleton width="100%" height={56} radius={radius.card} />
         ) : messages.isError ? (
           <EmptyState
+            {...(closed ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
             title={t('errors.serverTitle')}
             text={t('errors.serverText')}
             actions={<Button label={t('common.retry')} onPress={() => void messages.refetch()} />}

@@ -90,6 +90,7 @@ export default function InboxScreen() {
     if (inbox.isError) {
       return (
         <EmptyState
+          onSavedPlans={() => { router.push('/my-plans'); }}
           title={errorCode(inbox.error) === 'network' ? t('errors.offlineTitle') : t('errors.serverTitle')}
           text={errorCode(inbox.error) === 'network' ? t('errors.offlineText') : t('errors.serverText')}
           actions={<Button label={t('common.tryAgain')} onPress={() => void inbox.refetch()} />}

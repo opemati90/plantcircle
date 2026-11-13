@@ -50,6 +50,7 @@ export default function DecideScreen() {
       <View style={styles.screen}>
         <ScreenHeader backLabel={t('common.back')} onBack={back} />
         <EmptyState
+          onSavedPlans={() => { router.push('/my-plans'); }}
           title={t('errors.serverTitle')}
           text={t('errors.serverText')}
           actions={<Button label={t('common.retry')} onPress={() => void order.refetch()} />}

@@ -50,6 +50,7 @@ export default function RecipeScreen() {
       <View style={styles.screen}>
         {back}
         <EmptyState
+          {...(missing ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
           title={missing ? t('learn.notFound') : t('errors.serverTitle')}
           text={missing ? t('errors.notFoundText') : t('errors.serverText')}
           actions={

@@ -60,7 +60,7 @@ export default function SuspendedScreen() {
     return (
       <View style={styles.screen}>
         {header}
-        <EmptyState title={t('errors.serverTitle')} text={t('errors.serverText')} actions={<Button label={t('common.retry')} onPress={() => void suspension.refetch()} />} />
+        <EmptyState onSavedPlans={() => { router.push('/my-plans'); }} title={t('errors.serverTitle')} text={t('errors.serverText')} actions={<Button label={t('common.retry')} onPress={() => void suspension.refetch()} />} />
       </View>
     );
   }

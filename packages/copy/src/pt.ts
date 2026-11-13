@@ -108,6 +108,12 @@ export const pt: Catalog = {
     cityFailed: 'Não foi possível mudar de cidade. Tente de novo.',
     emptyWeek: 'Ainda não há nada planeado para esta semana.',
     emptyFilter: 'Nenhum plano desta semana corresponde a este filtro.',
+    emptyCityTitle: 'Sê o primeiro em {{city}}',
+    emptyCityText: 'Ainda não há mesas aqui. Podes criar uma ou cozinhar online com outros a partir de casa.',
+    startOwnTitle: 'Cria o teu Plano',
+    startOwnText: 'Um potluck, uma noite de cozinha ou uma encomenda em grupo',
+    startOwnAction: 'Criar',
+    joinFromHome: 'Junta-te a partir de casa',
   },
   plan: {
     spotsTotal_one: '{{count}} vaga',
@@ -1143,6 +1149,9 @@ export const pt: Catalog = {
     doneNoEmail: 'Não conseguimos enviar o e-mail de confirmação; o teu lugar fica reservado na mesma.',
   },
   errors: {
+    savedTitle: 'Os teus Planos continuam a funcionar',
+    savedText: 'Horas, moradas e o que levas estão guardados no teu telemóvel.',
+    reference: 'Referência do erro: {{ref}} · já fomos avisados',
     offlineTitle: 'Não é possível aceder ao PlantCircle',
     offlineText: 'Verifique a ligação e tente de novo.',
     serverTitle: 'Algo correu mal do nosso lado',

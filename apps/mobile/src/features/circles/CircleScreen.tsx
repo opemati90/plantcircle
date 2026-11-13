@@ -86,6 +86,7 @@ export default function CircleScreen() {
           <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />
         </IconButton>
         <EmptyState
+          {...(missing ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
           title={missing ? t('circles.notFound') : t('errors.serverTitle')}
           text={missing ? t('errors.notFoundText') : t('errors.serverText')}
           actions={

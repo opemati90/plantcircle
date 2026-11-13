@@ -108,6 +108,12 @@ export const nl: Catalog = {
     cityFailed: 'Je stad kon niet worden gewijzigd. Probeer het opnieuw.',
     emptyWeek: 'Er staat deze week nog niets gepland.',
     emptyFilter: 'Geen plannen van deze week passen bij dit filter.',
+    emptyCityTitle: 'Wees de eerste in {{city}}',
+    emptyCityText: 'Hier zijn nog geen tafels. Begin er een, of kook online mee vanuit huis.',
+    startOwnTitle: 'Begin je eigen Plan',
+    startOwnText: 'Een potluck, een kookavond of een groepsbestelling',
+    startOwnAction: 'Maken',
+    joinFromHome: 'Doe mee vanuit huis',
   },
   plan: {
     spotsTotal_one: '{{count}} plek',
@@ -1147,6 +1153,9 @@ export const nl: Catalog = {
     doneNoEmail: 'De bevestigingsmail kon niet worden verstuurd; je plek is toch gereserveerd.',
   },
   errors: {
+    savedTitle: 'Je Plannen werken nog',
+    savedText: 'Tijden, adressen en wat je meeneemt staan op je telefoon.',
+    reference: 'Foutreferentie: {{ref}} · we zijn op de hoogte',
     offlineTitle: 'PlantCircle is niet bereikbaar',
     offlineText: 'Controleer je verbinding en probeer het opnieuw.',
     serverTitle: 'Er ging iets mis aan onze kant',

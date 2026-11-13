@@ -19,9 +19,10 @@ export function useCities() {
 }
 
 /** `cityIds: null` means Anywhere: Plans from every city. */
-export function usePlansThisWeek(cityIds: string[] | null) {
+export function usePlansThisWeek(cityIds: string[] | null, enabled = true) {
   const backend = useBackend();
   return useQuery({
+    enabled,
     queryKey: ['plans', cityIds?.join(',') ?? 'all'],
     queryFn: () => {
       const from = new Date();
