@@ -261,6 +261,16 @@ export default function CreatePlanScreen() {
                   </Pressable>
                 );
               })}
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => {
+                  router.push('/create/order');
+                }}
+                style={styles.tile}
+              >
+                <Text style={type(17, 'semibold', { tracking: -0.3 })}>{t('plan.category.group_order')}</Text>
+                <Text style={styles.lead}>{t('create.hintGroupOrder')}</Text>
+              </Pressable>
             </View>
           </>
         ) : null}

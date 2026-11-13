@@ -31,6 +31,12 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   invalid_message: 'invalid_input',
   not_member: 'closed_chat',
   person_not_found: 'person_not_found',
+  invalid_order: 'invalid_input',
+  invalid_quantity: 'invalid_input',
+  invalid_decision: 'invalid_input',
+  interest_closed: 'interest_closed',
+  order_not_open: 'order_not_open',
+  order_not_ready: 'order_not_open',
 };
 
 export interface ErrorLike {

@@ -7,9 +7,11 @@ import type {
   Circle,
   CircleRequest,
   FeedbackState,
+  GroupOrder,
   GuestState,
   HostSummary,
   MyPlan,
+  OrderItem,
   Plan,
   Profile,
   Person,
@@ -60,6 +62,8 @@ interface State {
   /** Plans the person published in this session, shown alongside the fixture Plans. */
   plansCreated: Plan[];
   /** The private details of Plans this person published: the host always sees them. */
+  /** Group orders published in this session, with items and everyone's interest. */
+  orders: Record<string, GroupOrder & { pickupAddressValue: string; interests: Record<string, Record<string, number>>; collectedBy: string[] }>;
   plansSecrets: Record<string, { address: string | null; meetingUrl: string | null }>;
   /** Guests on the Plans this person hosts. Seeded on publish, like the sample requests. */
   plansGuests: Record<string, { userId: string; displayName: string; state: GuestState; checkedInAt: string | null }[]>;
@@ -122,6 +126,7 @@ const EMPTY: State = {
   peopleRequested: [],
   plansCreated: [],
   plansSecrets: {},
+  orders: {},
   plansGuests: {},
   plansEnded: [],
   bringCreated: [],
@@ -252,11 +257,65 @@ export async function createFixtureBackend(): Promise<Backend> {
     if (kind === 'direct') return state.directOpen.includes(refId);
     if (kind === 'plan') {
       const hosted = state.plansCreated.some((p) => p.id === refId);
-      return hosted || state.goingPlanIds.includes(refId);
+      const me = state.session?.userId ?? 'fixture-you';
+      const interested = Object.values(state.orders[refId]?.interests ?? {}).some((byUser) => (byUser[me] ?? 0) > 0);
+      return hosted || interested || state.goingPlanIds.includes(refId);
     }
     return (
       state.circlesJoined.includes(refId) || state.circlesCreated.some((c) => c.id === refId)
     );
+  }
+
+  /** A collecting order past its close resolves itself, as the database does. */
+  function effectiveOrderState(entry: (typeof state.orders)[string]): GroupOrder['state'] {
+    if (['collecting', 'extended'].includes(entry.state) && Date.now() >= Date.parse(entry.closesAt)) {
+      const total = Object.values(entry.interests).reduce((a, byUser) => a + Object.values(byUser).reduce((x, y) => x + y, 0), 0);
+      return total >= entry.targetTotal ? 'locked' : 'below_target';
+    }
+    return entry.state;
+  }
+
+  /** The order as the viewer sees it: totals, their own amounts, and the address when allowed. */
+  function orderView(entry: (typeof state.orders)[string]): GroupOrder {
+    const me = state.session?.userId ?? null;
+    const st = effectiveOrderState(entry);
+    const items: OrderItem[] = entry.items.map((i) => ({
+      id: i.id,
+      name: i.name,
+      unit: i.unit,
+      target: i.target,
+      estPriceMinor: i.estPriceMinor,
+      currency: i.currency,
+      interestTotal: Object.values(entry.interests[i.id] ?? {}).reduce((a, b) => a + b, 0),
+      mine: me ? (entry.interests[i.id]?.[me] ?? 0) : 0,
+    }));
+    const hasInterest = items.some((i) => i.mine > 0);
+    const people = new Set(Object.values(entry.interests).flatMap((byUser) => Object.entries(byUser).filter(([, q]) => q > 0).map(([u]) => u)));
+    const organizer = me !== null && entry.organizerId === me;
+    // Built field by field: the stored entry holds the address and everyone's interest, which
+    // must not leak into (or be changed through) the result.
+    return {
+      id: entry.id,
+      title: entry.title,
+      description: entry.description,
+      organizerId: entry.organizerId,
+      organizerName: entry.organizerName,
+      supplierName: entry.supplierName,
+      supplierArea: entry.supplierArea,
+      closesAt: entry.closesAt,
+      pickupStart: entry.pickupStart,
+      pickupEnd: entry.pickupEnd,
+      pickupNote: entry.pickupNote,
+      timezone: entry.timezone,
+      state: st,
+      extendedOnce: entry.extendedOnce,
+      targetTotal: entry.targetTotal,
+      items,
+      interestTotal: items.reduce((a, i) => a + i.interestTotal, 0),
+      peopleCount: people.size,
+      pickupAddress: organizer || (hasInterest && ['locked', 'ready', 'completed'].includes(st)) ? entry.pickupAddressValue : null,
+      collected: me !== null && entry.collectedBy.includes(me),
+    };
   }
 
   /** Only the host of a Plan may see its guests and summary. */
@@ -1058,6 +1117,219 @@ export async function createFixtureBackend(): Promise<Backend> {
               current.lastReadAt && current.lastReadAt > upTo ? current.lastReadAt : upTo,
           },
         },
+      });
+    },
+
+    async getOrder(planId) {
+      await call();
+      const stored = state.orders[planId];
+      if (!stored) throw new BackendError('not_found');
+      return orderView(stored);
+    },
+
+    async createOrder(input, key) {
+      await call();
+      requireSession();
+      const fingerprint = fingerprintOf(input);
+      const replayed = replayKey(key, fingerprint);
+      if (replayed) return replayed;
+      const city = fixtureCities.find((c) => c.id === state.profile?.cityId);
+      if (!city) throw new BackendError('city_required');
+      const closes = Date.parse(input.closesAt);
+      const ps = Date.parse(input.pickupStart);
+      const pe = Date.parse(input.pickupEnd);
+      const length = (v: string) => Array.from(v.trim()).length;
+      // The same rules as order_create in the database.
+      if (
+        length(input.title) < 3 ||
+        length(input.title) > 80 ||
+        length(input.supplierName) < 1 ||
+        length(input.supplierName) > 80 ||
+        (input.supplierArea !== null && length(input.supplierArea) > 80) ||
+        length(input.pickupAddress) < 1 ||
+        length(input.pickupAddress) > 200 ||
+        (input.pickupNote !== null && length(input.pickupNote) > 200) ||
+        !Number.isFinite(closes) ||
+        !Number.isFinite(ps) ||
+        !Number.isFinite(pe) ||
+        closes <= Date.now() + 3_600_000 ||
+        ps < closes ||
+        pe <= ps ||
+        pe - ps > 12 * 3_600_000 ||
+        input.items.length === 0 ||
+        input.items.length > 20 ||
+        input.items.some(
+          (i) =>
+            length(i.name) < 1 ||
+            length(i.name) > 80 ||
+            !Number.isFinite(i.target) ||
+            i.target <= 0 ||
+            (i.estPriceMinor !== null && (!Number.isInteger(i.estPriceMinor) || i.estPriceMinor < 0)),
+        )
+      ) {
+        throw new BackendError('invalid_input');
+      }
+      const id = `order-${Date.now()}-${key.slice(0, 8)}`;
+      const me = state.session?.userId ?? 'fixture-you';
+      const items = input.items.map((i, index) => ({
+        id: `${id}-item-${index}`,
+        name: i.name.trim(),
+        unit: i.unit,
+        target: i.target,
+        estPriceMinor: i.estPriceMinor,
+        currency: 'EUR',
+        interestTotal: 0,
+        mine: 0,
+      }));
+      const plan: Plan = {
+        id,
+        title: input.title.trim(),
+        category: 'group_order',
+        format: 'in_person',
+        cityId: city.id,
+        city: city.name,
+        areaName: input.supplierArea?.trim() || city.name,
+        venueName: null,
+        areaHint: null,
+        startsAt: input.pickupStart,
+        endsAt: input.pickupEnd,
+        revealAt: input.closesAt,
+        timezone: city.timezone,
+        capacity: 500,
+        priceCents: 0,
+        currency: 'EUR',
+        description: input.description.trim(),
+        allergens: 'none',
+        imagePath: null,
+        imageAlt: null,
+        imageFocus: null,
+        hostName: myName(),
+        hostVerified: false,
+        hostPlansCount: 1,
+        goingCount: 0,
+        attendeeInitials: [],
+        openBringSlots: 0,
+        waitlistCount: 0,
+        hasOpenSpot: true,
+      };
+      commit({
+        ...state,
+        plansCreated: [...state.plansCreated, plan],
+        orders: {
+          ...state.orders,
+          [id]: {
+            id,
+            title: plan.title,
+            description: plan.description,
+            organizerId: me,
+            organizerName: myName(),
+            supplierName: input.supplierName.trim(),
+            supplierArea: input.supplierArea?.trim() || null,
+            closesAt: input.closesAt,
+            pickupStart: input.pickupStart,
+            pickupEnd: input.pickupEnd,
+            pickupNote: input.pickupNote?.trim() || null,
+            timezone: city.timezone,
+            pickupAddress: null,
+            pickupAddressValue: input.pickupAddress.trim(),
+            state: 'collecting',
+            extendedOnce: false,
+            targetTotal: items.reduce((a, i) => a + i.target, 0),
+            interestTotal: 0,
+            peopleCount: 0,
+            items,
+            collected: false,
+            interests: {},
+            collectedBy: [],
+          },
+        },
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id } },
+      });
+      return id;
+    },
+
+    async setOrderInterest(itemId, quantity, key) {
+      await call();
+      requireSession();
+      const fingerprint = `order_interest:${itemId}:${quantity}`;
+      if (replayKey(key, fingerprint)) return;
+      const entry = Object.values(state.orders).find((o) => o.items.some((i) => i.id === itemId));
+      if (!entry) throw new BackendError('not_found');
+      if (!['collecting', 'extended'].includes(effectiveOrderState(entry))) {
+        throw new BackendError('interest_closed');
+      }
+      if (!Number.isFinite(quantity) || quantity < 0 || quantity > 1000) throw new BackendError('invalid_input');
+      const me = state.session?.userId ?? 'fixture-you';
+      const interests = { ...entry.interests, [itemId]: { ...(entry.interests[itemId] ?? {}), [me]: quantity } };
+      commit({
+        ...state,
+        orders: { ...state.orders, [entry.id]: { ...entry, interests } },
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: itemId } },
+      });
+    },
+
+    async decideOrder(planId, decision, key) {
+      await call();
+      requireSession();
+      const fingerprint = `order_decide:${planId}:${decision}`;
+      const replayed = replayKey(key, fingerprint);
+      if (replayed) return replayed as GroupOrder['state'];
+      const entry = state.orders[planId];
+      if (!entry) throw new BackendError('not_found');
+      if (entry.organizerId !== (state.session?.userId ?? 'fixture-you')) throw new BackendError('forbidden');
+      const current = effectiveOrderState(entry);
+      let next: GroupOrder['state'];
+      let patch: Partial<typeof entry> = {};
+      if (decision === 'cancel' && !['completed', 'cancelled'].includes(current)) next = 'cancelled';
+      else if (decision === 'go' && ['below_target', 'locked'].includes(current)) {
+        const anyone = Object.values(entry.interests).some((byUser) => Object.values(byUser).some((q) => q > 0));
+        if (!anyone) throw new BackendError('order_not_open');
+        next = 'locked';
+      }
+      else if (decision === 'extend' && current === 'below_target' && !entry.extendedOnce) {
+        next = 'extended';
+        const closes = Date.now() + 72 * 3_600_000;
+        const start = Math.max(Date.parse(entry.pickupStart), closes);
+        const windowLength = Date.parse(entry.pickupEnd) - Date.parse(entry.pickupStart);
+        patch = {
+          extendedOnce: true,
+          closesAt: new Date(closes).toISOString(),
+          pickupStart: new Date(start).toISOString(),
+          pickupEnd: new Date(start + windowLength).toISOString(),
+        };
+      } else if (decision === 'ready' && current === 'locked') next = 'ready';
+      else throw new BackendError('order_not_open');
+      commit({
+        ...state,
+        plansCreated: state.plansCreated.map((p) =>
+          p.id === planId && patch.pickupStart && patch.pickupEnd && patch.closesAt
+            ? { ...p, startsAt: patch.pickupStart, endsAt: patch.pickupEnd, revealAt: patch.closesAt }
+            : p,
+        ),
+        orders: { ...state.orders, [planId]: { ...entry, ...patch, state: next } },
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: next } },
+      });
+      return next;
+    },
+
+    async markOrderCollected(planId, key) {
+      await call();
+      requireSession();
+      const fingerprint = `order_collected:${planId}`;
+      if (replayKey(key, fingerprint)) return;
+      const entry = state.orders[planId];
+      if (!entry) throw new BackendError('not_found');
+      if (entry.state !== 'ready') throw new BackendError('order_not_open');
+      const me = state.session?.userId ?? 'fixture-you';
+      const mine = Object.values(entry.interests).some((byUser) => (byUser[me] ?? 0) > 0);
+      if (!mine) throw new BackendError('rsvp_required');
+      const collectedBy = [...new Set([...entry.collectedBy, me])];
+      const everyone = new Set(Object.values(entry.interests).flatMap((byUser) => Object.entries(byUser).filter(([, q]) => q > 0).map(([u]) => u)));
+      const done = [...everyone].every((u) => collectedBy.includes(u));
+      commit({
+        ...state,
+        orders: { ...state.orders, [planId]: { ...entry, collectedBy, state: done ? 'completed' : entry.state } },
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: planId } },
       });
     },
 

@@ -1,4 +1,4 @@
-import type {BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, Session, UpNext, WaitlistOffer} from './types';
+import type {BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, Person, Plan, PlanDetail, PlanInput, Profile, ProfileInput, Recipe, RecipeDetail, RecipeInput, Session, UpNext, WaitlistOffer} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -19,6 +19,8 @@ export type BackendErrorCode =
   | 'item_claimed'
   | 'closed_chat'
   | 'person_not_found'
+  | 'interest_closed'
+  | 'order_not_open'
   | 'cancelled'
   | 'invalid_response'
   | 'unknown';
@@ -109,6 +111,13 @@ export interface Backend {
   setPinned(conversationId: string, pinned: boolean): Promise<void>;
   /** Every chat the viewer can use, pinned first, then newest activity. */
   listInbox(): Promise<InboxThread[]>;
+
+  /** Group orders. Interest is non-binding; the organizer decides below target. */
+  getOrder(planId: string): Promise<GroupOrder>;
+  createOrder(input: OrderInput, idempotencyKey: string): Promise<string>;
+  setOrderInterest(itemId: string, quantity: number, idempotencyKey: string): Promise<void>;
+  decideOrder(planId: string, decision: OrderDecision, idempotencyKey: string): Promise<OrderState>;
+  markOrderCollected(planId: string, idempotencyKey: string): Promise<void>;
   /** Marks read up to the newest message shown; the marker never moves back or past that. */
   markConversationRead(conversationId: string, upTo: string): Promise<void>;
 

@@ -18,6 +18,9 @@ import {
   messageCardSchema,
   messageRequestCardSchema,
   inboxRowSchema,
+  ORDER_STATES,
+  orderCardSchema,
+  orderItemCardSchema,
   toInboxThread,
   personRowSchema,
   toDirectRequest,
@@ -593,6 +596,107 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         p_conversation_id: conversationId,
         p_up_to: upTo,
       });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async getOrder(planId) {
+      const { data: sessionData } = await client.auth.getSession();
+      const userId = sessionData.session?.user.id ?? null;
+      const [card, items] = await Promise.all([
+        client.from('order_cards').select('*').eq('plan_id', planId).maybeSingle(),
+        client.from('order_item_cards').select('*').eq('plan_id', planId).order('position'),
+      ]);
+      if (card.error) throw toBackendError(card.error);
+      if (items.error) throw toBackendError(items.error);
+      if (!card.data) throw new BackendError('not_found');
+      const order = parse(orderCardSchema, card.data);
+      const rows = parse(z.array(orderItemCardSchema), items.data);
+      let mine = new Map<string, { quantity: number; collected: boolean }>();
+      let pickupAddress: string | null = null;
+      if (userId) {
+        const [interests, address] = await Promise.all([
+          client.from('order_interests').select('item_id, quantity, collected_at')
+            .in('item_id', rows.map((r) => r.id)),
+          client.rpc('order_pickup_address', { p_plan_id: planId }),
+        ]);
+        if (interests.error) throw toBackendError(interests.error);
+        if (address.error) throw toBackendError(address.error);
+        mine = new Map(
+          parse(z.array(z.object({ item_id: z.string(), quantity: z.coerce.number(), collected_at: z.string().nullable() })), interests.data)
+            .map((i) => [i.item_id, { quantity: i.quantity, collected: i.collected_at !== null }]),
+        );
+        pickupAddress = parse(z.string().nullable(), address.data);
+      }
+      return {
+        id: order.plan_id,
+        title: order.title,
+        description: order.description,
+        organizerId: order.organizer_id,
+        organizerName: order.organizer_name,
+        supplierName: order.supplier_name,
+        supplierArea: order.supplier_area,
+        closesAt: order.closes_at,
+        pickupStart: order.pickup_start,
+        pickupEnd: order.pickup_end,
+        pickupNote: order.pickup_note,
+        timezone: order.tz,
+        pickupAddress,
+        state: order.state,
+        extendedOnce: order.extended_once,
+        targetTotal: order.target_total,
+        interestTotal: order.interest_total,
+        peopleCount: order.people_count,
+        items: rows.map((r) => ({
+          id: r.id,
+          name: r.name,
+          unit: r.unit,
+          target: r.target,
+          estPriceMinor: r.est_price_minor,
+          currency: r.currency,
+          interestTotal: r.interest_total,
+          mine: mine.get(r.id)?.quantity ?? 0,
+        })),
+        collected: [...mine.values()].some((m) => m.quantity > 0) && [...mine.values()].every((m) => m.quantity === 0 || m.collected),
+      };
+    },
+
+    async createOrder(input, key) {
+      const result = await client.rpc('order_create', {
+        p_title: input.title,
+        p_description: input.description,
+        p_supplier_name: input.supplierName,
+        p_supplier_area: input.supplierArea,
+        p_closes_at: input.closesAt,
+        p_pickup_start: input.pickupStart,
+        p_pickup_end: input.pickupEnd,
+        p_pickup_address: input.pickupAddress,
+        p_pickup_note: input.pickupNote,
+        p_items: input.items.map((i) => ({
+          name: i.name, unit: i.unit, target: i.target, est_price_minor: i.estPriceMinor,
+        })),
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.object({ id: z.string() }), result.data).id;
+    },
+
+    async setOrderInterest(itemId, quantity, key) {
+      const result = await client.rpc('order_set_interest', {
+        p_item_id: itemId, p_quantity: quantity, p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async decideOrder(planId, decision, key) {
+      const result = await client.rpc('order_decide', {
+        p_plan_id: planId, p_decision: decision, p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.object({ state: z.enum(ORDER_STATES) }), result.data).state;
+    },
+
+    async markOrderCollected(planId, key) {
+      const result = await client.rpc('order_mark_collected', { p_plan_id: planId, p_idempotency_key: key });
       if (result.error) throw toBackendError(result.error);
     },
 

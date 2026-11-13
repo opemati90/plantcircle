@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -627,6 +627,9 @@ export default function PlanScreen() {
     );
   }
 
+  if (plan.data?.plan.category === 'group_order') {
+    return <Redirect href={{ pathname: '/order/[id]', params: { id: planId } }} />;
+  }
   if (plan.isError) {
     const code = errorCode(plan.error);
     const missing = code === 'not_found';

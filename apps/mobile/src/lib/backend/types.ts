@@ -593,6 +593,100 @@ export const toInboxThread = (row: z.infer<typeof inboxRowSchema>): InboxThread 
   imagePath: row.image_path,
 });
 
+export const ORDER_STATES = ['collecting','below_target','extended','locked','ready','completed','cancelled'] as const;
+export type OrderState = (typeof ORDER_STATES)[number];
+
+export const orderCardSchema = z.object({
+  plan_id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  organizer_id: z.string(),
+  organizer_name: z.string(),
+  supplier_name: z.string(),
+  supplier_area: z.string().nullable(),
+  closes_at: z.string(),
+  pickup_start: z.string(),
+  pickup_end: z.string(),
+  pickup_note: z.string().nullable(),
+  tz: z.string(),
+  state: z.enum(ORDER_STATES),
+  extended_once: z.boolean(),
+  target_total: z.coerce.number(),
+  interest_total: z.coerce.number(),
+  people_count: z.number().int(),
+});
+export const orderItemCardSchema = z.object({
+  id: z.string(),
+  position: z.number().int(),
+  name: z.string(),
+  unit: z.string(),
+  target: z.coerce.number(),
+  est_price_minor: z.number().int().nullable(),
+  currency: z.string(),
+  interest_total: z.coerce.number(),
+});
+
+export interface OrderItem {
+  id: string;
+  name: string;
+  unit: string;
+  target: number;
+  estPriceMinor: number | null;
+  currency: string;
+  interestTotal: number;
+  /** The viewer's own amount, 0 when none. */
+  mine: number;
+}
+
+/** A group order as the page shows it. No money moves in the app. */
+export interface GroupOrder {
+  id: string;
+  title: string;
+  description: string;
+  organizerId: string;
+  organizerName: string;
+  supplierName: string;
+  supplierArea: string | null;
+  closesAt: string;
+  pickupStart: string;
+  pickupEnd: string;
+  pickupNote: string | null;
+  /** The city's IANA time zone; dates on the order page are shown in it. */
+  timezone: string;
+  /** Only present for the organizer, and for interested members once the order is locked. */
+  pickupAddress: string | null;
+  state: OrderState;
+  extendedOnce: boolean;
+  targetTotal: number;
+  interestTotal: number;
+  peopleCount: number;
+  items: OrderItem[];
+  /** The viewer has collected their share. */
+  collected: boolean;
+}
+
+export interface OrderItemInput {
+  name: string;
+  unit: string;
+  target: number;
+  estPriceMinor: number | null;
+}
+
+export interface OrderInput {
+  title: string;
+  description: string;
+  supplierName: string;
+  supplierArea: string | null;
+  closesAt: string;
+  pickupStart: string;
+  pickupEnd: string;
+  pickupAddress: string;
+  pickupNote: string | null;
+  items: OrderItemInput[];
+}
+
+export type OrderDecision = 'go' | 'extend' | 'cancel' | 'ready';
+
 export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
   id: row.id,
   title: row.title,
