@@ -57,6 +57,14 @@ export const PlusIcon = stroke(<Path d="M12 5v14M5 12h14" />);
 export const HomeIcon = stroke(
   <Path d="M3 10.2 12 3l9 7.2V20a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z" />,
 );
+export const FilterIcon = stroke(
+  <>
+    <Path d="M4 6h16" />
+    <Path d="M7 12h10" />
+    <Path d="M10 18h4" />
+  </>,
+);
+
 export const CompassIcon = stroke(
   <>
     <Circle cx="12" cy="12" r="9" />

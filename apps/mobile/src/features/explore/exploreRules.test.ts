@@ -43,3 +43,44 @@ describe('searchPlans', () => {
     expect(searchPlans(plans, 'kreuzberg').map((p) => p.id)).toEqual(['a', 'c']);
   });
 });
+
+describe('filters', () => {
+  const tz = 'Europe/Berlin';
+  // Monday 2 November 2026, 19:00 Berlin.
+  const now = new Date('2026-11-02T18:00:00Z');
+  const base = {
+    id: 'x', title: 'Soup', category: 'cooking_night', format: 'in_person', cityId: 'berlin', city: 'Berlin', areaName: 'Neukölln',
+    venueName: null, areaHint: null, endsAt: '2026-11-02T22:00:00Z', revealAt: '2026-11-02T18:00:00Z', timezone: tz, capacity: 8,
+    priceCents: 0, currency: 'EUR', description: '', allergens: null, imagePath: null, imageAlt: null, imageFocus: null, hostName: 'Ama',
+    hostVerified: false, hostPlansCount: 1, goingCount: 0, attendeeInitials: [], openBringSlots: 0, waitlistCount: 0, hasOpenSpot: true,
+  } as const;
+  const at = (iso: string, extra: Partial<Plan> = {}): Plan => ({ ...base, startsAt: iso, ...extra }) as Plan;
+
+  it('decides today, this week and the weekend on the viewer’s calendar', () => {
+    const tonight = at('2026-11-02T19:30:00Z');
+    const saturday = at('2026-11-07T16:00:00Z');
+    const nextTuesday = at('2026-11-10T18:00:00Z');
+    const { matchesWhen } = require('./exploreRules') as typeof import('./exploreRules');
+    expect(matchesWhen(tonight, 'today', now, tz)).toBe(true);
+    expect(matchesWhen(saturday, 'today', now, tz)).toBe(false);
+    expect(matchesWhen(saturday, 'week', now, tz)).toBe(true);
+    expect(matchesWhen(nextTuesday, 'week', now, tz)).toBe(false);
+    expect(matchesWhen(saturday, 'weekend', now, tz)).toBe(true);
+    expect(matchesWhen(tonight, 'weekend', now, tz)).toBe(false);
+    // Past midnight UTC it is already the next day in Berlin for both: still "today" to the viewer.
+    expect(matchesWhen(at('2026-11-02T23:30:00Z'), 'today', new Date('2026-11-02T23:00:00Z'), tz)).toBe(true);
+    // While for a viewer in London that instant is still 2 November, and the Plan on the 3rd is tomorrow.
+    expect(matchesWhen(at('2026-11-03T00:30:00Z'), 'today', new Date('2026-11-02T23:00:00Z'), 'Europe/London')).toBe(false);
+  });
+
+  it('filters where and price, and counts what is active', () => {
+    const { filterPlans, activeFilterCount, NO_FILTERS } = require('./exploreRules') as typeof import('./exploreRules');
+    const online = at('2026-11-03T18:00:00Z', { format: 'online', priceCents: 1200 });
+    const free = at('2026-11-03T18:00:00Z');
+    expect(filterPlans([online, free], { ...NO_FILTERS, where: 'online' }, now, tz)).toEqual([online]);
+    expect(filterPlans([online, free], { ...NO_FILTERS, price: 'free' }, now, tz)).toEqual([free]);
+    expect(filterPlans([online, free], { when: 'any', where: 'online', price: 'free' }, now, tz)).toEqual([]);
+    expect(activeFilterCount(NO_FILTERS)).toBe(0);
+    expect(activeFilterCount({ when: 'today', where: 'any', price: 'paid' })).toBe(2);
+  });
+});
