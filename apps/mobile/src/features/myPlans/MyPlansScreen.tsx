@@ -150,13 +150,7 @@ export default function MyPlansScreen() {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.content,
-        { paddingTop: insets.headerTop, paddingBottom: 40 + insets.bottom },
-      ]}
-      style={styles.screen}
-    >
+    <View style={styles.screen}>
       <ScreenHeader
         backLabel={t('common.back')}
         onBack={() => {
@@ -164,58 +158,63 @@ export default function MyPlansScreen() {
           else router.replace('/home');
         }}
       />
-      {isOffline(query) ? <OfflineBanner savedAt={query.dataUpdatedAt} /> : null}
-      <View style={styles.header}>
-        <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>
-          {t('tabs.myPlans')}
-        </Text>
-        <Pressable
-          accessibilityRole="link"
-          onPress={() => {
-            router.push('/create');
-          }}
-          style={styles.createButton}
-        >
-          <PlusIcon size={16} strokeWidth={2.6} color={color.surface} />
-          <Text style={type(15, 'semibold', { color: color.surface })}>
-            {t('myPlans.create')}
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
+        style={styles.screen}
+      >
+        {isOffline(query) ? <OfflineBanner savedAt={query.dataUpdatedAt} /> : null}
+        <View style={styles.header}>
+          <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>
+            {t('tabs.myPlans')}
           </Text>
-        </Pressable>
-      </View>
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => {
+              router.push('/create');
+            }}
+            style={styles.createButton}
+          >
+            <PlusIcon size={16} strokeWidth={2.6} color={color.surface} />
+            <Text style={type(15, 'semibold', { color: color.surface })}>
+              {t('myPlans.create')}
+            </Text>
+          </Pressable>
+        </View>
 
-      <View accessibilityRole="tablist" style={styles.segments}>
-        {TABS.map((key) => {
-          const selected = tab === key;
-          return (
-            <Pressable
-              key={key}
-              accessibilityRole="tab"
-              aria-selected={selected}
-              onPress={() => {
-                setTab(key);
-              }}
-              style={[styles.segment, selected && styles.segmentSelected]}
-            >
-              <Text
-                style={type(15, selected ? 'semibold' : 'medium', {
-                  color: selected ? color.ink : color.secondary,
-                })}
+        <View accessibilityRole="tablist" style={styles.segments}>
+          {TABS.map((key) => {
+            const selected = tab === key;
+            return (
+              <Pressable
+                key={key}
+                accessibilityRole="tab"
+                aria-selected={selected}
+                onPress={() => {
+                  setTab(key);
+                }}
+                style={[styles.segment, selected && styles.segmentSelected]}
               >
-                {t(`myPlans.tabs.${key}`)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+                <Text
+                  style={type(15, selected ? 'semibold' : 'medium', {
+                    color: selected ? color.ink : color.secondary,
+                  })}
+                >
+                  {t(`myPlans.tabs.${key}`)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
-      {renderContent()}
-    </ScrollView>
+        {renderContent()}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
-  content: { paddingHorizontal: 20, gap: 18 },
+  content: { paddingHorizontal: 24, paddingTop: 4, gap: 18 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
