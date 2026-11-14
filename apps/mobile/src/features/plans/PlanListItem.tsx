@@ -37,8 +37,15 @@ export function PlanListItem({
       <View style={styles.top}>
         <DateTile iso={plan.startsAt} timeZone={plan.timezone} />
         <View style={styles.text}>
-          <Text style={type(17, 'semibold', { tracking: -0.3 })}>{plan.title}</Text>
-          <Text style={type(15, 'regular', { color: color.secondary })}>{when}</Text>
+          <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold', { tracking: -0.3 })}>
+            {plan.title}
+          </Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
+            {when}
+          </Text>
         </View>
         <ChevronRightIcon size={16} strokeWidth={2.4} color={color.borderControl} />
       </View>
@@ -51,7 +58,10 @@ export function PlanListItem({
                 key={chip.label}
                 style={[styles.pill, { backgroundColor: TONE[chip.tone].background }]}
               >
-                <Text style={type(14, 'semibold', { color: TONE[chip.tone].text })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(14, 'semibold', { color: TONE[chip.tone].text })}
+                >
                   {chip.label}
                 </Text>
               </View>

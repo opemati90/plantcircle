@@ -45,12 +45,16 @@ export default function ReportDoneScreen() {
           <CheckIcon size={30} strokeWidth={2.6} color={color.brand} />
         </View>
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={[type(30, 'bold', { tracking: -0.9, leading: 1.1 }), styles.centre]}
         >
           {t('safety.doneTitle')}
         </Text>
-        <Text style={[type(17, 'medium', { color: color.secondary }), styles.centre]}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={[type(17, 'medium', { color: color.secondary }), styles.centre]}
+        >
           {t('safety.caseRef', { ref: caseRef ?? '' })}
         </Text>
 
@@ -59,8 +63,13 @@ export default function ReportDoneScreen() {
             <View key={fact.title} style={styles.fact}>
               <View style={styles.factDot} />
               <View style={styles.factText}>
-                <Text style={type(16, 'semibold')}>{fact.title}</Text>
-                <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+                <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
+                  {fact.title}
+                </Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+                >
                   {fact.note}
                 </Text>
               </View>
@@ -86,13 +95,20 @@ export default function ReportDoneScreen() {
                 );
               }}
             />
-            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+            >
               {blocked
                 ? t('safety.blockedNow', { name: name || t('safety.thisPerson') })
                 : t('safety.alsoBlockNote')}
             </Text>
             {block.isError ? (
-              <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(14, 'regular', { color: color.danger })}
+              >
                 {t('safety.error')}
               </Text>
             ) : null}

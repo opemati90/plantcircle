@@ -32,12 +32,16 @@ export default function PrivacyScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('profile.privacyTitle')}
         </Text>
-        <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('profile.privacyLead')}
         </Text>
         <View style={styles.card}>
@@ -49,11 +53,18 @@ export default function PrivacyScreen() {
               setVisible.mutate(next);
             }}
           />
-          <Text style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}
+          >
             {t('people.visibleLead')}
           </Text>
           {setVisible.isError ? (
-            <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(15, 'regular', { color: color.danger })}
+            >
               {t('people.error')}
             </Text>
           ) : null}
@@ -66,8 +77,13 @@ export default function PrivacyScreen() {
           style={styles.linkRow}
         >
           <View style={styles.linkText}>
-            <Text style={type(17, 'semibold')}>{t('account.privacyChoicesTitle')}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary })}>
+            <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+              {t('account.privacyChoicesTitle')}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
               {t('account.privacyChoicesRow')}
             </Text>
           </View>
@@ -81,8 +97,13 @@ export default function PrivacyScreen() {
           style={styles.linkRow}
         >
           <View style={styles.linkText}>
-            <Text style={type(17, 'semibold')}>{t('safety.blockedTitle')}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary })}>
+            <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+              {t('safety.blockedTitle')}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
               {t('safety.blockedRowLead')}
             </Text>
           </View>

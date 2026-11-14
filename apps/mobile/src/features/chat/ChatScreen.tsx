@@ -216,6 +216,7 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
         </Pressable>
         <View style={styles.barText}>
           <Text
+            maxFontSizeMultiplier={2.0}
             numberOfLines={1}
             accessibilityRole="header"
             style={type(17, 'semibold', { tracking: -0.3 })}
@@ -227,7 +228,11 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
                 : t('direct.messageButton')}
           </Text>
           {lead ? (
-            <Text numberOfLines={1} style={type(13, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              numberOfLines={1}
+              style={type(13, 'regular', { color: color.secondary })}
+            >
               {lead}
             </Text>
           ) : null}
@@ -240,7 +245,9 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
           }}
           style={styles.circle}
         >
-          <Text style={type(20, 'bold', { color: color.ink })}>···</Text>
+          <Text maxFontSizeMultiplier={1.6} style={type(20, 'bold', { color: color.ink })}>
+            ···
+          </Text>
         </Pressable>
       </View>
 
@@ -307,6 +314,7 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
                 <View style={styles.stack}>
                   {mine ? null : (
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={[
                         type(13, 'semibold', { color: color.secondary }),
                         styles.senderName,
@@ -328,6 +336,7 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
                     style={[styles.bubble, mine && styles.mine]}
                   >
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={type(16, 'regular', {
                         leading: 1.45,
                         color: mine ? '#FFFFFF' : color.ink,
@@ -337,7 +346,10 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
                     </Text>
                   </Pressable>
                   <View style={[styles.meta, mine && styles.metaMine]}>
-                    <Text style={type(12, 'regular', { color: color.secondary })}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      style={type(12, 'regular', { color: color.secondary })}
+                    >
                       {localTime(message.createdAt)}
                     </Text>
                     {mine ? null : (
@@ -350,7 +362,10 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
                         hitSlop={10}
                         style={styles.reportLink}
                       >
-                        <Text style={type(12, 'semibold', { color: color.secondary })}>
+                        <Text
+                          maxFontSizeMultiplier={2.0}
+                          style={type(12, 'semibold', { color: color.secondary })}
+                        >
                           {t('safety.reportShort')}
                         </Text>
                       </Pressable>
@@ -422,7 +437,11 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
                 }}
               />
               {block.isError ? (
-                <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  role="alert"
+                  style={type(14, 'regular', { color: color.danger })}
+                >
                   {t('safety.error')}
                 </Text>
               ) : null}
@@ -430,7 +449,11 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
           ) : null}
           {settings.isError ? (
             <>
-              <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(14, 'regular', { color: color.danger })}
+              >
                 {t('direct.prefsError')}
               </Text>
               <Button
@@ -441,7 +464,11 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
             </>
           ) : null}
           {prefs.mute.isError || prefs.pin.isError ? (
-            <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(14, 'regular', { color: color.danger })}
+            >
               {t('direct.prefsError')}
             </Text>
           ) : null}
@@ -450,16 +477,25 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
 
       <View style={[styles.composer, { paddingBottom: 12 + insets.bottom }]}>
         {tooLong ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(14, 'regular', { color: color.danger })}
+          >
             {t('chat.tooLong')}
           </Text>
         ) : sendError ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(14, 'regular', { color: color.danger })}
+          >
             {sendError}
           </Text>
         ) : null}
         <View style={styles.row}>
           <TextInput
+            maxFontSizeMultiplier={2.0}
             accessibilityLabel={t('chat.placeholder')}
             placeholder={t('chat.placeholder')}
             placeholderTextColor={color.secondary}
@@ -512,25 +548,44 @@ function DirectRequest({
     <View style={styles.screen}>
       {back}
       <View style={[styles.header, { paddingTop: 8 }]}>
-        <Text accessibilityRole="header" style={type(24, 'bold', { tracking: -0.6 })}>
+        <Text
+          maxFontSizeMultiplier={1.4}
+          accessibilityRole="header"
+          style={type(24, 'bold', { tracking: -0.6 })}
+        >
           {t('direct.messageButton')}
         </Text>
-        <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('direct.requestLead')}
         </Text>
       </View>
       <View style={[styles.composer, { paddingBottom: 12 + insets.bottom }]}>
         {answered === 'pending' || answered === 'declined' ? (
-          <Text role="status" style={type(15, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="status"
+            style={type(15, 'regular', { color: color.secondary })}
+          >
             {t('direct.requestSent')}
           </Text>
         ) : null}
         {tooLong ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(14, 'regular', { color: color.danger })}
+          >
             {t('chat.tooLong')}
           </Text>
         ) : request.isError ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(14, 'regular', { color: color.danger })}
+          >
             {errorCode(request.error) === 'rate_limited'
               ? t('direct.requestLimit')
               : t('chat.error')}
@@ -538,6 +593,7 @@ function DirectRequest({
         ) : null}
         <View style={styles.row}>
           <TextInput
+            maxFontSizeMultiplier={2.0}
             accessibilityLabel={t('chat.placeholder')}
             placeholder={t('chat.placeholder')}
             placeholderTextColor={color.secondary}

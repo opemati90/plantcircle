@@ -28,7 +28,7 @@ test('a joined Plan appears under Going, and a waitlisted one shows its place in
   await page.goto('/home');
   await expect(page.getByRole('heading', { name: 'Your Plans' })).toBeVisible();
   await expect(
-    page.getByRole('link', { name: 'West African Cooking Night Sat 17:00 · Neukölln Going' }),
+    page.getByRole('link', { name: /^West African Cooking Night Sat 17:00 · Neukölln Going/ }),
   ).toBeVisible();
   await page.getByRole('link', { name: 'See all, My Plans' }).click();
   await expect(page).toHaveURL(/my-plans/);

@@ -161,12 +161,16 @@ export default function TermsScreen() {
         {updates.length > 0 ? (
           <>
             <Text
+              maxFontSizeMultiplier={1.4}
               accessibilityRole="header"
               style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
             >
               {t('legal.updateTitle')}
             </Text>
-            <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+            >
               {updates.length === 1 && updates[0]
                 ? t('legal.updateLead', {
                     count: changeCount,
@@ -178,6 +182,7 @@ export default function TermsScreen() {
               <View key={p.policy} style={styles.policy}>
                 {updates.length > 1 ? (
                   <Text
+                    maxFontSizeMultiplier={2.0}
                     accessibilityRole="header"
                     style={type(13, 'semibold', { color: color.secondary, tracking: 0.5 })}
                   >
@@ -193,8 +198,11 @@ export default function TermsScreen() {
                       key={`${p.policy}-${index}`}
                       style={[styles.row, index > 0 && styles.rowBorder]}
                     >
-                      <Text style={type(16, 'semibold')}>{item.title}</Text>
+                      <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
+                        {item.title}
+                      </Text>
                       <Text
+                        maxFontSizeMultiplier={2.0}
                         style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
                       >
                         {item.note}
@@ -213,13 +221,20 @@ export default function TermsScreen() {
                 }}
                 style={styles.link}
               >
-                <Text style={type(15, 'semibold', { color: color.brand })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(15, 'semibold', { color: color.brand })}
+                >
                   {t('legal.readFull', { name: t(`legal.policy.${p.policy}`) })}
                 </Text>
               </Pressable>
             ))}
             {accept.isError ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(15, 'regular', { color: color.danger })}
+              >
                 {t('legal.error')}
               </Text>
             ) : null}
@@ -261,7 +276,11 @@ export default function TermsScreen() {
                 />
               ) : null}
               {logout.isError ? (
-                <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  role="alert"
+                  style={type(14, 'regular', { color: color.danger })}
+                >
                   {t('auth.signOutFailed')}
                 </Text>
               ) : null}
@@ -270,12 +289,16 @@ export default function TermsScreen() {
         ) : (
           <>
             <Text
+              maxFontSizeMultiplier={1.4}
               accessibilityRole="header"
               style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
             >
               {t('profile.terms')}
             </Text>
-            <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+            >
               {t('legal.currentLead')}
             </Text>
             <View style={styles.card}>
@@ -288,10 +311,13 @@ export default function TermsScreen() {
                   }}
                   style={[styles.docRow, index > 0 && styles.rowBorder]}
                 >
-                  <Text style={[type(17, 'semibold'), styles.grow]}>
+                  <Text maxFontSizeMultiplier={2.0} style={[type(17, 'semibold'), styles.grow]}>
                     {t(`legal.policy.${policy}`)}
                   </Text>
-                  <Text style={type(14, 'regular', { color: color.secondary })}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(14, 'regular', { color: color.secondary })}
+                  >
                     {t('legal.open')}
                   </Text>
                 </Pressable>
@@ -300,7 +326,11 @@ export default function TermsScreen() {
           </>
         )}
         {linkFailed ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(14, 'regular', { color: color.danger })}
+          >
             {t('account.linkError', { url: linkFailed })}
           </Text>
         ) : null}

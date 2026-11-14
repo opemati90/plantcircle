@@ -181,10 +181,17 @@ export default function ConsoleScreen() {
       >
         <View style={styles.head}>
           <View style={styles.headText}>
-            <Text accessibilityRole="header" style={type(28, 'bold', { tracking: -0.9 })}>
+            <Text
+              maxFontSizeMultiplier={1.4}
+              accessibilityRole="header"
+              style={type(28, 'bold', { tracking: -0.9 })}
+            >
               {t('safety.console.title')}
             </Text>
-            <Text style={type(14, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
               {t('safety.console.signedInAs', { name: profile.displayName })}
             </Text>
           </View>
@@ -201,7 +208,10 @@ export default function ConsoleScreen() {
                   }}
                   style={[styles.tab, active && styles.tabActive]}
                 >
-                  <Text style={type(15, 'semibold', { color: active ? '#FFFFFF' : color.ink })}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(15, 'semibold', { color: active ? '#FFFFFF' : color.ink })}
+                  >
                     {item.label}
                   </Text>
                 </Pressable>
@@ -213,7 +223,11 @@ export default function ConsoleScreen() {
         {tab === 'queue' ? (
           <View style={[styles.columns, wide && styles.columnsWide]}>
             <View style={[styles.column, wide && styles.queueColumn]}>
-              <Text accessibilityRole="header" style={type(17, 'semibold')}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                accessibilityRole="header"
+                style={type(17, 'semibold')}
+              >
                 {t('safety.console.queueLead')}
               </Text>
               {queue.isPending ? (
@@ -251,6 +265,7 @@ export default function ConsoleScreen() {
                     >
                       <View style={styles.caseTop}>
                         <Text
+                          maxFontSizeMultiplier={2.0}
                           style={[
                             type(12, 'bold', { tracking: 0.4 }),
                             styles.pill,
@@ -259,14 +274,19 @@ export default function ConsoleScreen() {
                         >
                           {t(`safety.severity.${row.severity}`).toUpperCase()}
                         </Text>
-                        <Text style={type(13, 'regular', { color: color.secondary })}>
+                        <Text
+                          maxFontSizeMultiplier={2.0}
+                          style={type(13, 'regular', { color: color.secondary })}
+                        >
                           {shortWhen(row.createdAt, 'UTC')}
                         </Text>
                       </View>
                       <Text
+                        maxFontSizeMultiplier={2.0}
                         style={type(16, 'semibold')}
                       >{`${row.caseRef} · ${t(`safety.category.${row.category}`)}`}</Text>
                       <Text
+                        maxFontSizeMultiplier={2.0}
                         numberOfLines={1}
                         style={type(14, 'regular', { color: color.secondary })}
                       >
@@ -300,30 +320,44 @@ export default function ConsoleScreen() {
                 />
               ) : (
                 <View style={styles.caseBody}>
-                  <Text accessibilityRole="header" style={type(22, 'bold', { tracking: -0.6 })}>
+                  <Text
+                    maxFontSizeMultiplier={1.6}
+                    accessibilityRole="header"
+                    style={type(22, 'bold', { tracking: -0.6 })}
+                  >
                     {`${current.data.caseRef} · ${t(`safety.category.${current.data.category}`)}`}
                   </Text>
-                  <Text style={type(14, 'regular', { color: color.secondary })}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(14, 'regular', { color: color.secondary })}
+                  >
                     {t('safety.console.caseMeta', {
                       severity: t(`safety.severity.${current.data.severity}`),
                       due: shortWhen(current.data.slaDueAt, 'UTC'),
                       status: current.data.status,
                     })}
                   </Text>
-                  <Text style={type(15, 'medium')}>
+                  <Text maxFontSizeMultiplier={2.0} style={type(15, 'medium')}>
                     {`${t(`safety.target.${current.data.targetType}`)}: ${current.data.targetLabel ?? current.data.targetId}${current.data.targetUserName ? ` (${current.data.targetUserName})` : ''}`}
                   </Text>
 
                   <View style={styles.block}>
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
                     >
                       {t('safety.console.reportersAccount').toUpperCase()}
                     </Text>
-                    <Text style={type(16, 'regular', { leading: 1.45 })}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      style={type(16, 'regular', { leading: 1.45 })}
+                    >
                       {current.data.details}
                     </Text>
-                    <Text style={type(13, 'regular', { color: color.secondary })}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      style={type(13, 'regular', { color: color.secondary })}
+                    >
                       {t('safety.console.reporterHidden', {
                         count: current.data.evidenceCount,
                       })}
@@ -332,17 +366,22 @@ export default function ConsoleScreen() {
 
                   <View style={styles.block}>
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
                     >
                       {t('safety.console.history').toUpperCase()}
                     </Text>
                     {current.data.history.length === 0 ? (
-                      <Text style={type(14, 'regular', { color: color.secondary })}>
+                      <Text
+                        maxFontSizeMultiplier={2.0}
+                        style={type(14, 'regular', { color: color.secondary })}
+                      >
                         {t('safety.console.historyEmpty')}
                       </Text>
                     ) : (
                       current.data.history.map((h, i) => (
                         <Text
+                          maxFontSizeMultiplier={2.0}
                           key={i}
                           style={type(14, 'regular', { leading: 1.45 })}
                         >{`${shortWhen(h.when, 'UTC')} · ${h.what}`}</Text>
@@ -353,14 +392,19 @@ export default function ConsoleScreen() {
                   {current.data.targetType === 'message' ? (
                     <View style={styles.block}>
                       <Text
+                        maxFontSizeMultiplier={2.0}
                         style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
                       >
                         {t('safety.console.messages').toUpperCase()}
                       </Text>
-                      <Text style={type(14, 'regular', { color: color.secondary })}>
+                      <Text
+                        maxFontSizeMultiplier={2.0}
+                        style={type(14, 'regular', { color: color.secondary })}
+                      >
                         {t('safety.console.messagesNeedReason')}
                       </Text>
                       <TextInput
+                        maxFontSizeMultiplier={2.0}
                         accessibilityLabel={t('safety.console.viewReason')}
                         placeholder={t('safety.console.viewReason')}
                         placeholderTextColor={color.secondary}
@@ -378,12 +422,17 @@ export default function ConsoleScreen() {
                         }}
                       />
                       {view.isError ? (
-                        <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                        <Text
+                          maxFontSizeMultiplier={2.0}
+                          role="alert"
+                          style={type(14, 'regular', { color: color.danger })}
+                        >
                           {t('safety.error')}
                         </Text>
                       ) : null}
                       {view.data?.map((m) => (
                         <Text
+                          maxFontSizeMultiplier={2.0}
                           key={m.id}
                           style={type(14, 'regular', { leading: 1.45 })}
                         >{`${m.senderName}: ${m.body}`}</Text>
@@ -394,23 +443,29 @@ export default function ConsoleScreen() {
                   {current.data.actions.length > 0 ? (
                     <View style={styles.block}>
                       <Text
+                        maxFontSizeMultiplier={2.0}
                         style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
                       >
                         {t('safety.console.decisionApplied').toUpperCase()}
                       </Text>
                       {current.data.actions.map((a) => (
                         <Text
+                          maxFontSizeMultiplier={2.0}
                           key={a.id}
                           style={type(14, 'regular', { leading: 1.45 })}
                         >{`${t(`safety.action.${a.action}`)} · ${a.reason}`}</Text>
                       ))}
-                      <Text style={type(13, 'regular', { color: color.secondary })}>
+                      <Text
+                        maxFontSizeMultiplier={2.0}
+                        style={type(13, 'regular', { color: color.secondary })}
+                      >
                         {t('safety.console.memberTold')}
                       </Text>
                     </View>
                   ) : (
                     <View style={styles.block}>
                       <Text
+                        maxFontSizeMultiplier={2.0}
                         style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
                       >
                         {t('safety.console.decision').toUpperCase()}
@@ -433,6 +488,7 @@ export default function ConsoleScreen() {
                               style={[styles.chip, on && styles.chipOn]}
                             >
                               <Text
+                                maxFontSizeMultiplier={2.0}
                                 style={type(14, 'semibold', {
                                   color: on ? '#FFFFFF' : color.ink,
                                 })}
@@ -445,6 +501,7 @@ export default function ConsoleScreen() {
                       </View>
                       {action === 'suspend' || action === 'freeze_messages' ? (
                         <TextInput
+                          maxFontSizeMultiplier={2.0}
                           accessibilityLabel={t('safety.console.days')}
                           value={days}
                           onChangeText={setDays}
@@ -453,6 +510,7 @@ export default function ConsoleScreen() {
                         />
                       ) : null}
                       <TextInput
+                        maxFontSizeMultiplier={2.0}
                         accessibilityLabel={t('safety.console.rule')}
                         placeholder={t('safety.console.rule')}
                         placeholderTextColor={color.secondary}
@@ -461,6 +519,7 @@ export default function ConsoleScreen() {
                         style={[styles.field, type(15)]}
                       />
                       <TextInput
+                        maxFontSizeMultiplier={2.0}
                         accessibilityLabel={t('safety.console.reason')}
                         placeholder={t('safety.console.reason')}
                         placeholderTextColor={color.secondary}
@@ -475,7 +534,11 @@ export default function ConsoleScreen() {
                         ]}
                       />
                       {decide.isError ? (
-                        <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                        <Text
+                          maxFontSizeMultiplier={2.0}
+                          role="alert"
+                          style={type(14, 'regular', { color: color.danger })}
+                        >
                           {t('safety.error')}
                         </Text>
                       ) : null}
@@ -497,7 +560,10 @@ export default function ConsoleScreen() {
 
         {tab === 'appeals' ? (
           <View style={styles.column}>
-            <Text style={type(14, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
               {t('safety.console.appealsLead')}
             </Text>
             {appeals.isPending ? (
@@ -523,18 +589,25 @@ export default function ConsoleScreen() {
               appeals.data.map((a) => (
                 <View key={a.id} style={styles.caseRow}>
                   <Text
+                    maxFontSizeMultiplier={2.0}
                     style={type(16, 'semibold')}
                   >{`${a.caseRef ?? t('safety.console.noCase')} · ${t(`safety.action.${a.action}`)} · ${a.memberName ?? ''}`}</Text>
-                  <Text style={type(13, 'regular', { color: color.secondary })}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(13, 'regular', { color: color.secondary })}
+                  >
                     {t('safety.console.originalBy', { name: a.originalActorName ?? '' })}
                   </Text>
                   <Text
+                    maxFontSizeMultiplier={2.0}
                     style={type(14, 'regular', { leading: 1.45 })}
                   >{`${t('safety.console.originalReason')}: ${a.originalReason}`}</Text>
                   <Text
+                    maxFontSizeMultiplier={2.0}
                     style={type(14, 'regular', { leading: 1.45 })}
                   >{`${t('safety.console.memberAppeal')}: “${a.statement}”`}</Text>
                   <TextInput
+                    maxFontSizeMultiplier={2.0}
                     accessibilityLabel={t('safety.console.reason')}
                     placeholder={t('safety.console.reason')}
                     placeholderTextColor={color.secondary}
@@ -572,7 +645,11 @@ export default function ConsoleScreen() {
                     />
                   </View>
                   {appealDecide.isError ? (
-                    <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      role="alert"
+                      style={type(14, 'regular', { color: color.danger })}
+                    >
                       {t('safety.error')}
                     </Text>
                   ) : null}
@@ -584,7 +661,10 @@ export default function ConsoleScreen() {
 
         {tab === 'cities' ? (
           <View style={styles.column}>
-            <Text style={type(14, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
               {t('safety.console.citiesLead')}
             </Text>
             {cities.isPending ? (
@@ -605,7 +685,11 @@ export default function ConsoleScreen() {
               <>
                 {(['from', 'into'] as const).map((side) => (
                   <View key={side} style={styles.column}>
-                    <Text accessibilityRole="header" style={type(15, 'semibold')}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      accessibilityRole="header"
+                      style={type(15, 'semibold')}
+                    >
                       {side === 'from'
                         ? t('safety.console.mergeFrom')
                         : t('safety.console.mergeInto')}
@@ -633,9 +717,13 @@ export default function ConsoleScreen() {
                             style={[styles.caseRow, selected && styles.caseRowActive]}
                           >
                             <Text
+                              maxFontSizeMultiplier={2.0}
                               style={type(15, 'semibold')}
                             >{`${c.name} · ${c.countryCode}`}</Text>
-                            <Text style={type(13, 'regular', { color: color.secondary })}>
+                            <Text
+                              maxFontSizeMultiplier={2.0}
+                              style={type(13, 'regular', { color: color.secondary })}
+                            >
                               {t('safety.console.cityCounts', {
                                 members: c.members,
                                 plans: c.plans,
@@ -649,6 +737,7 @@ export default function ConsoleScreen() {
                   </View>
                 ))}
                 <TextInput
+                  maxFontSizeMultiplier={2.0}
                   accessibilityLabel={t('safety.console.mergeReason')}
                   placeholder={t('safety.console.mergeReason')}
                   placeholderTextColor={color.secondary}
@@ -684,12 +773,20 @@ export default function ConsoleScreen() {
                   }}
                 />
                 {cityMerge.isSuccess ? (
-                  <Text role="status" style={type(14, 'regular', { color: color.brand })}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    role="status"
+                    style={type(14, 'regular', { color: color.brand })}
+                  >
                     {t('safety.console.mergeDone', cityMerge.data)}
                   </Text>
                 ) : null}
                 {cityMerge.isError ? (
-                  <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    role="alert"
+                    style={type(14, 'regular', { color: color.danger })}
+                  >
                     {t('errors.serverText')}
                   </Text>
                 ) : null}
@@ -700,7 +797,10 @@ export default function ConsoleScreen() {
 
         {tab === 'audit' ? (
           <View style={styles.column}>
-            <Text style={type(14, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
               {t('safety.console.auditLead')}
             </Text>
             {audit.isPending ? (
@@ -725,14 +825,21 @@ export default function ConsoleScreen() {
             ) : (
               audit.data.map((row) => (
                 <View key={row.id} style={styles.auditRow}>
-                  <Text style={type(13, 'regular', { color: color.secondary })}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(13, 'regular', { color: color.secondary })}
+                  >
                     {shortWhen(row.createdAt, 'UTC')}
                   </Text>
                   <Text
+                    maxFontSizeMultiplier={2.0}
                     style={type(15, 'semibold')}
                   >{`${row.actorName ?? row.actorRole} · ${row.action}`}</Text>
                   {row.reason ? (
-                    <Text style={type(14, 'regular', { color: color.secondary, leading: 1.4 })}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      style={type(14, 'regular', { color: color.secondary, leading: 1.4 })}
+                    >
                       {row.reason}
                     </Text>
                   ) : null}

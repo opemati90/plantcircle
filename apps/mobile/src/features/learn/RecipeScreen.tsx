@@ -67,15 +67,13 @@ export default function RecipeScreen() {
                 },
               })}
           title={missing ? t('learn.notFound') : t('errors.serverTitle')}
-          text={missing ? t('errors.notFoundText') : t('errors.serverText')}
+          text={missing ? t('learn.notFoundText') : t('errors.serverText')}
           actions={
             missing ? (
               <Button
-                variant="outline"
-                label={t('common.back')}
+                label={t('learn.notFoundAction')}
                 onPress={() => {
-                  if (router.canGoBack()) router.back();
-                  else router.replace('/explore');
+                  router.replace('/explore');
                 }}
               />
             ) : (
@@ -117,6 +115,7 @@ export default function RecipeScreen() {
           </IconButton>
           <View style={styles.heroText}>
             <Text
+              maxFontSizeMultiplier={2.0}
               style={type(13, 'semibold', { color: 'rgba(255,255,255,0.8)', tracking: 0.6 })}
             >
               {data.cuisine
@@ -124,12 +123,16 @@ export default function RecipeScreen() {
                 : t('learn.eyebrow')}
             </Text>
             <Text
+              maxFontSizeMultiplier={1.4}
               accessibilityRole="header"
               style={type(34, 'bold', { color: '#FFFFFF', tracking: -1.2, leading: 1.02 })}
             >
               {data.title}
             </Text>
-            <Text style={type(16, 'regular', { color: 'rgba(255,255,255,0.88)' })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(16, 'regular', { color: 'rgba(255,255,255,0.88)' })}
+            >
               {t('learn.byline', {
                 name: data.authorName ?? t('circles.requests.someone'),
                 circle: data.circleName,
@@ -142,13 +145,13 @@ export default function RecipeScreen() {
           <View style={styles.chips}>
             {data.minutes !== null ? (
               <View style={styles.chip}>
-                <Text style={type(14, 'semibold')}>
+                <Text maxFontSizeMultiplier={2.0} style={type(14, 'semibold')}>
                   {t('learn.minutes', { minutes: data.minutes })}
                 </Text>
               </View>
             ) : null}
             <View style={styles.chip}>
-              <Text style={type(14, 'semibold')}>
+              <Text maxFontSizeMultiplier={2.0} style={type(14, 'semibold')}>
                 {t('learn.serves', { servings: data.serves })}
               </Text>
             </View>
@@ -195,25 +198,36 @@ export default function RecipeScreen() {
               ) : null}
             </View>
           ) : !session ? (
-            <Text style={type(14, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
               {t('hosting.votes', { count: data.votes })}
             </Text>
           ) : null}
           {vote.isError || follow.isError ? (
-            <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(14, 'regular', { color: color.danger })}
+            >
               {errorCode(vote.error ?? follow.error) === 'own_recipe'
                 ? t('hosting.errorOwnRecipe')
                 : t('hosting.errorAction')}
             </Text>
           ) : null}
           {data.intro ? (
-            <Text style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}
+            >
               {data.intro}
             </Text>
           ) : null}
 
           <View style={styles.allergens}>
             <Text
+              maxFontSizeMultiplier={2.0}
               style={type(15, 'semibold', {
                 color: data.allergensConfirmed ? color.ink : color.danger,
               })}
@@ -226,7 +240,11 @@ export default function RecipeScreen() {
 
           <View style={styles.section}>
             <View style={styles.sectionHead}>
-              <Text accessibilityRole="header" style={type(20, 'semibold', { tracking: -0.4 })}>
+              <Text
+                maxFontSizeMultiplier={1.6}
+                accessibilityRole="header"
+                style={type(20, 'semibold', { tracking: -0.4 })}
+              >
                 {t('learn.ingredients')}
               </Text>
               <Stepper
@@ -252,11 +270,17 @@ export default function RecipeScreen() {
                   key={`${ingredient.name}-${ingredient.unit ?? ''}`}
                   style={styles.ingredient}
                 >
-                  <Text style={[type(17, 'regular'), styles.ingredientName]}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={[type(17, 'regular'), styles.ingredientName]}
+                  >
                     {ingredient.name}
                   </Text>
                   {quantity ? (
-                    <Text style={type(17, 'regular', { color: color.secondary })}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      style={type(17, 'regular', { color: color.secondary })}
+                    >
                       {quantity}
                     </Text>
                   ) : null}
@@ -266,13 +290,25 @@ export default function RecipeScreen() {
           </View>
 
           <View style={styles.section}>
-            <Text accessibilityRole="header" style={type(20, 'semibold', { tracking: -0.4 })}>
+            <Text
+              maxFontSizeMultiplier={1.6}
+              accessibilityRole="header"
+              style={type(20, 'semibold', { tracking: -0.4 })}
+            >
               {t('learn.method')}
             </Text>
             {data.steps.map((step, index) => (
               <View key={`${index}-${step.slice(0, 12)}`} style={styles.step}>
-                <Text style={type(15, 'semibold', { color: color.brand })}>{index + 1}</Text>
-                <Text style={[type(17, 'regular', { leading: 1.5 }), styles.stepText]}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(15, 'semibold', { color: color.brand })}
+                >
+                  {index + 1}
+                </Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={[type(17, 'regular', { leading: 1.5 }), styles.stepText]}
+                >
                   {step}
                 </Text>
               </View>

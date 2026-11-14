@@ -11,6 +11,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { Button, IconButton } from '../../components/Button';
 import {
@@ -77,8 +78,13 @@ function Fact({
     <View style={styles.fact}>
       {lead}
       <View style={styles.factText}>
-        <Text style={type(17, 'semibold', { tracking: -0.3 })}>{title}</Text>
-        <Text style={type(15, 'regular', { color: color.secondary, leading: 1.45 })}>
+        <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold', { tracking: -0.3 })}>
+          {title}
+        </Text>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary, leading: 1.45 })}
+        >
           {note}
         </Text>
         {children}
@@ -91,6 +97,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <View style={styles.section}>
       <Text
+        maxFontSizeMultiplier={1.6}
         accessibilityRole="header"
         aria-level={2}
         style={type(20, 'bold', { tracking: -0.5 })}
@@ -115,6 +122,9 @@ function PlanView({
 }) {
   const { plan, rsvp, bringItems, address, meetingUrl } = detail;
   const isGoing = rsvp === 'going';
+  // With large type the price and the buttons no longer fit side by side: the bar stacks.
+  const { fontScale } = useWindowDimensions();
+  const stacked = fontScale >= 1.3;
   const [friendState, setFriendState] = useState<'idle' | 'copied' | 'failed'>('idle');
   // A guest brings a friend by the Plan's link: the web RSVP needs no app (design note §4).
   const bringFriend = async (planTitle: string, planId: string) => {
@@ -269,18 +279,20 @@ function PlanView({
           />
           <View style={styles.heroText}>
             <Text
+              maxFontSizeMultiplier={2.0}
               style={[type(13, 'semibold', { color: '#FFFFFF', tracking: 0.6 }), styles.upper]}
             >
               {categoryLabel(t, plan)}
               {full ? ` · ${t('plan.full')}` : ''}
             </Text>
             <Text
+              maxFontSizeMultiplier={1.4}
               accessibilityRole="header"
               style={type(34, 'bold', { color: '#FFFFFF', tracking: -1.2, leading: 1.02 })}
             >
               {plan.title}
             </Text>
-            <Text style={type(16, 'regular', { color: '#FFFFFF' })}>
+            <Text maxFontSizeMultiplier={2.0} style={type(16, 'regular', { color: '#FFFFFF' })}>
               {plan.venueName ?? plan.areaName}
             </Text>
           </View>
@@ -378,14 +390,20 @@ function PlanView({
 
           {full && !isGoing ? (
             <Section title={t('plan.waitlistTitle')}>
-              <Text style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}
+              >
                 {t('plan.waitlistText')}
               </Text>
             </Section>
           ) : null}
 
           <Section title={t('plan.about')}>
-            <Text style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}
+            >
               {plan.description}
             </Text>
           </Section>
@@ -409,8 +427,13 @@ function PlanView({
                   return (
                     <View key={item.id} style={styles.bringItem}>
                       <View style={styles.bringText}>
-                        <Text style={type(17, 'medium')}>{item.label}</Text>
-                        <Text style={type(14, 'regular', { color: color.secondary })}>
+                        <Text maxFontSizeMultiplier={2.0} style={type(17, 'medium')}>
+                          {item.label}
+                        </Text>
+                        <Text
+                          maxFontSizeMultiplier={2.0}
+                          style={type(14, 'regular', { color: color.secondary })}
+                        >
                           {note}
                         </Text>
                       </View>
@@ -425,7 +448,10 @@ function PlanView({
                           }}
                           style={styles.bringButton}
                         >
-                          <Text style={type(15, 'semibold', { color: '#FFFFFF' })}>
+                          <Text
+                            maxFontSizeMultiplier={2.0}
+                            style={type(15, 'semibold', { color: '#FFFFFF' })}
+                          >
                             {t('plan.withdrawBring')}
                           </Text>
                         </Pressable>
@@ -443,7 +469,10 @@ function PlanView({
                           }}
                           style={styles.bringButton}
                         >
-                          <Text style={type(15, 'semibold', { color: '#FFFFFF' })}>
+                          <Text
+                            maxFontSizeMultiplier={2.0}
+                            style={type(15, 'semibold', { color: '#FFFFFF' })}
+                          >
                             {t('plan.illBring')}
                           </Text>
                         </Pressable>
@@ -460,16 +489,32 @@ function PlanView({
           <Section title={t('plan.goodToKnow')}>
             <View style={styles.notes}>
               {isGoing ? (
-                <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
-                  <Text style={styles.strong}>{t('offline.savedOnPhone')}</Text>{' '}
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}
+                >
+                  <Text maxFontSizeMultiplier={2.0} style={styles.strong}>
+                    {t('offline.savedOnPhone')}
+                  </Text>{' '}
                   {t('offline.savedOnPhoneNote')}
                 </Text>
               ) : null}
-              <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
-                <Text style={styles.strong}>{t('plan.allergens')}</Text> {allergenNote(t, plan)}
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}
+              >
+                <Text maxFontSizeMultiplier={2.0} style={styles.strong}>
+                  {t('plan.allergens')}
+                </Text>{' '}
+                {allergenNote(t, plan)}
               </Text>
-              <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
-                <Text style={styles.strong}>{t('plan.cantMakeIt')}</Text>{' '}
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}
+              >
+                <Text maxFontSizeMultiplier={2.0} style={styles.strong}>
+                  {t('plan.cantMakeIt')}
+                </Text>{' '}
                 {t('plan.cancelAnytime')}
               </Text>
             </View>
@@ -521,10 +566,15 @@ function PlanView({
       ) : null}
 
       {offline ? (
-        <FloatingActionBar style={styles.bar}>
+        <FloatingActionBar style={[styles.bar, stacked && styles.barStacked]}>
           <View style={styles.barText}>
-            <Text style={type(18, 'bold', { tracking: -0.3 })}>{t('offline.cantChange')}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary })}>
+            <Text maxFontSizeMultiplier={1.6} style={type(18, 'bold', { tracking: -0.3 })}>
+              {t('offline.cantChange')}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
               {t('offline.reconnect')}
             </Text>
           </View>
@@ -538,10 +588,13 @@ function PlanView({
         </FloatingActionBar>
       ) : null}
       {offline ? null : (
-        <FloatingActionBar style={styles.bar}>
+        <FloatingActionBar style={[styles.bar, stacked && styles.barStacked]}>
           <View style={styles.barText}>
-            <Text style={type(18, 'bold', { tracking: -0.3 })}>{barTitle}</Text>
+            <Text maxFontSizeMultiplier={1.6} style={type(18, 'bold', { tracking: -0.3 })}>
+              {barTitle}
+            </Text>
             <Text
+              maxFontSizeMultiplier={2.0}
               accessibilityLiveRegion="polite"
               style={type(14, 'regular', { color: color.secondary })}
             >
@@ -559,7 +612,10 @@ function PlanView({
                 }}
                 style={[styles.cta, styles.ctaGoing]}
               >
-                <Text style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}
+                >
                   {cancel.isPending ? t('plan.cancelling') : t('plan.youreGoing')}
                 </Text>
               </Pressable>
@@ -570,6 +626,7 @@ function PlanView({
               />
               {friendState !== 'idle' ? (
                 <Text
+                  maxFontSizeMultiplier={2.0}
                   role="status"
                   style={type(14, 'regular', {
                     color: friendState === 'copied' ? color.secondary : color.danger,
@@ -581,7 +638,11 @@ function PlanView({
                 </Text>
               ) : null}
               {friendState === 'failed' ? (
-                <Text selectable style={type(15, 'medium', { color: color.brand })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  selectable
+                  style={type(15, 'medium', { color: color.brand })}
+                >
                   {`https://plantcircle.app/p/${plan.id}`}
                 </Text>
               ) : null}
@@ -596,7 +657,10 @@ function PlanView({
               }}
               style={[styles.cta, styles.ctaGoing]}
             >
-              <Text style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}
+              >
                 {t('plan.onWaitlistCta')}
               </Text>
             </Pressable>
@@ -646,11 +710,12 @@ function PlanView({
           }}
           style={styles.sheetLink}
         >
-          <Text style={[type(15, 'semibold'), styles.underline]}>
+          <Text maxFontSizeMultiplier={2.0} style={[type(15, 'semibold'), styles.underline]}>
             {t('plan.sheet.useEmail')}
           </Text>
         </Pressable>
         <Text
+          maxFontSizeMultiplier={2.0}
           style={[type(13, 'regular', { color: color.secondary, leading: 1.5 }), styles.center]}
         >
           {t('plan.sheet.legal')}
@@ -880,6 +945,7 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 10,
   },
+  barStacked: { flexDirection: 'column', alignItems: 'stretch', paddingRight: 20 },
   barText: { flex: 1, gap: 1 },
   goingActions: { gap: 10 },
   cta: {

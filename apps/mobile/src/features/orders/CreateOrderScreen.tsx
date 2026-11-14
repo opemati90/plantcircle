@@ -290,10 +290,15 @@ export default function CreateOrderScreen() {
             }}
             style={[styles.day, isSelected && styles.selected]}
           >
-            <Text style={type(12, 'semibold', { color: color.secondary, tracking: 0.4 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(12, 'semibold', { color: color.secondary, tracking: 0.4 })}
+            >
               {weekday}
             </Text>
-            <Text style={type(21, 'bold', { tracking: -0.4 })}>{day.day}</Text>
+            <Text maxFontSizeMultiplier={1.6} style={type(21, 'bold', { tracking: -0.4 })}>
+              {day.day}
+            </Text>
           </Pressable>
         );
       })}
@@ -309,28 +314,39 @@ export default function CreateOrderScreen() {
       >
         {step === 'supplier' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
               {t('order.stepSupplier')}
             </Text>
-            <Text style={styles.lead}>{t('order.supplierLead')}</Text>
-            <Text style={styles.label}>{t('order.supplierName')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+              {t('order.supplierLead')}
+            </Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+              {t('order.supplierName')}
+            </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('order.supplierName')}
               value={supplierName}
               onChangeText={setSupplierName}
               maxLength={80}
               style={[styles.field, type(17)]}
             />
-            <Text style={styles.label}>{t('order.supplierArea')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+              {t('order.supplierArea')}
+            </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('order.supplierArea')}
               value={supplierArea}
               onChangeText={setSupplierArea}
               maxLength={80}
               style={[styles.field, type(17)]}
             />
-            <Text style={styles.label}>{t('create.titleLabel')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+              {t('create.titleLabel')}
+            </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('create.titleLabel')}
               value={title}
               onChangeText={setTitle}
@@ -342,13 +358,16 @@ export default function CreateOrderScreen() {
 
         {step === 'items' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
               {t('order.stepItems')}
             </Text>
-            <Text style={styles.lead}>{t('order.itemsLead')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+              {t('order.itemsLead')}
+            </Text>
             {items.map((row, i) => (
               <View key={row.id} style={styles.itemRow}>
                 <TextInput
+                  maxFontSizeMultiplier={2.0}
                   accessibilityLabel={`${t('order.itemName')} ${i + 1}`}
                   value={row.name}
                   onChangeText={(v) => {
@@ -360,6 +379,7 @@ export default function CreateOrderScreen() {
                   style={[styles.field, styles.grow, type(17)]}
                 />
                 <TextInput
+                  maxFontSizeMultiplier={2.0}
                   accessibilityLabel={`${t('order.itemTarget')} ${i + 1}`}
                   value={row.target}
                   onChangeText={(v) => {
@@ -373,6 +393,7 @@ export default function CreateOrderScreen() {
                   style={[styles.field, styles.small, type(17)]}
                 />
                 <TextInput
+                  maxFontSizeMultiplier={2.0}
                   accessibilityLabel={`${t('order.itemPrice')} ${i + 1}`}
                   value={row.price}
                   onChangeText={(v) => {
@@ -388,7 +409,11 @@ export default function CreateOrderScreen() {
               </View>
             ))}
             {touched.some((i) => !rowValid(i)) ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(15, 'regular', { color: color.danger })}
+              >
                 {t('order.itemInvalid')}
               </Text>
             ) : null}
@@ -415,10 +440,13 @@ export default function CreateOrderScreen() {
               ) : null}
             </View>
             <View style={styles.total}>
-              <Text style={type(15, 'semibold', { color: color.secondary })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'semibold', { color: color.secondary })}
+              >
                 {t('order.groupTarget')}
               </Text>
-              <Text style={type(17, 'semibold')}>
+              <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
                 {`${targetTotal} kg${estimateMinor > 0 ? ` · ≈ ${money(estimateMinor, 'EUR', language)}` : ''}`}
               </Text>
             </View>
@@ -427,23 +455,34 @@ export default function CreateOrderScreen() {
 
         {step === 'when' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
               {t('order.stepWhen')}
             </Text>
-            <Text style={styles.lead}>{t('order.whenLead')}</Text>
-            <Text style={styles.label}>{t('order.closesAt')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+              {t('order.whenLead')}
+            </Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+              {t('order.closesAt')}
+            </Text>
             {dayStrip(closeOffset, setCloseOffset, t('order.closesAt'))}
             {closesAt ? (
               <Text
+                maxFontSizeMultiplier={2.0}
                 style={styles.summary}
               >{`${longDate(closesAt, zone)} · ${time(closesAt, zone)}`}</Text>
             ) : null}
             {closesAt && !startsSoonEnough(closesAt, now) ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(15, 'regular', { color: color.danger })}
+              >
                 {t('create.tooSoon')}
               </Text>
             ) : null}
-            <Text style={styles.label}>{t('order.pickupStart')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+              {t('order.pickupStart')}
+            </Text>
             {dayStrip(pickupOffset, setPickupOffset, t('order.pickupStart'))}
             <View
               accessibilityRole="radiogroup"
@@ -464,6 +503,7 @@ export default function CreateOrderScreen() {
                     style={[styles.chip, isSelected && styles.selected]}
                   >
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={type(15, 'semibold', {
                         color: isSelected ? color.brand : color.ink,
                       })}
@@ -474,7 +514,9 @@ export default function CreateOrderScreen() {
                 );
               })}
             </View>
-            <Text style={styles.label}>{t('order.pickupLength')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+              {t('order.pickupLength')}
+            </Text>
             <View
               accessibilityRole="radiogroup"
               accessibilityLabel={t('order.pickupLength')}
@@ -492,26 +534,38 @@ export default function CreateOrderScreen() {
                     }}
                     style={[styles.pillItem, isSelected && styles.pillItemSelected]}
                   >
-                    <Text style={type(15, 'semibold')}>{t('learn.minutes', { minutes })}</Text>
+                    <Text maxFontSizeMultiplier={2.0} style={type(15, 'semibold')}>
+                      {t('learn.minutes', { minutes })}
+                    </Text>
                   </Pressable>
                 );
               })}
             </View>
             {pickup && closesAt && Date.parse(pickup.startsAt) < Date.parse(closesAt) ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(15, 'regular', { color: color.danger })}
+              >
                 {t('order.error')}
               </Text>
             ) : null}
-            <Text style={styles.label}>{t('order.pickupAddress')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+              {t('order.pickupAddress')}
+            </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('order.pickupAddress')}
               value={address}
               onChangeText={setAddress}
               maxLength={200}
               style={[styles.field, type(17)]}
             />
-            <Text style={styles.label}>{t('order.pickupNoteLabel')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+              {t('order.pickupNoteLabel')}
+            </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('order.pickupNoteLabel')}
               value={note}
               onChangeText={setNote}
@@ -523,30 +577,47 @@ export default function CreateOrderScreen() {
 
         {step === 'review' && closesAt && pickup ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
               {t('order.stepReview')}
             </Text>
-            <Text style={styles.lead}>{t('order.reviewLead')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+              {t('order.reviewLead')}
+            </Text>
             <View style={styles.card}>
-              <Text style={type(20, 'bold', { tracking: -0.5 })}>{title.trim()}</Text>
+              <Text maxFontSizeMultiplier={1.6} style={type(20, 'bold', { tracking: -0.5 })}>
+                {title.trim()}
+              </Text>
               <Text
+                maxFontSizeMultiplier={2.0}
                 style={type(15, 'regular', { color: color.secondary })}
               >{`${supplierName.trim()}${supplierArea.trim() ? ` · ${supplierArea.trim()}` : ''}`}</Text>
-              <Text style={type(15, 'regular', { color: color.secondary })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'regular', { color: color.secondary })}
+              >
                 {`${targetTotal} kg${estimateMinor > 0 ? ` · ≈ ${money(estimateMinor, 'EUR', language)}` : ''} · ${cleanItems.length} ${t('order.stepItems').toLowerCase()}`}
               </Text>
               <Text
+                maxFontSizeMultiplier={2.0}
                 style={type(15, 'regular', { color: color.secondary })}
               >{`${t('order.closesAt')} ${longDate(closesAt, zone)}, ${time(closesAt, zone)}`}</Text>
               <Text
+                maxFontSizeMultiplier={2.0}
                 style={type(15, 'regular', { color: color.secondary })}
               >{`${t('order.pickupStart')} ${longDate(pickup.startsAt, zone)} ${time(pickup.startsAt, zone)} – ${time(pickup.endsAt, zone)}`}</Text>
             </View>
-            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}
+            >
               {t('order.moneyNote')}
             </Text>
             {create.isError ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(15, 'regular', { color: color.danger })}
+              >
                 {errorCode(create.error) === 'city_required'
                   ? t('create.cityRequired')
                   : errorCode(create.error) === 'host_level_required'

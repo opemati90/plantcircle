@@ -12,6 +12,8 @@ export const extra = {
   sheetHandle: '#C7C7CC',
   hairlineOnPhoto: 'rgba(255,255,255,0.3)',
   glassLight: 'rgba(255,255,255,0.22)',
+  // Controls on photos: a dark tint so a white icon keeps 4.5:1 on light and dark images alike.
+  glassDark: 'rgba(10,10,10,0.55)',
   tabBar: 'rgba(255,255,255,0.9)',
   scrim: 'rgba(10,10,10,0.45)',
   skeleton: '#EFEFF1',
@@ -53,10 +55,15 @@ export function type(
     fontWeight: fontWeight[weight],
     color: options.color ?? color.ink,
     ...(options.tracking === undefined ? {} : { letterSpacing: options.tracking }),
-    ...(options.leading === undefined
-      ? {}
-      : { lineHeight: Math.round(size * options.leading) }),
+    // Every text gets a line height (WCAG 1.4.12 text spacing): body 1.45, titles tighter.
+    lineHeight: Math.round(size * (options.leading ?? defaultLeading(size))),
   };
+}
+
+function defaultLeading(size: number): number {
+  if (size >= 24) return 1.15;
+  if (size >= 18) return 1.3;
+  return 1.45;
 }
 
 export const leading = lineHeight;

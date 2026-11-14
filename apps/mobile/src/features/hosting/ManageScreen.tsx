@@ -127,11 +127,15 @@ export default function ManageScreen() {
         ]}
       >
         {open ? (
-          <Text style={type(13, 'semibold', { color: color.brand, tracking: 0.6 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(13, 'semibold', { color: color.brand, tracking: 0.6 })}
+          >
             {t('host.happeningNow')}
           </Text>
         ) : null}
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(32, 'bold', { tracking: -1, leading: 1.06 })}
         >
@@ -142,7 +146,10 @@ export default function ManageScreen() {
               })
             : t('host.title')}
         </Text>
-        <Text style={type(15, 'regular', { color: color.secondary })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary })}
+        >
           {open
             ? t('host.tapToCheckIn')
             : `${detail.title} · ${longDate(detail.startsAt, detail.timezone)} · ${timeRange(detail.startsAt, detail.endsAt, detail.timezone)}`}
@@ -153,7 +160,10 @@ export default function ManageScreen() {
           <Stat label={t('host.summaryCheckedIn')} value={summary.data.checkedIn} />
           <Stat label={t('host.summaryNoShow')} value={summary.data.noShow} />
         </View>
-        <Text style={type(15, 'regular', { color: color.secondary })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary })}
+        >
           {summary.data.averageRating !== null
             ? t('host.ratingLine', {
                 average: summary.data.averageRating.toFixed(1),
@@ -164,15 +174,25 @@ export default function ManageScreen() {
               : t('host.ratingNone')}
         </Text>
 
-        <Text accessibilityRole="header" style={type(20, 'semibold', { tracking: -0.4 })}>
+        <Text
+          maxFontSizeMultiplier={1.6}
+          accessibilityRole="header"
+          style={type(20, 'semibold', { tracking: -0.4 })}
+        >
           {t('host.guestsTitle')}
         </Text>
         {!live ? (
-          <Text style={type(15, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
             {t('host.notLive')}
           </Text>
         ) : !open && !ended ? (
-          <Text style={type(15, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
             {now.getTime() < Date.parse(detail.startsAt) - 2 * 3_600_000
               ? t('host.windowOpens')
               : t('host.windowClosed')}
@@ -181,11 +201,18 @@ export default function ManageScreen() {
         {guests.isPending ? (
           <Skeleton width="100%" height={88} radius={radius.card} />
         ) : guests.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('errors.serverText')}
           </Text>
         ) : rows.length === 0 ? (
-          <Text style={type(15, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
             {t('host.guestsEmpty')}
           </Text>
         ) : (
@@ -222,8 +249,13 @@ export default function ManageScreen() {
                   </Text>
                 </View>
                 <View style={styles.guestText}>
-                  <Text style={type(17, 'semibold')}>{guest.displayName}</Text>
-                  <Text style={type(14, 'regular', { color: color.secondary })}>
+                  <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+                    {guest.displayName}
+                  </Text>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(14, 'regular', { color: color.secondary })}
+                  >
                     {t(`host.${STATE_LABEL[guest.state]}`)}
                   </Text>
                 </View>
@@ -237,7 +269,11 @@ export default function ManageScreen() {
           })
         )}
         {checkIn.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('host.error')}
           </Text>
         ) : null}
@@ -254,7 +290,11 @@ export default function ManageScreen() {
 
         <View style={styles.end}>
           {ended ? (
-            <Text role="status" style={type(17, 'semibold', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="status"
+              style={type(17, 'semibold', { color: color.secondary })}
+            >
               {t('host.ended')}
             </Text>
           ) : endable ? (
@@ -266,12 +306,19 @@ export default function ManageScreen() {
               }}
             />
           ) : (
-            <Text style={type(15, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'regular', { color: color.secondary })}
+            >
               {t('host.endTooEarly')}
             </Text>
           )}
           {end.isError ? (
-            <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(15, 'regular', { color: color.danger })}
+            >
               {t('host.error')}
             </Text>
           ) : null}
@@ -308,8 +355,12 @@ export default function ManageScreen() {
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <View style={styles.stat}>
-      <Text style={type(22, 'bold', { tracking: -0.5 })}>{value}</Text>
-      <Text style={type(13, 'regular', { color: color.secondary })}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.6} style={type(22, 'bold', { tracking: -0.5 })}>
+        {value}
+      </Text>
+      <Text maxFontSizeMultiplier={2.0} style={type(13, 'regular', { color: color.secondary })}>
+        {label}
+      </Text>
     </View>
   );
 }

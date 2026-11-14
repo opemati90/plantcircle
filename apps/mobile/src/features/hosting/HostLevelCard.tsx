@@ -1,44 +1,112 @@
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import { color, extra, radius, type } from '../../components/theme';
-import type { HostLevel } from '../../lib/backend/types';
-import { nextSteps } from './levels';
+import { color, extra, type } from '../../components/theme';
+import type { HostLevel, HostStats } from '../../lib/backend/types';
 
-const NEED_KEYS = {
-  recipes: 'hosting.needRecipes',
-  hosted: 'hosting.needHosted',
-  followers: 'hosting.needFollowers',
-  upvotes: 'hosting.needUpvotes',
+const STAT_KEYS = {
+  recipes: 'hosting.statRecipes',
+  hosted: 'hosting.statHosted',
+  followers: 'hosting.statFollowers',
+  upvotes: 'hosting.statUpvotes',
 } as const;
+const ORDER: (keyof HostStats)[] = ['recipes', 'hosted', 'followers', 'upvotes'];
 
-/** The level, what it allows, and what is still missing for the next one (design note §2). */
+/**
+ * The hosting level as a profile card: the level badge and what it unlocks, then a progress bar
+ * for each thing the next level still needs (design note §2). Same card language as the identity
+ * card above it: white, 24 radius, 20 padding.
+ */
 export function HostLevelCard({ level }: { level: HostLevel }) {
   const { t } = useTranslation();
   const name = t(`hosting.levelName_${String(level.level)}` as 'hosting.levelName_0');
-  const steps = nextSteps(level);
+  const next = level.next;
+  const steps = next
+    ? ORDER.filter((key) => next[key] > 0 && level[key] < next[key]).map((key) => ({
+        key,
+        have: level[key],
+        need: next[key],
+      }))
+    : [];
   return (
     <View style={styles.card} accessibilityRole="summary">
-      <Text style={type(13, 'bold', { color: color.brand, tracking: 0.5 })}>
-        {t('hosting.level', { level: level.level, name }).toUpperCase()}
-      </Text>
-      <Text style={type(16, 'regular', { color: extra.bodyText, leading: 1.45 })}>
+      <View style={styles.head}>
+        <View aria-hidden style={styles.badge}>
+          <Text
+            allowFontScaling={false}
+            style={type(24, 'bold', { color: color.brand, tracking: -0.6 })}
+          >
+            {level.level}
+          </Text>
+        </View>
+        <View style={styles.headText}>
+          <Text maxFontSizeMultiplier={1.6} style={type(19, 'semibold', { tracking: -0.4 })}>
+            {name}
+          </Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
+            {t('hosting.levelShort', { level: level.level })}
+          </Text>
+        </View>
+      </View>
+      <Text maxFontSizeMultiplier={2.0} style={type(15, 'regular', { color: extra.bodyText })}>
         {t(`hosting.unlocks_${String(level.level)}` as 'hosting.unlocks_0', {
           spots: level.maxCapacity,
         })}
       </Text>
-      {level.next ? (
+      {next ? (
         <View style={styles.next}>
-          <Text style={type(14, 'semibold', { color: color.secondary })}>
-            {t('hosting.nextTitle', { level: level.next.level })}
+          <Text
+            maxFontSizeMultiplier={1.6}
+            style={type(13, 'bold', { color: color.secondary, tracking: 0.5 })}
+          >
+            {t('hosting.nextTo', {
+              name: t(`hosting.levelName_${String(next.level)}` as 'hosting.levelName_0'),
+            }).toUpperCase()}
           </Text>
           {steps.map((step) => (
-            <Text key={step.key} style={type(15, 'regular', { leading: 1.4 })}>
-              {`· ${t(NEED_KEYS[step.key], { count: step.missing })}`}
-            </Text>
+            <View
+              key={step.key}
+              accessible
+              accessibilityRole="progressbar"
+              accessibilityLabel={t(STAT_KEYS[step.key])}
+              accessibilityValue={{
+                min: 0,
+                max: step.need,
+                now: Math.min(step.have, step.need),
+              }}
+              style={styles.step}
+            >
+              <View style={styles.stepRow}>
+                <Text maxFontSizeMultiplier={2.0} style={type(15, 'medium')}>
+                  {t(STAT_KEYS[step.key])}
+                </Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(14, 'regular', { color: color.secondary })}
+                >
+                  {t('hosting.progress', { have: step.have, need: step.need })}
+                </Text>
+              </View>
+              <View aria-hidden style={styles.track}>
+                <View
+                  style={[
+                    styles.fill,
+                    {
+                      width: `${String(Math.min(100, Math.round((step.have / step.need) * 100)))}%`,
+                    },
+                  ]}
+                />
+              </View>
+            </View>
           ))}
         </View>
       ) : (
-        <Text style={type(15, 'regular', { color: color.secondary, leading: 1.4 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary })}
+        >
           {t('hosting.top')}
         </Text>
       )}
@@ -47,13 +115,25 @@ export function HostLevelCard({ level }: { level: HostLevel }) {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    gap: 8,
-    padding: 18,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: extra.cardBorder,
-    backgroundColor: color.surface,
+  card: { backgroundColor: color.surface, borderRadius: 24, padding: 20, gap: 16 },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  badge: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: color.brandTint,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  next: { gap: 4, paddingTop: 6 },
+  headText: { flex: 1, gap: 2 },
+  next: { gap: 14, paddingTop: 16, borderTopWidth: 1, borderTopColor: color.line },
+  step: { gap: 8 },
+  stepRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    gap: 12,
+  },
+  track: { height: 6, borderRadius: 3, backgroundColor: color.fill, overflow: 'hidden' },
+  fill: { height: 6, borderRadius: 3, backgroundColor: color.brand, minWidth: 6 },
 });

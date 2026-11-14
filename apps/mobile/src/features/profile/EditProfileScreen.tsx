@@ -118,14 +118,18 @@ export default function EditProfileScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('profile.editTitle')}
         </Text>
 
-        <Text style={styles.label}>{t('profile.nameLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+          {t('profile.nameLabel')}
+        </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('profile.nameLabel')}
           value={name}
           onChangeText={(v) => {
@@ -135,6 +139,7 @@ export default function EditProfileScreen() {
           style={[styles.field, type(17)]}
         />
         <Text
+          maxFontSizeMultiplier={2.0}
           style={type(13, 'regular', {
             color: length > NAME_MAX ? color.danger : color.secondary,
           })}
@@ -142,7 +147,9 @@ export default function EditProfileScreen() {
           {t('profile.nameNote', { count: length, max: NAME_MAX })}
         </Text>
 
-        <Text style={styles.label}>{t('profile.cityLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+          {t('profile.cityLabel')}
+        </Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`${t('profile.cityLabel')}: ${cityName ?? t('home.anywhere')}`}
@@ -151,17 +158,27 @@ export default function EditProfileScreen() {
           }}
           style={styles.cityRow}
         >
-          <Text style={[type(17, 'medium'), styles.grow]}>
+          <Text maxFontSizeMultiplier={2.0} style={[type(17, 'medium'), styles.grow]}>
             {cityName ?? t('home.anywhere')}
           </Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {t('home.changeCity')}
           </Text>
           <ChevronRightIcon size={18} strokeWidth={2.4} color={color.secondary} />
         </Pressable>
 
-        <Text style={styles.label}>{t('goals.title')}</Text>
-        <Text style={type(14, 'regular', { color: color.secondary })}>{t('goals.lead')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+          {t('goals.title')}
+        </Text>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(14, 'regular', { color: color.secondary })}
+        >
+          {t('goals.lead')}
+        </Text>
         <View accessibilityRole="list" style={styles.goals}>
           {GOALS.map((goal) => {
             const on = goals.includes(goal);
@@ -179,7 +196,10 @@ export default function EditProfileScreen() {
                 }}
                 style={[styles.goal, on && styles.goalOn]}
               >
-                <Text style={type(16, 'semibold', { color: on ? '#FFFFFF' : color.ink })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(16, 'semibold', { color: on ? '#FFFFFF' : color.ink })}
+                >
                   {t(`goals.${goal}`)}
                 </Text>
               </Pressable>
@@ -188,7 +208,11 @@ export default function EditProfileScreen() {
         </View>
 
         {save.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('profile.saveError')}
           </Text>
         ) : null}

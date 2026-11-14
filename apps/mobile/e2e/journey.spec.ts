@@ -77,8 +77,10 @@ test('first run: pick a city, browse, sign up with an email code, join, bring so
 
   await page.goto('/home');
   await expect(page.getByText('Good evening, Lena')).toBeVisible();
+  // Your Plans carries the nudge for the next Plan.
   await page
-    .getByRole('link', { name: /Up next · Saturday 17:00.*West African Cooking Night/i })
+    .getByRole('link', { name: /^West African Cooking Night Sat 17:00 · Neukölln Going/ })
+    .first()
     .click();
 
   await page.getByRole('button', { name: 'You’re going' }).click();

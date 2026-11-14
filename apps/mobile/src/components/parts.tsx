@@ -6,6 +6,7 @@ import {
   AccessibilityInfo,
   Animated,
   Keyboard,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
@@ -152,9 +153,13 @@ export function Toast({ title, detail, icon, tone, action }: ToastProps) {
     >
       {icon}
       <View style={styles.toastText}>
-        <Text style={type(15, 'semibold', { color: '#FFFFFF' })}>{title}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={type(15, 'semibold', { color: '#FFFFFF' })}>
+          {title}
+        </Text>
         {detail ? (
-          <Text style={type(13, 'regular', { color: '#FFFFFF' })}>{detail}</Text>
+          <Text maxFontSizeMultiplier={2.0} style={type(13, 'regular', { color: '#FFFFFF' })}>
+            {detail}
+          </Text>
         ) : null}
       </View>
       {action ? (
@@ -164,7 +169,9 @@ export function Toast({ title, detail, icon, tone, action }: ToastProps) {
           onPress={action.onPress}
           style={styles.toastAction}
         >
-          <Text style={type(14, 'semibold')}>{action.label}</Text>
+          <Text maxFontSizeMultiplier={2.0} style={type(14, 'semibold')}>
+            {action.label}
+          </Text>
         </Pressable>
       ) : null}
     </View>
@@ -184,7 +191,10 @@ export function BottomSheet({ open, onClose, title, lead, children }: BottomShee
   const { t } = useTranslation();
   return (
     <Modal visible={open} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.sheetRoot}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.sheetRoot}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('common.close')}
@@ -198,11 +208,18 @@ export function BottomSheet({ open, onClose, title, lead, children }: BottomShee
           <View aria-hidden style={styles.sheetHandle} />
           <View style={styles.sheetHeader}>
             <View style={styles.sheetHeading}>
-              <Text accessibilityRole="header" style={type(24, 'bold', { tracking: -0.6 })}>
+              <Text
+                maxFontSizeMultiplier={1.4}
+                accessibilityRole="header"
+                style={type(24, 'bold', { tracking: -0.6 })}
+              >
                 {title}
               </Text>
               {lead ? (
-                <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+                >
                   {lead}
                 </Text>
               ) : null}
@@ -213,7 +230,7 @@ export function BottomSheet({ open, onClose, title, lead, children }: BottomShee
           </View>
           {children}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -252,26 +269,38 @@ export function EmptyState({
           {icon ?? <AlertIcon size={36} strokeWidth={1.7} />}
         </View>
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {title}
         </Text>
-        <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {text}
         </Text>
         {onSavedPlans && savedPlans ? (
           <Pressable accessibilityRole="link" onPress={onSavedPlans} style={styles.savedCard}>
             <View style={styles.savedText}>
-              <Text style={type(16, 'semibold')}>{t('errors.savedTitle')}</Text>
-              <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+              <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
+                {t('errors.savedTitle')}
+              </Text>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+              >
                 {t('errors.savedText')}
               </Text>
             </View>
           </Pressable>
         ) : null}
         {reference ? (
-          <Text style={type(13, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(13, 'regular', { color: color.secondary })}
+          >
             {t('errors.reference', { ref: reference })}
           </Text>
         ) : null}
@@ -394,10 +423,19 @@ export function InlineState({
 }) {
   return (
     <View style={inlineStyles.wrap}>
-      <Text accessibilityRole="header" style={type(22, 'bold', { tracking: -0.5 })}>
+      <Text
+        maxFontSizeMultiplier={1.6}
+        accessibilityRole="header"
+        style={type(22, 'bold', { tracking: -0.5 })}
+      >
         {title}
       </Text>
-      <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{text}</Text>
+      <Text
+        maxFontSizeMultiplier={2.0}
+        style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+      >
+        {text}
+      </Text>
       {action}
     </View>
   );

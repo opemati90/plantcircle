@@ -80,14 +80,18 @@ export default function CreateCircleScreen() {
         ]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('circles.createTitle')}
         </Text>
 
-        <Text style={label}>{t('circles.nameLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={label}>
+          {t('circles.nameLabel')}
+        </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('circles.nameLabel')}
           value={name}
           onChangeText={setName}
@@ -95,8 +99,11 @@ export default function CreateCircleScreen() {
           style={[styles.field, type(17)]}
         />
 
-        <Text style={label}>{t('circles.taglineLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={label}>
+          {t('circles.taglineLabel')}
+        </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('circles.taglineLabel')}
           value={tagline}
           onChangeText={setTagline}
@@ -104,7 +111,9 @@ export default function CreateCircleScreen() {
           style={[styles.field, type(17)]}
         />
 
-        <Text style={label}>{t('circles.accessLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={label}>
+          {t('circles.accessLabel')}
+        </Text>
         <View
           accessibilityRole="radiogroup"
           accessibilityLabel={t('circles.accessLabel')}
@@ -122,10 +131,16 @@ export default function CreateCircleScreen() {
                 }}
                 style={[styles.option, selected && styles.optionSelected]}
               >
-                <Text style={type(17, 'semibold', { tracking: -0.3 })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(17, 'semibold', { tracking: -0.3 })}
+                >
                   {t(`circles.access.${option}`)}
                 </Text>
-                <Text style={type(14, 'regular', { color: color.secondary })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(14, 'regular', { color: color.secondary })}
+                >
                   {t(`circles.access.${option}Lead`)}
                 </Text>
               </Pressable>
@@ -135,8 +150,11 @@ export default function CreateCircleScreen() {
 
         {access === 'request' ? (
           <>
-            <Text style={label}>{t('circles.questionLabel')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={label}>
+              {t('circles.questionLabel')}
+            </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('circles.questionLabel')}
               value={question}
               onChangeText={setQuestion}
@@ -148,7 +166,10 @@ export default function CreateCircleScreen() {
 
         {!session ? (
           <View style={styles.notice}>
-            <Text style={type(15, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'regular', { color: color.secondary })}
+            >
               {t('circles.signUpLead')}
             </Text>
             <Button
@@ -161,14 +182,22 @@ export default function CreateCircleScreen() {
           </View>
         ) : profileError ? (
           <View style={styles.notice}>
-            <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(15, 'regular', { color: color.danger })}
+            >
               {t('errors.serverText')}
             </Text>
             <Button variant="outline" label={t('common.retry')} onPress={retryProfile} />
           </View>
         ) : cityId === null ? (
           <View style={styles.notice}>
-            <Text role="status" style={type(15, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="status"
+              style={type(15, 'regular', { color: color.secondary })}
+            >
               {t('circles.needCity')}
             </Text>
             <Button
@@ -181,7 +210,11 @@ export default function CreateCircleScreen() {
           </View>
         ) : null}
         {create.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {errorCode(create.error) === 'rate_limited'
               ? t('circles.rateLimited')
               : t('circles.genericError')}
@@ -190,7 +223,7 @@ export default function CreateCircleScreen() {
 
         {cityName ? (
           <View style={styles.where}>
-            <Text style={[type(15, 'medium'), styles.whereText]}>
+            <Text maxFontSizeMultiplier={2.0} style={[type(15, 'medium'), styles.whereText]}>
               {t('circles.createWhere', { city: cityName })}
             </Text>
             <Pressable
@@ -200,7 +233,10 @@ export default function CreateCircleScreen() {
               }}
               style={styles.whereLink}
             >
-              <Text style={type(15, 'semibold', { color: color.brand })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'semibold', { color: color.brand })}
+              >
                 {t('circles.changeInSettings')}
               </Text>
             </Pressable>

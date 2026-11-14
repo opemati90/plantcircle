@@ -17,16 +17,8 @@ import { Photo } from '../../components/Photo';
 import { color, extra, radius, shadow, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
-import type { Plan, UpNext, WaitlistOffer } from '../../lib/backend/types';
-import {
-  dayOfMonth,
-  dayPart,
-  localTime,
-  shortWhen,
-  time,
-  weekdayLong,
-  weekdayShort,
-} from '../../lib/dates';
+import type { Plan, WaitlistOffer } from '../../lib/backend/types';
+import { dayOfMonth, dayPart, localTime, shortWhen, time, weekdayShort } from '../../lib/dates';
 import { currentLanguage } from '../../lib/i18n';
 import { useAuth } from '../auth/useAuth';
 import { PlanListItem } from '../plans/PlanListItem';
@@ -59,43 +51,25 @@ const SCRIM = {
   locations: [0, 0.18, 0.3, 0.6, 1],
 } as const;
 
-function UpNextCard({ plan, needsDish, onPress }: UpNext & { onPress: () => void }) {
-  const { t } = useTranslation();
-  const when = `${weekdayLong(plan.startsAt, plan.timezone)} ${time(plan.startsAt, plan.timezone)}`;
-  const note = needsDish ? t('home.chooseDish') : placeLabel(t, plan);
-  return (
-    <Pressable accessibilityRole="link" onPress={onPress} style={styles.upNext}>
-      <DateTile iso={plan.startsAt} timeZone={plan.timezone} />
-      <View style={styles.upNextText}>
-        <Text style={[type(13, 'bold', { color: color.brand, tracking: 0.5 }), styles.upper]}>
-          {t('home.upNext', { when })}
-        </Text>
-        <Text style={type(16, 'semibold', { tracking: -0.3 })}>{plan.title}</Text>
-        <Text
-          style={type(14, needsDish ? 'semibold' : 'regular', {
-            color: needsDish ? color.warning : color.secondary,
-          })}
-        >
-          {note}
-        </Text>
-      </View>
-      <ChevronRightIcon size={16} strokeWidth={2.4} color={color.borderControl} />
-    </Pressable>
-  );
-}
-
-/** A spot is being held for the person: the most time-critical thing on Home. */
 function OfferCard({ plan, expiresAt, onPress }: WaitlistOffer & { onPress: () => void }) {
   const { t } = useTranslation();
   return (
     <Pressable accessibilityRole="link" onPress={onPress} style={[styles.upNext, styles.offer]}>
       <DateTile iso={plan.startsAt} timeZone={plan.timezone} />
       <View style={styles.upNextText}>
-        <Text style={[type(13, 'bold', { color: color.brand, tracking: 0.5 }), styles.upper]}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={[type(13, 'bold', { color: color.brand, tracking: 0.5 }), styles.upper]}
+        >
           {t('offer.homeLabel', { time: localTime(expiresAt) })}
         </Text>
-        <Text style={type(16, 'semibold', { tracking: -0.3 })}>{plan.title}</Text>
-        <Text style={type(14, 'regular', { color: color.secondary })}>
+        <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold', { tracking: -0.3 })}>
+          {plan.title}
+        </Text>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(14, 'regular', { color: color.secondary })}
+        >
           {placeLabel(t, plan)}
         </Text>
       </View>
@@ -127,13 +101,21 @@ function FeaturedCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
         </Text>
       </View>
       <View style={styles.featuredBody}>
-        <Text style={[type(13, 'semibold', { color: '#FFFFFF', tracking: 0.2 }), styles.upper]}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={[type(13, 'semibold', { color: '#FFFFFF', tracking: 0.2 }), styles.upper]}
+        >
           {categoryLabel(t, plan)} · {priceLabel(t, plan, currentLanguage())}
         </Text>
-        <Text style={type(27, 'bold', { color: '#FFFFFF', tracking: -0.8, leading: 1.08 })}>
+        <Text
+          maxFontSizeMultiplier={1.4}
+          style={type(27, 'bold', { color: '#FFFFFF', tracking: -0.8, leading: 1.08 })}
+        >
           {plan.title}
         </Text>
-        <Text style={type(15, 'regular', { color: '#FFFFFF' })}>{meta}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={type(15, 'regular', { color: '#FFFFFF' })}>
+          {meta}
+        </Text>
         <View style={styles.featuredFooter}>
           <View style={styles.going}>
             {plan.goingCount > 0 ? (
@@ -150,12 +132,14 @@ function FeaturedCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
                 ))}
               </View>
             ) : null}
-            <Text style={type(14, 'medium', { color: '#FFFFFF' })}>
+            <Text maxFontSizeMultiplier={2.0} style={type(14, 'medium', { color: '#FFFFFF' })}>
               {t('home.going', { count: plan.goingCount })}
             </Text>
           </View>
           <View style={styles.spotsPill}>
-            <Text style={type(14, 'semibold')}>{spotsLeftShort(t, plan)}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={type(14, 'semibold')}>
+              {spotsLeftShort(t, plan)}
+            </Text>
           </View>
         </View>
       </View>
@@ -172,12 +156,21 @@ function RailCard({ plan, onPress }: { plan: Plan; onPress: () => void }) {
       <View style={styles.cardImage}>
         <Photo source={planImage(plan)} />
         <View style={styles.cardBadge}>
-          <Text style={type(13, 'semibold')}>{when}</Text>
+          <Text maxFontSizeMultiplier={2.0} style={type(13, 'semibold')}>
+            {when}
+          </Text>
         </View>
       </View>
       <View style={styles.cardText}>
-        <Text style={type(16, 'semibold', { tracking: -0.3 })}>{plan.title}</Text>
-        <Text style={type(14, 'regular', { color: color.secondary })}>{meta}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold', { tracking: -0.3 })}>
+          {plan.title}
+        </Text>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(14, 'regular', { color: color.secondary })}
+        >
+          {meta}
+        </Text>
       </View>
     </Pressable>
   );
@@ -288,7 +281,9 @@ export default function HomeScreen() {
             style={styles.chip}
           >
             <PinIcon size={15} strokeWidth={2.3} />
-            <Text style={type(15, 'semibold')}>{cityName ?? t('home.anywhere')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={type(15, 'semibold')}>
+              {cityName ?? t('home.anywhere')}
+            </Text>
           </Pressable>
           {session ? (
             <View style={styles.headerActions}>
@@ -310,7 +305,10 @@ export default function HomeScreen() {
                 }}
                 style={[styles.round, { backgroundColor: extra.tints[0].background }]}
               >
-                <Text style={type(15, 'semibold', { color: extra.tints[0].text })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(15, 'semibold', { color: extra.tints[0].text })}
+                >
                   {name?.charAt(0).toUpperCase() ?? ''}
                 </Text>
               </Pressable>
@@ -323,7 +321,9 @@ export default function HomeScreen() {
               }}
               style={styles.chip}
             >
-              <Text style={type(15, 'semibold')}>{t('home.signIn')}</Text>
+              <Text maxFontSizeMultiplier={2.0} style={type(15, 'semibold')}>
+                {t('home.signIn')}
+              </Text>
             </Pressable>
           )}
         </View>
@@ -342,7 +342,10 @@ export default function HomeScreen() {
             style={styles.paused}
           >
             <AlertIcon size={18} strokeWidth={2} color="#FFFFFF" />
-            <Text style={[type(14, 'semibold', { color: '#FFFFFF' }), styles.pausedText]}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={[type(14, 'semibold', { color: '#FFFFFF' }), styles.pausedText]}
+            >
               {isFrozen(profile) && !isPaused(profile)
                 ? t('safety.frozenBanner')
                 : t('safety.pausedBanner')}
@@ -351,7 +354,10 @@ export default function HomeScreen() {
           </Pressable>
         ) : null}
         <View style={[styles.row, styles.heading]}>
-          <Text style={type(15, 'medium', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'medium', { color: color.secondary })}
+          >
             {name
               ? t('home.greetingNamed', {
                   greeting: t(`home.greeting.${dayPart(new Date())}`),
@@ -360,6 +366,7 @@ export default function HomeScreen() {
               : t(`home.greeting.${dayPart(new Date())}`)}
           </Text>
           <Text
+            maxFontSizeMultiplier={1.4}
             accessibilityRole="header"
             style={type(34, 'bold', { tracking: -1.1, leading: 1.05 })}
           >
@@ -380,19 +387,11 @@ export default function HomeScreen() {
           />
         ))}
 
-        {upNext.data ? (
-          <UpNextCard
-            {...upNext.data}
-            onPress={() => {
-              if (upNext.data) openPlan(upNext.data.plan);
-            }}
-          />
-        ) : null}
-
         {session ? (
           <View style={[styles.row, styles.yourPlans]}>
             <View style={styles.sectionHeader}>
               <Text
+                maxFontSizeMultiplier={1.6}
                 accessibilityRole="header"
                 aria-level={2}
                 style={type(22, 'bold', { tracking: -0.6 })}
@@ -407,7 +406,10 @@ export default function HomeScreen() {
                   router.push('/my-plans');
                 }}
               >
-                <Text style={type(15, 'medium', { color: color.secondary })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(15, 'medium', { color: color.secondary })}
+                >
                   {t('home.seeAll')}
                 </Text>
               </Pressable>
@@ -416,7 +418,11 @@ export default function HomeScreen() {
               <Skeleton width="100%" height={88} radius={radius.card} />
             ) : mine.isError && mine.data === undefined ? (
               <View style={styles.yourPlansNote}>
-                <Text role="alert" style={type(15, 'regular', { color: color.secondary })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  role="alert"
+                  style={type(15, 'regular', { color: color.secondary })}
+                >
                   {t('errors.serverText')}
                 </Text>
                 <Button
@@ -426,7 +432,10 @@ export default function HomeScreen() {
                 />
               </View>
             ) : yourPlans.length === 0 ? (
-              <Text style={type(15, 'regular', { color: color.secondary })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'regular', { color: color.secondary })}
+              >
                 {t('home.yourPlansEmpty')}
               </Text>
             ) : null}
@@ -436,6 +445,9 @@ export default function HomeScreen() {
                 plan={item.plan}
                 when={`${weekdayShort(item.plan.startsAt, item.plan.timezone)} ${time(item.plan.startsAt, item.plan.timezone)} · ${placeLabel(t, item.plan)}`}
                 pill={statusPill(t, item, false)}
+                {...(upNext.data?.needsDish && upNext.data.plan.id === item.plan.id
+                  ? { badge: { label: t('home.chooseDish'), tone: 'attention' as const } }
+                  : {})}
                 onPress={() => {
                   if (item.rsvp === 'offered') {
                     router.push({
@@ -469,6 +481,7 @@ export default function HomeScreen() {
                 style={[styles.filter, selected && styles.filterSelected]}
               >
                 <Text
+                  maxFontSizeMultiplier={2.0}
                   style={type(14, selected ? 'semibold' : 'medium', {
                     color: selected ? color.surface : color.ink,
                     tracking: -0.1,
@@ -491,13 +504,17 @@ export default function HomeScreen() {
         ) : emptyCity && cityName ? (
           <View style={[styles.row, styles.emptyCity]}>
             <Text
+              maxFontSizeMultiplier={1.4}
               accessibilityRole="header"
               aria-level={2}
               style={type(26, 'bold', { tracking: -0.8, leading: 1.1 })}
             >
               {t('home.emptyCityTitle', { city: cityName })}
             </Text>
-            <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+            >
               {t('home.emptyCityText')}
             </Text>
             <Pressable
@@ -508,12 +525,18 @@ export default function HomeScreen() {
               style={styles.emptyCityCard}
             >
               <View style={styles.emptyCityCardText}>
-                <Text style={type(17, 'semibold')}>{t('home.startOwnTitle')}</Text>
-                <Text style={type(14, 'regular', { color: color.secondary })}>
+                <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+                  {t('home.startOwnTitle')}
+                </Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(14, 'regular', { color: color.secondary })}
+                >
                   {t('home.startOwnText')}
                 </Text>
               </View>
               <Text
+                maxFontSizeMultiplier={2.0}
                 style={[type(15, 'semibold', { color: '#FFFFFF' }), styles.emptyCityAction]}
               >
                 {t('home.startOwnAction')}
@@ -522,6 +545,7 @@ export default function HomeScreen() {
             {fromHome.length > 0 ? (
               <>
                 <Text
+                  maxFontSizeMultiplier={1.6}
                   accessibilityRole="header"
                   aria-level={2}
                   style={[type(20, 'bold', { tracking: -0.5 }), styles.fromHomeTitle]}
@@ -543,6 +567,7 @@ export default function HomeScreen() {
           </View>
         ) : (
           <Text
+            maxFontSizeMultiplier={2.0}
             style={[styles.row, type(17, 'regular', { color: color.secondary, leading: 1.5 })]}
           >
             {plans.data.length === 0 ? t('home.emptyWeek') : t('home.emptyFilter')}
@@ -553,6 +578,7 @@ export default function HomeScreen() {
           <>
             <View style={[styles.row, styles.sectionHeader]}>
               <Text
+                maxFontSizeMultiplier={1.6}
                 accessibilityRole="header"
                 aria-level={2}
                 style={type(22, 'bold', { tracking: -0.6 })}
@@ -566,7 +592,10 @@ export default function HomeScreen() {
                   router.push('/explore');
                 }}
               >
-                <Text style={type(15, 'medium', { color: color.secondary })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(15, 'medium', { color: color.secondary })}
+                >
                   {t('home.seeAll')}
                 </Text>
               </Pressable>

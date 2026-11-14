@@ -46,7 +46,11 @@ export function NotBuiltScreen({ area, signOut }: { area: Area; signOut?: boolea
               />
             ) : null}
             {logout.isError ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(15, 'regular', { color: color.danger })}
+              >
                 {t('auth.signOutFailed')}
               </Text>
             ) : null}

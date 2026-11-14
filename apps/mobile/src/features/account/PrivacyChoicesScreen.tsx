@@ -117,12 +117,16 @@ export default function PrivacyChoicesScreen() {
         ]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('account.privacyChoicesTitle')}
         </Text>
-        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('account.privacyChoicesLead')}
         </Text>
 
@@ -147,8 +151,14 @@ export default function PrivacyChoicesScreen() {
                 {row.control === 'always' ? (
                   <View style={styles.rowText}>
                     <View style={styles.rowHead}>
-                      <Text style={[type(17, 'semibold'), styles.grow]}>{row.title}</Text>
                       <Text
+                        maxFontSizeMultiplier={2.0}
+                        style={[type(17, 'semibold'), styles.grow]}
+                      >
+                        {row.title}
+                      </Text>
+                      <Text
+                        maxFontSizeMultiplier={2.0}
                         style={[
                           type(12, 'bold', { color: color.brand, tracking: 0.4 }),
                           styles.pill,
@@ -158,6 +168,7 @@ export default function PrivacyChoicesScreen() {
                       </Text>
                     </View>
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
                     >
                       {row.note}
@@ -175,6 +186,7 @@ export default function PrivacyChoicesScreen() {
                       }}
                     />
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
                     >
                       {row.note}
@@ -199,18 +211,29 @@ export default function PrivacyChoicesScreen() {
           }}
           style={styles.link}
         >
-          <Text style={type(15, 'semibold', { color: color.brand })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'semibold', { color: color.brand })}
+          >
             {t('account.readPrivacy')}
           </Text>
         </Pressable>
 
         {linkFailed ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(14, 'regular', { color: color.danger })}
+          >
             {t('account.linkError', { url: PRIVACY_URL })}
           </Text>
         ) : null}
         {update.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('account.error')}
           </Text>
         ) : null}

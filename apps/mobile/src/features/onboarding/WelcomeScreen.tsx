@@ -52,11 +52,19 @@ function OptionRow({
       style={[styles.option, selected && styles.optionSelected]}
     >
       <View style={styles.optionText}>
-        <Text style={type(17, selected ? 'semibold' : 'medium', { tracking: -0.2 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(17, selected ? 'semibold' : 'medium', { tracking: -0.2 })}
+        >
           {title}
         </Text>
         {subtitle ? (
-          <Text style={type(13, 'regular', { color: color.secondary })}>{subtitle}</Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(13, 'regular', { color: color.secondary })}
+          >
+            {subtitle}
+          </Text>
         ) : null}
       </View>
       <View style={[styles.dot, selected && styles.dotSelected]}>
@@ -104,7 +112,10 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
         />
         <View style={[styles.brand, { top: insets.top }]}>
           <SproutIcon size={22} color="#FFFFFF" />
-          <Text style={type(17, 'semibold', { color: '#FFFFFF', tracking: -0.3 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(17, 'semibold', { color: '#FFFFFF', tracking: -0.3 })}
+          >
             PlantCircle
           </Text>
           <Pressable
@@ -115,7 +126,10 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
             }}
             style={styles.languageChip}
           >
-            <Text style={type(13, 'semibold', { color: '#FFFFFF' })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(13, 'semibold', { color: '#FFFFFF' })}
+            >
               {t(`language.${language}`)}
             </Text>
             <ChevronDownIcon size={12} strokeWidth={2.6} color="#FFFFFF" />
@@ -123,12 +137,14 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
         </View>
         <View style={[styles.heroContent, { bottom: Math.max(40, insets.bottom + 16) }]}>
           <Text
+            maxFontSizeMultiplier={1.4}
             accessibilityRole="header"
             style={type(46, 'bold', { color: '#FFFFFF', tracking: -1.6, leading: 1 })}
           >
             {t('welcome.title')}
           </Text>
           <Text
+            maxFontSizeMultiplier={1.6}
             style={[
               type(18, 'regular', { color: '#FFFFFF', tracking: -0.2, leading: 1.5 }),
               styles.heroLead,
@@ -151,7 +167,7 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
             }}
             style={styles.heroLink}
           >
-            <Text style={type(15, 'regular', { color: '#FFFFFF' })}>
+            <Text maxFontSizeMultiplier={2.0} style={type(15, 'regular', { color: '#FFFFFF' })}>
               {t('welcome.haveAccount')}
             </Text>
           </Pressable>
@@ -193,12 +209,16 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
       <ScrollView style={styles.screen} contentContainerStyle={[styles.step, frame]}>
         <Progress step={1} />
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={[type(30, 'bold', { tracking: -0.7, leading: 1.1 }), styles.title]}
         >
           {t('goals.title')}
         </Text>
-        <Text style={[type(16, 'regular', { color: color.secondary }), styles.lead]}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={[type(16, 'regular', { color: color.secondary }), styles.lead]}
+        >
           {t('goals.lead')}
         </Text>
         <View style={styles.options}>
@@ -238,12 +258,16 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
     >
       <Progress step={2} />
       <Text
+        maxFontSizeMultiplier={1.4}
         accessibilityRole="header"
         style={[type(30, 'bold', { tracking: -0.7, leading: 1.1 }), styles.title]}
       >
         {t('city.title')}
       </Text>
-      <Text style={[type(16, 'regular', { color: color.secondary }), styles.lead]}>
+      <Text
+        maxFontSizeMultiplier={2.0}
+        style={[type(16, 'regular', { color: color.secondary }), styles.lead]}
+      >
         {t('city.lead')}
       </Text>
       {cities.isPending ? (
@@ -276,6 +300,7 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
         />
       )}
       <Text
+        maxFontSizeMultiplier={2.0}
         style={[type(14, 'regular', { color: color.secondary, leading: 1.5 }), styles.note]}
       >
         {t('city.elsewhere')}
@@ -296,6 +321,7 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
           }}
         />
         <Text
+          maxFontSizeMultiplier={2.0}
           style={[type(13, 'regular', { color: color.secondary, leading: 1.5 }), styles.center]}
         >
           {t('city.legal')}

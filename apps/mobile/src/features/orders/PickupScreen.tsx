@@ -80,6 +80,7 @@ export default function PickupScreen() {
         <View style={styles.head}>
           <View style={styles.pillWrap}>
             <Text
+              maxFontSizeMultiplier={2.0}
               style={[type(13, 'bold', { color: color.brand, tracking: 0.3 }), styles.pill]}
             >
               {data.state === 'ready'
@@ -91,6 +92,7 @@ export default function PickupScreen() {
             </Text>
           </View>
           <Text
+            maxFontSizeMultiplier={1.4}
             accessibilityRole="header"
             style={type(30, 'bold', { tracking: -1, leading: 1.08 })}
           >
@@ -102,7 +104,9 @@ export default function PickupScreen() {
           <Fact
             lead={
               <View style={styles.tile}>
-                <Text style={type(20, 'semibold')}>🕒</Text>
+                <Text maxFontSizeMultiplier={1.6} style={type(20, 'semibold')}>
+                  🕒
+                </Text>
               </View>
             }
             title={`${weekdayLong(data.pickupStart, tz)}, ${timeRange(data.pickupStart, data.pickupEnd, tz)}`}
@@ -122,7 +126,9 @@ export default function PickupScreen() {
           <Fact
             lead={
               <View style={styles.tile}>
-                <Text style={type(20, 'semibold')}>🧺</Text>
+                <Text maxFontSizeMultiplier={1.6} style={type(20, 'semibold')}>
+                  🧺
+                </Text>
               </View>
             }
             title={t('order.yourAmount')}
@@ -139,25 +145,36 @@ export default function PickupScreen() {
         <View style={styles.divider} />
 
         <View style={styles.section}>
-          <Text accessibilityRole="header" style={type(20, 'bold', { tracking: -0.5 })}>
+          <Text
+            maxFontSizeMultiplier={1.6}
+            accessibilityRole="header"
+            style={type(20, 'bold', { tracking: -0.5 })}
+          >
             {t('order.payment')}
           </Text>
           <View style={styles.payRow}>
-            <Text style={type(17, 'medium')}>
+            <Text maxFontSizeMultiplier={2.0} style={type(17, 'medium')}>
               {t('order.payAtPickup', { name: data.organizerName })}
             </Text>
             {estimate ? (
-              <Text style={type(20, 'bold', { tracking: -0.4 })}>
+              <Text maxFontSizeMultiplier={1.6} style={type(20, 'bold', { tracking: -0.4 })}>
                 {money(estimate.minor, estimate.currency, language)}
               </Text>
             ) : null}
           </View>
-          <Text style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}
+          >
             {t('order.payNote', { name: data.organizerName })}
           </Text>
         </View>
         {collect.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('order.error')}
           </Text>
         ) : null}
@@ -165,10 +182,13 @@ export default function PickupScreen() {
 
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
-          <Text style={type(16, 'semibold')}>
+          <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
             {data.collected ? t('order.collectedDone') : t('order.pickupWindow')}
           </Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {timeRange(data.pickupStart, data.pickupEnd, tz)}
           </Text>
         </View>
@@ -192,8 +212,13 @@ function Fact({ lead, title, note }: { lead: React.ReactNode; title: string; not
     <View style={styles.fact}>
       {lead}
       <View style={styles.factText}>
-        <Text style={type(17, 'semibold', { tracking: -0.3 })}>{title}</Text>
-        <Text style={type(15, 'regular', { color: color.secondary, leading: 1.45 })}>
+        <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold', { tracking: -0.3 })}>
+          {title}
+        </Text>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary, leading: 1.45 })}
+        >
           {note}
         </Text>
       </View>

@@ -206,10 +206,20 @@ export default function InboxScreen() {
         { paddingTop: insets.top, paddingBottom: 120 + insets.bottom },
       ]}
     >
-      <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>
+      <Text
+        maxFontSizeMultiplier={1.4}
+        accessibilityRole="header"
+        style={type(34, 'bold', { tracking: -1.1 })}
+      >
         {t('inbox.title')}
       </Text>
-      <View accessibilityRole="tablist" style={styles.filters}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        accessibilityRole="tablist"
+        style={styles.filtersScroll}
+        contentContainerStyle={styles.filters}
+      >
         {FILTERS.map((item) => {
           const selected = filter === item;
           return (
@@ -224,6 +234,7 @@ export default function InboxScreen() {
               style={[styles.filter, selected && styles.filterSelected]}
             >
               <Text
+                maxFontSizeMultiplier={2.0}
                 style={type(15, 'semibold', { color: selected ? color.surface : color.ink })}
               >
                 {item === 'updates' && unreadUpdates > 0
@@ -233,11 +244,12 @@ export default function InboxScreen() {
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
 
       {session && requests.isError ? (
         <View style={styles.requests}>
           <Text
+            maxFontSizeMultiplier={2.0}
             role="alert"
             style={[type(15, 'regular', { color: color.danger }), styles.grow]}
           >
@@ -260,11 +272,14 @@ export default function InboxScreen() {
           <View aria-hidden style={styles.requestsIcon}>
             <UserIcon size={20} strokeWidth={1.9} color={color.ink} />
           </View>
-          <View style={styles.grow}>
-            <Text style={type(16, 'semibold')}>
+          <View style={styles.rowText}>
+            <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
               {t('inbox.requests', { count: pendingRequests })}
             </Text>
-            <Text style={type(14, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
               {t('inbox.requestsLead')}
             </Text>
           </View>
@@ -309,6 +324,7 @@ function NotificationRow({
       <View style={styles.grow}>
         <View style={styles.rowHead}>
           <Text
+            maxFontSizeMultiplier={2.0}
             numberOfLines={2}
             style={[
               type(16, notification.readAt ? 'medium' : 'semibold', { tracking: -0.2 }),
@@ -317,10 +333,19 @@ function NotificationRow({
           >
             {title}
           </Text>
-          <Text style={type(13, 'regular', { color: color.secondary })}>{when}</Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(13, 'regular', { color: color.secondary })}
+          >
+            {when}
+          </Text>
         </View>
         {note ? (
-          <Text numberOfLines={2} style={type(14, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            numberOfLines={2}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {note}
           </Text>
         ) : null}
@@ -386,15 +411,22 @@ function ThreadRow({
       <View style={styles.rowText}>
         <View style={styles.rowLine}>
           <Text
+            maxFontSizeMultiplier={2.0}
             numberOfLines={1}
             style={[type(17, 'semibold', { tracking: -0.3 }), styles.grow]}
           >
             {thread.title}
           </Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>{when}</Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
+            {when}
+          </Text>
         </View>
         <View style={styles.rowLine}>
           <Text
+            maxFontSizeMultiplier={2.0}
             numberOfLines={1}
             style={[
               type(15, thread.unread > 0 ? 'semibold' : 'regular', {
@@ -407,7 +439,12 @@ function ThreadRow({
           </Text>
           {thread.unread > 0 ? <View aria-hidden style={styles.dot} /> : null}
         </View>
-        <Text style={type(13, 'regular', { color: color.secondary })}>{kind}</Text>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(13, 'regular', { color: color.secondary })}
+        >
+          {kind}
+        </Text>
       </View>
     </Pressable>
   );
@@ -416,7 +453,9 @@ function ThreadRow({
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 20, gap: 16 },
-  filters: { flexDirection: 'row', gap: 8 },
+  // Chips scroll under the screen edges, never clipped by them.
+  filtersScroll: { marginHorizontal: -20, flexGrow: 0 },
+  filters: { flexDirection: 'row', gap: 8, paddingHorizontal: 20 },
   filter: {
     minHeight: size.touchMin,
     paddingHorizontal: 16,

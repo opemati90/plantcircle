@@ -22,7 +22,9 @@ export function OfflineBanner({ savedAt }: { savedAt: number | null }) {
   return (
     <View role="status" accessibilityLiveRegion="polite" style={styles.bar}>
       <OfflineIcon size={16} strokeWidth={2} color="#FFFFFF" />
-      <Text style={type(14, 'semibold', { color: '#FFFFFF' })}>{label}</Text>
+      <Text maxFontSizeMultiplier={2.0} style={type(14, 'semibold', { color: '#FFFFFF' })}>
+        {label}
+      </Text>
     </View>
   );
 }

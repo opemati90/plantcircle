@@ -111,14 +111,20 @@ export default function VerifyEmailScreen() {
             <MailIcon size={36} strokeWidth={1.7} color={color.brand} />
           </View>
           <Text
+            maxFontSizeMultiplier={1.4}
             accessibilityRole="header"
             style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
           >
             {t('auth.verifyTitle')}
           </Text>
-          <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}
+          >
             {t('auth.verifyLeadBefore')}
-            <Text style={styles.strong}>{email}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.strong}>
+              {email}
+            </Text>
             {t('auth.verifyLeadAfter')}
           </Text>
         </View>
@@ -136,6 +142,7 @@ export default function VerifyEmailScreen() {
           ))}
           {/* One real input stretched over the six cells; the active cell shows focus. */}
           <TextInput
+            maxFontSizeMultiplier={2.0}
             accessibilityLabel={t('auth.codeLabel')}
             aria-invalid={verify.isError}
             value={code}
@@ -160,16 +167,23 @@ export default function VerifyEmailScreen() {
           />
         </View>
         {error ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger, leading: 1.4 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger, leading: 1.4 })}
+          >
             {error}
           </Text>
         ) : null}
         <View style={styles.hint}>
-          <Text style={type(15, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
             {t('auth.didntGet')}
           </Text>
           {secondsLeft > 0 ? (
-            <Text style={type(15, 'bold')}>
+            <Text maxFontSizeMultiplier={2.0} style={type(15, 'bold')}>
               {t('auth.resendIn', { time: `0:${String(secondsLeft).padStart(2, '0')}` })}
             </Text>
           ) : (
@@ -181,10 +195,15 @@ export default function VerifyEmailScreen() {
               }}
               style={styles.resend}
             >
-              <Text style={[type(15, 'bold'), styles.underline]}>{t('auth.resend')}</Text>
+              <Text maxFontSizeMultiplier={2.0} style={[type(15, 'bold'), styles.underline]}>
+                {t('auth.resend')}
+              </Text>
             </Pressable>
           )}
-          <Text style={type(15, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
             {t('auth.checkSpam')}
           </Text>
         </View>

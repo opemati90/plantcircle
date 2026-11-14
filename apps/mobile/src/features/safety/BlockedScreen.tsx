@@ -30,12 +30,16 @@ export default function BlockedScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('safety.blockedTitle')}
         </Text>
-        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('safety.blockedLead')}
         </Text>
         {session === null ? (
@@ -85,7 +89,10 @@ export default function BlockedScreen() {
                     {person.displayName.charAt(0).toUpperCase()}
                   </Text>
                 </View>
-                <Text style={[type(16, 'semibold', { tracking: -0.3 }), styles.name]}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={[type(16, 'semibold', { tracking: -0.3 }), styles.name]}
+                >
                   {person.displayName}
                 </Text>
                 <Button
@@ -102,7 +109,11 @@ export default function BlockedScreen() {
           </View>
         )}
         {unblock.isError ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(14, 'regular', { color: color.danger })}
+          >
             {t('safety.error')}
           </Text>
         ) : null}

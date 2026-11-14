@@ -99,12 +99,16 @@ export default function ReportScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('safety.title')}
         </Text>
-        <Text style={type(15, 'regular', { color: color.secondary })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary })}
+        >
           {t('safety.about', { name: params.name ?? t(`safety.target.${targetType}`) })}
         </Text>
 
@@ -113,8 +117,13 @@ export default function ReportScreen() {
             <AlertIcon size={20} strokeWidth={2} color={color.danger} />
           </View>
           <View style={styles.emergencyText}>
-            <Text style={type(16, 'semibold')}>{t('safety.dangerTitle')}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+            <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
+              {t('safety.dangerTitle')}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+            >
               {lines.police
                 ? t('safety.dangerLines', { emergency: lines.emergency, police: lines.police })
                 : t('safety.dangerLine', { emergency: lines.emergency })}
@@ -128,7 +137,9 @@ export default function ReportScreen() {
             }}
             style={styles.callButton}
           >
-            <Text style={type(15, 'bold', { color: '#FFFFFF' })}>{lines.emergency}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={type(15, 'bold', { color: '#FFFFFF' })}>
+              {lines.emergency}
+            </Text>
           </Pressable>
         </View>
 
@@ -149,7 +160,9 @@ export default function ReportScreen() {
                 }}
                 style={[styles.option, selected && styles.optionSelected]}
               >
-                <Text style={type(17, 'medium')}>{t(`safety.category.${option}`)}</Text>
+                <Text maxFontSizeMultiplier={2.0} style={type(17, 'medium')}>
+                  {t(`safety.category.${option}`)}
+                </Text>
                 <View style={[styles.dot, selected && styles.dotSelected]} />
               </Pressable>
             );

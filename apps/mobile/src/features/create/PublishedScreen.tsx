@@ -138,12 +138,14 @@ export default function PublishedScreen() {
           <CheckIcon size={42} strokeWidth={2.4} color={color.brand} />
         </View>
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={[type(30, 'bold', { tracking: -0.9, leading: 1.1 }), styles.centre]}
         >
           {t('create.published.title')}
         </Text>
         <Text
+          maxFontSizeMultiplier={2.0}
           style={[
             type(17, 'regular', { color: color.secondary, leading: 1.5 }),
             styles.centre,
@@ -164,10 +166,18 @@ export default function PublishedScreen() {
             <Photo source={planImage(plan) ?? welcomePhoto} />
           </View>
           <View style={styles.cardText}>
-            <Text numberOfLines={1} style={type(17, 'semibold', { tracking: -0.3 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              numberOfLines={1}
+              style={type(17, 'semibold', { tracking: -0.3 })}
+            >
               {plan.title}
             </Text>
-            <Text numberOfLines={1} style={type(15, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              numberOfLines={1}
+              style={type(15, 'regular', { color: color.secondary })}
+            >
               {`${shortWhen(plan.startsAt, plan.timezone)} · ${t('plan.spotsTotal', { count: plan.capacity })}`}
             </Text>
           </View>
@@ -176,6 +186,7 @@ export default function PublishedScreen() {
 
         <View style={styles.linkRow}>
           <Text
+            maxFontSizeMultiplier={2.0}
             selectable
             numberOfLines={1}
             accessibilityLabel={t('create.published.linkLabel')}
@@ -191,7 +202,10 @@ export default function PublishedScreen() {
             }}
             style={styles.copy}
           >
-            <Text style={type(15, 'semibold', { color: color.surface })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'semibold', { color: color.surface })}
+            >
               {copied ? t('create.published.copied') : t('create.published.copy')}
             </Text>
           </Pressable>
@@ -225,6 +239,7 @@ export default function PublishedScreen() {
         </View>
         {shareFailed ? (
           <Text
+            maxFontSizeMultiplier={2.0}
             role="alert"
             style={[type(15, 'regular', { color: color.danger }), styles.centre]}
           >
@@ -235,10 +250,13 @@ export default function PublishedScreen() {
 
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
-          <Text style={type(18, 'bold', { tracking: -0.3 })}>
+          <Text maxFontSizeMultiplier={1.6} style={type(18, 'bold', { tracking: -0.3 })}>
             {t('create.published.going', { going: plan.goingCount, capacity: plan.capacity })}
           </Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {t('create.published.notify')}
           </Text>
         </View>
@@ -270,7 +288,9 @@ function Tile({
       style={styles.tile}
     >
       <View style={styles.tileIcon}>{children}</View>
-      <Text style={type(14, 'regular')}>{label}</Text>
+      <Text maxFontSizeMultiplier={2.0} style={type(14, 'regular')}>
+        {label}
+      </Text>
     </Pressable>
   );
 }

@@ -89,7 +89,9 @@ export function PeopleTab() {
         }}
         style={styles.requests}
       >
-        <Text style={[type(16, 'semibold'), styles.grow]}>{t('direct.requestsButton')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={[type(16, 'semibold'), styles.grow]}>
+          {t('direct.requestsButton')}
+        </Text>
         <ChevronRightIcon size={16} strokeWidth={2.4} color={color.secondary} />
       </Pressable>
       {people.data.length === 0 ? (
@@ -109,8 +111,17 @@ export function PeopleTab() {
               </Text>
             </View>
             <View style={styles.text}>
-              <Text style={type(16, 'semibold', { tracking: -0.3 })}>{person.displayName}</Text>
-              <Text numberOfLines={1} style={type(14, 'regular', { color: color.secondary })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(16, 'semibold', { tracking: -0.3 })}
+              >
+                {person.displayName}
+              </Text>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                numberOfLines={1}
+                style={type(14, 'regular', { color: color.secondary })}
+              >
                 {[person.circleNames[0], person.city].filter(Boolean).join(' · ')}
               </Text>
             </View>
@@ -163,18 +174,29 @@ export function PeopleTab() {
                 <ChatIcon size={20} strokeWidth={1.9} color={color.ink} />
               </Pressable>
             ) : (
-              <Text role="status" style={type(14, 'semibold', { color: color.secondary })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="status"
+                style={type(14, 'semibold', { color: color.secondary })}
+              >
                 {t('people.requested')}
               </Text>
             )}
           </View>
         ))
       )}
-      <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>
+      <Text
+        maxFontSizeMultiplier={2.0}
+        style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}
+      >
         {t('people.lead')}
       </Text>
       {connect.isError ? (
-        <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          role="alert"
+          style={type(15, 'regular', { color: color.danger })}
+        >
           {t('people.error')}
         </Text>
       ) : null}

@@ -141,7 +141,9 @@ export default function WebRsvpScreen() {
     <View style={styles.topBar}>
       <View style={styles.brand}>
         <SproutIcon size={20} color={color.brand} />
-        <Text style={type(16, 'bold', { tracking: -0.3 })}>PlantCircle</Text>
+        <Text maxFontSizeMultiplier={2.0} style={type(16, 'bold', { tracking: -0.3 })}>
+          PlantCircle
+        </Text>
       </View>
       <Button variant="outline" label={t('web.openInApp')} onPress={openApp} />
     </View>
@@ -243,25 +245,37 @@ export default function WebRsvpScreen() {
         >
           {header}
           <Text
+            maxFontSizeMultiplier={1.4}
             accessibilityRole="header"
             style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
           >
             {title}
           </Text>
-          <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+          >
             {lead}
           </Text>
           <View style={styles.card}>
-            <Text style={type(18, 'bold', { tracking: -0.4 })}>{detail.title}</Text>
+            <Text maxFontSizeMultiplier={1.6} style={type(18, 'bold', { tracking: -0.4 })}>
+              {detail.title}
+            </Text>
             <Text
+              maxFontSizeMultiplier={2.0}
               style={type(15, 'regular', { color: color.secondary })}
             >{`${when} · ${placeLabel(t, detail)}`}</Text>
           </View>
           {cancelled || done.status === 'existing' ? null : (
             <>
               <View style={styles.card}>
-                <Text style={type(17, 'semibold')}>{t('web.getAppTitle')}</Text>
-                <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+                <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+                  {t('web.getAppTitle')}
+                </Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+                >
                   {t('web.getAppText')}
                 </Text>
                 <View style={styles.stores}>
@@ -282,7 +296,11 @@ export default function WebRsvpScreen() {
                 </View>
               </View>
               {cancel.isError ? (
-                <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  role="alert"
+                  style={type(15, 'regular', { color: color.danger })}
+                >
                   {t('web.error')}
                 </Text>
               ) : null}
@@ -319,10 +337,14 @@ export default function WebRsvpScreen() {
             alt={detail.imageAlt}
           />
         </View>
-        <Text style={type(13, 'semibold', { color: color.secondary, tracking: 0.6 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(13, 'semibold', { color: color.secondary, tracking: 0.6 })}
+        >
           {t('web.invitedBy', { host: detail.hostName.toUpperCase() })}
         </Text>
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
@@ -331,17 +353,22 @@ export default function WebRsvpScreen() {
         <View style={styles.facts}>
           <DateTile iso={detail.startsAt} timeZone={detail.timezone} />
           <View style={styles.factText}>
-            <Text style={type(17, 'semibold')}>{when}</Text>
-            <Text style={type(15, 'regular', { color: color.secondary })}>
+            <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+              {when}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'regular', { color: color.secondary })}
+            >
               {placeLabel(t, detail)}
             </Text>
           </View>
         </View>
         <View style={styles.chips}>
-          <Text style={[type(14, 'semibold'), styles.chip]}>
+          <Text maxFontSizeMultiplier={2.0} style={[type(14, 'semibold'), styles.chip]}>
             {full ? t('web.full') : t('web.spotsLeft', { count: spotsLeft })}
           </Text>
-          <Text style={[type(14, 'semibold'), styles.chip]}>
+          <Text maxFontSizeMultiplier={2.0} style={[type(14, 'semibold'), styles.chip]}>
             {detail.priceCents === 0
               ? t('plan.free')
               : new Intl.NumberFormat(language, {
@@ -351,8 +378,11 @@ export default function WebRsvpScreen() {
           </Text>
         </View>
 
-        <Text style={styles.label}>{t('web.firstName')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+          {t('web.firstName')}
+        </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('web.firstName')}
           aria-invalid={invalid === 'name'}
           value={firstName}
@@ -361,8 +391,11 @@ export default function WebRsvpScreen() {
           autoComplete="given-name"
           style={[styles.field, type(17)]}
         />
-        <Text style={styles.label}>{t('auth.email')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+          {t('auth.email')}
+        </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('auth.email')}
           aria-invalid={invalid === 'email'}
           value={email}
@@ -376,7 +409,10 @@ export default function WebRsvpScreen() {
           style={[styles.field, type(17)]}
         />
         <Checkbox label={t('web.ageAgree')} value={adult} onValueChange={setAdult} />
-        <Text style={type(13, 'regular', { color: color.secondary, leading: 1.45 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(13, 'regular', { color: color.secondary, leading: 1.45 })}
+        >
           {t('web.accountNote')}
         </Text>
         <View style={styles.legalRow}>
@@ -391,14 +427,21 @@ export default function WebRsvpScreen() {
               }}
               style={styles.link}
             >
-              <Text style={type(13, 'semibold', { color: color.brand })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(13, 'semibold', { color: color.brand })}
+              >
                 {t(`legal.policy.${policy}`)}
               </Text>
             </Pressable>
           ))}
         </View>
         {error ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger, leading: 1.4 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger, leading: 1.4 })}
+          >
             {error}
           </Text>
         ) : null}
@@ -409,7 +452,10 @@ export default function WebRsvpScreen() {
             loading={reserve.isPending}
             onPress={submit}
           />
-          <Text style={[type(14, 'regular', { color: color.secondary }), styles.hint]}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={[type(14, 'regular', { color: color.secondary }), styles.hint]}
+          >
             {adult ? t('web.noApp') : t('web.confirmAge')}
           </Text>
         </View>

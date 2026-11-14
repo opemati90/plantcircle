@@ -136,6 +136,7 @@ export default function SuspendedScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
@@ -148,28 +149,44 @@ export default function SuspendedScreen() {
         <View style={styles.rows}>
           {rows.map((row) => (
             <View key={row.title} style={styles.row}>
-              <Text style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
+              >
                 {row.title.toUpperCase()}
               </Text>
-              <Text style={type(16, 'regular', { leading: 1.45 })}>{row.text}</Text>
+              <Text maxFontSizeMultiplier={2.0} style={type(16, 'regular', { leading: 1.45 })}>
+                {row.text}
+              </Text>
             </View>
           ))}
         </View>
 
         {data.appealStatus ? (
           <View style={styles.card}>
-            <Text style={type(16, 'semibold')}>{t(`safety.appeal.${data.appealStatus}`)}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+            <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
+              {t(`safety.appeal.${data.appealStatus}`)}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+            >
               {t('safety.appealReviewed')}
             </Text>
           </View>
         ) : open ? (
           <View style={styles.card}>
-            <Text style={type(17, 'semibold')}>{t('safety.appealTitle')}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+            <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+              {t('safety.appealTitle')}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+            >
               {t('safety.appealLead')}
             </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('safety.appealTitle')}
               value={statement}
               onChangeText={setStatement}
@@ -179,6 +196,7 @@ export default function SuspendedScreen() {
               style={[styles.field, type(17, 'regular', { leading: 1.4 })]}
             />
             <Text
+              maxFontSizeMultiplier={2.0}
               style={type(13, 'regular', {
                 color: length > MAX ? color.danger : color.secondary,
               })}
@@ -186,7 +204,11 @@ export default function SuspendedScreen() {
               {t('safety.characters', { count: length, max: MAX })}
             </Text>
             {appeal.isError ? (
-              <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(14, 'regular', { color: color.danger })}
+              >
                 {t('safety.error')}
               </Text>
             ) : null}

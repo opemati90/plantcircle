@@ -24,7 +24,10 @@ export function AgeConfirm({
         }}
         style={styles.underAge}
       >
-        <Text style={type(14, 'semibold', { color: color.secondary })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(14, 'semibold', { color: color.secondary })}
+        >
           {t('auth.underAge')}
         </Text>
       </Pressable>

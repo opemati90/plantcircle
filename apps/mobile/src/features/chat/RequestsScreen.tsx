@@ -37,6 +37,7 @@ export default function RequestsScreen() {
         ]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
@@ -57,15 +58,28 @@ export default function RequestsScreen() {
             }
           />
         ) : requests.data.length === 0 ? (
-          <Text style={type(15, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
             {t('direct.requestsEmpty')}
           </Text>
         ) : (
           requests.data.map((request) => (
             <View key={request.id} style={styles.card}>
-              <Text style={type(17, 'semibold', { tracking: -0.3 })}>{request.fromName}</Text>
-              <Text style={type(15, 'regular', { leading: 1.5 })}>{request.firstMessage}</Text>
-              <Text style={type(13, 'regular', { color: color.secondary })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(17, 'semibold', { tracking: -0.3 })}
+              >
+                {request.fromName}
+              </Text>
+              <Text maxFontSizeMultiplier={2.0} style={type(15, 'regular', { leading: 1.5 })}>
+                {request.firstMessage}
+              </Text>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(13, 'regular', { color: color.secondary })}
+              >
                 {localTime(request.createdAt)}
               </Text>
               <View style={styles.actions}>
@@ -105,7 +119,11 @@ export default function RequestsScreen() {
           ))
         )}
         {respond.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('chat.error')}
           </Text>
         ) : null}

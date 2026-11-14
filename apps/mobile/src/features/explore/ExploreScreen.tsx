@@ -62,23 +62,36 @@ function PlansTab({
     return searching ? (
       <View style={styles.noResults}>
         <Text
+          maxFontSizeMultiplier={2.0}
           role="status"
           accessibilityLiveRegion="polite"
           style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
         >
           {t('explore.resultsCount', { count: 0 }).toUpperCase()}
         </Text>
-        <Text accessibilityRole="header" style={type(22, 'bold', { tracking: -0.6 })}>
+        <Text
+          maxFontSizeMultiplier={1.6}
+          accessibilityRole="header"
+          style={type(22, 'bold', { tracking: -0.6 })}
+        >
           {query.trim()
             ? t('explore.noResults.title', { query: query.trim() })
             : t('explore.noResults.filtersTitle')}
         </Text>
-        <Text style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('explore.noResults.lead')}
         </Text>
         <View style={styles.noResultsCard}>
-          <Text style={type(16, 'semibold')}>{t('explore.noResults.hostTitle')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+          <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
+            {t('explore.noResults.hostTitle')}
+          </Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+          >
             {t('explore.noResults.hostText')}
           </Text>
           <Button
@@ -87,7 +100,10 @@ function PlansTab({
             onPress={onHost}
           />
         </View>
-        <Text style={type(14, 'semibold', { color: color.secondary })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(14, 'semibold', { color: color.secondary })}
+        >
           {t('explore.noResults.tryInstead')}
         </Text>
         <View style={styles.tryRow}>
@@ -100,7 +116,9 @@ function PlansTab({
               }}
               style={styles.tryChip}
             >
-              <Text style={type(14, 'semibold')}>{t(`explore.noResults.try.${word}`)}</Text>
+              <Text maxFontSizeMultiplier={2.0} style={type(14, 'semibold')}>
+                {t(`explore.noResults.try.${word}`)}
+              </Text>
             </Pressable>
           ))}
         </View>
@@ -117,6 +135,7 @@ function PlansTab({
     <View style={styles.list}>
       {searching ? (
         <Text
+          maxFontSizeMultiplier={2.0}
           role="status"
           accessibilityLiveRegion="polite"
           style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
@@ -299,7 +318,11 @@ export default function ExploreScreen() {
         { paddingTop: insets.top, paddingBottom: 130 + insets.bottom },
       ]}
     >
-      <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>
+      <Text
+        maxFontSizeMultiplier={1.4}
+        accessibilityRole="header"
+        style={type(34, 'bold', { tracking: -1.1 })}
+      >
         {t('tabs.explore')}
       </Text>
 
@@ -313,13 +336,16 @@ export default function ExploreScreen() {
           style={styles.cityChip}
         >
           <PinIcon size={15} strokeWidth={2.3} />
-          <Text style={type(15, 'semibold')}>{browseLabel}</Text>
+          <Text maxFontSizeMultiplier={2.0} style={type(15, 'semibold')}>
+            {browseLabel}
+          </Text>
         </Pressable>
       ) : null}
 
       {tab === 'plans' || tab === 'circles' || tab === 'learn' ? (
         <View style={styles.searchRow}>
           <TextInput
+            maxFontSizeMultiplier={2.0}
             accessibilityLabel={
               tab === 'circles'
                 ? t('circles.searchLabel')
@@ -363,7 +389,12 @@ export default function ExploreScreen() {
                 color={activeCount > 0 ? '#FFFFFF' : color.ink}
               />
               {activeCount > 0 ? (
-                <Text style={type(13, 'bold', { color: '#FFFFFF' })}>{activeCount}</Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(13, 'bold', { color: '#FFFFFF' })}
+                >
+                  {activeCount}
+                </Text>
               ) : null}
             </Pressable>
           ) : null}
@@ -385,10 +416,15 @@ export default function ExploreScreen() {
                 }}
                 style={styles.activeChip}
               >
-                <Text style={type(13, 'semibold')}>
+                <Text maxFontSizeMultiplier={2.0} style={type(13, 'semibold')}>
                   {t(`explore.filters.${k}Options.${filters[k]}`)}
                 </Text>
-                <Text style={type(13, 'semibold', { color: color.secondary })}>×</Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(13, 'semibold', { color: color.secondary })}
+                >
+                  ×
+                </Text>
               </Pressable>
             ))}
         </View>
@@ -408,6 +444,7 @@ export default function ExploreScreen() {
               style={[styles.segment, selected && styles.segmentSelected]}
             >
               <Text
+                maxFontSizeMultiplier={2.0}
                 style={type(14, selected ? 'semibold' : 'medium', {
                   color: selected ? color.ink : color.secondary,
                 })}

@@ -89,12 +89,16 @@ export default function SignUpScreen() {
             <SproutIcon size={32} color={color.brand} />
           </View>
           <Text
+            maxFontSizeMultiplier={1.4}
             accessibilityRole="header"
             style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
           >
             {t('auth.createTitle')}
           </Text>
-          <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}
+          >
             {t('auth.createLead')}
           </Text>
         </View>
@@ -107,7 +111,10 @@ export default function SignUpScreen() {
         />
         <View style={styles.divider}>
           <View style={styles.rule} />
-          <Text style={type(14, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {t('auth.orEmail')}
           </Text>
           <View style={styles.rule} />
@@ -115,6 +122,7 @@ export default function SignUpScreen() {
         <View style={styles.form}>
           <View style={styles.emailRow}>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('auth.email')}
               aria-invalid={invalid}
               value={email}
@@ -142,6 +150,7 @@ export default function SignUpScreen() {
           </View>
           {error ? (
             <Text
+              maxFontSizeMultiplier={2.0}
               role="alert"
               style={type(15, 'regular', { color: color.danger, leading: 1.4 })}
             >
@@ -150,6 +159,7 @@ export default function SignUpScreen() {
           ) : null}
         </View>
         <Text
+          maxFontSizeMultiplier={2.0}
           style={[type(14, 'regular', { color: color.secondary, leading: 1.5 }), styles.terms]}
         >
           {t('auth.terms')}

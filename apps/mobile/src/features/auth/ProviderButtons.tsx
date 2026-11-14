@@ -51,7 +51,7 @@ export function ProviderButtons({ onSignedIn, gap = 10, adult }: Props) {
         }}
       />
       {failed ? (
-        <Text role="alert" style={styles.error}>
+        <Text maxFontSizeMultiplier={2.0} role="alert" style={styles.error}>
           {t('auth.oauthFailed')}
         </Text>
       ) : null}

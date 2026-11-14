@@ -155,12 +155,16 @@ export default function FeedbackScreen() {
         ]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('hostFeedback.title')}
         </Text>
-        <Text style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('hostFeedback.lead')}
         </Text>
 
@@ -185,6 +189,7 @@ export default function FeedbackScreen() {
                 style={[styles.rating, selected && styles.ratingSelected]}
               >
                 <Text
+                  maxFontSizeMultiplier={2.0}
                   style={type(17, 'semibold', { color: selected ? color.brand : color.ink })}
                 >
                   {value}
@@ -194,10 +199,14 @@ export default function FeedbackScreen() {
           })}
         </View>
 
-        <Text style={type(14, 'semibold', { color: color.secondary })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(14, 'semibold', { color: color.secondary })}
+        >
           {t('hostFeedback.commentLabel')}
         </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('hostFeedback.commentLabel')}
           value={comment}
           onChangeText={(next) => {
@@ -211,12 +220,20 @@ export default function FeedbackScreen() {
         />
 
         {submit.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('hostFeedback.error')}
           </Text>
         ) : null}
         {saved ? (
-          <Text role="status" style={type(17, 'semibold', { color: color.brand })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="status"
+            style={type(17, 'semibold', { color: color.brand })}
+          >
             {t('hostFeedback.thanks')}
           </Text>
         ) : null}

@@ -39,34 +39,53 @@ export default function AccessibilityScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('profile.accessibility')}
         </Text>
-        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('account.a11yLead')}
         </Text>
 
         <View style={styles.card}>
-          <Text style={type(17, 'semibold')}>{t('account.a11yStandard')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>
+          <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+            {t('account.a11yStandard')}
+          </Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {t('account.a11yChecked', { date: LAST_CHECKED })}
           </Text>
         </View>
 
         {gaps.map((gap) => (
           <View key={gap.title} style={styles.gap}>
-            <Text style={type(16, 'semibold')}>{gap.title}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+            <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
+              {gap.title}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+            >
               {gap.note}
             </Text>
           </View>
         ))}
 
         <View style={styles.card}>
-          <Text style={type(17, 'semibold')}>{t('account.a11yProblemTitle')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+          <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+            {t('account.a11yProblemTitle')}
+          </Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+          >
             {t('account.a11yProblemNote')}
           </Text>
           <Button
@@ -99,12 +118,19 @@ export default function AccessibilityScreen() {
           }}
           style={styles.link}
         >
-          <Text style={type(15, 'semibold', { color: color.brand })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'semibold', { color: color.brand })}
+          >
             {t('account.a11yRights')}
           </Text>
         </Pressable>
         {linkFailed ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(14, 'regular', { color: color.danger })}
+          >
             {t('account.linkError', { url: RIGHTS_URL })}
           </Text>
         ) : null}

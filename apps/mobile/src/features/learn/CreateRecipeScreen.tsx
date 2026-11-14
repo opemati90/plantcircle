@@ -147,13 +147,16 @@ export default function CreateRecipeScreen() {
         ]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('learn.create.title')}
         </Text>
 
-        <Text style={label}>{t('learn.create.circleLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={label}>
+          {t('learn.create.circleLabel')}
+        </Text>
         {circles.isPending ? (
           <Skeleton width="100%" height={64} radius={radius.card} />
         ) : circles.isError ? (
@@ -172,7 +175,10 @@ export default function CreateRecipeScreen() {
           />
         ) : memberOf.length === 0 ? (
           <View style={styles.notice}>
-            <Text style={type(15, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'regular', { color: color.secondary })}
+            >
               {t('learn.create.circleEmpty')}
             </Text>
             <Button
@@ -201,15 +207,23 @@ export default function CreateRecipeScreen() {
                   }}
                   style={[styles.option, selected && styles.optionSelected]}
                 >
-                  <Text style={type(17, 'semibold', { tracking: -0.3 })}>{circle.name}</Text>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(17, 'semibold', { tracking: -0.3 })}
+                  >
+                    {circle.name}
+                  </Text>
                 </Pressable>
               );
             })}
           </View>
         )}
 
-        <Text style={label}>{t('learn.create.titleLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={label}>
+          {t('learn.create.titleLabel')}
+        </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('learn.create.titleLabel')}
           value={title}
           onChangeText={setTitle}
@@ -217,8 +231,11 @@ export default function CreateRecipeScreen() {
           style={[styles.field, type(17)]}
         />
 
-        <Text style={label}>{t('learn.create.cuisineLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={label}>
+          {t('learn.create.cuisineLabel')}
+        </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('learn.create.cuisineLabel')}
           value={cuisine}
           onChangeText={setCuisine}
@@ -226,8 +243,11 @@ export default function CreateRecipeScreen() {
           style={[styles.field, type(17)]}
         />
 
-        <Text style={label}>{t('learn.create.introLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={label}>
+          {t('learn.create.introLabel')}
+        </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('learn.create.introLabel')}
           value={intro}
           onChangeText={setIntro}
@@ -238,7 +258,9 @@ export default function CreateRecipeScreen() {
 
         <View style={styles.inlineRow}>
           <View style={styles.inlineItem}>
-            <Text style={label}>{t('learn.create.servesLabel')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={label}>
+              {t('learn.create.servesLabel')}
+            </Text>
             <Stepper
               value={serves}
               min={MIN_SERVINGS}
@@ -250,8 +272,11 @@ export default function CreateRecipeScreen() {
             />
           </View>
           <View style={styles.inlineItem}>
-            <Text style={label}>{t('learn.create.minutesLabel')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={label}>
+              {t('learn.create.minutesLabel')}
+            </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('learn.create.minutesLabel')}
               value={minutes}
               onChangeText={(text) => {
@@ -265,10 +290,13 @@ export default function CreateRecipeScreen() {
           </View>
         </View>
 
-        <Text style={label}>{t('learn.create.ingredientsLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={label}>
+          {t('learn.create.ingredientsLabel')}
+        </Text>
         {ingredients.map((row, index) => (
           <View key={row.id} style={styles.ingredientRow}>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={`${t('learn.create.ingredientName')} ${index + 1}`}
               value={row.name}
               onChangeText={(text) => {
@@ -280,6 +308,7 @@ export default function CreateRecipeScreen() {
               style={[styles.field, styles.grow, type(17)]}
             />
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={`${t('learn.create.ingredientQty')} ${index + 1}`}
               value={row.qty}
               onChangeText={(text) => {
@@ -292,6 +321,7 @@ export default function CreateRecipeScreen() {
               style={[styles.field, styles.small, type(17)]}
             />
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={`${t('learn.create.ingredientUnit')} ${index + 1}`}
               value={row.unit}
               onChangeText={(text) => {
@@ -327,11 +357,19 @@ export default function CreateRecipeScreen() {
           ) : null}
         </View>
 
-        <Text style={label}>{t('learn.create.stepsLabel')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={label}>
+          {t('learn.create.stepsLabel')}
+        </Text>
         {steps.map((row, index) => (
           <View key={row.id} style={styles.stepRow}>
-            <Text style={type(15, 'semibold', { color: color.brand })}>{index + 1}</Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'semibold', { color: color.brand })}
+            >
+              {index + 1}
+            </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('learn.create.stepLabel', { number: index + 1 })}
               value={row.body}
               onChangeText={(text) => {
@@ -365,8 +403,13 @@ export default function CreateRecipeScreen() {
           ) : null}
         </View>
 
-        <Text style={label}>{t('learn.create.allergensLabel')}</Text>
-        <Text style={type(15, 'regular', { color: color.secondary })}>
+        <Text maxFontSizeMultiplier={2.0} style={label}>
+          {t('learn.create.allergensLabel')}
+        </Text>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary })}
+        >
           {t('learn.create.allergensHelp')}
         </Text>
         <View style={styles.chips}>
@@ -383,6 +426,7 @@ export default function CreateRecipeScreen() {
                 style={[styles.chip, selected && styles.chipSelected]}
               >
                 <Text
+                  maxFontSizeMultiplier={2.0}
                   style={type(15, 'semibold', { color: selected ? color.brand : color.ink })}
                 >
                   {t(`allergen.${allergen}`)}
@@ -400,18 +444,29 @@ export default function CreateRecipeScreen() {
           }}
         />
         {skipped ? (
-          <Text style={type(15, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
             {t('learn.create.skippedNote')}
           </Text>
         ) : null}
         {!allergensAnswered ? (
-          <Text role="status" style={type(15, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="status"
+            style={type(15, 'regular', { color: color.secondary })}
+          >
             {t('learn.create.choose')}
           </Text>
         ) : null}
 
         {create.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('learn.create.error')}
           </Text>
         ) : null}

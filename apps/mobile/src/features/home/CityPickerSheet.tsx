@@ -121,11 +121,18 @@ export function CityChooser({
       }}
       style={[styles.row, selected && styles.rowSelected]}
     >
-      <Text style={[type(17, 'semibold', { tracking: -0.3 }), styles.rowLabel]}>{label}</Text>
+      <Text
+        maxFontSizeMultiplier={2.0}
+        style={[type(17, 'semibold', { tracking: -0.3 }), styles.rowLabel]}
+      >
+        {label}
+      </Text>
       {role === 'radio' ? (
         <View style={[styles.dot, selected && styles.dotSelected]} />
       ) : (
-        <Text style={type(15, 'semibold', { color: color.brand })}>{t('common.add')}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={type(15, 'semibold', { color: color.brand })}>
+          {t('common.add')}
+        </Text>
       )}
     </Pressable>
   );
@@ -133,6 +140,7 @@ export function CityChooser({
   return (
     <View style={styles.chooser}>
       <TextInput
+        maxFontSizeMultiplier={2.0}
         accessibilityLabel={t('city.searchLabel')}
         placeholder={t('city.searchPlaceholder')}
         placeholderTextColor={color.secondary}
@@ -178,6 +186,7 @@ export function CityChooser({
         {groups.map((group) => (
           <View key={group.countryCode} style={styles.group}>
             <Text
+              maxFontSizeMultiplier={2.0}
               accessibilityRole="header"
               style={type(13, 'bold', { color: color.secondary, tracking: 0.5 })}
             >
@@ -223,7 +232,10 @@ export function CityChooser({
             }}
             style={styles.countryLink}
           >
-            <Text style={type(15, 'semibold', { color: color.brand })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'semibold', { color: color.brand })}
+            >
               {t('city.changeCountry', { country: countryName(region) })}
             </Text>
           </Pressable>
@@ -238,24 +250,38 @@ export function CityChooser({
             }}
             style={styles.countryLink}
           >
-            <Text style={type(15, 'semibold', { color: color.brand })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'semibold', { color: color.brand })}
+            >
               {t('city.changeTimeZone', { zone: zone.replace(/_/g, ' ') })}
             </Text>
           </Pressable>
         ) : null}
         {!typed ? (
-          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}
+          >
             {t('city.hint')}
           </Text>
         ) : null}
         {createFailed ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('city.addFailed')}
           </Text>
         ) : null}
         {loadError ? (
           <View style={styles.retry}>
-            <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(15, 'regular', { color: color.danger })}
+            >
               {t('city.loadError')}
             </Text>
             <Button
@@ -274,6 +300,7 @@ export function CityChooser({
         title={t('city.countryTitle')}
       >
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('city.countrySearch')}
           placeholder={t('city.countrySearch')}
           placeholderTextColor={color.secondary}
@@ -307,6 +334,7 @@ export function CityChooser({
         title={t('city.timeZoneTitle', { city: typed })}
       >
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('city.timeZoneSearch')}
           placeholder={t('city.timeZoneSearch')}
           placeholderTextColor={color.secondary}
@@ -396,7 +424,11 @@ export function CityPickerSheet({
     >
       <CityChooser {...chooser} resetKey={open} />
       {failed ? (
-        <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          role="alert"
+          style={type(15, 'regular', { color: color.danger })}
+        >
           {t('home.cityFailed')}
         </Text>
       ) : null}

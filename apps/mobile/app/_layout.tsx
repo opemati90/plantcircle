@@ -46,10 +46,13 @@ function StartupFailed() {
   const { t } = useTranslation();
   return (
     <View style={styles.failed}>
-      <Text accessibilityRole="header" style={type(24, 'bold')}>
+      <Text maxFontSizeMultiplier={1.4} accessibilityRole="header" style={type(24, 'bold')}>
         {t('errors.startTitle')}
       </Text>
-      <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
+      <Text
+        maxFontSizeMultiplier={2.0}
+        style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}
+      >
         {t('errors.startText')}
       </Text>
     </View>
@@ -104,7 +107,10 @@ export default function RootLayout() {
               />
               {startup.backend.kind === 'fixtures' ? (
                 <View pointerEvents="none" style={styles.devBadge} testID="dev-badge">
-                  <Text style={type(11, 'semibold', { color: '#FFFFFF' })}>
+                  <Text
+                    maxFontSizeMultiplier={1.2}
+                    style={type(11, 'semibold', { color: '#FFFFFF' })}
+                  >
                     Dev fixtures · email code 000000
                   </Text>
                 </View>

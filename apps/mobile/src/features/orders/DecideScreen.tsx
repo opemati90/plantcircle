@@ -169,24 +169,36 @@ export default function DecideScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 170 + insets.bottom }]}
       >
         <View style={styles.pillWrap}>
-          <Text style={[type(13, 'bold', { color: '#6B4000', tracking: 0.3 }), styles.pill]}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={[type(13, 'bold', { color: '#6B4000', tracking: 0.3 }), styles.pill]}
+          >
             {data.state === 'locked'
               ? t('order.stateLocked').toUpperCase()
               : t('order.interestClosed').toUpperCase()}
           </Text>
         </View>
-        <Text style={type(52, 'bold', { tracking: -2, leading: 1 })}>
+        <Text
+          maxFontSizeMultiplier={1.4}
+          style={type(52, 'bold', { tracking: -2, leading: 1 })}
+        >
           {new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(
             data.interestTotal,
           )}
-          <Text style={type(22, 'medium', { color: color.secondary, tracking: -0.3 })}>
+          <Text
+            maxFontSizeMultiplier={1.6}
+            style={type(22, 'medium', { color: color.secondary, tracking: -0.3 })}
+          >
             {` ${t('order.ofTarget', { target: data.targetTotal, unit })}`}
           </Text>
         </Text>
         <View style={styles.track}>
           <View style={[styles.fill, { width: `${progress(data) * 100}%` }]} />
         </View>
-        <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {`${t('order.decideLead', { count: data.peopleCount })} ${t('order.decideTitle')}`}
         </Text>
         <View accessibilityRole="radiogroup" style={styles.options}>
@@ -202,8 +214,13 @@ export default function DecideScreen() {
                 }}
                 style={[styles.option, selected && styles.optionSelected]}
               >
-                <Text style={type(17, 'semibold')}>{option.title}</Text>
-                <Text style={type(15, 'regular', { color: color.secondary, leading: 1.45 })}>
+                <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+                  {option.title}
+                </Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(15, 'regular', { color: color.secondary, leading: 1.45 })}
+                >
                   {option.lead}
                 </Text>
               </Pressable>
@@ -211,17 +228,24 @@ export default function DecideScreen() {
           })}
         </View>
         {decide.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('order.error')}
           </Text>
         ) : null}
       </ScrollView>
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
-          <Text style={type(16, 'semibold')}>
+          <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
             {choice ? options.find((o) => o.value === choice)?.title : t('order.decideTitle')}
           </Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {t('order.notified')}
           </Text>
         </View>

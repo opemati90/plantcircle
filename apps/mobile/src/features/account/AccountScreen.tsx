@@ -46,6 +46,7 @@ export default function AccountScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
@@ -69,6 +70,7 @@ export default function AccountScreen() {
           <>
             <View style={styles.section}>
               <Text
+                maxFontSizeMultiplier={2.0}
                 accessibilityRole="header"
                 style={type(13, 'semibold', { color: color.secondary, tracking: 0.5 })}
               >
@@ -77,8 +79,11 @@ export default function AccountScreen() {
               <View style={styles.card}>
                 <View style={styles.rowHead}>
                   <View style={styles.grow}>
-                    <Text style={type(17, 'semibold')}>{t('account.downloadTitle')}</Text>
+                    <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+                      {t('account.downloadTitle')}
+                    </Text>
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
                     >
                       {settings.isPending
@@ -111,7 +116,11 @@ export default function AccountScreen() {
                   )}
                 </View>
                 {exportRequest.isError || settings.isError ? (
-                  <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    role="alert"
+                    style={type(14, 'regular', { color: color.danger })}
+                  >
                     {t('account.error')}
                   </Text>
                 ) : null}
@@ -120,6 +129,7 @@ export default function AccountScreen() {
 
             <View style={styles.section}>
               <Text
+                maxFontSizeMultiplier={2.0}
                 accessibilityRole="header"
                 style={type(13, 'semibold', { color: color.secondary, tracking: 0.5 })}
               >
@@ -128,8 +138,11 @@ export default function AccountScreen() {
               <View style={styles.card}>
                 {facts.map((fact, index) => (
                   <View key={fact.title} style={[styles.fact, index > 0 && styles.factBorder]}>
-                    <Text style={type(16, 'semibold')}>{fact.title}</Text>
+                    <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
+                      {fact.title}
+                    </Text>
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
                     >
                       {fact.note}
@@ -159,7 +172,11 @@ export default function AccountScreen() {
       >
         <View style={styles.sheet}>
           {remove.isError ? (
-            <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(14, 'regular', { color: color.danger })}
+            >
               {t('account.error')}
             </Text>
           ) : null}

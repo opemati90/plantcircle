@@ -113,17 +113,24 @@ export default function ReportDetailsScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('safety.detailsTitle')}
         </Text>
-        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('safety.detailsLead')}
         </Text>
 
-        <Text style={styles.label}>{t(`safety.whatWrong.${targetType}`)}</Text>
+        <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+          {t(`safety.whatWrong.${targetType}`)}
+        </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={t(`safety.whatWrong.${targetType}`)}
           value={details}
           onChangeText={setDetails}
@@ -133,6 +140,7 @@ export default function ReportDetailsScreen() {
           style={[styles.field, type(17, 'regular', { leading: 1.4 })]}
         />
         <Text
+          maxFontSizeMultiplier={2.0}
           style={type(13, 'regular', { color: length > MAX ? color.danger : color.secondary })}
         >
           {t('safety.characters', { count: length, max: MAX })}
@@ -141,7 +149,11 @@ export default function ReportDetailsScreen() {
         <Checkbox label={t('safety.accurate')} value={confirmed} onValueChange={setConfirmed} />
 
         {create.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {errorCode(create.error) === 'rate_limited'
               ? t('safety.rateLimited')
               : t('safety.error')}
@@ -156,7 +168,10 @@ export default function ReportDetailsScreen() {
             onPress={send}
           />
           {!confirmed ? (
-            <Text style={[type(14, 'regular', { color: color.secondary }), styles.hint]}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={[type(14, 'regular', { color: color.secondary }), styles.hint]}
+            >
               {t('safety.confirmHint')}
             </Text>
           ) : null}

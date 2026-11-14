@@ -138,41 +138,61 @@ export default function CircleRequestScreen() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[styles.content, { paddingBottom: 140 + insets.bottom }]}
       >
-        <Text style={type(13, 'semibold', { color: color.secondary, tracking: 0.6 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(13, 'semibold', { color: color.secondary, tracking: 0.6 })}
+        >
           {`${data.isGlobal ? t('circles.eyebrowGlobal') : t('circles.eyebrowLocal')} · ${t('circles.approvalNeeded')}`.toUpperCase()}
         </Text>
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {data.name}
         </Text>
         {where ? (
-          <Text style={type(15, 'regular', { color: color.secondary })}>{where}</Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
+            {where}
+          </Text>
         ) : null}
         {data.tagline ? (
-          <Text style={type(17, 'regular', { leading: 1.5 })}>{data.tagline}</Text>
+          <Text maxFontSizeMultiplier={2.0} style={type(17, 'regular', { leading: 1.5 })}>
+            {data.tagline}
+          </Text>
         ) : null}
 
         <View style={styles.card}>
-          <Text style={type(16, 'semibold')}>{t('circles.privateTitle')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+          <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
+            {t('circles.privateTitle')}
+          </Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+          >
             {t('circles.privateText')}
           </Text>
         </View>
 
         <View style={styles.facts}>
-          <Text style={type(16, 'semibold')}>
+          <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
             {t('circles.memberCount', { count: data.memberCount })}
           </Text>
           {data.ownerName ? (
-            <Text style={type(15, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'regular', { color: color.secondary })}
+            >
               {t('circles.moderatedBy', { name: data.ownerName })}
             </Text>
           ) : null}
         </View>
 
         <Text
+          maxFontSizeMultiplier={2.0}
           style={[
             type(13, 'semibold', { color: color.secondary, tracking: 0.4 }),
             styles.askLabel,
@@ -180,10 +200,11 @@ export default function CircleRequestScreen() {
         >
           {t('circles.moderatorsAsk').toUpperCase()}
         </Text>
-        <Text style={type(18, 'semibold')}>
+        <Text maxFontSizeMultiplier={1.6} style={type(18, 'semibold')}>
           {data.joinQuestion ?? t('circles.requestLead')}
         </Text>
         <TextInput
+          maxFontSizeMultiplier={2.0}
           accessibilityLabel={data.joinQuestion ?? t('circles.answerLabel')}
           value={answer}
           onChangeText={setAnswer}
@@ -192,6 +213,7 @@ export default function CircleRequestScreen() {
           style={[styles.answer, type(17, 'regular', { leading: 1.4 })]}
         />
         <Text
+          maxFontSizeMultiplier={2.0}
           style={[
             type(13, 'regular', {
               color: length > ANSWER_MAX ? color.danger : color.secondary,
@@ -202,15 +224,24 @@ export default function CircleRequestScreen() {
           {`${length} / ${ANSWER_MAX}`}
         </Text>
         {join.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('circles.genericError')}
           </Text>
         ) : null}
       </ScrollView>
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
-          <Text style={type(16, 'semibold')}>{t('circles.freeToJoin')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>
+          <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
+            {t('circles.freeToJoin')}
+          </Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {t('circles.notifyYou')}
           </Text>
         </View>

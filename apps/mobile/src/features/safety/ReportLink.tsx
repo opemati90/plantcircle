@@ -35,7 +35,12 @@ export function ReportLink({
       }}
       style={styles.link}
     >
-      <Text style={type(15, 'semibold', { color: color.secondary })}>{label}</Text>
+      <Text
+        maxFontSizeMultiplier={2.0}
+        style={type(15, 'semibold', { color: color.secondary })}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }

@@ -86,16 +86,25 @@ export function LearnTab({ query }: { query: string }) {
               <View style={styles.photo}>
                 <Photo source={recipePhoto(recipe.id)} />
               </View>
-              <Text numberOfLines={2} style={type(16, 'semibold', { tracking: -0.3 })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                numberOfLines={2}
+                style={type(16, 'semibold', { tracking: -0.3 })}
+              >
                 {recipe.title}
               </Text>
-              <Text numberOfLines={1} style={type(14, 'regular', { color: color.secondary })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                numberOfLines={1}
+                style={type(14, 'regular', { color: color.secondary })}
+              >
                 {t('learn.byline', {
                   name: recipe.authorName ?? t('circles.requests.someone'),
                   circle: recipe.circleName,
                 })}
               </Text>
               <Text
+                maxFontSizeMultiplier={2.0}
                 numberOfLines={2}
                 style={type(13, 'semibold', {
                   color: recipe.allergensConfirmed ? color.secondary : color.danger,

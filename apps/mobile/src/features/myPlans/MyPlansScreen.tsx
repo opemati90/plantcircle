@@ -164,7 +164,11 @@ export default function MyPlansScreen() {
       >
         {isOffline(query) ? <OfflineBanner savedAt={query.dataUpdatedAt} /> : null}
         <View style={styles.header}>
-          <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>
+          <Text
+            maxFontSizeMultiplier={1.4}
+            accessibilityRole="header"
+            style={type(34, 'bold', { tracking: -1.1 })}
+          >
             {t('tabs.myPlans')}
           </Text>
           <Pressable
@@ -175,7 +179,10 @@ export default function MyPlansScreen() {
             style={styles.createButton}
           >
             <PlusIcon size={16} strokeWidth={2.6} color={color.surface} />
-            <Text style={type(15, 'semibold', { color: color.surface })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'semibold', { color: color.surface })}
+            >
               {t('myPlans.create')}
             </Text>
           </Pressable>
@@ -195,6 +202,7 @@ export default function MyPlansScreen() {
                 style={[styles.segment, selected && styles.segmentSelected]}
               >
                 <Text
+                  maxFontSizeMultiplier={2.0}
                   style={type(15, selected ? 'semibold' : 'medium', {
                     color: selected ? color.ink : color.secondary,
                   })}

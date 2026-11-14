@@ -30,9 +30,15 @@ export function Stepper({
         }}
         style={[styles.button, value <= min && styles.disabled]}
       >
-        <Text style={type(20, 'semibold', { color: color.ink })}>−</Text>
+        <Text maxFontSizeMultiplier={1.6} style={type(20, 'semibold', { color: color.ink })}>
+          −
+        </Text>
       </Pressable>
-      <Text accessibilityLiveRegion="polite" style={type(17, 'semibold', { tracking: -0.3 })}>
+      <Text
+        maxFontSizeMultiplier={2.0}
+        accessibilityLiveRegion="polite"
+        style={type(17, 'semibold', { tracking: -0.3 })}
+      >
         {value}
       </Text>
       <Pressable
@@ -44,7 +50,9 @@ export function Stepper({
         }}
         style={[styles.button, value >= max && styles.disabled]}
       >
-        <Text style={type(20, 'semibold', { color: color.ink })}>+</Text>
+        <Text maxFontSizeMultiplier={1.6} style={type(20, 'semibold', { color: color.ink })}>
+          +
+        </Text>
       </Pressable>
     </View>
   );

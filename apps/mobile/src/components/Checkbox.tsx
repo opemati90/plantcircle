@@ -46,7 +46,12 @@ export function Checkbox({
       <View style={[styles.box, value && styles.boxChecked]}>
         {value ? <CheckIcon size={16} strokeWidth={3} color="#FFFFFF" /> : null}
       </View>
-      <Text style={[type(16, 'medium', { leading: 1.4 }), styles.label]}>{label}</Text>
+      <Text
+        maxFontSizeMultiplier={2.0}
+        style={[type(16, 'medium', { leading: 1.4 }), styles.label]}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }

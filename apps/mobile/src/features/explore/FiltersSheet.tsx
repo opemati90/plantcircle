@@ -30,7 +30,7 @@ export function FiltersSheet({
   const { t } = useTranslation();
   const group = <K extends keyof PlanFilters>(key: K, options: readonly PlanFilters[K][]) => (
     <View style={styles.group}>
-      <Text accessibilityRole="header" style={type(15, 'semibold')}>
+      <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={type(15, 'semibold')}>
         {t(`explore.filters.${key}` as 'explore.filters.when')}
       </Text>
       <View
@@ -77,6 +77,7 @@ export function FiltersSheet({
               {...(web as object)}
             >
               <Text
+                maxFontSizeMultiplier={2.0}
                 style={type(14, selected ? 'semibold' : 'medium', {
                   color: selected ? color.ink : color.secondary,
                 })}
@@ -97,7 +98,10 @@ export function FiltersSheet({
         {group('when', WHEN_OPTIONS)}
         {group('where', WHERE_OPTIONS)}
         {group('price', PRICE_OPTIONS)}
-        <Text style={type(13, 'regular', { color: color.secondary })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(13, 'regular', { color: color.secondary })}
+        >
           {t('explore.filters.languageLater')}
         </Text>
         <View style={styles.buttons}>

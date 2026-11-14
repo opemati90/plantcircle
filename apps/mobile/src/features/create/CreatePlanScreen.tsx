@@ -331,10 +331,12 @@ export default function CreatePlanScreen() {
       >
         {step === 'type' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
               {t('create.typeTitle')}
             </Text>
-            <Text style={styles.lead}>{t('create.typeLead')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+              {t('create.typeLead')}
+            </Text>
             <View accessibilityRole="radiogroup" style={styles.tiles}>
               {KINDS.map((kind) => {
                 const selected = draft.category === kind;
@@ -348,10 +350,13 @@ export default function CreatePlanScreen() {
                     }}
                     style={[styles.tile, selected && styles.tileSelected]}
                   >
-                    <Text style={type(17, 'semibold', { tracking: -0.3 })}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      style={type(17, 'semibold', { tracking: -0.3 })}
+                    >
                       {t(`plan.category.${kind}`)}
                     </Text>
-                    <Text style={styles.lead}>
+                    <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
                       {kind === 'cooking_night'
                         ? t('create.hintCookingNight')
                         : t('create.hintPotluck')}
@@ -366,10 +371,15 @@ export default function CreatePlanScreen() {
                 }}
                 style={styles.tile}
               >
-                <Text style={type(17, 'semibold', { tracking: -0.3 })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(17, 'semibold', { tracking: -0.3 })}
+                >
                   {t('plan.category.group_order')}
                 </Text>
-                <Text style={styles.lead}>{t('create.hintGroupOrder')}</Text>
+                <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+                  {t('create.hintGroupOrder')}
+                </Text>
               </Pressable>
             </View>
           </>
@@ -377,19 +387,22 @@ export default function CreatePlanScreen() {
 
         {step === 'name' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
               {t('create.nameTitle')}
             </Text>
             {recipe.data ? (
-              <Text style={styles.lead}>
+              <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
                 {t('create.fromRecipeNote', {
                   recipe: recipe.data.title,
                   author: recipe.data.authorName ?? t('circles.requests.someone'),
                 })}
               </Text>
             ) : null}
-            <Text style={styles.label}>{t('create.titleLabel')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+              {t('create.titleLabel')}
+            </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('create.titleLabel')}
               value={draft.title}
               onChangeText={(title) => {
@@ -398,8 +411,11 @@ export default function CreatePlanScreen() {
               maxLength={80}
               style={[styles.field, type(17)]}
             />
-            <Text style={styles.label}>{t('create.descriptionLabel')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+              {t('create.descriptionLabel')}
+            </Text>
             <TextInput
+              maxFontSizeMultiplier={2.0}
               accessibilityLabel={t('create.descriptionLabel')}
               value={draft.description}
               onChangeText={(description) => {
@@ -418,7 +434,7 @@ export default function CreatePlanScreen() {
 
         {step === 'where' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
               {t('create.whereTitle')}
             </Text>
             <View
@@ -445,6 +461,7 @@ export default function CreatePlanScreen() {
                     ]}
                   >
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={type(15, 'semibold', {
                         color: selected ? color.brand : color.ink,
                       })}
@@ -458,13 +475,20 @@ export default function CreatePlanScreen() {
               })}
             </View>
             {!inPersonAllowed ? (
-              <Text style={styles.lead}>{t('hosting.inPersonLocked')}</Text>
+              <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+                {t('hosting.inPersonLocked')}
+              </Text>
             ) : null}
             {draft.format === 'in_person' ? (
               <>
-                <Text style={styles.label}>{t('create.areaLabel')}</Text>
-                <Text style={styles.lead}>{t('create.areaLead')}</Text>
+                <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+                  {t('create.areaLabel')}
+                </Text>
+                <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+                  {t('create.areaLead')}
+                </Text>
                 <TextInput
+                  maxFontSizeMultiplier={2.0}
                   accessibilityLabel={t('create.areaLabel')}
                   value={draft.areaName}
                   onChangeText={(areaName) => {
@@ -473,8 +497,11 @@ export default function CreatePlanScreen() {
                   maxLength={60}
                   style={[styles.field, type(17)]}
                 />
-                <Text style={styles.label}>{t('create.addressLabel')}</Text>
+                <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+                  {t('create.addressLabel')}
+                </Text>
                 <TextInput
+                  maxFontSizeMultiplier={2.0}
                   accessibilityLabel={t('create.addressLabel')}
                   value={draft.address}
                   onChangeText={(address) => {
@@ -490,15 +517,20 @@ export default function CreatePlanScreen() {
                     update({ keepPrivate });
                   }}
                 />
-                <Text style={styles.lead}>
+                <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
                   {draft.keepPrivate ? t('create.keepPrivateOn') : t('create.keepPrivateOff')}
                 </Text>
               </>
             ) : (
               <>
-                <Text style={styles.label}>{t('create.meetLabel')}</Text>
-                <Text style={styles.lead}>{t('create.meetLead')}</Text>
+                <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+                  {t('create.meetLabel')}
+                </Text>
+                <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+                  {t('create.meetLead')}
+                </Text>
                 <TextInput
+                  maxFontSizeMultiplier={2.0}
                   accessibilityLabel={t('create.meetLabel')}
                   value={draft.meetingUrl}
                   onChangeText={(meetingUrl) => {
@@ -511,7 +543,11 @@ export default function CreatePlanScreen() {
                   style={[styles.field, type(17)]}
                 />
                 {draft.meetingUrl.trim() && !meetingValid ? (
-                  <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    role="alert"
+                    style={type(15, 'regular', { color: color.danger })}
+                  >
                     {t('create.meetInvalid')}
                   </Text>
                 ) : null}
@@ -522,7 +558,7 @@ export default function CreatePlanScreen() {
 
         {step === 'capacity' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
               {t('create.howManyTitle')}
             </Text>
             <Stepper
@@ -536,17 +572,23 @@ export default function CreatePlanScreen() {
                 update({ capacity });
               }}
             />
-            <Text style={styles.lead}>{t('hosting.capacityNote', { spots: maxCapacity })}</Text>
-            <Text style={styles.lead}>{t('create.waitlistNote')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+              {t('hosting.capacityNote', { spots: maxCapacity })}
+            </Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+              {t('create.waitlistNote')}
+            </Text>
           </>
         ) : null}
 
         {step === 'allergens' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
               {t('create.allergensTitle')}
             </Text>
-            <Text style={styles.lead}>{t('create.allergensLead')}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+              {t('create.allergensLead')}
+            </Text>
             <View style={styles.chips}>
               {RECIPE_ALLERGENS.map((allergen) => {
                 const selected = draft.allergens.includes(allergen);
@@ -561,6 +603,7 @@ export default function CreatePlanScreen() {
                     style={[styles.chip, selected && styles.chipSelected]}
                   >
                     <Text
+                      maxFontSizeMultiplier={2.0}
                       style={type(15, 'semibold', {
                         color: selected ? color.brand : color.ink,
                       })}
@@ -572,17 +615,25 @@ export default function CreatePlanScreen() {
               })}
             </View>
             {!valid.allergens ? (
-              <Text role="status" style={styles.lead}>
+              <Text maxFontSizeMultiplier={2.0} role="status" style={styles.lead}>
                 {t('create.chooseAllergens')}
               </Text>
             ) : null}
             {lateStart ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(15, 'regular', { color: color.danger })}
+              >
                 {t('create.tooSoon')}
               </Text>
             ) : null}
             {submitError ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(15, 'regular', { color: color.danger })}
+              >
                 {submitError}
               </Text>
             ) : null}
@@ -656,10 +707,12 @@ function WhenStep({
 
   return (
     <>
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
         {t('create.whenTitle')}
       </Text>
-      <Text style={styles.label}>{t('create.dayGroup')}</Text>
+      <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+        {t('create.dayGroup')}
+      </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -680,16 +733,26 @@ function WhenStep({
               }}
               style={[styles.day, selected && styles.tileSelected]}
             >
-              <Text style={type(13, 'semibold', { color: color.secondary })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(13, 'semibold', { color: color.secondary })}
+              >
                 {weekday(offset)}
               </Text>
-              <Text style={type(20, 'semibold', { tracking: -0.4 })}>{dayNumber(offset)}</Text>
+              <Text
+                maxFontSizeMultiplier={1.6}
+                style={type(20, 'semibold', { tracking: -0.4 })}
+              >
+                {dayNumber(offset)}
+              </Text>
             </Pressable>
           );
         })}
       </ScrollView>
 
-      <Text style={styles.label}>{t('create.startGroup')}</Text>
+      <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+        {t('create.startGroup')}
+      </Text>
       <View
         accessibilityRole="radiogroup"
         accessibilityLabel={t('create.startGroup')}
@@ -710,7 +773,10 @@ function WhenStep({
               }}
               style={[styles.timeCell, selected && styles.chipSelected, !ok && styles.disabled]}
             >
-              <Text style={type(15, 'semibold', { color: selected ? color.brand : color.ink })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'semibold', { color: selected ? color.brand : color.ink })}
+              >
                 {startLabel(minutes)}
               </Text>
             </Pressable>
@@ -718,7 +784,9 @@ function WhenStep({
         })}
       </View>
 
-      <Text style={styles.label}>{t('create.durationGroup')}</Text>
+      <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+        {t('create.durationGroup')}
+      </Text>
       <View
         accessibilityRole="radiogroup"
         accessibilityLabel={t('create.durationGroup')}
@@ -736,7 +804,10 @@ function WhenStep({
               }}
               style={[styles.pillItem, selected && styles.pillItemSelected]}
             >
-              <Text style={type(15, 'semibold', { color: color.ink })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'semibold', { color: color.ink })}
+              >
                 {t('learn.minutes', { minutes })}
               </Text>
             </Pressable>
@@ -745,12 +816,16 @@ function WhenStep({
       </View>
 
       {window ? (
-        <Text style={styles.summary}>
+        <Text maxFontSizeMultiplier={2.0} style={styles.summary}>
           {`${longDate(window.startsAt, zone)} · ${timeRange(window.startsAt, window.endsAt, zone)}`}
         </Text>
       ) : null}
       {window && !startsSoonEnough(window.startsAt, now) ? (
-        <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          role="alert"
+          style={type(15, 'regular', { color: color.danger })}
+        >
           {t('create.tooSoon')}
         </Text>
       ) : null}

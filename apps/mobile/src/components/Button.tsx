@@ -68,6 +68,7 @@ export function Button({
         <>
           {icon}
           <Text
+            maxFontSizeMultiplier={2.0}
             style={type(
               variant === 'ghost' ? 15 : 17,
               variant === 'ghost' ? 'medium' : 'semibold',
@@ -147,8 +148,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   glass: {
-    backgroundColor: extra.glassLight,
+    backgroundColor: extra.glassDark,
     borderWidth: 1,
-    borderColor: extra.hairlineOnPhoto,
+    borderColor: 'rgba(255,255,255,0.45)',
   },
 });

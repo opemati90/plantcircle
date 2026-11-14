@@ -84,16 +84,26 @@ export function BringSection({
 
   return (
     <View style={styles.section}>
-      <Text accessibilityRole="header" style={type(20, 'semibold', { tracking: -0.4 })}>
+      <Text
+        maxFontSizeMultiplier={1.6}
+        accessibilityRole="header"
+        style={type(20, 'semibold', { tracking: -0.4 })}
+      >
         {t('host.bringTitle')}
       </Text>
       {!editable ? (
-        <Text style={type(15, 'regular', { color: color.secondary })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary })}
+        >
           {t('host.bringLocked')}
         </Text>
       ) : null}
       {items.length === 0 ? (
-        <Text style={type(15, 'regular', { color: color.secondary })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary })}
+        >
           {t('host.bringEmpty')}
         </Text>
       ) : (
@@ -102,12 +112,23 @@ export function BringSection({
           return (
             <View key={item.id} style={styles.item}>
               <View style={styles.itemText}>
-                <Text style={type(17, 'semibold', { tracking: -0.3 })}>{item.label}</Text>
-                <Text style={type(15, 'regular', { color: color.secondary })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(17, 'semibold', { tracking: -0.3 })}
+                >
+                  {item.label}
+                </Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(15, 'regular', { color: color.secondary })}
+                >
                   {t('host.bringBrought', { claimed, quantity: item.quantity })}
                 </Text>
                 {claimed > 0 ? (
-                  <Text style={type(14, 'regular', { color: color.secondary })}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(14, 'regular', { color: color.secondary })}
+                  >
                     {item.claimedBy.join(', ')}
                   </Text>
                 ) : null}
@@ -135,7 +156,10 @@ export function BringSection({
                 </View>
               ) : null}
               {claimed > 0 ? (
-                <Text style={type(13, 'regular', { color: color.secondary })}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(13, 'regular', { color: color.secondary })}
+                >
                   {t('host.bringTaken')}
                 </Text>
               ) : null}
@@ -153,7 +177,11 @@ export function BringSection({
         />
       ) : null}
       {remove.isError ? (
-        <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          role="alert"
+          style={type(15, 'regular', { color: color.danger })}
+        >
           {t('host.error')}
         </Text>
       ) : null}
@@ -166,17 +194,24 @@ export function BringSection({
         title={sheet?.kind === 'edit' ? t('host.bringSheetEdit') : t('host.bringSheetAdd')}
       >
         <View style={styles.form}>
-          <Text style={type(14, 'semibold', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'semibold', { color: color.secondary })}
+          >
             {t('host.bringLabel')}
           </Text>
           <TextInput
+            maxFontSizeMultiplier={2.0}
             accessibilityLabel={t('host.bringLabel')}
             value={label}
             onChangeText={setLabel}
             maxLength={120}
             style={[styles.field, type(17)]}
           />
-          <Text style={type(14, 'semibold', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'semibold', { color: color.secondary })}
+          >
             {t('host.bringQuantity')}
           </Text>
           <Stepper
@@ -189,7 +224,11 @@ export function BringSection({
             onChange={setQuantity}
           />
           {add.isError || update.isError ? (
-            <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(15, 'regular', { color: color.danger })}
+            >
               {t('host.error')}
             </Text>
           ) : null}

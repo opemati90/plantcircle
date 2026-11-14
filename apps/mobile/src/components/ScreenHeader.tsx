@@ -50,7 +50,12 @@ export function ScreenHeader({
         ) : null}
       </View>
       {caption && !progress ? (
-        <Text style={type(14, 'semibold', { color: color.secondary })}>{caption}</Text>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(14, 'semibold', { color: color.secondary })}
+        >
+          {caption}
+        </Text>
       ) : null}
     </View>
   );

@@ -26,17 +26,26 @@ export default function UnderAgeScreen() {
           <SproutIcon size={30} color={color.brand} />
         </View>
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('legal.underAgeTitle')}
         </Text>
-        <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('legal.underAgeLead')}
         </Text>
         <View style={styles.card}>
-          <Text style={type(17, 'semibold')}>{t('legal.browseRecipes')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>
+          <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+            {t('legal.browseRecipes')}
+          </Text>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {t('legal.browseRecipesNote')}
           </Text>
           <Button

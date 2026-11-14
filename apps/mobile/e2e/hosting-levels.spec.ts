@@ -21,8 +21,9 @@ test('a member with no recipe cannot host yet; one recipe opens small online Pla
   );
   await page.getByRole('link', { name: 'Start a Plan' }).click();
   await expect(page.getByRole('heading', { name: 'Share a recipe first' })).toBeVisible();
-  await expect(page.getByText('LEVEL 0 · MEMBER')).toBeVisible();
-  await expect(page.getByText('1 more recipe')).toBeVisible();
+  await expect(page.getByText('Level 0', { exact: true })).toBeVisible();
+  await expect(page.getByRole('progressbar', { name: 'Recipes shared' })).toBeVisible();
+  await expect(page.getByText('0 of 1')).toBeVisible();
 
   // Level 1: online only, up to 6 spots; the in-person choice is locked and says why.
   await page.evaluate(() =>
@@ -51,9 +52,11 @@ test('the profile shows the level and the next steps; a recipe can be upvoted an
   page,
 }) => {
   await signInWithEmail(page, '/profile');
-  await expect(page.getByText('LEVEL 2 · HOST')).toBeVisible();
-  await expect(page.getByText('To level 3')).toBeVisible();
-  await expect(page.getByText('88 more followers')).toBeVisible();
+  await expect(page.getByText('Host', { exact: true })).toBeVisible();
+  await expect(page.getByText('Level 2', { exact: true })).toBeVisible();
+  await expect(page.getByText('NEXT: PILLAR')).toBeVisible();
+  await expect(page.getByText('12 of 100')).toBeVisible();
+  await expect(page.getByText('40 of 2,000')).toBeVisible();
 
   await page.goto('/explore');
   await page.getByRole('tab', { name: 'Circles', exact: true }).click();

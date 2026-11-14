@@ -74,7 +74,10 @@ function CountdownRing({ expiresAt, now }: { expiresAt: string; now: Date }) {
         >
           {left}
         </Text>
-        <Text style={type(15, 'regular', { color: color.secondary })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary })}
+        >
           {t('offer.leftToConfirm')}
         </Text>
       </View>
@@ -159,7 +162,11 @@ function OfferView({ detail }: { detail: PlanDetail }) {
               onPress={toPlan}
             />
             {joinWaitlist.isError ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(15, 'regular', { color: color.danger })}
+              >
                 {t('plan.error.genericTitle')}
               </Text>
             ) : null}
@@ -192,12 +199,14 @@ function OfferView({ detail }: { detail: PlanDetail }) {
         </View>
         <CountdownRing expiresAt={offerExpiresAt} now={now} />
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={[type(30, 'bold', { tracking: -0.9, leading: 1.1 }), styles.title]}
         >
           {t('offer.title')}
         </Text>
         <Text
+          maxFontSizeMultiplier={2.0}
           style={[type(17, 'regular', { color: color.secondary, leading: 1.5 }), styles.lead]}
         >
           {t('offer.text', { when: deadline })}
@@ -207,8 +216,15 @@ function OfferView({ detail }: { detail: PlanDetail }) {
             <Photo source={planImage(plan)} />
           </View>
           <View style={styles.cardText}>
-            <Text style={type(17, 'semibold', { tracking: -0.3 })}>{plan.title}</Text>
-            <Text style={type(15, 'regular', { color: color.secondary })}>{meta}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold', { tracking: -0.3 })}>
+              {plan.title}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'regular', { color: color.secondary })}
+            >
+              {meta}
+            </Text>
           </View>
           <ChevronRightIcon size={16} strokeWidth={2.4} color={color.borderControl} />
         </Pressable>

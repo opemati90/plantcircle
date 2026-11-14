@@ -80,6 +80,7 @@ export default function NotificationSettingsScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
@@ -120,6 +121,7 @@ export default function NotificationSettingsScreen() {
           groups.map((group) => (
             <View key={group.title} style={styles.group}>
               <Text
+                maxFontSizeMultiplier={2.0}
                 accessibilityRole="header"
                 style={type(13, 'semibold', { color: color.secondary, tracking: 0.5 })}
               >
@@ -134,8 +136,11 @@ export default function NotificationSettingsScreen() {
                     {row.key === 'always' ? (
                       <View style={styles.rowHead}>
                         <View style={styles.grow}>
-                          <Text style={type(17, 'semibold')}>{row.title}</Text>
+                          <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+                            {row.title}
+                          </Text>
                           <Text
+                            maxFontSizeMultiplier={2.0}
                             style={type(14, 'regular', {
                               color: color.secondary,
                               leading: 1.45,
@@ -145,6 +150,7 @@ export default function NotificationSettingsScreen() {
                           </Text>
                         </View>
                         <Text
+                          maxFontSizeMultiplier={2.0}
                           style={[
                             type(12, 'bold', { color: color.brand, tracking: 0.4 }),
                             styles.pill,
@@ -164,6 +170,7 @@ export default function NotificationSettingsScreen() {
                           }}
                         />
                         <Text
+                          maxFontSizeMultiplier={2.0}
                           style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
                         >
                           {row.note}
@@ -177,7 +184,11 @@ export default function NotificationSettingsScreen() {
           ))
         )}
         {update.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
             {t('account.error')}
           </Text>
         ) : null}

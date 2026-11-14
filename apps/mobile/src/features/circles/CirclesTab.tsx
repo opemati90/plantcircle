@@ -22,13 +22,21 @@ function CircleRow({ circle, onPress }: { circle: Circle; onPress: () => void })
     <Pressable accessibilityRole="link" onPress={onPress} style={styles.row}>
       <View style={styles.top}>
         <View style={styles.text}>
-          <Text style={type(17, 'semibold', { tracking: -0.3 })}>{circle.name}</Text>
+          <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold', { tracking: -0.3 })}>
+            {circle.name}
+          </Text>
           {circle.tagline ? (
-            <Text style={type(15, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'regular', { color: color.secondary })}
+            >
               {circle.tagline}
             </Text>
           ) : null}
-          <Text style={type(14, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {circleMeta(t, circle)}
           </Text>
         </View>
@@ -37,7 +45,10 @@ function CircleRow({ circle, onPress }: { circle: Circle; onPress: () => void })
       {standing ? (
         <View style={styles.pills}>
           <View style={[styles.pill, { backgroundColor: TONE[standing.tone].background }]}>
-            <Text style={type(14, 'semibold', { color: TONE[standing.tone].text })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'semibold', { color: TONE[standing.tone].text })}
+            >
               {standing.label}
             </Text>
           </View>

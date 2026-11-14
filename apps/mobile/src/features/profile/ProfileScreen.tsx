@@ -68,7 +68,11 @@ export default function ProfileScreen() {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <View style={[styles.titleRow, styles.content]}>
-          <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>
+          <Text
+            maxFontSizeMultiplier={1.4}
+            accessibilityRole="header"
+            style={type(34, 'bold', { tracking: -1.1 })}
+          >
             {t('profile.title')}
           </Text>
         </View>
@@ -97,7 +101,11 @@ export default function ProfileScreen() {
       ]}
     >
       <View style={styles.titleRow}>
-        <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>
+        <Text
+          maxFontSizeMultiplier={1.4}
+          accessibilityRole="header"
+          style={type(34, 'bold', { tracking: -1.1 })}
+        >
           {t('profile.title')}
         </Text>
         <Button
@@ -123,9 +131,16 @@ export default function ProfileScreen() {
             </Text>
           </View>
           <View style={styles.identityText}>
-            <Text style={type(21, 'bold', { tracking: -0.5 })}>{name}</Text>
+            <Text maxFontSizeMultiplier={1.6} style={type(21, 'bold', { tracking: -0.5 })}>
+              {name}
+            </Text>
             {city ? (
-              <Text style={type(15, 'regular', { color: color.secondary })}>{city}</Text>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'regular', { color: color.secondary })}
+              >
+                {city}
+              </Text>
             ) : null}
           </View>
         </View>
@@ -138,7 +153,10 @@ export default function ProfileScreen() {
 
       {hostLevel.data ? (
         <View style={styles.group}>
-          <Text style={[type(14, 'semibold', { color: color.secondary }), styles.groupTitle]}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={[type(14, 'semibold', { color: color.secondary }), styles.groupTitle]}
+          >
             {t('profile.hosting')}
           </Text>
           <HostLevelCard level={hostLevel.data} />
@@ -175,7 +193,11 @@ export default function ProfileScreen() {
             }}
           />
           {logout.isError ? (
-            <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(15, 'regular', { color: color.danger })}
+            >
               {t('auth.signOutFailed')}
             </Text>
           ) : null}
@@ -188,8 +210,12 @@ export default function ProfileScreen() {
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <View style={styles.stat}>
-      <Text style={type(20, 'bold', { tracking: -0.5 })}>{value}</Text>
-      <Text style={type(13, 'regular', { color: color.secondary })}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.6} style={type(20, 'bold', { tracking: -0.5 })}>
+        {value}
+      </Text>
+      <Text maxFontSizeMultiplier={2.0} style={type(13, 'regular', { color: color.secondary })}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -217,7 +243,10 @@ function Group({
 }) {
   return (
     <View style={styles.group}>
-      <Text style={[type(14, 'semibold', { color: color.secondary }), styles.groupTitle]}>
+      <Text
+        maxFontSizeMultiplier={2.0}
+        style={[type(14, 'semibold', { color: color.secondary }), styles.groupTitle]}
+      >
         {title}
       </Text>
       <View style={styles.groupCard}>
@@ -235,9 +264,16 @@ function Group({
                 <RowIcon icon={row.icon} />
               </View>
             ) : null}
-            <Text style={[type(16, 'regular'), styles.rowLabel]}>{row.label}</Text>
+            <Text maxFontSizeMultiplier={2.0} style={[type(16, 'regular'), styles.rowLabel]}>
+              {row.label}
+            </Text>
             {trailing ? (
-              <Text style={type(15, 'regular', { color: color.secondary })}>{trailing}</Text>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'regular', { color: color.secondary })}
+              >
+                {trailing}
+              </Text>
             ) : null}
             <ChevronRightIcon size={16} strokeWidth={2.4} color={color.secondary} />
           </Pressable>

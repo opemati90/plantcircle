@@ -76,28 +76,46 @@ export default function NotificationPromptScreen() {
                 </View>
                 <View style={styles.sampleText}>
                   <View style={styles.sampleHead}>
-                    <Text style={type(12, 'bold', { tracking: 0.2 })}>PlantCircle</Text>
-                    <Text style={type(12, 'regular', { color: color.secondary })}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      style={type(12, 'bold', { tracking: 0.2 })}
+                    >
+                      PlantCircle
+                    </Text>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      style={type(12, 'regular', { color: color.secondary })}
+                    >
                       {s.when}
                     </Text>
                   </View>
-                  <Text style={type(13, 'regular', { leading: 1.35 })}>{s.text}</Text>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(13, 'regular', { leading: 1.35 })}
+                  >
+                    {s.text}
+                  </Text>
                 </View>
               </View>
             ))}
           </View>
         </View>
         <Text
+          maxFontSizeMultiplier={1.4}
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
           {t('notify.promptTitle')}
         </Text>
-        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('notify.promptLead')}
         </Text>
         {outcome ? (
           <Text
+            maxFontSizeMultiplier={2.0}
             role="alert"
             style={type(15, 'regular', {
               color: outcome === 'unavailable' ? color.secondary : color.danger,

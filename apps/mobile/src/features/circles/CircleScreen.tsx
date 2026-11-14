@@ -205,10 +205,14 @@ export default function CircleScreen() {
             <ChevronLeftIcon strokeWidth={2.2} color="#FFFFFF" />
           </IconButton>
           <View style={styles.heroText}>
-            <Text style={type(13, 'semibold', { color: '#FFFFFF', tracking: 0.3 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(13, 'semibold', { color: '#FFFFFF', tracking: 0.3 })}
+            >
               {data.isGlobal ? t('circles.eyebrowGlobal') : t('circles.eyebrowLocal')}
             </Text>
             <Text
+              maxFontSizeMultiplier={1.4}
               accessibilityRole="header"
               style={type(32, 'bold', { color: '#FFFFFF', tracking: -1, leading: 1.04 })}
             >
@@ -226,7 +230,10 @@ export default function CircleScreen() {
                   />
                 ))}
               </View>
-              <Text style={type(14, 'medium', { color: '#FFFFFF' })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(14, 'medium', { color: '#FFFFFF' })}
+              >
                 {circleMeta(t, data)}
               </Text>
             </View>
@@ -236,17 +243,28 @@ export default function CircleScreen() {
 
         <View style={styles.body}>
           {data.tagline ? (
-            <Text style={type(16, 'regular', { color: extra.bodyText, leading: 1.5 })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(16, 'regular', { color: extra.bodyText, leading: 1.5 })}
+            >
               {data.tagline}
             </Text>
           ) : null}
           {member ? (
-            <Text role="status" style={type(15, 'semibold', { color: color.brand })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="status"
+              style={type(15, 'semibold', { color: color.brand })}
+            >
               {t('circles.member')}
             </Text>
           ) : null}
           {join.isError ? (
-            <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(15, 'regular', { color: color.danger })}
+            >
               {t('circles.genericError')}
             </Text>
           ) : null}
@@ -266,6 +284,7 @@ export default function CircleScreen() {
                   style={[styles.tab, selected && styles.tabSelected]}
                 >
                   <Text
+                    maxFontSizeMultiplier={2.0}
                     style={type(15, 'semibold', {
                       color: selected ? color.ink : color.secondary,
                     })}
@@ -281,18 +300,25 @@ export default function CircleScreen() {
           {tab === 'posts' ? <PostsTab circleId={data.id} /> : null}
           {tab === 'about' ? (
             <View style={styles.about}>
-              <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}
+              >
                 {data.access === 'open'
                   ? t('circles.aboutAccessOpen')
                   : t('circles.aboutAccessRequest')}
               </Text>
-              <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}
+              >
                 {t('circles.aboutRules')}
               </Text>
               <ReportLink targetType="circle" targetId={data.id} name={data.name} />
               {canModerate && data.access === 'request' ? (
                 <View style={styles.requests}>
                   <Text
+                    maxFontSizeMultiplier={2.0}
                     accessibilityRole="header"
                     style={type(17, 'semibold', { tracking: -0.3 })}
                   >
@@ -313,17 +339,24 @@ export default function CircleScreen() {
                   ) : requests.isPending ? (
                     <Skeleton width="100%" height={88} radius={radius.card} />
                   ) : requests.data.length === 0 ? (
-                    <Text style={type(15, 'regular', { color: color.secondary })}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      style={type(15, 'regular', { color: color.secondary })}
+                    >
                       {t('circles.requests.empty')}
                     </Text>
                   ) : (
                     requests.data.map((request) => (
                       <View key={request.id} style={styles.request}>
-                        <Text style={type(17, 'semibold', { tracking: -0.3 })}>
+                        <Text
+                          maxFontSizeMultiplier={2.0}
+                          style={type(17, 'semibold', { tracking: -0.3 })}
+                        >
                           {request.displayName ?? t('circles.requests.someone')}
                         </Text>
                         {request.answer ? (
                           <Text
+                            maxFontSizeMultiplier={2.0}
                             style={type(15, 'regular', {
                               color: color.secondary,
                               leading: 1.5,
@@ -357,7 +390,11 @@ export default function CircleScreen() {
                     ))
                   )}
                   {respond.isError ? (
-                    <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      role="alert"
+                      style={type(15, 'regular', { color: color.danger })}
+                    >
                       {t('circles.genericError')}
                     </Text>
                   ) : null}
@@ -419,7 +456,7 @@ function PlansTab({ circle }: { circle: Circle }) {
   const shown = circle.isGlobal ? plans.data.filter((p) => p.format === 'online') : plans.data;
   if (shown.length === 0) {
     return (
-      <Text style={type(15, 'regular', { color: color.secondary })}>
+      <Text maxFontSizeMultiplier={2.0} style={type(15, 'regular', { color: color.secondary })}>
         {t('circles.plansEmpty')}
       </Text>
     );
@@ -464,7 +501,7 @@ function PostsTab({ circleId }: { circleId: string }) {
   const shown = recipes.data.filter((r) => r.circleId === circleId);
   if (shown.length === 0) {
     return (
-      <Text style={type(15, 'regular', { color: color.secondary })}>
+      <Text maxFontSizeMultiplier={2.0} style={type(15, 'regular', { color: color.secondary })}>
         {t('circles.postsEmpty')}
       </Text>
     );
@@ -480,15 +517,24 @@ function PostsTab({ circleId }: { circleId: string }) {
           }}
           style={styles.post}
         >
-          <Text style={type(13, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(13, 'regular', { color: color.secondary })}
+          >
             {t('learn.byline', {
               name: recipe.authorName ?? t('circles.requests.someone'),
               circle: recipe.circleName,
             })}
           </Text>
-          <Text style={type(16, 'semibold', { tracking: -0.3 })}>{recipe.title}</Text>
+          <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold', { tracking: -0.3 })}>
+            {recipe.title}
+          </Text>
           {recipe.intro ? (
-            <Text numberOfLines={2} style={type(14, 'regular', { color: color.secondary })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              numberOfLines={2}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
               {recipe.intro}
             </Text>
           ) : null}

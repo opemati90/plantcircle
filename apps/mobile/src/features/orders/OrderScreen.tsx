@@ -248,10 +248,14 @@ export default function OrderScreen() {
         </View>
 
         <View style={styles.head}>
-          <Text style={type(13, 'semibold', { color: color.secondary, tracking: 0.6 })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(13, 'semibold', { color: color.secondary, tracking: 0.6 })}
+          >
             {t('order.eyebrow', { name: data.organizerName.toUpperCase() })}
           </Text>
           <Text
+            maxFontSizeMultiplier={1.4}
             accessibilityRole="header"
             style={type(32, 'bold', { tracking: -1, leading: 1.06 })}
           >
@@ -261,13 +265,17 @@ export default function OrderScreen() {
 
         <View style={styles.progressBlock}>
           <Text
+            maxFontSizeMultiplier={1.4}
             accessibilityLabel={`${amount(data.interestTotal, unit, language)} ${t('order.ofTarget', { target: data.targetTotal, unit })}`}
             style={type(52, 'bold', { tracking: -2, leading: 1 })}
           >
             {new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(
               data.interestTotal,
             )}
-            <Text style={type(20, 'medium', { color: color.secondary, tracking: -0.3 })}>
+            <Text
+              maxFontSizeMultiplier={1.6}
+              style={type(20, 'medium', { color: color.secondary, tracking: -0.3 })}
+            >
               {` ${t('order.ofTarget', { target: data.targetTotal, unit })}`}
             </Text>
           </Text>
@@ -279,7 +287,10 @@ export default function OrderScreen() {
           >
             <View style={[styles.fill, { width: `${progress(data) * 100}%` }]} />
           </View>
-          <Text style={type(15, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
             {t('order.meta', {
               count: data.peopleCount,
               closes: closesLabel,
@@ -289,27 +300,43 @@ export default function OrderScreen() {
           {data.description ? (
             <View style={styles.note}>
               <SproutIcon size={18} strokeWidth={1.8} color={color.brand} />
-              <Text style={[type(15, 'medium', { color: color.brand }), styles.noteText]}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={[type(15, 'medium', { color: color.brand }), styles.noteText]}
+              >
                 {data.description}
               </Text>
             </View>
           ) : null}
           {statusLine() ? (
-            <Text role="status" style={type(15, 'semibold', { color: color.ink })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="status"
+              style={type(15, 'semibold', { color: color.ink })}
+            >
               {statusLine()}
             </Text>
           ) : null}
         </View>
 
         <View>
-          <Text accessibilityRole="header" style={type(20, 'bold', { tracking: -0.5 })}>
+          <Text
+            maxFontSizeMultiplier={1.6}
+            accessibilityRole="header"
+            style={type(20, 'bold', { tracking: -0.5 })}
+          >
             {t('order.howMuch')}
           </Text>
           {shown.map((item) => (
             <View key={item.id} style={styles.item}>
               <View style={styles.itemText}>
-                <Text style={type(17, 'semibold')}>{item.name}</Text>
-                <Text style={type(14, 'regular', { color: color.secondary })}>
+                <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold')}>
+                  {item.name}
+                </Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(14, 'regular', { color: color.secondary })}
+                >
                   {item.estPriceMinor !== null
                     ? `${money(item.estPriceMinor, item.currency, language)} / ${item.unit}`
                     : amount(item.interestTotal, item.unit, language)}
@@ -326,9 +353,12 @@ export default function OrderScreen() {
                     }}
                     style={[styles.stepButton, item.mine <= 0 && styles.disabled]}
                   >
-                    <Text style={type(19, 'regular')}>−</Text>
+                    <Text maxFontSizeMultiplier={1.6} style={type(19, 'regular')}>
+                      −
+                    </Text>
                   </Pressable>
                   <Text
+                    maxFontSizeMultiplier={2.0}
                     accessibilityLiveRegion="polite"
                     style={[type(16, 'semibold'), styles.qty]}
                   >
@@ -343,18 +373,24 @@ export default function OrderScreen() {
                     }}
                     style={styles.stepButton}
                   >
-                    <Text style={type(19, 'regular')}>+</Text>
+                    <Text maxFontSizeMultiplier={1.6} style={type(19, 'regular')}>
+                      +
+                    </Text>
                   </Pressable>
                 </View>
               ) : (
-                <Text style={type(16, 'semibold')}>
+                <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold')}>
                   {amount(item.mine, item.unit, language)}
                 </Text>
               )}
             </View>
           ))}
           {saveError ? (
-            <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              style={type(14, 'regular', { color: color.danger })}
+            >
               {errorCode(setInterest.error) === 'interest_closed'
                 ? t('order.interestClosed')
                 : errorCode(setInterest.error) === 'suspended'
@@ -364,7 +400,10 @@ export default function OrderScreen() {
           ) : null}
         </View>
 
-        <Text style={type(13, 'regular', { color: color.secondary, leading: 1.5 })}>
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(13, 'regular', { color: color.secondary, leading: 1.5 })}
+        >
           {t('order.notPurchase', { name: data.organizerName })}
         </Text>
         {organizer ? null : (
@@ -379,7 +418,7 @@ export default function OrderScreen() {
 
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
-          <Text style={type(18, 'bold', { tracking: -0.3 })}>
+          <Text maxFontSizeMultiplier={1.6} style={type(18, 'bold', { tracking: -0.3 })}>
             {estimate
               ? t('order.estimate', {
                   amount: money(estimate.minor, estimate.currency, language),
@@ -390,7 +429,10 @@ export default function OrderScreen() {
                   language,
                 )}
           </Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
             {t('order.estimateLabel')}
           </Text>
         </View>

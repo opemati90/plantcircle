@@ -1,10 +1,11 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import {
+  chooseCity,
+  dismissNotificationPrompt,
   freezeTime,
   signInWithEmail,
   type FixtureWindow,
-  dismissNotificationPrompt,
 } from './support';
 
 // Automated scan of the web rendering only. Screen-reader behaviour, Dynamic Type
@@ -79,5 +80,50 @@ test('the waitlist offer screen has no detectable violations', async ({ page }) 
   );
   await page.goto('/plan/ramen-workshop/waitlist-offer');
   await expect(page.getByRole('heading', { name: 'A spot opened up for you' })).toBeVisible();
+  await expectNoViolations(page);
+});
+
+for (const [name, path, ready] of [
+  ['explore', '/explore', 'Explore'],
+  ['my plans', '/my-plans', 'My Plans'],
+  ['profile', '/profile', 'Profile'],
+  ['notification settings', '/profile/notifications', 'Notifications'],
+  ['account', '/profile/account', 'Account and data'],
+] as const) {
+  test(`${name}, signed in: no automatically detectable WCAG violations`, async ({ page }) => {
+    await signInWithEmail(page, path);
+    await expect(page.getByRole('heading', { name: ready }).first()).toBeVisible();
+    await expectNoViolations(page);
+  });
+}
+
+test('create Plan, a recipe, a joined Plan and the city sheet have no detectable violations', async ({
+  page,
+}) => {
+  await signInWithEmail(page, '/home');
+  await page.getByRole('button', { name: 'Change city' }).click();
+  await page.getByRole('textbox', { name: 'Search cities' }).fill('ber');
+  await expectNoViolations(page, ['aria-allowed-attr']);
+  await chooseCity(page, 'Berlin');
+  await expect(page.getByRole('heading', { name: 'This week in Berlin' })).toBeVisible();
+  await expectNoViolations(page);
+
+  await page.goto('/create');
+  await expect(page.getByRole('heading', { name: 'What are you planning?' })).toBeVisible();
+  await expectNoViolations(page);
+
+  await page.goto('/explore');
+  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
+  await page.getByRole('button', { name: 'Join', exact: true }).click();
+  await expect(page.getByText('You’re a member').last()).toBeVisible();
+  await page.goto('/recipe/efo-riro-smoked-tofu');
+  await expect(page.getByRole('heading', { name: 'Efo Riro with Smoked Tofu' })).toBeVisible();
+  await expectNoViolations(page);
+
+  await page.goto('/plan/cooking-night');
+  await page.getByRole('button', { name: 'Join', exact: true }).click();
+  await dismissNotificationPrompt(page);
+  await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
   await expectNoViolations(page);
 });

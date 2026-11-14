@@ -28,7 +28,12 @@ export function Toggle({
       }}
       style={styles.row}
     >
-      <Text style={[type(17, 'semibold', { tracking: -0.3 }), styles.label]}>{label}</Text>
+      <Text
+        maxFontSizeMultiplier={2.0}
+        style={[type(17, 'semibold', { tracking: -0.3 }), styles.label]}
+      >
+        {label}
+      </Text>
       <View
         importantForAccessibility="no"
         accessibilityElementsHidden
