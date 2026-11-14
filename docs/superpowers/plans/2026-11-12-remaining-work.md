@@ -139,8 +139,8 @@ rows an hour per caller, Intl-safe time zones). Design note: `docs/superpowers/s
 
 Open questions:
 
-- A typed city is filed under the device's region and time zone (the row shows the country). A
-  traveller, or a device with no region (`ZZ`), files it wrongly; no correction control yet.
+- A typed city defaults to the device's region and time zone; both can be changed when adding it
+  (country list, time zone list when abroad). A device with no region still starts at `ZZ`.
 - Spelling duplicates ("Köln" / "Cologne") need a staff merge tool.
 - The city list is fetched whole (up to 1,000 rows); past that, search cities on the server.
 
@@ -159,6 +159,11 @@ Open questions:
 
 - Sockpuppets: the counting rules raise the cost, they do not remove it. A staff view of "who
   follows whom" and a report reason for vote rings are the next step if it is abused.
-- "Featured in Explore" for level 3 is not built; level 3 only raises capacity today.
+- Featured in Explore: built (profiles.featured_host, refreshed on writes and by the cron; badge, listed first).
 - People tab has no Follow; followers come from recipes on purpose (one surface). Revisit if
   recipes stay rare.
+
+## My Plans folded into Home (14 November 2026)
+
+Done: four tabs. Home shows "Your Plans" (first three upcoming, loading/error/empty states, See all).
+`/my-plans` stays as a detail screen with a back control, so every link to it still works.
