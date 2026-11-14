@@ -313,6 +313,9 @@ export const de: Catalog = {
       waitlist_ordinal_few: 'Warteliste · {{count}}.',
       waitlist_ordinal_other: 'Warteliste · {{count}}.',
       attended: 'Du warst dabei',
+      hosting: 'Du bist Host',
+      hosted: 'Du warst Host',
+      missed: 'Nicht erschienen',
     },
     upcomingEmpty: {
       title: 'Noch nichts in Sicht',

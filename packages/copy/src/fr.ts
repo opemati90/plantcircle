@@ -314,6 +314,9 @@ export const fr: Catalog = {
       waitlist_ordinal_few: 'Liste d’attente · {{count}}e',
       waitlist_ordinal_other: 'Liste d’attente · {{count}}e',
       attended: 'Tu y étais',
+      hosting: 'Tu organises',
+      hosted: 'Tu as organisé',
+      missed: 'Absent',
     },
     upcomingEmpty: {
       title: 'Rien à venir',

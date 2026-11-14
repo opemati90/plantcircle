@@ -30,7 +30,7 @@ Static comparison against the current checkout, including later migrations. “B
 |---|---|
 | **V1** | `plan_cards` exposes every non-draft Plan; no public/Circle/link visibility enforcement. The documented host/staff access to drafts is also absent. [core], [featured-hosts] |
 | **V1** | `can_see_address` and `can_see_meeting_link` explicitly allow `on_hold`; docs/08 requires withholding the address. Meeting links unlock at start−10 minutes, versus the v1 start−15 requirement. No co-host access model. [core] |
-| **V1** | Blocking hides People/direct conversations and prevents RSVP, but does not hide Plan/order/recipe cards or individual messages inside shared Plan/Circle chats. `messages_member` checks conversation membership only. Violates T-07. [chat], [safety], [host-levels], [featured-hosts] |
+| **Done 2026-11-14** | Blocking now also hides the other side’s Plan/order/recipe cards and their messages inside shared Plan/Circle chats (`20261112002600_blocks_hide.sql`, `blocks_visibility.test.ts`). T-07 holds. [chat], [safety], [host-levels], [featured-hosts] |
 | **Shape** | No `public_profiles` or `plan_guests` views. Safe reads instead use `people_in_my_circles()` and `host_guest_list()`; the latter returns display name/state, without contribution details. Reports use `my_reports()`/staff RPCs instead of table policies. These substitutions are not themselves missing authorization. [people], [hosting], [safety] |
 
 **RPC names/signatures — docs/06:**
@@ -93,7 +93,7 @@ Shared limitation: missing analytics/Sentry and unverified deployment/device che
 | Story | Status | Difference/evidence |
 |---|---|---|
 | S0-1 Monorepo/CI | **Partly · V1** | Workspaces/checks exist; no Maestro CI or EAS profiles. Web uses Expo rather than a separate app. [CI], [mobile package] |
-| S0-2 Supabase | **Partly · V1** | Migrations exist; no generated `packages/types`. SQL seed contains cities only, not the specified people/Plans/order/Circles. Local/staging Supabase deployment remains unverified. [seed], [backend types], [HANDOVER] |
+| S0-2 Supabase | **Partly · V1** | Migrations exist; no generated `packages/types`. Seed now holds the prototype people (Ama, Jonas, Mia, Lena), 3 Plans + a past one, 1 group order, 2 Circles and 2 recipes (`seed.test.ts` loads it twice). Local/staging Supabase deployment remains unverified. [seed], [backend types], [HANDOVER] |
 | S0-3 Design system | **Partly · V1** | Tokens/components exist; no Storybook/component preview covering the required inventory. [components], [tokens] |
 | S0-4 i18n/analytics/Sentry/flags | **Partly · V1** | i18n built; analytics, Sentry and feature flags absent. [i18n], [mobile package] |
 | S1-1 Onboarding | **Partly · V1** | Skip goes to `/home` with worldwide Plans, not Explore with online Plans. [WelcomeScreen], [plan queries] |
@@ -104,7 +104,7 @@ Shared limitation: missing analytics/Sentry and unverified deployment/device che
 | S2-1 Plan detail | **Built** | Address-before-reveal and sign-up/resume paths exist; separate hold/link-timing gaps above. [PlanScreen], [core] |
 | S2-2 RSVP engine | **Partly · V1** | Expiry timing/start-boundary and expired-user notification gaps in §2. [core], [notifications] |
 | S2-3 Plan variants | **Partly · V1** | Status/error/offline presentation exists; no functioning change/reconfirm or host-suspension flow. [PlanScreen], [planCopy], [safety] |
-| S2-4 My Plans/offline | **Partly · V1** | Hosting tab always renders empty; Past query excludes `no_show`. Offline cache exists. [MyPlansScreen], [supabaseBackend], [offlineCache] |
+| S2-4 My Plans/offline | **Done 2026-11-14** | Hosting tab lists the member’s own Plans (`my_hosted_plans` view); Past includes `no_show` (“Missed” pill) and hosted Plans (“You hosted”). Onboarding without a city lands on Explore with the Online filter on. [MyPlansScreen], [supabaseBackend], [offlineCache] |
 | S2-5 Notifications | **Partly · V1** | Pipeline exists; quiet-hours/channel discrepancies in §3. [notifications], [push-dispatch] |
 | S3-1 Create | **Partly · V1/Shape** | Six steps instead of type+four details steps; only two kinds; city/level/capacity restrictions. Date/time/address/allergen controls exist. [CreatePlanScreen], [plan-create] |
 | S3-2 AI draft | **Missing · V1** | No `ai-draft-plan`, validation, fallback integration, rate limiting or AI badge flow. [functions], [CreatePlanScreen] |
@@ -116,7 +116,7 @@ Shared limitation: missing analytics/Sentry and unverified deployment/device che
 | S4-3 Messaging | **Partly · V1** | Polling at 5s/15s instead of Realtime; blocked shared-chat content remains visible. [chat queries], [inbox queries], [chat] |
 | S4-4 Recipes | **Built** | Serving scaling and allergen/not-confirmed creation implemented. [RecipeScreen], [recipes] |
 | S5-1 Orders | **Partly · V1** | Reconfirmation and timed completion absent; creation additionally level-gated. [orders], [host-levels] |
-| S5-2 Safety | **Partly · V1** | T-07 content hiding and T-08 suspended-host hold fail; receipt/suspension/appeal paths exist. [safety] |
+| S5-2 Safety | **Done 2026-11-14** | T-07 content hiding and T-08 suspended-host hold now pass; receipt/suspension/appeal paths exist. [safety] |
 | S5-3 Staff console | **Partly · V1** | No AI triage or host-verification workflow; authorization checks profile role, not SSO+MFA. Queue/case/decisions/audit/appeals exist. [ConsoleScreen], [safety] |
 | Sprint 6 hardening/beta | **Partly · V1** | Automated checks exist; physical screen-reader checks, low-end cold-start measurement, load test and beta/store readiness are not demonstrated. Some headings cap font scaling at 1.4/1.6. [HANDOVER], [CI], [WelcomeScreen] |
 

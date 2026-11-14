@@ -2513,24 +2513,49 @@ export async function createFixtureBackend(): Promise<Backend> {
       await call('listMyPlans');
       requireSession();
       const mine = plans(now).flatMap((plan): MyPlan[] => {
+        const hosted = state.plansCreated.some((p) => p.id === plan.id);
         const entry = liveEntry(plan.id);
         const isGoing = state.goingPlanIds.includes(plan.id);
         const isUpcoming = new Date(plan.endsAt).getTime() >= now.getTime();
-        if (scope === 'upcoming' ? !isUpcoming : isUpcoming) return [];
+        if (scope === 'past' ? isUpcoming : !isUpcoming) return [];
+        if (scope === 'hosting' && !hosted) return [];
+        if (hosted) {
+          return [
+            {
+              plan,
+              rsvp: 'going',
+              role: 'host',
+              noShow: false,
+              waitlistPosition: null,
+              offerExpiresAt: null,
+            },
+          ];
+        }
         if (isGoing) {
-          return [{ plan, rsvp: 'going', waitlistPosition: null, offerExpiresAt: null }];
+          return [
+            {
+              plan,
+              rsvp: 'going',
+              role: 'guest',
+              noShow: false,
+              waitlistPosition: null,
+              offerExpiresAt: null,
+            },
+          ];
         }
         if (!entry) return [];
         return [
           {
             plan,
             rsvp: entry.expiresAt ? 'offered' : 'waitlisted',
+            role: 'guest',
+            noShow: false,
             waitlistPosition: plan.waitlistCount,
             offerExpiresAt: entry.expiresAt,
           },
         ];
       });
-      const direction = scope === 'upcoming' ? 1 : -1;
+      const direction = scope === 'past' ? -1 : 1;
       return mine.sort(
         (a, b) =>
           direction *

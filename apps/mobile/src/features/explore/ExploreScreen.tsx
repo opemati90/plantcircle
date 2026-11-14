@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -215,8 +215,15 @@ export default function ExploreScreen() {
   const plans = useExplorePlans(cityIds, !waiting && countryReady);
   const [tab, setTab] = useState<ExploreTab>('plans');
   const [query, setQuery] = useState('');
-  const [filters, setFilters] = useState<PlanFilters>(NO_FILTERS);
-  const [draft, setDraft] = useState<PlanFilters>(NO_FILTERS);
+  // Onboarding sends people without a city here with ?where=online, so they land on Plans
+  // they can actually join. The param only seeds the filter; clearing it works as usual.
+  const { where: whereParam } = useLocalSearchParams<{ where?: string }>();
+  const initialFilters: PlanFilters =
+    whereParam === 'online' || whereParam === 'in_person'
+      ? { ...NO_FILTERS, where: whereParam }
+      : NO_FILTERS;
+  const [filters, setFilters] = useState<PlanFilters>(initialFilters);
+  const [draft, setDraft] = useState<PlanFilters>(initialFilters);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const viewerZone = Intl.DateTimeFormat(currentLanguage()).resolvedOptions().timeZone;
   // The clock ticks, so Today and the weekend roll over at midnight while Explore stays open.

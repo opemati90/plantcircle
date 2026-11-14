@@ -11,6 +11,8 @@ const plan = { id: 'p1' } as Plan;
 const item = (overrides: Partial<MyPlan>): MyPlan => ({
   plan,
   rsvp: 'going',
+  role: 'guest',
+  noShow: false,
   waitlistPosition: null,
   offerExpiresAt: null,
   ...overrides,

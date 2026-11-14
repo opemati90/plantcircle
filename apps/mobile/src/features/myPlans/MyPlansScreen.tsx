@@ -40,8 +40,9 @@ export default function MyPlansScreen() {
   const { session, isLoading: authLoading } = useAuth();
   const [tab, setTab] = useState<MyPlansTab>('going');
   const upcoming = useMyPlans('upcoming', tab === 'going');
+  const hosting = useMyPlans('hosting', tab === 'hosting');
   const past = useMyPlans('past', tab === 'past');
-  const query = tab === 'past' ? past : upcoming;
+  const query = tab === 'past' ? past : tab === 'hosting' ? hosting : upcoming;
   // Each joined Plan is fetched once here, so its details are saved for offline even unopened.
   const queryClient = useQueryClient();
   const backend = useBackend();
@@ -85,22 +86,6 @@ export default function MyPlansScreen() {
         />
       );
     }
-    if (tab === 'hosting') {
-      return (
-        <InlineState
-          title={t('myPlans.hostingEmpty.title')}
-          text={t('myPlans.hostingEmpty.text')}
-          action={
-            <Button
-              label={t('home.startPlan')}
-              onPress={() => {
-                router.push('/create');
-              }}
-            />
-          }
-        />
-      );
-    }
     if (query.isPending) return <ListSkeleton />;
     // A saved copy is better than an error, whatever the failure was.
     if (query.isError && query.data === undefined) {
@@ -116,6 +101,22 @@ export default function MyPlansScreen() {
     }
     const rows = query.data;
     if (rows.length === 0) {
+      if (tab === 'hosting') {
+        return (
+          <InlineState
+            title={t('myPlans.hostingEmpty.title')}
+            text={t('myPlans.hostingEmpty.text')}
+            action={
+              <Button
+                label={t('home.startPlan')}
+                onPress={() => {
+                  router.push('/create');
+                }}
+              />
+            }
+          />
+        );
+      }
       return tab === 'past' ? (
         <InlineState title={t('myPlans.pastEmpty.title')} text={t('myPlans.pastEmpty.text')} />
       ) : (

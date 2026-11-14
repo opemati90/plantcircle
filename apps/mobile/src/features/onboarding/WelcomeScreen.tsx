@@ -92,7 +92,9 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
 
   const finish = (chosen: string | null) => {
     saveOnboarding({ goals, cityId: chosen, done: true });
-    router.replace('/home');
+    // Without a city, Home has nothing nearby to show; online Plans are open to everyone.
+    if (chosen) router.replace('/home');
+    else router.replace({ pathname: '/explore', params: { where: 'online' } });
   };
 
   if (step === 'welcome') {

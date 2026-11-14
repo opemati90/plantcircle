@@ -308,6 +308,9 @@ export const nl: Catalog = {
       waitlist_ordinal_few: 'Wachtlijst · {{count}}e',
       waitlist_ordinal_other: 'Wachtlijst · {{count}}e',
       attended: 'Je was erbij',
+      hosting: 'Jij organiseert',
+      hosted: 'Jij organiseerde',
+      missed: 'Gemist',
     },
     upcomingEmpty: {
       title: 'Niets gepland',

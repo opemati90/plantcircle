@@ -306,6 +306,9 @@ export const it: Catalog = {
       waitlist_ordinal_few: 'Lista d’attesa · {{count}}º',
       waitlist_ordinal_other: 'Lista d’attesa · {{count}}º',
       attended: 'Hai partecipato',
+      hosting: 'Organizzi tu',
+      hosted: 'Hai organizzato',
+      missed: 'Assente',
     },
     upcomingEmpty: {
       title: 'Niente in programma',

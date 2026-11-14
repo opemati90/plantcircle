@@ -180,13 +180,21 @@ export interface WaitlistOffer {
 export interface MyPlan {
   plan: Plan;
   rsvp: Exclude<RsvpState, 'none'>;
+  /** `host`: the viewer runs this Plan; `rsvp` is then always `going`. */
+  role: 'guest' | 'host';
+  /** A past Plan the host marked the viewer as not having turned up to. */
+  noShow: boolean;
   /** 1 = next in line. Present while waitlisted or offered. */
   waitlistPosition: number | null;
   offerExpiresAt: string | null;
 }
 
-/** `upcoming`: Plans not yet over where the viewer is going, waiting or offered a spot. */
-export type MyPlansScope = 'upcoming' | 'past';
+/**
+ * `upcoming`: Plans not yet over where the viewer is going, waiting or offered a spot.
+ * `hosting`: Plans not yet over that the viewer hosts, drafts and held ones included.
+ * `past`: Plans over in the last 90 days the viewer went to, missed or hosted.
+ */
+export type MyPlansScope = 'upcoming' | 'hosting' | 'past';
 
 export const CIRCLE_ACCESS = ['open', 'request'] as const;
 export type CircleAccess = (typeof CIRCLE_ACCESS)[number];

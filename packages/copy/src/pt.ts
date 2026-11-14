@@ -305,6 +305,9 @@ export const pt: Catalog = {
       waitlist_ordinal_few: 'Lista de espera · {{count}}.º',
       waitlist_ordinal_other: 'Lista de espera · {{count}}.º',
       attended: 'Participou',
+      hosting: 'Anfitrião',
+      hosted: 'Foi anfitrião',
+      missed: 'Faltou',
     },
     upcomingEmpty: {
       title: 'Nada à vista',

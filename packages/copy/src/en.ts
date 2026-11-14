@@ -299,6 +299,9 @@ export const en = {
       waitlist_ordinal_few: 'Waitlist · {{count}}rd',
       waitlist_ordinal_other: 'Waitlist · {{count}}th',
       attended: 'You attended',
+      hosting: 'Hosting',
+      hosted: 'You hosted',
+      missed: 'Missed',
     },
     upcomingEmpty: {
       title: 'Nothing coming up',

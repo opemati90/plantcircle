@@ -46,6 +46,7 @@ import {
   staffCaseSchema,
   staffQueueRowSchema,
   suspensionSchema,
+  type MyPlan,
   type Plan,
   type Profile,
   type RsvpState,
@@ -1362,49 +1363,82 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
 
     async listMyPlans({ scope, now }) {
       await requireUserId();
+      const since = new Date(now.getTime() - PAST_PLANS_DAYS * DAY_MS).toISOString();
+      // Plans the viewer hosts: ids come from my_hosted_plans (the plans table is not readable).
+      const hostedIds = new Set<string>();
+      if (scope !== 'upcoming') {
+        const hosted = client
+          .from('my_hosted_plans')
+          .select('plan_id')
+          .limit(MY_PLANS_CANDIDATES);
+        const result =
+          scope === 'hosting'
+            ? await hosted.gte('ends_at', now.toISOString())
+            : await hosted.lt('ends_at', now.toISOString()).gte('ends_at', since);
+        if (result.error) throw toBackendError(result.error);
+        for (const row of parse(z.array(z.object({ plan_id: z.string() })), result.data)) {
+          hostedIds.add(row.plan_id);
+        }
+      }
       const statuses =
-        scope === 'upcoming' ? ['going', 'waitlisted', 'offered'] : ['going', 'checked_in'];
-      const rsvps = await client
-        .from('my_rsvps')
-        .select('plan_id, status, offer_expires_at, waitlist_position')
-        .in('status', statuses)
-        .limit(MY_PLANS_CANDIDATES);
-      if (rsvps.error) throw toBackendError(rsvps.error);
-      const rows = parse(z.array(myPlanRowSchema), rsvps.data);
-      if (rows.length === 0) return [];
-
-      const byId = client
-        .from('plan_cards')
-        .select('*')
-        .in(
-          'id',
-          rows.map((row) => row.plan_id),
-        );
-      const cards =
         scope === 'upcoming'
-          ? await byId.gte('ends_at', now.toISOString())
-          : await byId
-              .lt('ends_at', now.toISOString())
-              .gte('ends_at', new Date(now.getTime() - PAST_PLANS_DAYS * DAY_MS).toISOString());
+          ? ['going', 'waitlisted', 'offered']
+          : scope === 'past'
+            ? ['going', 'checked_in', 'no_show']
+            : [];
+      let rows: ReturnType<typeof myPlanRowSchema.parse>[] = [];
+      if (statuses.length > 0) {
+        const rsvps = await client
+          .from('my_rsvps')
+          .select('plan_id, status, offer_expires_at, waitlist_position')
+          .in('status', statuses)
+          .limit(MY_PLANS_CANDIDATES);
+        if (rsvps.error) throw toBackendError(rsvps.error);
+        rows = parse(z.array(myPlanRowSchema), rsvps.data).filter(
+          (row) => !hostedIds.has(row.plan_id),
+        );
+      }
+      const ids = [...hostedIds, ...rows.map((row) => row.plan_id)];
+      if (ids.length === 0) return [];
+
+      const byId = client.from('plan_cards').select('*').in('id', ids);
+      const cards =
+        scope === 'past'
+          ? await byId.lt('ends_at', now.toISOString()).gte('ends_at', since)
+          : await byId.gte('ends_at', now.toISOString());
       if (cards.error) throw toBackendError(cards.error);
       const plans = new Map(
         parse(z.array(planCardSchema), cards.data).map((card) => [card.id, toPlan(card)]),
       );
 
-      const mine = rows.flatMap((row) => {
+      const mine: MyPlan[] = [];
+      for (const id of hostedIds) {
+        const plan = plans.get(id);
+        if (!plan) continue;
+        mine.push({
+          plan,
+          rsvp: 'going',
+          role: 'host',
+          noShow: false,
+          waitlistPosition: null,
+          offerExpiresAt: null,
+        });
+      }
+      for (const row of rows) {
         const plan = plans.get(row.plan_id);
-        const rsvp = toRsvpState(row.status);
-        if (!plan || rsvp === 'none') return [];
-        return [
-          {
-            plan,
-            rsvp,
-            waitlistPosition: row.waitlist_position,
-            offerExpiresAt: row.offer_expires_at,
-          },
-        ];
-      });
-      const direction = scope === 'upcoming' ? 1 : -1;
+        const noShow = row.status === 'no_show';
+        const rsvp = noShow ? 'going' : toRsvpState(row.status);
+        if (!plan || rsvp === 'none') continue;
+        mine.push({
+          plan,
+          rsvp,
+          role: 'guest',
+          noShow,
+          waitlistPosition: row.waitlist_position,
+          offerExpiresAt: row.offer_expires_at,
+        });
+      }
+      const direction = scope === 'past' ? -1 : 1;
       mine.sort(
         (a, b) =>
           direction *

@@ -7,10 +7,18 @@ export type MyPlansTab = 'going' | 'hosting' | 'past';
 
 /**
  * The status chip on a Plan in My Plans. Past Plans are never "Going": the person
- * attended, so the chip says that instead.
+ * attended (or missed it), so the chip says that instead. Hosts see their own standing.
  */
 export function statusPill(t: TFunction, item: MyPlan, isPast: boolean): StatusPill {
-  if (isPast) return { label: t('myPlans.pill.attended'), tone: 'neutral' };
+  if (item.role === 'host') {
+    if (isPast) return { label: t('myPlans.pill.hosted'), tone: 'neutral' };
+    return { label: t('myPlans.pill.hosting'), tone: 'positive' };
+  }
+  if (isPast) {
+    return item.noShow
+      ? { label: t('myPlans.pill.missed'), tone: 'neutral' }
+      : { label: t('myPlans.pill.attended'), tone: 'neutral' };
+  }
   if (item.rsvp === 'going') return { label: t('myPlans.pill.going'), tone: 'positive' };
   if (item.rsvp === 'offered' && item.offerExpiresAt) {
     return {

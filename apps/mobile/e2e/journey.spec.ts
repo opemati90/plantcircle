@@ -90,12 +90,11 @@ test('first run: pick a city, browse, sign up with an email code, join, bring so
   await expect(page.getByText('1 of 2 still open')).toBeVisible();
 });
 
-test('skipping the city shows Plans everywhere, with no city in the title', async ({
-  page,
-}) => {
+test('skipping the city lands on online Plans from anywhere', async ({ page }) => {
   await page.goto('/city');
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await expect(page.getByRole('heading', { name: 'This week', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/explore\?where=online/);
+  await expect(page.getByRole('button', { name: /Remove filter Online/ })).toBeVisible();
   await expect(page.getByText('Anywhere')).toBeVisible();
 });
 
