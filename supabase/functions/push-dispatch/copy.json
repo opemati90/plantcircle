@@ -108,7 +108,7 @@
       "planOnHold": "{{plan}} ist pausiert",
       "planOnHoldNote": "Wir melden uns so oder so.",
       "messageRequest": "{{name}} möchte dir schreiben",
-      "messageRequestNote": "Annehmen oder ablehnen unter Anfragen.",
+      "messageRequestNote": "Annehmen oder ablehnen unter „Nachrichtenanfragen“.",
       "circleApproved": "Du bist im Circle {{circle}}",
       "circleApprovedNote": "Sag Hallo im Circle-Chat.",
       "orderDecision": "{{order}}",
@@ -125,7 +125,7 @@
         "triaged": "Ein Mensch sieht es sich an.",
         "actioned": "Geprüft; Maßnahme ergriffen.",
         "dismissed": "Geprüft; keine Maßnahme.",
-        "appealed": "Im Einspruch.",
+        "appealed": "Einspruch eingelegt.",
         "closed": "Abgeschlossen."
       },
       "moderationNotice": "Eine Entscheidung zu deinem Konto",
@@ -146,8 +146,8 @@
       "turnOn": "Benachrichtigungen einschalten",
       "notNow": "Jetzt nicht",
       "sampleNow": "jetzt",
-      "sampleOffer": "Ein Platz ist frei beim Vegan Ramen Workshop — bestätige innerhalb von 2 Stunden",
-      "sampleReminder": "Morgen 17:00 · West African Cooking Night. Du bringst Kochbananen mit."
+      "sampleOffer": "Ein Platz ist frei beim Workshop für vegane Ramen – bestätige innerhalb von 2 Stunden",
+      "sampleReminder": "Morgen 17:00 · Westafrikanischer Kochabend. Du bringst Kochbananen mit."
     },
     "appName": "PlantCircle"
   },
@@ -176,7 +176,7 @@
       "addressUnlocked": "La dirección de {{plan}} está lista",
       "addressUnlockedNote": "Abre el Plan para verla.",
       "waitlistOffer": "Se liberó una plaza en {{plan}}",
-      "waitlistOfferNote": "Confirma en 2 horas.",
+      "waitlistOfferNote": "Confirma antes de que pasen 2 horas.",
       "planChanged": "{{plan}} tiene nueva hora: {{time}}",
       "planChangedNote": "¿Sigues yendo? Mira el Plan.",
       "planCancelled": "{{plan}} se canceló",
@@ -222,8 +222,8 @@
       "turnOn": "Activar notificaciones",
       "notNow": "Ahora no",
       "sampleNow": "ahora",
-      "sampleOffer": "Se liberó una plaza en Vegan Ramen Workshop: confirma en 2 horas",
-      "sampleReminder": "Mañana 17:00 · West African Cooking Night. Llevas plátanos."
+      "sampleOffer": "Se liberó una plaza en el taller de ramen vegano: confirma antes de que pasen 2 horas",
+      "sampleReminder": "Mañana 17:00 · Noche de cocina de África occidental. Llevas plátanos macho."
     },
     "appName": "PlantCircle"
   },
@@ -298,8 +298,8 @@
       "turnOn": "Ativar notificações",
       "notNow": "Agora não",
       "sampleNow": "agora",
-      "sampleOffer": "Abriu um lugar no Vegan Ramen Workshop — confirma em 2 horas",
-      "sampleReminder": "Amanhã 17:00 · West African Cooking Night. Levas bananas-pão."
+      "sampleOffer": "Abriu uma vaga na Oficina de Ramen Vegano — confirme dentro de 2 horas",
+      "sampleReminder": "Amanhã 17:00 · Noite de Cozinha da África Ocidental. Você leva bananas-pão."
     },
     "appName": "PlantCircle"
   },
@@ -342,7 +342,7 @@
       "orderDecision": "{{order}}",
       "orderState": {
         "locked": "C’est parti. Vérifie ta quantité.",
-        "extended": "Trois jours de plus pour rejoindre.",
+        "extended": "Trois jours de plus pour participer.",
         "cancelled": "Annulée. Personne n’a payé, rien à rembourser."
       },
       "orderReady": "{{order}} est prête à retirer",
@@ -362,7 +362,7 @@
       "promptLead": "Rappels, offres de liste d’attente et messages de tes Plans. Silence de 22:00 à 08:00.",
       "promptError": "Impossible de les activer. Réessaie dans Profil → Notifications.",
       "promptDenied": "Les notifications PlantCircle sont désactivées dans les réglages de l’appareil. Active-les là-bas, puis reviens.",
-      "promptUnavailable": "Cet appareil ne reçoit pas de notifications push. Tes actus restent dans la boîte.",
+      "promptUnavailable": "Cet appareil ne peut pas recevoir de notifications push. Tes actus restent disponibles dans Messages.",
       "moderationAction": {
         "warn": "Un avertissement. Lis les règles de la communauté.",
         "freeze_messages": "La messagerie est en pause un moment.",
@@ -374,8 +374,8 @@
       "turnOn": "Activer les notifications",
       "notNow": "Pas maintenant",
       "sampleNow": "maintenant",
-      "sampleOffer": "Une place s’est libérée au Vegan Ramen Workshop — confirme dans les 2 heures",
-      "sampleReminder": "Demain 17:00 · West African Cooking Night. Tu apportes des bananes plantain."
+      "sampleOffer": "Une place s’est libérée à l’atelier de ramen végan — confirme dans les 2 heures",
+      "sampleReminder": "Demain 17:00 · Soirée cuisine ouest-africaine. Tu apportes des bananes plantain."
     },
     "appName": "PlantCircle"
   },
