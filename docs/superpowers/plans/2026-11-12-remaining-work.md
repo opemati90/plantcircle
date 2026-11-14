@@ -186,3 +186,10 @@ language); the digest is in the Inbox in the reader’s language.
 - Accessibility pass: default line heights in `type()`, `maxFontSizeMultiplier` caps on every text, dark glass controls on photos, keyboard-aware sheets, stacked Plan bar at large type, toggles carry their note.
 
 Still owner-blocked: a Supabase project (ref, URL, anon key, db password, access token), native-speaker sign-off.
+
+## Gap analysis against the full handoff (14 November 2026)
+
+`docs/05`–`16`, `prototype-source/` and `source-docs/` arrived today. A Codex read-only comparison
+of the implementation against them is in `2026-11-14-gap-analysis.md` (schema, RLS, RPCs, state
+machines, notifications, analytics, every backlog story, open questions). Work continues from its
+"V1" rows, server-side first; each closed row is recorded below.
