@@ -9,7 +9,7 @@ Static comparison against the current checkout, including later migrations. “B
 | Severity | Documented → implemented |
 |---|---|
 | **V1** | `plans.circle_id`, `visibility`, `language` absent: no Circle-scoped Plans or language filtering. Circle’s Plans tab substitutes city-wide/online results. [core], [CircleScreen] |
-| **V1** | `plans` defaults to `published`, not `draft`; no `published_at`, `cancelled_reason`, `ai_drafted`. `plan_create` publishes immediately; no persisted draft/publish/edit/cancel workflow. [core], [plan-create] |
+| **Partly · V1** | `cancelled_reason` and `changed_at` added; edit/cancel workflow exists (`20261112002800_plan_workflow.sql`). Still no persisted draft/publish split, `published_at` or `ai_drafted` (drafts are a v1.1 candidate, see launch checklist). [core], [plan-create] |
 | **V1** | Documented capacity 2–500 → SQL table permits 1–500, creation RPC permits 2–50, hosting levels cap usable capacity at 6/12/30. Online creation also requires a profile city, although documented `city_id` is nullable. [core], [plan-create], [host-levels] |
 | **V1** | `profiles.diet`, `show_city`, `languages` absent. `profile_visibility='circles'` becomes opt-in `people_visible=false`; city visibility cannot be controlled separately. [core], [people] |
 | **V1** | `messages`: 1,000-character maximum instead of 4,000; no `media_path`, `kind`, `deleted_at`. No `conversations.pinned_message_id`; implementation pins conversations, not messages. [chat], [direct] |
@@ -29,7 +29,7 @@ Static comparison against the current checkout, including later migrations. “B
 | Severity | Difference |
 |---|---|
 | **V1** | `plan_cards` exposes every non-draft Plan; no public/Circle/link visibility enforcement. The documented host/staff access to drafts is also absent. [core], [featured-hosts] |
-| **V1** | `can_see_address` and `can_see_meeting_link` explicitly allow `on_hold`; docs/08 requires withholding the address. Meeting links unlock at start−10 minutes, versus the v1 start−15 requirement. No co-host access model. [core] |
+| **Done 2026-11-14** | Address and meeting link are withheld while on hold; the link opens at start−15 minutes. No co-host model (v1.1). [core] |
 | **Done 2026-11-14** | Blocking now also hides the other side’s Plan/order/recipe cards and their messages inside shared Plan/Circle chats (`20261112002600_blocks_hide.sql`, `blocks_visibility.test.ts`). T-07 holds. [chat], [safety], [host-levels], [featured-hosts] |
 | **Shape** | No `public_profiles` or `plan_guests` views. Safe reads instead use `people_in_my_circles()` and `host_guest_list()`; the latter returns display name/state, without contribution details. Reports use `my_reports()`/staff RPCs instead of table policies. These substitutions are not themselves missing authorization. [people], [hosting], [safety] |
 
@@ -41,9 +41,9 @@ Actual parameters generally use `p_`; `K` below means `p_idempotency_key uuid`.
 |---|---|
 | **Shape** | `home_feed(city_id?)`, `get_plan(plan_id)` → client composition of views/selects; no corresponding RPCs. [supabaseBackend] |
 | **V1** | `search(q,filters)` absent. Plans use bounded client-side substring search; Circles/recipes use `ILIKE`; no EN/DE `tsvector` search or language filter. [supabaseBackend], [exploreRules] |
-| **V1** | `plan_create_draft(fields)`, `plan_publish(plan_id)` → single `plan_create(kind,format,title,description,starts_at,ends_at,capacity,allergens,area_label,address,keep_address_private,meeting_url,K)`. `plan_update` and `plan_cancel` absent. [plan-create] |
+| **Partly · V1** | `plan_update(plan_id, patch…)` and `plan_cancel(plan_id, reason)` exist; drafts still publish in one step through `plan_create`. [plan-create] |
 | **Shape** | `checkin_toggle(plan_id,rsvp_id)` → `host_check_in(plan_id,user_id,checked_in boolean,K)`; `plan_end` → `host_end_plan(plan_id,K)`. [hosting] |
-| **V1** | `feedback_submit(plan_id,rating,tags[],comment?)` → `plan_feedback_submit(plan_id,rating,comment,K)`; no tags, and repeated submissions update feedback despite “once per user.” [hosting] |
+| **Partly · Shape** | Feedback is once per guest (`feedback_exists`); tags are not collected. [hosting] |
 | **Shape** | `circle_request_decide` → `circle_request_respond(request_id,approve,K)`; `circle_join` additionally takes `answer,K`. `message_send` → `message_post(conversation_id,body,client_id)`; media unsupported as noted above. [circles], [chat] |
 | **Shape** | `order_create` splits pickup into start/end/address/note parameters; `order_decide` additionally accepts `ready`, returning `{state}` rather than an order. [orders] |
 | **V1** | `report_create(...,evidence[])` lacks evidence; `staff_host_verify(user_id,approve,reason)` absent. `staff_queue(filters)` has no filters. [safety] |
@@ -56,12 +56,12 @@ Actual parameters generally use `p_`; `K` below means `p_idempotency_key uuid`.
 
 | Severity | Difference from docs/07 |
 |---|---|
-| **V1** | **Plan:** no draft save/delete, host edit/cancel, `changed → published` timeout, `needs_reconfirm`, or reconfirm RPC. Status enums and notification triggers exist without these workflows. [plan-create], [core], [notifications] |
-| **V1** | **Suspended host:** `apply_standing()` updates the profile only. Upcoming Plans never automatically enter `on_hold`; no hold-release transition. Consequently T-08’s join pause and guest notification do not occur. [safety] |
-| **V1** | **Completion/check-in:** no automatic completion at end+2h. `host_end_plan()` marks unrecorded guests `no_show` immediately, even before the check-in window ends. Check-in opens start−2h, not start−1h; host only, no co-host. [hosting] |
-| **V1** | **Waitlist expiry:** scheduled through the 15-minute reminders job, not the specified five-minute job. Expired users receive no notification, contrary to T-17. `promote_waitlist()` returns before expiring offers once the Plan starts; `waitlist_respond()` can then accept an expired offer still marked `offered`. [core], [notifications], [cron-reminders] |
+| **Done 2026-11-14 (drafts excepted)** | Host edit; time/place change → `changed` with `needs_reconfirm`; re-confirm RPC; settles when nobody is left to answer or after 48 h; host cancel with reason releases spots, lines and claims. [plan-workflow] |
+| **Done 2026-11-14** | Suspension puts upcoming Plans on hold, pauses joins, withholds the address, tells guests when they will hear; reversal resumes them (T-08). [state-machines] |
+| **Partly · V1** | Automatic completion at end+2h. Check-in still opens start−2h (spec: start−1h); host only, no co-host. [hosting] |
+| **Done 2026-11-14** | Offers expire before any promotion, expired members are told (T-17), accepted-after-expiry is refused, offers respect quiet hours. [state-machines] |
 | **V1** | **Orders:** below-target `go` sets `locked` without resetting/collecting quantity confirmations; `confirmed` remains unused. Completion occurs only when everyone collects, not at pickup-window end+24h. Extension is restricted to once and uses decision-time+72h. [orders] |
-| **V1** | **Circles:** no invite acceptance, ordinary leave, or moderator removal RPC. Declined users can request again immediately; no 30-day cooldown. Approval/decline does not append an audit event when performed by the owner. [circles] |
+| **Partly · V1** | Leave, 30-day request cooldown and owner audit rows exist. Invite acceptance and moderator removal remain. [circles] |
 | **V1** | **Reports:** no AI-driven `open → triaged` or urgent-keyword paging; severity comes from category. `staff_decide` also accepts an `appealed` report, allowing another ordinary decision instead of exclusively the appeal path. [safety] |
 | **Future** | Online-class lifecycle absent, consistent with its v1.1 designation. |
 
@@ -72,9 +72,9 @@ Actual parameters generally use `p_`; `K` below means `p_idempotency_key uuid`.
 | Severity | Difference |
 |---|---|
 | **V1** | `waitlist_offer`, `plan_changed`, `plan_cancelled`, `moderation_notice`: email is only a queue flag; no `email-send` implementation. Auth magic links do exist. [notifications], [functions], [web-rsvp function] |
-| **V1** | Waitlist offers pass `urgent=true`, bypassing quiet hours. No delayed-push validity check against `offer_expires_at`. [notifications], [push-dispatch] |
-| **V1** | Email-only moderation rows are also claimed by `push-dispatch`: the queue has no push-channel flag, and the dispatcher sends every claimed row to available tokens. [notifications], [push-dispatch] |
-| **V1** | `plan_changed`/`plan_on_hold` triggers exist, but their normal originating workflows are missing. `plan_cancelled` lacks host/reason; `plan_on_hold` lacks the promised update deadline. [notifications], [safety] |
+| **Done 2026-11-14** | Offers respect quiet hours and are dropped at dispatch once `expires_at` has passed. [notifications], [push-dispatch] |
+| **Done 2026-11-14** | Separate push and email rows; `push_queue_claim` only takes push rows. [notifications] |
+| **Done 2026-11-14** | Change and cancel workflows originate them; cancelled carries host and reason; on-hold carries the update deadline. [notifications] |
 | **V1** | `order_decision` has no reconfirm action; `order_ready` lacks pickup window/organizer/amount; `order_closing` lacks quantity remaining. [notifications], [notificationCopy] |
 | **V1** | In-app `moderation_notice` contains action IDs/type, not the statement of reasons. Warning/removal notices have no detail destination; only suspension/freeze opens a reasons screen. [notifications], [notificationCopy] |
 | **Shape** | Reminders can enqueue 15 minutes before the documented 24h/2h boundaries. `address_unlocked` additionally queues email. `weekly_digest` is an extra catalog event. [notifications], [weekly-digest] |
@@ -96,16 +96,16 @@ Shared limitation: missing analytics/Sentry and unverified deployment/device che
 | S0-2 Supabase | **Partly · V1** | Migrations exist; no generated `packages/types`. Seed now holds the prototype people (Ama, Jonas, Mia, Lena), 3 Plans + a past one, 1 group order, 2 Circles and 2 recipes (`seed.test.ts` loads it twice). Local/staging Supabase deployment remains unverified. [seed], [backend types], [HANDOVER] |
 | S0-3 Design system | **Partly · V1** | Tokens/components exist; no Storybook/component preview covering the required inventory. [components], [tokens] |
 | S0-4 i18n/analytics/Sentry/flags | **Partly · V1** | i18n built; analytics, Sentry and feature flags absent. [i18n], [mobile package] |
-| S1-1 Onboarding | **Partly · V1** | Skip goes to `/home` with worldwide Plans, not Explore with online Plans. [WelcomeScreen], [plan queries] |
+| S1-1 Onboarding | **Done 2026-11-14** | Skip lands on Explore with the Online filter on (server-side format filter). [WelcomeScreen], [ExploreScreen] |
 | S1-2 Auth/resume | **Built** | No additional story-specific source gap identified; OAuth delivery remains unverified. [auth], [PlanScreen] |
 | S1-3 Privacy/consent | **Partly · V1** | Choices/logging built; consent-gated analytics SDK absent. [PrivacyChoicesScreen], [account] |
 | S1-4 Home/shell | **Built** | No additional story-specific source gap identified. [HomeScreen] |
 | S1-5 Settings/data/legal | **Partly · V1** | Screens and request records exist; export fulfilment and auth-data purge worker absent. [account], [AccountScreen], [functions] |
 | S2-1 Plan detail | **Built** | Address-before-reveal and sign-up/resume paths exist; separate hold/link-timing gaps above. [PlanScreen], [core] |
-| S2-2 RSVP engine | **Partly · V1** | Expiry timing/start-boundary and expired-user notification gaps in §2. [core], [notifications] |
-| S2-3 Plan variants | **Partly · V1** | Status/error/offline presentation exists; no functioning change/reconfirm or host-suspension flow. [PlanScreen], [planCopy], [safety] |
+| S2-2 RSVP engine | **Done 2026-11-14** | Expiry ordering and notification fixed (T-17). [core], [notifications] |
+| S2-3 Plan variants | **Done 2026-11-14** | TIME CHANGED with Still going / Can’t make it, CANCELLED BY HOST with the host’s message, ON HOLD, and the host’s own view. [PlanScreen] |
 | S2-4 My Plans/offline | **Done 2026-11-14** | Hosting tab lists the member’s own Plans (`my_hosted_plans` view); Past includes `no_show` (“Missed” pill) and hosted Plans (“You hosted”). Onboarding without a city lands on Explore with the Online filter on. [MyPlansScreen], [supabaseBackend], [offlineCache] |
-| S2-5 Notifications | **Partly · V1** | Pipeline exists; quiet-hours/channel discrepancies in §3. [notifications], [push-dispatch] |
+| S2-5 Notifications | **Partly · V1** | Channels and quiet hours fixed; email delivery (`email-send`) still needs a provider. [notifications], [push-dispatch] |
 | S3-1 Create | **Partly · V1/Shape** | Six steps instead of type+four details steps; only two kinds; city/level/capacity restrictions. Date/time/address/allergen controls exist. [CreatePlanScreen], [plan-create] |
 | S3-2 AI draft | **Missing · V1** | No `ai-draft-plan`, validation, fallback integration, rate limiting or AI badge flow. [functions], [CreatePlanScreen] |
 | S3-3 Publish/share/web RSVP | **Partly · V1/Shape** | Expo web instead of Next.js is shape-only. Universal-link associations absent; reservation email is a sign-in magic link; no waitlist-email delivery. [PublishedScreen], [app.json], [web-rsvp function] |
@@ -113,7 +113,7 @@ Shared limitation: missing analytics/Sentry and unverified deployment/device che
 | S3-5 Contributions | **Built** | No additional story-specific gap identified. [bring-items], [core] |
 | S4-1 Circles | **Partly · V1** | Invite/leave/remove absent; Circle Plans tab shows city Plans rather than Circle-linked Plans. [circles], [CircleScreen] |
 | S4-2 Explore/search/filters | **Partly · V1** | No EN/DE full-text/language search. Filters use component state and reset on remount; only browse location is session-stored. [ExploreScreen], [exploreRules], [browseStore] |
-| S4-3 Messaging | **Partly · V1** | Polling at 5s/15s instead of Realtime; blocked shared-chat content remains visible. [chat queries], [inbox queries], [chat] |
+| S4-3 Messaging | **Partly · V1** | Blocked people’s messages hidden in shared chats (T-07). Still polling at 5s/15s instead of Realtime. [chat queries] |
 | S4-4 Recipes | **Built** | Serving scaling and allergen/not-confirmed creation implemented. [RecipeScreen], [recipes] |
 | S5-1 Orders | **Partly · V1** | Reconfirmation and timed completion absent; creation additionally level-gated. [orders], [host-levels] |
 | S5-2 Safety | **Done 2026-11-14** | T-07 content hiding and T-08 suspended-host hold now pass; receipt/suspension/appeal paths exist. [safety] |
@@ -196,3 +196,7 @@ Shared limitation: missing analytics/Sentry and unverified deployment/device che
 [PushTapRouter]: apps/mobile/src/features/notifications/PushTapRouter.tsx
 [orderRules]: apps/mobile/src/features/orders/orderRules.ts
 [later owner spec]: docs/superpowers/specs/2026-11-14-hosting-levels-city-flow-design.md
+
+## Update 2026-11-14 (evening)
+
+Closed this session: state machines (T-08, T-17, completion, feedback once, Circle leave/cooldown/audit), block hiding (T-07), My Plans Hosting tab and no-shows, onboarding skip to online Plans, prototype seed, Plan edit/re-confirm/cancel, and a person profile shown before connecting or answering a message request. What is left for launch is in `docs/superpowers/plans/2026-11-14-mvp-launch-checklist.md`.
