@@ -107,6 +107,9 @@ begin
     raise exception 'invalid_plan' using errcode = 'P0001';
   end if;
 
+  -- Hosting is earned (20261112002000_host_levels.sql): level, format and spots.
+  perform public.host_level_check(p_format, p_capacity);
+
   insert into public.plans
     (host_id, kind, format, title, description, city_id, area_label, starts_at, ends_at, tz,
      capacity, allergens, status)

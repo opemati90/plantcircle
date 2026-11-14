@@ -30,7 +30,7 @@ beforeEach(async () => {
   ] as const) {
     await db.query('insert into auth.users (id) values ($1)', [id]);
     await db.query(
-      'insert into public.profiles (id, display_name, city_id, people_visible) values ($1, $2, $3, true)',
+      'insert into public.profiles (id, display_name, city_id, people_visible, is_verified_host) values ($1, $2, $3, true, true)',
       [id, name, CITY],
     );
   }

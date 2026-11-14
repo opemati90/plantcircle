@@ -1,4 +1,5 @@
 import { appStorage } from '../../storage';
+import { hostLevelFrom } from '../../../features/hosting/levels';
 import { BackendError, type Backend } from '../backend';
 import { DEFAULT_SETTINGS, isRecipeAllergen, PROFILE_GOALS } from '../types';
 import type {
@@ -6,6 +7,8 @@ import type {
   AuditRow,
   Circle,
   City,
+  HostLevel,
+  HostStats,
   CircleRequest,
   FeedbackState,
   GroupOrder,
@@ -70,6 +73,11 @@ interface State {
   plansCreated: Plan[];
   /** Cities typed in that the seed does not have (mirrors city_ensure). */
   citiesAdded: City[];
+  /** Authors the viewer follows and recipes the viewer upvoted (follows, recipe_votes). */
+  following: string[];
+  recipeVotes: string[];
+  /** What the viewer has earned towards hosting (host_level); recipes shared here add to it. */
+  hostStats: HostStats;
   /** The private details of Plans this person published: the host always sees them. */
   /** Group orders published in this session, with items and everyone's interest. */
   orders: Record<
@@ -176,6 +184,8 @@ interface FixtureHooks {
     makeStaff: () => void;
     /** Test hook: a new Terms version takes effect now, so the update gate shows. */
     publishTerms: () => void;
+    /** Test hook: what the viewer has earned towards hosting (recipes shared here add to it). */
+    setHostStats: (stats: Partial<HostStats>) => void;
   };
   /** Test hook: failures to simulate from the very first call after load. */
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
@@ -198,6 +208,10 @@ const EMPTY: State = {
   peopleRequested: [],
   plansCreated: [],
   citiesAdded: [],
+  following: [],
+  recipeVotes: [],
+  // Level 2 out of the box, so the sample member can host in person; tests lower it (setHostStats).
+  hostStats: { recipes: 3, hosted: 1, followers: 12, upvotes: 40 },
   plansSecrets: {},
   orders: {},
   plansGuests: {},
@@ -302,6 +316,9 @@ export async function createFixtureBackend(): Promise<Backend> {
           },
         ],
       });
+    },
+    setHostStats: (stats) => {
+      commit({ ...state, hostStats: { ...state.hostStats, ...stats } });
     },
     freeSpot: (planId, offerMs = OFFER_MS) => {
       const inLine = planId in state.waitlist;
@@ -587,20 +604,39 @@ export async function createFixtureBackend(): Promise<Backend> {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   };
 
-  const summaryOf = (r: RecipeDetail): Recipe => ({
-    id: r.id,
-    title: r.title,
-    cuisine: r.cuisine,
-    serves: r.serves,
-    minutes: r.minutes,
-    intro: r.intro,
-    allergens: r.allergens,
-    allergensConfirmed: r.allergensConfirmed,
-    circleId: r.circleId,
-    circleName: r.circleName,
-    authorName: r.authorName,
-    createdAt: r.createdAt,
+  /** A recipe as the viewer sees it: votes, the viewer's vote and whether they follow the author. */
+  const decorate = <R extends Recipe>(r: R): R => ({
+    ...r,
+    votes: r.votes + (state.recipeVotes.includes(r.id) ? 1 : 0),
+    voted: state.recipeVotes.includes(r.id),
+    followingAuthor: r.authorId !== null && state.following.includes(r.authorId),
   });
+
+  const summaryOf = (r: RecipeDetail): Recipe =>
+    decorate({
+      id: r.id,
+      title: r.title,
+      cuisine: r.cuisine,
+      serves: r.serves,
+      minutes: r.minutes,
+      intro: r.intro,
+      allergens: r.allergens,
+      allergensConfirmed: r.allergensConfirmed,
+      circleId: r.circleId,
+      circleName: r.circleName,
+      authorId: r.authorId,
+      authorName: r.authorName,
+      createdAt: r.createdAt,
+      votes: r.votes,
+      voted: false,
+      followingAuthor: false,
+    });
+
+  const hostLevel = (): HostLevel =>
+    hostLevelFrom({
+      ...state.hostStats,
+      recipes: state.hostStats.recipes + state.recipesCreated.length,
+    });
 
   /** Property order must not change a request's identity, so keys are sorted before comparing. */
   const fingerprintOf = (value: unknown): string =>
@@ -861,7 +897,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       await call();
       const recipe = visibleRecipes().find((r) => r.id === recipeId);
       if (!recipe) throw new BackendError('not_found');
-      return recipe;
+      return decorate(recipe);
     },
 
     async createRecipe(input, key) {
@@ -895,8 +931,12 @@ export async function createFixtureBackend(): Promise<Backend> {
         allergensConfirmed: input.allergensConfirmed,
         circleId: input.circleId,
         circleName,
+        authorId: state.session?.userId ?? null,
         authorName: myName(),
         createdAt: new Date().toISOString(),
+        votes: 0,
+        voted: false,
+        followingAuthor: false,
         ingredients: input.ingredients,
         steps: input.steps,
       };
@@ -949,6 +989,13 @@ export async function createFixtureBackend(): Promise<Backend> {
             Array.from(address).length < 1 ||
             Array.from(address).length > 200);
       if (invalid) throw new BackendError('invalid_input');
+      // Hosting is earned, as host_level_check: level, format, spots.
+      const level = hostLevel();
+      if (level.level === 0) throw new BackendError('host_level_required');
+      if (input.format === 'in_person' && !level.inPerson) {
+        throw new BackendError('host_level_in_person');
+      }
+      if (input.capacity > level.maxCapacity) throw new BackendError('host_level_capacity');
       const plan: Plan = {
         id: `plan-${now}-${key.slice(0, 8)}`,
         title,
@@ -1420,6 +1467,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       if (replayed) return replayed;
       const city = allCities().find((c) => c.id === state.profile?.cityId);
       if (!city) throw new BackendError('city_required');
+      if (!hostLevel().groupOrders) throw new BackendError('host_level_required');
       const closes = Date.parse(input.closesAt);
       const ps = Date.parse(input.pickupStart);
       const pe = Date.parse(input.pickupEnd);
@@ -2147,6 +2195,37 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireActive();
       if (!state.profile) throw new BackendError('not_found');
       commit({ ...state, profile: { ...state.profile, peopleVisible: visible } });
+    },
+
+    async getHostLevel() {
+      await call();
+      requireSession();
+      return hostLevel();
+    },
+
+    async setFollow(userId, on) {
+      await call();
+      requireActive();
+      requireNotBlocked(userId);
+      if (userId === state.session?.userId) throw new BackendError('person_not_found');
+      const following = on
+        ? Array.from(new Set([...state.following, userId]))
+        : state.following.filter((id) => id !== userId);
+      commit({ ...state, following });
+      return { following: on, followers: on ? 1 : 0 };
+    },
+
+    async setRecipeVote(recipeId, on) {
+      await call();
+      requireActive();
+      const recipe = visibleRecipes().find((r) => r.id === recipeId);
+      if (!recipe) throw new BackendError('not_found');
+      if (recipe.authorId === state.session?.userId) throw new BackendError('own_recipe');
+      const recipeVotes = on
+        ? Array.from(new Set([...state.recipeVotes, recipeId]))
+        : state.recipeVotes.filter((id) => id !== recipeId);
+      commit({ ...state, recipeVotes });
+      return { voted: on, votes: recipe.votes + (on ? 1 : 0) };
     },
 
     async getProfileStats() {

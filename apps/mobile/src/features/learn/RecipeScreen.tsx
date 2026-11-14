@@ -14,7 +14,8 @@ import { useScreenInsets } from '../../components/useScreenInsets';
 import { ReportLink } from '../safety/ReportLink';
 import { errorCode } from '../../lib/backend/backend';
 import { currentLanguage } from '../../lib/i18n';
-import { useRecipe } from './queries';
+import { useAuth } from '../auth/useAuth';
+import { useRecipe, useSetFollow, useSetRecipeVote } from './queries';
 import { allergenNames, formatQuantity, scaleQuantity } from './recipeRules';
 import { Stepper } from '../../components/Stepper';
 
@@ -28,6 +29,9 @@ export default function RecipeScreen() {
   const insets = useScreenInsets();
   const router = useRouter();
   const recipe = useRecipe(id);
+  const { session } = useAuth();
+  const vote = useSetRecipeVote();
+  const follow = useSetFollow();
   const [servings, setServings] = useState<number | null>(null);
 
   const goBack = () => {
@@ -149,6 +153,51 @@ export default function RecipeScreen() {
               </Text>
             </View>
           </View>
+          {session && data.authorId !== session.userId ? (
+            <View style={styles.actions}>
+              <Button
+                variant={data.voted ? 'primary' : 'outline'}
+                label={`${data.voted ? t('hosting.upvoted') : t('hosting.upvote')} · ${t('hosting.votes', { count: data.votes })}`}
+                accessibilityLabel={`${t('hosting.upvote')}, ${t('hosting.votes', { count: data.votes })}`}
+                pressed={data.voted}
+                disabled={vote.isPending}
+                onPress={() => {
+                  vote.mutate({ recipeId: data.id, on: !data.voted });
+                }}
+              />
+              {data.authorId ? (
+                <Button
+                  variant={data.followingAuthor ? 'primary' : 'outline'}
+                  label={
+                    data.followingAuthor
+                      ? t('hosting.following')
+                      : t('hosting.follow', { name: data.authorName ?? '' })
+                  }
+                  accessibilityLabel={
+                    data.followingAuthor
+                      ? t('hosting.unfollow', { name: data.authorName ?? '' })
+                      : t('hosting.follow', { name: data.authorName ?? '' })
+                  }
+                  pressed={data.followingAuthor}
+                  disabled={follow.isPending}
+                  onPress={() => {
+                    follow.mutate({ userId: data.authorId ?? '', on: !data.followingAuthor });
+                  }}
+                />
+              ) : null}
+            </View>
+          ) : !session ? (
+            <Text style={type(14, 'regular', { color: color.secondary })}>
+              {t('hosting.votes', { count: data.votes })}
+            </Text>
+          ) : null}
+          {vote.isError || follow.isError ? (
+            <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+              {errorCode(vote.error ?? follow.error) === 'own_recipe'
+                ? t('hosting.errorOwnRecipe')
+                : t('hosting.errorAction')}
+            </Text>
+          ) : null}
           {data.intro ? (
             <Text style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}>
               {data.intro}
@@ -234,6 +283,7 @@ const styles = StyleSheet.create({
   hero: { height: 400, backgroundColor: color.ink },
   heroText: { position: 'absolute', left: 24, right: 24, bottom: 30, gap: 10 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   chip: {
     minHeight: 32,
     paddingHorizontal: 12,

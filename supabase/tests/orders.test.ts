@@ -24,7 +24,8 @@ beforeEach(async () => {
   ] as const) {
     await db.query('insert into auth.users (id) values ($1)', [id]);
     await db.query(
-      'insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)',
+      // Verified hosts may publish anything (host_levels.test.ts covers the earned levels).
+      'insert into public.profiles (id, display_name, city_id, is_verified_host) values ($1, $2, $3, true)',
       [id, name, CITY],
     );
   }

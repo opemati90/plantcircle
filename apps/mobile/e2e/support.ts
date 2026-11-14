@@ -19,6 +19,9 @@ export interface FixtureWindow {
     suspend: () => void;
     makeStaff: () => void;
     publishTerms: () => void;
+    setHostStats: (
+      stats: Partial<{ recipes: number; hosted: number; followers: number; upvotes: number }>,
+    ) => void;
   };
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
 }

@@ -13,6 +13,7 @@ import type {
   FeedbackState,
   GroupOrder,
   Guest,
+  HostLevel,
   HostSummary,
   InboxThread,
   MyPlan,
@@ -23,10 +24,10 @@ import type {
   OrderState,
   PendingPolicy,
   Person,
-  PolicyName,
   Plan,
   PlanDetail,
   PlanInput,
+  PolicyName,
   Profile,
   ProfileInput,
   ProfileStats,
@@ -63,6 +64,10 @@ export type BackendErrorCode =
   | 'forbidden'
   | 'invalid_input'
   | 'city_required'
+  | 'host_level_required'
+  | 'host_level_in_person'
+  | 'host_level_capacity'
+  | 'own_recipe'
   | 'checkin_closed'
   | 'plan_not_started'
   | 'item_claimed'
@@ -119,6 +124,12 @@ export interface Backend {
   updateProfile(input: { displayName: string; goals: string[] }): Promise<Profile>;
   /** Whole counts for the identity card. */
   getProfileStats(): Promise<ProfileStats>;
+  /** The viewer's hosting level: what earned it, what it allows, what is next. */
+  getHostLevel(): Promise<HostLevel>;
+  /** Follow or unfollow a member (from a recipe). Returns the author's follower count. */
+  setFollow(userId: string, on: boolean): Promise<{ following: boolean; followers: number }>;
+  /** Upvote a recipe or take it back. Never the viewer's own. */
+  setRecipeVote(recipeId: string, on: boolean): Promise<{ voted: boolean; votes: number }>;
 
   /** Circles anyone can see (open and request), with optional text search. */
   listCircles(query: { search: string }): Promise<Circle[]>;

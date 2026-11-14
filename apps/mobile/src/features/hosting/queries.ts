@@ -117,3 +117,15 @@ export function useRemoveBringItem(planId: string) {
     onSuccess: refresh,
   });
 }
+
+/** The viewer's hosting level: what earned it, what it allows, what is next (design note §2). */
+export function useHostLevel() {
+  const backend = useBackend();
+  const { session } = useAuth();
+  return useQuery({
+    queryKey: ['hostLevel', session?.userId ?? null],
+    queryFn: () => backend.getHostLevel(),
+    enabled: session !== null,
+    staleTime: 0,
+  });
+}

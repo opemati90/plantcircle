@@ -21,6 +21,8 @@ interface ButtonProps {
   loading?: boolean;
   /** Screen-reader name when it must say more than the visible label. */
   accessibilityLabel?: string;
+  /** A toggle (upvote, follow): announced as pressed or not. */
+  pressed?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -39,6 +41,7 @@ export function Button({
   disabled,
   loading,
   accessibilityLabel,
+  pressed: toggled,
   style,
 }: ButtonProps) {
   const inactive = Boolean(disabled) || Boolean(loading);
@@ -48,6 +51,7 @@ export function Button({
       accessibilityLabel={accessibilityLabel ?? label}
       aria-disabled={inactive}
       aria-busy={Boolean(loading)}
+      aria-pressed={toggled}
       disabled={inactive}
       onPress={onPress}
       style={({ pressed }) => [

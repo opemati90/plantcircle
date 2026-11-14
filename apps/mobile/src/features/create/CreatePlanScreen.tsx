@@ -19,6 +19,8 @@ import {
 import { longDate, time, timeRange } from '../../lib/dates';
 import { useAuth } from '../auth/useAuth';
 import { newIdempotencyKey, useCities } from '../plans/queries';
+import { HostLevelCard } from '../hosting/HostLevelCard';
+import { useHostLevel } from '../hosting/queries';
 import { useCreatePlan } from './queries';
 import {
   DAY_COUNT,
@@ -81,6 +83,7 @@ export default function CreatePlanScreen() {
   const { session, profile } = useAuth();
   const cities = useCities();
   const create = useCreatePlan();
+  const hostLevel = useHostLevel();
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [index, setIndex] = useState(0);
   const [lateStart, setLateStart] = useState(false);
@@ -94,6 +97,18 @@ export default function CreatePlanScreen() {
     setLateStart(false);
     setDraft((current) => ({ ...current, ...patch }));
   };
+  const levelMaxCapacity = Math.min(MAX_CAPACITY, hostLevel.data?.maxCapacity ?? MAX_CAPACITY);
+  const levelInPerson = hostLevel.data?.inPerson ?? true;
+  // A level that cannot host in person or hold the default spots: the draft follows it.
+  useEffect(() => {
+    // Level 0 has no capacity at all; the gate shows instead, so the draft is left alone.
+    if (levelMaxCapacity < MIN_CAPACITY) return;
+    setDraft((current) => ({
+      ...current,
+      format: !levelInPerson && current.format === 'in_person' ? 'online' : current.format,
+      capacity: Math.max(MIN_CAPACITY, Math.min(current.capacity, levelMaxCapacity)),
+    }));
+  }, [levelInPerson, levelMaxCapacity]);
 
   const window =
     draft.day === null ? null : planWindow(draft.day, draft.startMinutes, draft.duration, zone);
@@ -189,7 +204,7 @@ export default function CreatePlanScreen() {
       </View>
     );
   }
-  if (cities.isPending) {
+  if (cities.isPending || hostLevel.isPending) {
     return (
       <View
         role="status"
@@ -198,6 +213,47 @@ export default function CreatePlanScreen() {
         style={styles.screen}
       >
         <Skeleton width="100%" height={120} radius={radius.card} />
+      </View>
+    );
+  }
+  if (hostLevel.isError) {
+    return (
+      <View style={styles.screen}>
+        {header}
+        <InlineState
+          title={t('errors.serverTitle')}
+          text={t('hosting.levelLoadError')}
+          action={
+            <Button
+              variant="outline"
+              label={t('common.tryAgain')}
+              onPress={() => void hostLevel.refetch()}
+            />
+          }
+        />
+      </View>
+    );
+  }
+  // Hosting is earned: nothing to publish until a recipe is shared (design note §2).
+  if (hostLevel.data.level === 0) {
+    return (
+      <View style={styles.screen}>
+        {header}
+        <View style={styles.gate}>
+          <InlineState
+            title={t('hosting.gateTitle')}
+            text={t('hosting.gateText')}
+            action={
+              <Button
+                label={t('hosting.gateAction')}
+                onPress={() => {
+                  router.replace('/recipe/new');
+                }}
+              />
+            }
+          />
+          <HostLevelCard level={hostLevel.data} />
+        </View>
       </View>
     );
   }
@@ -222,12 +278,17 @@ export default function CreatePlanScreen() {
     );
   }
 
+  const maxCapacity = levelMaxCapacity;
+  const inPersonAllowed = levelInPerson;
+  const SUBMIT_ERRORS: Partial<Record<string, string>> = {
+    city_required: t('create.cityRequired'),
+    suspended: t('safety.suspendedErrorDetail'),
+    host_level_required: t('hosting.errorRequired'),
+    host_level_in_person: t('hosting.errorInPerson'),
+    host_level_capacity: t('hosting.errorCapacity'),
+  };
   const submitError = create.isError
-    ? errorCode(create.error) === 'city_required'
-      ? t('create.cityRequired')
-      : errorCode(create.error) === 'suspended'
-        ? t('safety.suspendedErrorDetail')
-        : t('create.error')
+    ? (SUBMIT_ERRORS[errorCode(create.error)] ?? t('create.error'))
     : null;
 
   return (
@@ -328,15 +389,21 @@ export default function CreatePlanScreen() {
             >
               {(['in_person', 'online'] as const).map((format) => {
                 const selected = draft.format === format;
+                const locked = format === 'in_person' && !inPersonAllowed;
                 return (
                   <Pressable
                     key={format}
                     accessibilityRole="radio"
                     aria-checked={selected}
+                    aria-disabled={locked}
                     onPress={() => {
-                      update({ format });
+                      if (!locked) update({ format });
                     }}
-                    style={[styles.segment, selected && styles.segmentSelected]}
+                    style={[
+                      styles.segment,
+                      selected && styles.segmentSelected,
+                      locked && styles.segmentLocked,
+                    ]}
                   >
                     <Text
                       style={type(15, 'semibold', {
@@ -351,6 +418,9 @@ export default function CreatePlanScreen() {
                 );
               })}
             </View>
+            {!inPersonAllowed ? (
+              <Text style={styles.lead}>{t('hosting.inPersonLocked')}</Text>
+            ) : null}
             {draft.format === 'in_person' ? (
               <>
                 <Text style={styles.label}>{t('create.areaLabel')}</Text>
@@ -419,7 +489,7 @@ export default function CreatePlanScreen() {
             <Stepper
               value={draft.capacity}
               min={MIN_CAPACITY}
-              max={MAX_CAPACITY}
+              max={maxCapacity}
               label={t('create.howManyTitle')}
               decreaseLabel={t('learn.fewer')}
               increaseLabel={t('learn.more')}
@@ -427,6 +497,7 @@ export default function CreatePlanScreen() {
                 update({ capacity });
               }}
             />
+            <Text style={styles.lead}>{t('hosting.capacityNote', { spots: maxCapacity })}</Text>
             <Text style={styles.lead}>{t('create.waitlistNote')}</Text>
           </>
         ) : null}
@@ -713,6 +784,8 @@ const styles = StyleSheet.create({
     borderColor: extra.cardBorder,
   },
   segmentSelected: { borderColor: color.brand, backgroundColor: color.brandTint },
+  segmentLocked: { opacity: 0.45 },
+  gate: { gap: 16 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   timeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   timeCell: {

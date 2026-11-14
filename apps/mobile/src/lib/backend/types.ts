@@ -382,7 +382,11 @@ export const recipeCardSchema = z.object({
   id: z.string(),
   circle_id: z.string(),
   circle_name: z.string(),
+  author_id: z.string().nullable(),
   author_name: z.string().nullable(),
+  votes: z.number().int(),
+  voted: z.boolean(),
+  following_author: z.boolean(),
   title: z.string(),
   cuisine: z.string().nullable(),
   serves: z.number().int(),
@@ -412,8 +416,14 @@ export interface Recipe {
   allergensConfirmed: boolean;
   circleId: string;
   circleName: string;
+  authorId: string | null;
   authorName: string | null;
   createdAt: string;
+  /** Upvotes from members who can see it; the viewer's own is `voted`. */
+  votes: number;
+  voted: boolean;
+  /** Whether the viewer follows the author (followers count towards hosting levels). */
+  followingAuthor: boolean;
 }
 
 export interface RecipeIngredient {
@@ -732,8 +742,12 @@ export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
   allergensConfirmed: row.allergens_confirmed,
   circleId: row.circle_id,
   circleName: row.circle_name,
+  authorId: row.author_id,
   authorName: row.author_name,
   createdAt: row.created_at,
+  votes: row.votes,
+  voted: row.voted,
+  followingAuthor: row.following_author,
 });
 
 // Safety (C10). Report and block on every person, Plan, post, message and group order.
@@ -1079,6 +1093,63 @@ export interface ProfileStats {
   circles: number;
   connections: number;
 }
+
+// Hosting levels (design note 2026-11-14 §2). What earned the level, what it allows, what is next.
+export interface HostStats {
+  recipes: number;
+  hosted: number;
+  followers: number;
+  upvotes: number;
+}
+export interface HostLevel extends HostStats {
+  level: number;
+  maxCapacity: number;
+  inPerson: boolean;
+  groupOrders: boolean;
+  next:
+    | (HostStats & {
+        level: number;
+        maxCapacity: number;
+        inPerson: boolean;
+        groupOrders: boolean;
+      })
+    | null;
+}
+const hostLevelRowSchema = z.object({
+  level: z.number().int(),
+  recipes: z.number().int(),
+  hosted: z.number().int(),
+  followers: z.number().int(),
+  upvotes: z.number().int(),
+  max_capacity: z.number().int(),
+  in_person: z.boolean(),
+  group_orders: z.boolean(),
+});
+export const hostLevelSchema = hostLevelRowSchema.extend({
+  next: hostLevelRowSchema.nullable(),
+});
+export const toHostLevel = (row: z.infer<typeof hostLevelSchema>): HostLevel => ({
+  level: row.level,
+  recipes: row.recipes,
+  hosted: row.hosted,
+  followers: row.followers,
+  upvotes: row.upvotes,
+  maxCapacity: row.max_capacity,
+  inPerson: row.in_person,
+  groupOrders: row.group_orders,
+  next: row.next
+    ? {
+        level: row.next.level,
+        recipes: row.next.recipes,
+        hosted: row.next.hosted,
+        followers: row.next.followers,
+        upvotes: row.next.upvotes,
+        maxCapacity: row.next.max_capacity,
+        inPerson: row.next.in_person,
+        groupOrders: row.next.group_orders,
+      }
+    : null,
+});
 export const profileStatsSchema = z.object({
   plans: z.number().int(),
   circles: z.number().int(),

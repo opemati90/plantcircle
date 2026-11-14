@@ -17,6 +17,8 @@ import { useBackend } from '../../lib/backend/BackendProvider';
 import { useAuth, useSignOut } from '../auth/useAuth';
 import { hasNotice, isPaused } from '../safety/standing';
 import { useCities } from '../plans/queries';
+import { HostLevelCard } from '../hosting/HostLevelCard';
+import { useHostLevel } from '../hosting/queries';
 
 type Row = { label: string; href: Href; icon?: 'bell' | 'lock' | 'user' | 'sprout' | 'alert' };
 
@@ -56,7 +58,7 @@ export default function ProfileScreen() {
     { label: t('profile.privacy'), href: '/profile/privacy', icon: 'lock' },
     { label: t('profile.accessibility'), href: '/profile/accessibility', icon: 'user' },
   ];
-  // Hosting (host level, earnings, Host Pro) is Later; the group waits with it.
+  const hostLevel = useHostLevel();
   const about: Row[] = [
     { label: t('profile.terms'), href: '/legal/terms' },
     { label: t('profile.accountData'), href: '/profile/account' },
@@ -133,6 +135,15 @@ export default function ProfileScreen() {
           <Stat value={stats.data?.connections ?? 0} label={t('profile.statsConnections')} />
         </View>
       </View>
+
+      {hostLevel.data ? (
+        <View style={styles.group}>
+          <Text style={[type(14, 'semibold', { color: color.secondary }), styles.groupTitle]}>
+            {t('profile.hosting')}
+          </Text>
+          <HostLevelCard level={hostLevel.data} />
+        </View>
+      ) : null}
 
       <Group
         title={t('profile.settings')}

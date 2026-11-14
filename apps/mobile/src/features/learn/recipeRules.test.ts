@@ -17,8 +17,12 @@ const recipe: Recipe = {
   allergensConfirmed: false,
   circleId: 'c1',
   circleName: 'Kitchen',
+  authorId: 'ama',
   authorName: 'Ama',
   createdAt: '2026-11-10T10:00:00Z',
+  votes: 0,
+  voted: false,
+  followingAuthor: false,
 };
 
 describe('scaleQuantity', () => {

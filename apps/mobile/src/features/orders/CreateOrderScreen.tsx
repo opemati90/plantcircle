@@ -15,6 +15,8 @@ import { useAuth } from '../auth/useAuth';
 import { calendarDay, planWindow, startsSoonEnough } from '../create/rules';
 import { newIdempotencyKey, useCities } from '../plans/queries';
 import { money } from './orderRules';
+import { HostLevelCard } from '../hosting/HostLevelCard';
+import { useHostLevel } from '../hosting/queries';
 import { useCreateOrder } from './queries';
 
 const STEPS = ['supplier', 'items', 'when', 'review'] as const;
@@ -42,6 +44,7 @@ export default function CreateOrderScreen() {
   const router = useRouter();
   const { session, profile } = useAuth();
   const cities = useCities();
+  const hostLevel = useHostLevel();
   const create = useCreateOrder();
   const language = currentLanguage();
   const [index, setIndex] = useState(0);
@@ -146,7 +149,7 @@ export default function CreateOrderScreen() {
       </View>
     );
   }
-  if (session === undefined || cities.isPending) {
+  if (session === undefined || cities.isPending || (session !== null && hostLevel.isPending)) {
     return (
       <View
         role="status"
@@ -175,6 +178,38 @@ export default function CreateOrderScreen() {
             />
           }
         />
+      </View>
+    );
+  }
+  if (hostLevel.isError) {
+    return (
+      <View style={styles.screen}>
+        {header}
+        <InlineState
+          title={t('errors.serverTitle')}
+          text={t('hosting.levelLoadError')}
+          action={
+            <Button
+              variant="outline"
+              label={t('common.tryAgain')}
+              onPress={() => void hostLevel.refetch()}
+            />
+          }
+        />
+      </View>
+    );
+  }
+  if (hostLevel.data && !hostLevel.data.groupOrders) {
+    return (
+      <View style={styles.screen}>
+        {header}
+        <View style={styles.gate}>
+          <InlineState
+            title={t('hosting.ordersGateTitle')}
+            text={t('hosting.ordersGateText')}
+          />
+          <HostLevelCard level={hostLevel.data} />
+        </View>
       </View>
     );
   }
@@ -514,7 +549,9 @@ export default function CreateOrderScreen() {
               <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
                 {errorCode(create.error) === 'city_required'
                   ? t('create.cityRequired')
-                  : t('order.error')}
+                  : errorCode(create.error) === 'host_level_required'
+                    ? t('hosting.ordersGateTitle')
+                    : t('order.error')}
               </Text>
             ) : null}
           </>
@@ -544,6 +581,7 @@ export default function CreateOrderScreen() {
 }
 
 const styles = StyleSheet.create({
+  gate: { gap: 16 },
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 12 },
   title: {

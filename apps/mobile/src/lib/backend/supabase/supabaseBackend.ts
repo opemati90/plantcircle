@@ -51,6 +51,8 @@ import {
   type RsvpState,
   type Session,
   type StaffQueueRow,
+  hostLevelSchema,
+  toHostLevel,
 } from '../types';
 
 function parse<T>(schema: z.ZodType<T>, data: unknown): T {
@@ -377,6 +379,27 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       const result = await client.rpc('profile_stats');
       if (result.error) throw toBackendError(result.error);
       return parse(profileStatsSchema, result.data);
+    },
+
+    async getHostLevel() {
+      const result = await client.rpc('host_level');
+      if (result.error) throw toBackendError(result.error);
+      return toHostLevel(parse(hostLevelSchema, result.data));
+    },
+
+    async setFollow(userId, on) {
+      const result = await client.rpc('follow_set', { p_user_id: userId, p_on: on });
+      if (result.error) throw toBackendError(result.error);
+      return parse(
+        z.object({ following: z.boolean(), followers: z.number().int() }),
+        result.data,
+      );
+    },
+
+    async setRecipeVote(recipeId, on) {
+      const result = await client.rpc('recipe_vote_set', { p_recipe_id: recipeId, p_on: on });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.object({ voted: z.boolean(), votes: z.number().int() }), result.data);
     },
 
     async setCity(cityId) {

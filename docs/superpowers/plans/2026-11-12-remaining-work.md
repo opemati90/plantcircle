@@ -143,3 +143,22 @@ Open questions:
   traveller, or a device with no region (`ZZ`), files it wrongly; no correction control yet.
 - Spelling duplicates ("Köln" / "Cologne") need a staff merge tool.
 - The city list is fetched whole (up to 1,000 rows); past that, search cities on the server.
+
+## Hosting levels (14 November 2026)
+
+Done: hosting is earned. `host_levels` thresholds (1 Cook: 1 recipe → online ≤6; 2 Host: 3 recipes,
+1 hosted Plan with feedback, 10 followers → in person ≤12 + group orders; 3 Pillar: 100 followers,
+2,000 upvotes → ≤30). `follows` + `follow_set`, `recipe_votes` + `recipe_vote_set`, `host_level()`
+(own level only), enforced in `plan_create` and `order_create`. Staff-verified hosts are level 3.
+Counting rules against made-up accounts: contributors must be active and a week old or checked in
+somewhere; one voter adds at most 5 upvotes per author; blocks end follows both ways. App: upvote and
+follow on the recipe screen, level card on Profile and on the gated Create screens, capacity and
+format follow the level. Design note: `docs/superpowers/specs/2026-11-14-hosting-levels-city-flow-design.md`.
+
+Open questions:
+
+- Sockpuppets: the counting rules raise the cost, they do not remove it. A staff view of "who
+  follows whom" and a report reason for vote rings are the next step if it is abused.
+- "Featured in Explore" for level 3 is not built; level 3 only raises capacity today.
+- People tab has no Follow; followers come from recipes on purpose (one surface). Revisit if
+  recipes stay rare.

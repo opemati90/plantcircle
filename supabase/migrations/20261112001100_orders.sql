@@ -243,6 +243,8 @@ begin
   if v_replay is not null then
     return v_replay;
   end if;
+  -- Group orders open at level 2 (20261112002000_host_levels.sql); a replay comes first.
+  perform public.host_level_check_orders();
 
   if char_length(v_title) not between 3 and 80 or char_length(v_supplier) not between 1 and 80
     or char_length(v_address) not between 1 and 200 then
