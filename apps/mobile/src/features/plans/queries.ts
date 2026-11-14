@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import { useBackend } from '../../lib/backend/BackendProvider';
-import type { CircleInput, City, MyPlansScope } from '../../lib/backend/types';
+import type { CircleInput, City, MyPlansScope, PlanFormat } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 import { getOnboarding, saveOnboardingStrict } from '../onboarding/onboardingStore';
 
@@ -56,10 +56,14 @@ export function useOnlinePlans(enabled: boolean) {
 }
 
 /** Plans in the next month for Explore: the cities given, or every city when `null`. */
-export function useExplorePlans(cityIds: string[] | null, enabled = true) {
+/**
+ * Plans for Explore. `format` narrows on the server, so an Online filter still finds online
+ * Plans when the first page of everything would be all in person.
+ */
+export function useExplorePlans(cityIds: string[] | null, enabled = true, format?: PlanFormat) {
   const backend = useBackend();
   return useQuery({
-    queryKey: ['explorePlans', cityIds?.join(',') ?? 'all'],
+    queryKey: ['explorePlans', cityIds?.join(',') ?? 'all', format ?? 'any'],
     enabled,
     queryFn: () => {
       const from = new Date();
@@ -68,6 +72,7 @@ export function useExplorePlans(cityIds: string[] | null, enabled = true) {
         from,
         to: new Date(from.getTime() + MONTH_MS),
         order: 'featured',
+        ...(format ? { format } : {}),
       });
     },
   });

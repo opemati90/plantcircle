@@ -49,6 +49,7 @@ import type {
   WaitlistOffer,
   WebRsvpInput,
   WebRsvpResult,
+  PlanFormat,
 } from './types';
 
 export type BackendErrorCode =
@@ -299,7 +300,7 @@ export interface Backend {
     cityIds: string[] | null;
     from: Date;
     to: Date;
-    format?: 'online';
+    format?: PlanFormat;
     /** Explore: featured hosts first, then by start (ordered on the server, before the limit). */
     order?: 'featured';
   }): Promise<Plan[]>;

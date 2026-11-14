@@ -343,7 +343,7 @@ export const pl: Catalog = {
     signedOutText: 'Plany, do których dołączysz, pojawią się tutaj.',
     pastEmpty: {
       title: 'Brak minionych planów',
-      text: 'Tutaj zobaczysz Plany ze swoim udziałem z ostatnich 90 dni.',
+      text: 'Tutaj zobaczysz Plany z ostatnich 90 dni, w których brałeś udział lub które organizowałeś.',
     },
   },
   learn: {

@@ -324,7 +324,7 @@ export const nl: Catalog = {
     signedOutText: 'Plannen waaraan je meedoet, staan hier.',
     pastEmpty: {
       title: 'Nog geen eerdere plannen',
-      text: 'Plannen waarbij je de afgelopen 90 dagen was, staan hier.',
+      text: 'Plannen waarbij je de afgelopen 90 dagen was of die je organiseerde, staan hier.',
     },
   },
   learn: {

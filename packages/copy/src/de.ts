@@ -329,7 +329,7 @@ export const de: Catalog = {
     signedOutText: 'Pläne, denen du beitrittst, erscheinen hier.',
     pastEmpty: {
       title: 'Noch keine vergangenen Pläne',
-      text: 'Pläne der letzten 90 Tage, bei denen du dabei warst, erscheinen hier.',
+      text: 'Pläne der letzten 90 Tage, bei denen du dabei oder Host warst, erscheinen hier.',
     },
   },
   learn: {

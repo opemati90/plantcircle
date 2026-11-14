@@ -330,7 +330,7 @@ export const fr: Catalog = {
     signedOutText: 'Les plans auxquels tu participes apparaissent ici.',
     pastEmpty: {
       title: 'Pas encore de plans passés',
-      text: 'Les plans auxquels tu as participé ces 90 derniers jours apparaissent ici.',
+      text: 'Les plans auxquels tu as participé ou que tu as organisés ces 90 derniers jours apparaissent ici.',
     },
   },
   learn: {

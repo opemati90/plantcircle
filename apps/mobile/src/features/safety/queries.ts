@@ -3,7 +3,10 @@ import { useBackend } from '../../lib/backend/BackendProvider';
 import type { ReportInput, StaffAction } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 
-/** Everything a block changes: People, chats, requests and the Inbox. */
+/**
+ * Everything a block changes: People, chats, requests and the Inbox, and (T-07) every list that
+ * carries the other side's Plans, orders and recipes, plus the saved detail screens.
+ */
 const AFTER_BLOCK = [
   ['people'],
   ['blocked'],
@@ -11,6 +14,15 @@ const AFTER_BLOCK = [
   ['messages'],
   ['directRequests'],
   ['inbox'],
+  ['explorePlans'],
+  ['plans'],
+  ['upNext'],
+  ['myPlans'],
+  ['plan'],
+  ['order'],
+  ['recipes'],
+  ['recipe'],
+  ['circle'],
 ];
 
 export function useBlocked() {

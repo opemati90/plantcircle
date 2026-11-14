@@ -98,7 +98,7 @@ begin
      v_berlin, 'Online', v_wed19, v_wed19 + interval '90 minutes', 'Europe/Berlin', 40, null),
     (v_order, v_jonas, 'group_order', 'in_person', 'Bulk grocery order',
      'Bulk chickpeas, lentils and oats from the organic farm shop. Not a purchase: you pay Jonas directly at pickup.',
-     v_berlin, 'Neukölln', v_sat + time '10:00', v_sat + time '13:00', 'Europe/Berlin', 30, null),
+     v_berlin, 'Neukölln', (v_sat + time '10:00') at time zone 'Europe/Berlin', (v_sat + time '13:00') at time zone 'Europe/Berlin', 'Europe/Berlin', 30, null),
     (v_past, v_ama, 'potluck', 'in_person', 'Autumn potluck',
      'Soups, breads and whatever the market had.',
      v_berlin, 'Neukölln', v_last_sun, v_last_sun + interval '3 hours', 'Europe/Berlin', 10, null)
@@ -133,7 +133,7 @@ begin
 
   -- Group order: 68 of 100 kg, closes Thursday, pickup Saturday 10:00–13:00.
   insert into public.group_orders (plan_id, supplier_name, supplier_area, closes_at, pickup_start, pickup_end, pickup_address, pickup_note)
-  values (v_order, 'Organic farm shop', 'Brandenburg', v_thu18, v_sat + time '10:00', v_sat + time '13:00',
+  values (v_order, 'Organic farm shop', 'Brandenburg', v_thu18, (v_sat + time '10:00') at time zone 'Europe/Berlin', (v_sat + time '13:00') at time zone 'Europe/Berlin',
           'Richardplatz 3, 12055 Berlin', 'Bring your own jars or bags.')
   on conflict (plan_id) do nothing;
   insert into public.order_items (id, plan_id, position, name, unit, target, est_price_minor) values

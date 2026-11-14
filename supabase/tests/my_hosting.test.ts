@@ -37,18 +37,27 @@ beforeEach(async () => {
 });
 
 describe('my_hosted_plans', () => {
-  it('lists only the caller’s own Plans, drafts included, and nothing to anyone else', async () => {
+  it('lists only the caller’s own live Plans, read-only, and nothing to anyone else', async () => {
     const mine = await asUser(db, HOST, () =>
       db.query<{ status: string }>(
         'select status::text from public.my_hosted_plans order by status::text',
       ),
     );
-    expect(mine.rows.map((r) => r.status)).toEqual(['completed', 'draft', 'published']);
+    expect(mine.rows.map((r) => r.status)).toEqual(['completed', 'published']);
+    // Not writable: a host cannot push a Plan's status past the RPCs through the view.
+    await expect(
+      asUser(db, HOST, () =>
+        db.query(
+          "update public.my_hosted_plans set status = 'published' where status = 'completed'",
+        ),
+      ),
+    ).rejects.toThrow(/permission denied/);
     const theirs = await asUser(db, GUEST, () =>
       db.query('select * from public.my_hosted_plans'),
     );
     expect(theirs.rows).toHaveLength(0);
-    const anon = await asUser(db, null, () => db.query('select * from public.my_hosted_plans'));
-    expect(anon.rows).toHaveLength(0);
+    await expect(
+      asUser(db, null, () => db.query('select * from public.my_hosted_plans')),
+    ).rejects.toThrow(/permission denied/);
   });
 });

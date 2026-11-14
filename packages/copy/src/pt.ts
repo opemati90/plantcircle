@@ -321,7 +321,7 @@ export const pt: Catalog = {
     signedOutText: 'Os planos em que participa aparecem aqui.',
     pastEmpty: {
       title: 'Ainda não há planos passados',
-      text: 'Os planos em que participou nos últimos 90 dias aparecem aqui.',
+      text: 'Os planos em que participou ou que organizou nos últimos 90 dias aparecem aqui.',
     },
   },
   learn: {

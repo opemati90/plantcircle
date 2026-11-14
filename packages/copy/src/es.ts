@@ -322,7 +322,7 @@ export const es: Catalog = {
     signedOutText: 'Los planes a los que te unes aparecen aquí.',
     pastEmpty: {
       title: 'Aún no hay planes pasados',
-      text: 'Aquí aparecerán los planes a los que asististe en los últimos 90 días.',
+      text: 'Aquí aparecerán los planes a los que asististe o que organizaste en los últimos 90 días.',
     },
   },
   learn: {

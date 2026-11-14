@@ -1366,15 +1366,19 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       const since = new Date(now.getTime() - PAST_PLANS_DAYS * DAY_MS).toISOString();
       // Plans the viewer hosts: ids come from my_hosted_plans (the plans table is not readable).
       const hostedIds = new Set<string>();
+      // Nearest first for what is coming, most recent first for what is over; the window and
+      // the order apply before the limit so a long history cannot push out this week.
+      const ascending = scope !== 'past';
       if (scope !== 'upcoming') {
-        const hosted = client
-          .from('my_hosted_plans')
-          .select('plan_id')
-          .limit(MY_PLANS_CANDIDATES);
-        const result =
+        let hosted = client.from('my_hosted_plans').select('plan_id');
+        hosted =
           scope === 'hosting'
-            ? await hosted.gte('ends_at', now.toISOString())
-            : await hosted.lt('ends_at', now.toISOString()).gte('ends_at', since);
+            ? hosted.gte('ends_at', now.toISOString())
+            : hosted.lt('ends_at', now.toISOString()).gte('ends_at', since);
+        const result = await hosted
+          .order('starts_at', { ascending })
+          .order('plan_id')
+          .limit(MY_PLANS_CANDIDATES);
         if (result.error) throw toBackendError(result.error);
         for (const row of parse(z.array(z.object({ plan_id: z.string() })), result.data)) {
           hostedIds.add(row.plan_id);
@@ -1388,13 +1392,20 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
             : [];
       let rows: ReturnType<typeof myPlanRowSchema.parse>[] = [];
       if (statuses.length > 0) {
-        const rsvps = await client
+        let rsvps = client
           .from('my_rsvps')
           .select('plan_id, status, offer_expires_at, waitlist_position')
-          .in('status', statuses)
+          .in('status', statuses);
+        rsvps =
+          scope === 'upcoming'
+            ? rsvps.gte('ends_at', now.toISOString())
+            : rsvps.lt('ends_at', now.toISOString()).gte('ends_at', since);
+        const result = await rsvps
+          .order('starts_at', { ascending })
+          .order('plan_id')
           .limit(MY_PLANS_CANDIDATES);
-        if (rsvps.error) throw toBackendError(rsvps.error);
-        rows = parse(z.array(myPlanRowSchema), rsvps.data).filter(
+        if (result.error) throw toBackendError(result.error);
+        rows = parse(z.array(myPlanRowSchema), result.data).filter(
           (row) => !hostedIds.has(row.plan_id),
         );
       }

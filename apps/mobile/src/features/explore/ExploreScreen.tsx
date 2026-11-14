@@ -212,7 +212,6 @@ export default function ExploreScreen() {
       ? t('explore.anywhere')
       : (countryName ?? cityName ?? (cities.isError ? t('city.loadError') : t('city.loading')));
   const countryReady = choice.kind !== 'country' || cities.isSuccess;
-  const plans = useExplorePlans(cityIds, !waiting && countryReady);
   const [tab, setTab] = useState<ExploreTab>('plans');
   const [query, setQuery] = useState('');
   // Onboarding sends people without a city here with ?where=online, so they land on Plans
@@ -224,6 +223,11 @@ export default function ExploreScreen() {
       : NO_FILTERS;
   const [filters, setFilters] = useState<PlanFilters>(initialFilters);
   const [draft, setDraft] = useState<PlanFilters>(initialFilters);
+  const plans = useExplorePlans(
+    cityIds,
+    !waiting && countryReady,
+    filters.where === 'any' ? undefined : filters.where,
+  );
   const [filtersOpen, setFiltersOpen] = useState(false);
   const viewerZone = Intl.DateTimeFormat(currentLanguage()).resolvedOptions().timeZone;
   // The clock ticks, so Today and the weekend roll over at midnight while Explore stays open.

@@ -315,7 +315,7 @@ export const en = {
     signedOutText: 'Plans you join show up here.',
     pastEmpty: {
       title: 'No past Plans yet',
-      text: 'Plans you attended in the last 90 days will show here.',
+      text: 'Plans you went to or hosted in the last 90 days will show here.',
     },
   },
   learn: {
