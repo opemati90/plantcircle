@@ -19,6 +19,7 @@ const cases: { type: string; payload: Record<string, unknown> }[] = [
   },
   { type: 'address_unlocked', payload: { plan: 'Lentil night', plan_id: 'x' } },
   { type: 'waitlist_offer', payload: { plan: 'Lentil night', plan_id: 'x' } },
+  { type: 'waitlist_expired', payload: { plan: 'Lentil night', plan_id: 'x' } },
   { type: 'plan_changed', payload: { plan: 'Lentil night', time: '19:00', plan_id: 'x' } },
   { type: 'plan_cancelled', payload: { plan: 'Lentil night', plan_id: 'x' } },
   { type: 'plan_on_hold', payload: { plan: 'Lentil night', plan_id: 'x' } },

@@ -449,6 +449,14 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       return toCircle(parse(circleCardSchema, response.data));
     },
 
+    async leaveCircle(circleId, key) {
+      const result = await client.rpc('circle_leave', {
+        p_circle_id: circleId,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
+
     async joinCircle(circleId, answer, key) {
       const result = await client.rpc('circle_join', {
         p_circle_id: circleId,

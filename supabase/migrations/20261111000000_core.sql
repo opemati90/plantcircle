@@ -216,7 +216,7 @@ as $$
         p.host_id = (select auth.uid())
         or (
           now() >= pp.reveal_at
-          and p.status in ('published', 'changed', 'on_hold')
+          and p.status in ('published', 'changed')
           and exists (
             select 1 from public.rsvps r
             where r.plan_id = p.id and r.user_id = (select auth.uid())
@@ -256,8 +256,8 @@ as $$
       and (
         p.host_id = (select auth.uid())
         or (
-          now() >= p.starts_at - interval '10 minutes'
-          and p.status in ('published', 'changed', 'on_hold')
+          now() >= p.starts_at - interval '15 minutes'
+          and p.status in ('published', 'changed')
           and exists (
             select 1 from public.rsvps r
             where r.plan_id = p.id and r.user_id = (select auth.uid())

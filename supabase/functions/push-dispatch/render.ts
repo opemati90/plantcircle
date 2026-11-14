@@ -112,6 +112,11 @@ export function renderPush(
         title: t('waitlistOffer', { plan: str(p, 'plan') }),
         body: t('waitlistOfferNote'),
       };
+    case 'waitlist_expired':
+      return {
+        title: t('waitlistExpired', { plan: str(p, 'plan') }),
+        body: t('waitlistExpiredNote'),
+      };
     case 'plan_changed':
       return {
         title: t('planChanged', { plan: str(p, 'plan'), time: str(p, 'time') }),

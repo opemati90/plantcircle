@@ -65,6 +65,7 @@ export type BackendErrorCode =
   | 'forbidden'
   | 'invalid_input'
   | 'city_required'
+  | 'request_cooldown'
   | 'city_not_found'
   | 'host_level_required'
   | 'host_level_in_person'
@@ -144,6 +145,8 @@ export interface Backend {
     answer: string | null,
     idempotencyKey: string,
   ): Promise<'member' | 'requested'>;
+  /** Leaves a Circle; the last owner cannot. */
+  leaveCircle(circleId: string, idempotencyKey: string): Promise<void>;
   createCircle(input: CircleInput, idempotencyKey: string): Promise<string>;
   /** Waiting requests for a request Circle. Only its owner and moderators can read them. */
   getCircleRequests(circleId: string): Promise<CircleRequest[]>;

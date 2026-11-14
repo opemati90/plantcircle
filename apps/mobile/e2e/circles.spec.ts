@@ -66,3 +66,14 @@ test('an owner reviews a request to their Circle and approves it', async ({ page
   await page.getByRole('button', { name: 'Approve' }).click();
   await expect(page.getByText('No one is waiting right now.')).toBeVisible();
 });
+
+test('a member can leave a Circle', async ({ page }) => {
+  await signInWithEmail(page, '/explore');
+  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
+  await page.getByRole('button', { name: 'Join', exact: true }).click();
+  await expect(page.getByText('You’re a member').last()).toBeVisible();
+  await page.getByRole('button', { name: 'Leave Circle' }).click();
+  await expect(page.getByRole('button', { name: 'Join', exact: true })).toBeVisible();
+  await expect(page.getByText('You’re a member')).toHaveCount(0);
+});

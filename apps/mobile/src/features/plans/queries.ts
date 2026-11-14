@@ -189,6 +189,20 @@ export function useCircle(circleId: string) {
 }
 
 /** Joining an open Circle, or asking to join a request Circle with an answer. */
+export function useLeaveCircle(circleId: string) {
+  const backend = useBackend();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (key: string) => backend.leaveCircle(circleId, key),
+    onSuccess: () =>
+      Promise.all(
+        ['circles', 'circle', 'my-circles', 'recipes', 'inbox'].map((key) =>
+          queryClient.invalidateQueries({ queryKey: [key] }),
+        ),
+      ),
+  });
+}
+
 export function useJoinCircle(circleId: string) {
   const backend = useBackend();
   const queryClient = useQueryClient();

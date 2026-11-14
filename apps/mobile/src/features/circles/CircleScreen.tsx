@@ -24,6 +24,7 @@ import {
   useCircleRequests,
   useExplorePlans,
   useJoinCircle,
+  useLeaveCircle,
   useRespondToCircleRequest,
 } from '../plans/queries';
 import { circleMeta } from './circleRules';
@@ -51,6 +52,8 @@ export default function CircleScreen() {
   const { session } = useAuth();
   const circle = useCircle(id);
   const join = useJoinCircle(id);
+  const leave = useLeaveCircle(id);
+  const [leaveKey] = useState(newIdempotencyKey);
   const canModerate =
     circle.data?.viewerRole === 'owner' || circle.data?.viewerRole === 'moderator';
   const requests = useCircleRequests(id, canModerate);
@@ -251,12 +254,29 @@ export default function CircleScreen() {
             </Text>
           ) : null}
           {member ? (
-            <Text
-              maxFontSizeMultiplier={2.0}
-              role="status"
-              style={type(15, 'semibold', { color: color.brand })}
-            >
-              {t('circles.member')}
+            <View style={styles.memberRow}>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="status"
+                style={type(15, 'semibold', { color: color.brand })}
+              >
+                {t('circles.member')}
+              </Text>
+              {data.viewerRole !== 'owner' ? (
+                <Button
+                  variant="ghost"
+                  label={t('circles.leave')}
+                  loading={leave.isPending}
+                  onPress={() => {
+                    leave.mutate(leaveKey);
+                  }}
+                />
+              ) : null}
+            </View>
+          ) : null}
+          {leave.isError ? (
+            <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+              {t('circles.genericError')}
             </Text>
           ) : null}
           {join.isError ? (
@@ -545,6 +565,12 @@ function PostsTab({ circleId }: { circleId: string }) {
 }
 
 const styles = StyleSheet.create({
+  memberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
   screen: { flex: 1, backgroundColor: color.surface },
   back: { position: 'absolute', left: 16, zIndex: 1 },
   hero: { height: 360, backgroundColor: color.ink },

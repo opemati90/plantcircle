@@ -1198,6 +1198,7 @@ export const NOTIFICATION_TYPES = [
   'reminder_2h',
   'address_unlocked',
   'waitlist_offer',
+  'waitlist_expired',
   'plan_changed',
   'plan_cancelled',
   'plan_on_hold',

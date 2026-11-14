@@ -784,6 +784,15 @@ export async function createFixtureBackend(): Promise<Backend> {
       return withViewer(circle);
     },
 
+    async leaveCircle(circleId) {
+      await call();
+      requireActive();
+      if (state.circlesCreated.some((c) => c.id === circleId)) {
+        throw new BackendError('invalid_input', 'last_owner');
+      }
+      commit({ ...state, circlesJoined: state.circlesJoined.filter((id) => id !== circleId) });
+    },
+
     async joinCircle(circleId) {
       await call();
       requireActive();

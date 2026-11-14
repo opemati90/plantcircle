@@ -56,6 +56,13 @@ Deno.serve(async () => {
   }[] = [];
   const done = new Set<string>();
   for (const row of rows) {
+    // An offer push held back by quiet hours is dropped once the offer has run out.
+    const expiresAt =
+      typeof row.data['expires_at'] === 'string' ? Date.parse(row.data['expires_at']) : NaN;
+    if (row.type === 'waitlist_offer' && !Number.isNaN(expiresAt) && expiresAt <= Date.now()) {
+      done.add(row.id);
+      continue;
+    }
     const to = byUser.get(row.user_id) ?? [];
     // No device: the Inbox row (when there is one) carries the message; nothing to retry.
     if (to.length === 0) done.add(row.id);

@@ -288,8 +288,11 @@ begin
 
   insert into public.plan_feedback (plan_id, user_id, rating, comment)
   values (p_plan_id, v_uid, p_rating, v_comment)
-  on conflict (plan_id, user_id)
-  do update set rating = excluded.rating, comment = excluded.comment, updated_at = now();
+  on conflict (plan_id, user_id) do nothing;
+  if not found then
+    -- Feedback is given once (docs/06): a second attempt is refused, not merged.
+    raise exception 'feedback_exists' using errcode = 'P0001';
+  end if;
   -- Feedback can lift the host's level (20261112002100_featured_hosts.sql).
   perform public.host_featured_refresh((select p.host_id from public.plans p where p.id = p_plan_id));
 

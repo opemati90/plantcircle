@@ -357,7 +357,7 @@ describe('online Plans', () => {
     expect(await link(LENA)).toEqual([]);
   });
 
-  it('is hidden from confirmed guests until 10 minutes before the start', async () => {
+  it('is hidden from confirmed guests until 15 minutes before the start', async () => {
     await startIn(30);
     expect(await link(MIA)).toEqual([]);
     await startIn(5);

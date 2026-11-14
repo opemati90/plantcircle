@@ -57,7 +57,7 @@ const queue = () =>
     .then((r) => r.rows);
 
 describe('in-app rows and the push queue', () => {
-  it('writes the catalog events: joining, a waitlist offer (urgent, with email), a cancelled Plan', async () => {
+  it('writes the catalog events: joining, a waitlist offer (push and email), a cancelled Plan', async () => {
     await asUser(db, MIA, () => db.query('select public.rsvp_join($1, $2)', [plan, key()]));
     expect(await mine(MIA)).toEqual([
       expect.objectContaining({
@@ -71,15 +71,15 @@ describe('in-app rows and the push queue', () => {
     await asUser(db, MIA, () => db.query('select public.rsvp_cancel($1, $2)', [plan, key()]));
     const ben = await mine(BEN);
     expect(ben.map((n) => n.type)).toContain('waitlist_offer');
+    // Push and email are separate rows: the email goes at once, the push respects quiet hours.
     const q = await queue();
-    expect(q.find((x) => x.user_id === BEN && x.type === 'waitlist_offer')).toEqual(
-      expect.objectContaining({ email: true }),
-    );
+    const offers = q.filter((x) => x.user_id === BEN && x.type === 'waitlist_offer');
+    expect(offers.map((x) => x.email).sort()).toEqual([false, true]);
     // The host cancels: every guest hears, with email; the host does not notify themselves.
     await db.query(`update public.plans set status = 'cancelled' where id = $1`, [plan]);
     const cancelled = (await queue()).filter((x) => x.type === 'plan_cancelled');
-    expect(cancelled.map((x) => x.user_id).sort()).toEqual([BEN].sort());
-    expect(cancelled[0]?.email).toBe(true);
+    expect([...new Set(cancelled.map((x) => x.user_id))]).toEqual([BEN]);
+    expect(cancelled.map((x) => x.email).sort()).toEqual([false, true]);
     // Only their own rows are readable, and reading marks them.
     const benRows = await asUser(db, BEN, () =>
       db.query<{ id: string }>('select id from public.notifications'),

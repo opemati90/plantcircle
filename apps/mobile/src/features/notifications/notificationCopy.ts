@@ -59,6 +59,12 @@ export function describeNotification(
           params: { id: str(p, 'plan_id') },
         }),
       };
+    case 'waitlist_expired':
+      return {
+        title: t('notify.waitlistExpired', { plan: str(p, 'plan') }),
+        note: t('notify.waitlistExpiredNote'),
+        href: planHref(str(p, 'plan_id')),
+      };
     case 'plan_changed':
       return {
         title: t('notify.planChanged', { plan: str(p, 'plan'), time: str(p, 'time') }),
