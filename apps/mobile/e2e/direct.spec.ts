@@ -20,7 +20,9 @@ test('a member accepts a first-message request, then chats with that person and 
   await expect(page.getByText('Hi, are you bringing the lentils?')).toBeVisible();
   // Accepting opens the chat, with the first message already in it.
   await page.getByRole('button', { name: 'Accept Mia K.' }).click();
-  await expect(page.getByText('Hi, are you bringing the lentils?', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('Hi, are you bringing the lentils?', { exact: true }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByRole('button', { name: 'Mute for 8 hours' }).click();
   await expect(page.getByRole('button', { name: 'Unmute' })).toBeVisible();

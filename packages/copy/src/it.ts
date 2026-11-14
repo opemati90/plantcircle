@@ -109,7 +109,8 @@ export const it: Catalog = {
     emptyWeek: 'Non c’è ancora nulla in programma questa settimana.',
     emptyFilter: 'Nessun piano di questa settimana corrisponde a questo filtro.',
     emptyCityTitle: 'Sii il primo a {{city}}',
-    emptyCityText: 'Qui non ci sono ancora tavole. Puoi crearne una o cucinare online con altri da casa.',
+    emptyCityText:
+      'Qui non ci sono ancora tavole. Puoi crearne una o cucinare online con altri da casa.',
     startOwnTitle: 'Crea il tuo Piano',
     startOwnText: 'Un potluck, una serata di cucina o un ordine di gruppo',
     startOwnAction: 'Crea',
@@ -392,7 +393,8 @@ export const it: Catalog = {
     connected: 'Connessi',
     error: 'Non è stato possibile connettersi. Riprova.',
     visibleTitle: 'Mostrami in Persone',
-    visibleLead: 'I membri dei tuoi circoli possono vedere il tuo nome e la tua città, e connettersi con te. Disattivato di default.',
+    visibleLead:
+      'I membri dei tuoi circoli possono vedere il tuo nome e la tua città, e connettersi con te. Disattivato di default.',
     signedOut: {
       title: 'Accedi per vedere le persone',
       text: 'Le persone compaiono quando accedi e condividi un circolo.',
@@ -576,12 +578,14 @@ export const it: Catalog = {
     discardLead: 'Nome e interessi tornano come prima.',
     keepEditing: 'Continua a modificare',
     discard: 'Annulla',
-    signedOutText: 'I tuoi Piani, Circle e impostazioni compaiono qui una volta effettuato l’accesso.',
+    signedOutText:
+      'I tuoi Piani, Circle e impostazioni compaiono qui una volta effettuato l’accesso.',
   },
   inbox: {
     unread_one: '{{count}} da leggere',
     unread_other: '{{count}} da leggere',
-    emptyDirectText: 'Scrivi a qualcuno da Persone, o accetta una richiesta, e la chat comparirà qui.',
+    emptyDirectText:
+      'Scrivi a qualcuno da Persone, o accetta una richiesta, e la chat comparirà qui.',
     explore: 'Esplora',
     title: 'Messaggi',
     filterAll: 'Tutti',
@@ -624,8 +628,10 @@ export const it: Catalog = {
     decideTitle: 'Cosa vuoi fare?',
     decideLead: '{{count}} vicini partecipano.',
     goTitle: 'Procedi con {{amount}}',
-    goLead: 'I prezzi potrebbero essere un po’ più alti. Tutti vengono avvisati e vedranno i dettagli del ritiro quando lo segni come pronto.',
-    decidedText: 'Questo ordine è stato deciso. Tutti possono vedere come sta andando nella pagina dell’ordine.',
+    goLead:
+      'I prezzi potrebbero essere un po’ più alti. Tutti vengono avvisati e vedranno i dettagli del ritiro quando lo segni come pronto.',
+    decidedText:
+      'Questo ordine è stato deciso. Tutti possono vedere come sta andando nella pagina dell’ordine.',
     extendTitle: 'Concedi altri 3 giorni',
     extendLead: 'Le adesioni riaprono fino a {{until}}.',
     cancelTitle: 'Annulla l’ordine',
@@ -639,14 +645,16 @@ export const it: Catalog = {
     yourAmount: 'La tua quantità',
     payment: 'Pagamento',
     payAtPickup: 'Paga {{name}} al ritiro',
-    payNote: 'Contanti o PayPal direttamente a {{name}}. PlantCircle non gestisce questo pagamento e non offre protezione dell’acquisto.',
+    payNote:
+      'Contanti o PayPal direttamente a {{name}}. PlantCircle non gestisce questo pagamento e non offre protezione dell’acquisto.',
     collected: 'L’ho ritirato',
     collectedDone: 'Ritirato. Grazie per essere venuto.',
     openPickup: 'Dettagli del ritiro',
     noItems: 'Non hai chiesto nulla in questo ordine.',
     createTitle: 'Nuovo ordine di gruppo',
     stepSupplier: 'Da dove ordini?',
-    supplierLead: 'Indica il negozio, la fattoria o il fornitore online. L’elenco dei negozi arriva più avanti.',
+    supplierLead:
+      'Indica il negozio, la fattoria o il fornitore online. L’elenco dei negozi arriva più avanti.',
     supplierName: 'Fornitore',
     supplierArea: 'Zona o sito web (facoltativo)',
     stepItems: 'Quanto in totale?',
@@ -655,7 +663,8 @@ export const it: Catalog = {
     itemTarget: 'Obiettivo',
     itemPrice: 'Prezzo stimato per unità (facoltativo)',
     addItem: 'Aggiungi articolo',
-    itemInvalid: 'Ogni articolo ha bisogno di un nome e di un obiettivo sopra 0. I prezzi non possono essere negativi.',
+    itemInvalid:
+      'Ogni articolo ha bisogno di un nome e di un obiettivo sopra 0. I prezzi non possono essere negativi.',
     removeItem: 'Rimuovi ultimo articolo',
     groupTarget: 'Obiettivo del gruppo',
     stepWhen: 'Quando chiudono le adesioni?',
@@ -699,7 +708,8 @@ export const it: Catalog = {
     postsEmpty: 'Nessuna ricetta condivisa qui finora.',
     aboutAccessOpen: 'Chiunque può entrare subito.',
     aboutAccessRequest: 'Per entrare serve l’approvazione di un moderatore.',
-    aboutRules: 'Sii gentile, presentati quando confermi e indica gli allergeni di tutto ciò che porti.',
+    aboutRules:
+      'Sii gentile, presentati quando confermi e indica gli allergeni di tutto ciò che porti.',
     moderatorRequests_one: 'Moderazione: {{count}} richiesta di ingresso',
     moderatorRequests_other: 'Moderazione: {{count}} richieste di ingresso',
     signUpTitle: 'Registrati per entrare in questo circolo',
@@ -817,7 +827,8 @@ export const it: Catalog = {
   safety: {
     title: 'Cosa succede?',
     about: 'Riguardo a: {{name}}',
-    signedOut: 'Accedi per inviare una segnalazione. Le segnalazioni sono esaminate da una persona.',
+    signedOut:
+      'Accedi per inviare una segnalazione. Le segnalazioni sono esaminate da una persona.',
     dangerTitle: 'Sei in pericolo adesso?',
     dangerLines: 'Chiama il {{emergency}} (emergenze) o il {{police}} (polizia)',
     dangerLine: 'Chiama il {{emergency}} (emergenze)',
@@ -870,7 +881,8 @@ export const it: Catalog = {
     accurate: 'Ritengo che questa segnalazione sia accurata e completa.',
     send: 'Invia segnalazione',
     confirmHint: 'Conferma sopra per inviare',
-    rateLimited: 'Sono tante segnalazioni per un giorno. Riprova domani, o chiama le emergenze se qualcuno è in pericolo.',
+    rateLimited:
+      'Sono tante segnalazioni per un giorno. Riprova domani, o chiama le emergenze se qualcuno è in pericolo.',
     error: 'Non è andata. Riprova.',
     doneTitle: 'Grazie, ce ne occupiamo noi',
     caseRef: 'Caso {{ref}}',
@@ -886,7 +898,8 @@ export const it: Catalog = {
     blockedNow: '{{name}} è bloccato. Puoi annullare in Privacy.',
     blockedTitle: 'Persone bloccate',
     blockedRowLead: 'Chi non può scriverti o invitarti',
-    blockedLead: 'Queste persone non possono scriverti, invitarti o vederti in Persone. Non vengono avvisate.',
+    blockedLead:
+      'Queste persone non possono scriverti, invitarti o vederti in Persone. Non vengono avvisate.',
     blockedEmptyTitle: 'Nessuno bloccato',
     blockedEmptyText: 'Blocca qualcuno da una chat o da una segnalazione e comparirà qui.',
     unblock: 'Sblocca',
@@ -900,28 +913,33 @@ export const it: Catalog = {
     whichRule: 'Quale regola',
     ruleGeneral: 'Regole della community',
     howDecided: 'Come abbiamo deciso',
-    decidedByPerson: 'L’ha esaminata una persona; uno strumento ha solo ordinato la segnalazione.',
+    decidedByPerson:
+      'L’ha esaminata una persona; uno strumento ha solo ordinato la segnalazione.',
     decidedAutomated: 'Ordinata automaticamente; una persona controlla ogni ricorso.',
     stillCan: 'Cosa puoi ancora fare',
     stillCanText: 'Leggere messaggi e Piani. Pubblicare, iscriversi e scrivere sono in pausa.',
     stillCanFrozen: 'Leggi, iscriviti e organizza come sempre. L’invio di messaggi è in pausa.',
     appealTitle: 'Fai ricorso contro questa decisione',
-    appealLead: 'Dicci dove abbiamo sbagliato. Lo legge qualcuno che non ha preso la decisione originale.',
+    appealLead:
+      'Dicci dove abbiamo sbagliato. Lo legge qualcuno che non ha preso la decisione originale.',
     sendAppeal: 'Invia ricorso',
     appeal: {
       open: 'Il tuo ricorso è con un secondo revisore',
       upheld: 'Il tuo ricorso è stato esaminato e la decisione resta',
       reversed: 'Il tuo ricorso è stato accolto',
     },
-    appealReviewed: 'Puoi ancora rivolgerti a un organismo di risoluzione extragiudiziale delle controversie.',
+    appealReviewed:
+      'Puoi ancora rivolgerti a un organismo di risoluzione extragiudiziale delle controversie.',
     otherWays: 'Altri modi per contestarla',
     notSuspendedTitle: 'Il tuo account è attivo',
     notSuspendedText: 'Niente è in pausa. Continua pure.',
     suspendedErrorTitle: 'Il tuo account è in pausa',
-    suspendedErrorDetail: 'Pubblicare, iscriversi e scrivere sono in pausa. Scopri perché nel Profilo.',
+    suspendedErrorDetail:
+      'Pubblicare, iscriversi e scrivere sono in pausa. Scopri perché nel Profilo.',
     blockedErrorTitle: 'Non è possibile',
     blockedErrorDetail: 'Non puoi contattare questa persona.',
-    frozenErrorDetail: 'Al momento non puoi inviare messaggi. Una decisione dello staff ha messo in pausa i messaggi; vedi l’avviso sul tuo account.',
+    frozenErrorDetail:
+      'Al momento non puoi inviare messaggi. Una decisione dello staff ha messo in pausa i messaggi; vedi l’avviso sul tuo account.',
     consoleSignedOut: 'Accedi con il tuo account staff.',
     severity: { urgent: 'Urgente', high: 'Alta', routine: 'Routine' },
     action: {
@@ -945,7 +963,8 @@ export const it: Catalog = {
       pickCaseText: 'Qui compaiono il racconto, la cronologia e la decisione.',
       caseMeta: '{{severity}} · scadenza {{due}} · {{status}}',
       reportersAccount: 'Racconto del segnalante',
-      reporterHidden: 'Identità del segnalante nascosta al membro segnalato · {{count}} allegati',
+      reporterHidden:
+        'Identità del segnalante nascosta al membro segnalato · {{count}} allegati',
       history: 'Cronologia rilevante per questo caso',
       historyEmpty: 'Niente di precedente su questo account.',
       messages: 'Messaggi privati',
@@ -954,7 +973,8 @@ export const it: Catalog = {
       viewMessages: 'Vedi messaggi',
       decision: 'Decisione',
       decisionApplied: 'Decisione applicata',
-      memberTold: 'Salvata con il motivo nel registro. Un membro in pausa la vede nell’avviso del suo account.',
+      memberTold:
+        'Salvata con il motivo nel registro. Un membro in pausa la vede nell’avviso del suo account.',
       days: 'Giorni',
       rule: 'Regola (mostrata al membro)',
       reason: 'Motivo · mostrato al membro e salvato nel registro',
@@ -969,7 +989,8 @@ export const it: Catalog = {
       memberAppeal: 'Ricorso del membro',
       uphold: 'Conferma',
       reverse: 'Annulla',
-      auditLead: 'Ogni azione dello staff e ogni visualizzazione di contenuti privati. Sola lettura.',
+      auditLead:
+        'Ogni azione dello staff e ogni visualizzazione di contenuti privati. Sola lettura.',
       auditEmpty: 'Niente registrato ancora',
       auditEmptyText: 'Decisioni e visualizzazioni dello staff arrivano qui.',
     },
@@ -979,7 +1000,8 @@ export const it: Catalog = {
     error: 'Non è stato salvato. Riprova.',
     privacyChoicesTitle: 'Le tue scelte sulla privacy',
     privacyChoicesLead: 'È attivo solo il necessario. Puoi cambiarle quando vuoi nel Profilo.',
-    privacyChoicesRow: 'Statistiche d’uso e suggerimenti, disattivati finché non dici altrimenti',
+    privacyChoicesRow:
+      'Statistiche d’uso e suggerimenti, disattivati finché non dici altrimenti',
     neededTitle: 'Necessario per far funzionare l’app',
     neededNote: 'Account, iscrizioni, controlli di sicurezza',
     alwaysOn: 'Sempre attivo',
@@ -1015,7 +1037,8 @@ export const it: Catalog = {
     requested: 'Richiesto',
     deleteTitle: 'Elimina account',
     removed: 'Rimosso',
-    removedNote: 'Il tuo nome, la città e gli interessi; post, iscrizioni e messaggi restano come “Membro eliminato”',
+    removedNote:
+      'Il tuo nome, la città e gli interessi; post, iscrizioni e messaggi restano come “Membro eliminato”',
     linkError: 'Il link non si è aperto. Visita {{url}} in un browser.',
     released: 'Liberato',
     releasedNote: 'I tuoi posti vanno a chi è in lista d’attesa',
@@ -1029,7 +1052,8 @@ export const it: Catalog = {
     a11yStandard: 'WCAG 2.2: AA ovunque, AAA dove possibile',
     a11yChecked: 'Ultimo controllo: {{date}}',
     gapWaitlistTitle: 'Lacuna nota: offerte dalla lista d’attesa',
-    gapWaitlistNote: 'Limite di 2 ore perché i posti restino equi; ti avvisiamo con notifica ed e-mail',
+    gapWaitlistNote:
+      'Limite di 2 ore perché i posti restino equi; ti avvisiamo con notifica ed e-mail',
     gapUploadsTitle: 'Lacuna nota: caricamenti degli host',
     gapUploadsNote: 'Foto e videochiamate possono mancare di descrizioni o sottotitoli',
     a11yProblemTitle: 'Qualcosa non funziona?',
@@ -1043,7 +1067,8 @@ export const it: Catalog = {
     updateTitle: 'Abbiamo aggiornato i nostri Termini',
     updateLead_one: 'È cambiata {{count}} cosa. Vale dal {{date}}.',
     updateLead_other: 'Sono cambiate {{count}} cose. Valgono dal {{date}}.',
-    updateLeadMulti: 'Sono cambiate {{count}} cose nelle nostre policy. Ognuna vale dalla propria data.',
+    updateLeadMulti:
+      'Sono cambiate {{count}} cose nelle nostre policy. Ognuna vale dalla propria data.',
     effectiveLine: '{{name}} · vale dal {{date}}',
     newVersion: 'Versione {{version}}',
     readFull: 'Leggi {{name}} per intero',
@@ -1057,7 +1082,8 @@ export const it: Catalog = {
       privacy: 'Informativa sulla privacy',
     },
     underAgeTitle: 'PlantCircle è per adulti',
-    underAgeLead: 'I membri si incontrano di persona, quindi devi avere 18 anni o più. Non abbiamo salvato nessun tuo dato.',
+    underAgeLead:
+      'I membri si incontrano di persona, quindi devi avere 18 anni o più. Non abbiamo salvato nessun tuo dato.',
     browseRecipes: 'Sfoglia le ricette pubbliche',
     browseRecipesNote: 'Senza account',
     gotIt: 'Capito',
@@ -1106,10 +1132,13 @@ export const it: Catalog = {
     moderationNotice: 'Una decisione sul tuo account',
     moderationNoticeNote: 'Leggi i motivi e come fare ricorso.',
     promptTitle: 'Non perdere nessun posto',
-    promptLead: 'Promemoria, offerte dalla lista d’attesa e messaggi dai tuoi Piani. Silenzio dalle 22:00 alle 08:00.',
+    promptLead:
+      'Promemoria, offerte dalla lista d’attesa e messaggi dai tuoi Piani. Silenzio dalle 22:00 alle 08:00.',
     promptError: 'Impossibile attivarle. Riprova da Profilo → Notifiche.',
-    promptDenied: 'Le notifiche di PlantCircle sono disattivate nelle impostazioni del dispositivo. Attivale lì e torna.',
-    promptUnavailable: 'Questo dispositivo non riceve notifiche push. Le novità restano nella Inbox.',
+    promptDenied:
+      'Le notifiche di PlantCircle sono disattivate nelle impostazioni del dispositivo. Attivale lì e torna.',
+    promptUnavailable:
+      'Questo dispositivo non riceve notifiche push. Le novità restano nella Inbox.',
     moderationAction: {
       warn: 'Un avviso. Leggi le regole della community.',
       freeze_messages: 'I messaggi sono in pausa per un po’.',
@@ -1139,8 +1168,10 @@ export const it: Catalog = {
     spotsLeft_other: '{{count}} posti',
     full: 'Completo · lista d’attesa',
     firstName: 'Nome',
-    ageAgree: 'Ho 18+ anni e accetto le Regole della community, i Termini e l’Informativa sulla privacy',
-    accountNote: 'Ti creiamo un account PlantCircle con questa e-mail così il posto ha un titolare; puoi eliminarlo quando vuoi nell’app.',
+    ageAgree:
+      'Ho 18+ anni e accetto le Regole della community, i Termini e l’Informativa sulla privacy',
+    accountNote:
+      'Ti creiamo un account PlantCircle con questa e-mail così il posto ha un titolare; puoi eliminarlo quando vuoi nell’app.',
     reserve: 'Prenota il mio posto',
     joinWaitlist: 'Entra in lista d’attesa',
     confirmAge: 'Conferma di avere 18+ anni per prenotare',
@@ -1163,7 +1194,8 @@ export const it: Catalog = {
     existingNoEmail: 'Accedi all’app con questa e-mail e iscriviti da lì.',
     doneOfferedTitle: 'Si è liberato un posto per te, {{name}}',
     doneOfferedText: 'È tenuto per 2 ore: apri il link nella tua e-mail per confermarlo.',
-    doneNoEmail: 'Non siamo riusciti a inviare l’e-mail di conferma; il tuo posto è comunque prenotato.',
+    doneNoEmail:
+      'Non siamo riusciti a inviare l’e-mail di conferma; il tuo posto è comunque prenotato.',
   },
   errors: {
     savedTitle: 'I tuoi Piani funzionano ancora',

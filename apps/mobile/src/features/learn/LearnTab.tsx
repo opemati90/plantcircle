@@ -20,7 +20,12 @@ export function LearnTab({ query }: { query: string }) {
 
   if (recipes.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.list}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.list}
+      >
         <Skeleton width="100%" height={112} radius={radius.card} />
         <Skeleton width="100%" height={112} radius={radius.card} />
       </View>
@@ -30,7 +35,9 @@ export function LearnTab({ query }: { query: string }) {
     const offline = errorCode(recipes.error) === 'network';
     return (
       <EmptyState
-        onSavedPlans={() => { router.push('/my-plans'); }}
+        onSavedPlans={() => {
+          router.push('/my-plans');
+        }}
         title={offline ? t('errors.offlineTitle') : t('errors.serverTitle')}
         text={offline ? t('errors.offlineText') : t('errors.serverText')}
         {...(offline ? { icon: <OfflineIcon size={36} strokeWidth={1.7} /> } : {})}
@@ -108,5 +115,10 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingTop: 12, gap: 12 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
   tile: { width: '47%', gap: 6 },
-  photo: { height: 140, borderRadius: radius.card, overflow: 'hidden', backgroundColor: extra.skeleton },
+  photo: {
+    height: 140,
+    borderRadius: radius.card,
+    overflow: 'hidden',
+    backgroundColor: extra.skeleton,
+  },
 });

@@ -15,7 +15,13 @@ export function PushTapRouter() {
       if (key === last) return;
       last = key;
       const type = typeof data['type'] === 'string' ? data['type'] : '';
-      const { href } = describeNotification(t, { id: '', type, payload: data, readAt: null, createdAt: '' });
+      const { href } = describeNotification(t, {
+        id: '',
+        type,
+        payload: data,
+        readAt: null,
+        createdAt: '',
+      });
       if (href) router.push(href);
     });
   }, [router, t]);

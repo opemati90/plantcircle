@@ -1,10 +1,26 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import {
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import type { ReactNode } from 'react';
 import { Button, IconButton } from '../../components/Button';
-import { ChatIcon, CheckIcon, ChevronRightIcon, CloseIcon, PinIcon, PlusIcon } from '../../components/icons';
+import {
+  ChatIcon,
+  CheckIcon,
+  ChevronRightIcon,
+  CloseIcon,
+  PinIcon,
+  PlusIcon,
+} from '../../components/icons';
 import { EmptyState, FloatingActionBar, Skeleton } from '../../components/parts';
 import { Photo } from '../../components/Photo';
 import { planImage, welcomePhoto } from '../plans/planImage';
@@ -30,7 +46,12 @@ export default function PublishedScreen() {
 
   if (detail.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="100%" height={160} radius={radius.card} />
       </View>
     );
@@ -39,7 +60,13 @@ export default function PublishedScreen() {
     const missing = errorCode(detail.error) === 'not_found';
     return (
       <EmptyState
-        {...(missing ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
+        {...(missing
+          ? {}
+          : {
+              onSavedPlans: () => {
+                router.push('/my-plans');
+              },
+            })}
         title={missing ? t('learn.notFound') : t('errors.serverTitle')}
         text={missing ? t('errors.notFoundText') : t('errors.serverText')}
         actions={
@@ -110,10 +137,19 @@ export default function PublishedScreen() {
         <View aria-hidden style={styles.check}>
           <CheckIcon size={42} strokeWidth={2.4} color={color.brand} />
         </View>
-        <Text accessibilityRole="header" style={[type(30, 'bold', { tracking: -0.9, leading: 1.1 }), styles.centre]}>
+        <Text
+          accessibilityRole="header"
+          style={[type(30, 'bold', { tracking: -0.9, leading: 1.1 }), styles.centre]}
+        >
           {t('create.published.title')}
         </Text>
-        <Text style={[type(17, 'regular', { color: color.secondary, leading: 1.5 }), styles.centre, styles.lead]}>
+        <Text
+          style={[
+            type(17, 'regular', { color: color.secondary, leading: 1.5 }),
+            styles.centre,
+            styles.lead,
+          ]}
+        >
           {t('create.published.lead')}
         </Text>
 
@@ -128,7 +164,9 @@ export default function PublishedScreen() {
             <Photo source={planImage(plan) ?? welcomePhoto} />
           </View>
           <View style={styles.cardText}>
-            <Text numberOfLines={1} style={type(17, 'semibold', { tracking: -0.3 })}>{plan.title}</Text>
+            <Text numberOfLines={1} style={type(17, 'semibold', { tracking: -0.3 })}>
+              {plan.title}
+            </Text>
             <Text numberOfLines={1} style={type(15, 'regular', { color: color.secondary })}>
               {`${shortWhen(plan.startsAt, plan.timezone)} · ${t('plan.spotsTotal', { count: plan.capacity })}`}
             </Text>
@@ -186,7 +224,10 @@ export default function PublishedScreen() {
           </Tile>
         </View>
         {shareFailed ? (
-          <Text role="alert" style={[type(15, 'regular', { color: color.danger }), styles.centre]}>
+          <Text
+            role="alert"
+            style={[type(15, 'regular', { color: color.danger }), styles.centre]}
+          >
             {t('create.published.shareFailed')}
           </Text>
         ) : null}
@@ -212,9 +253,22 @@ export default function PublishedScreen() {
   );
 }
 
-function Tile({ label, onPress, children }: { label: string; onPress: () => void; children: ReactNode }) {
+function Tile({
+  label,
+  onPress,
+  children,
+}: {
+  label: string;
+  onPress: () => void;
+  children: ReactNode;
+}) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={styles.tile}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={styles.tile}
+    >
       <View style={styles.tileIcon}>{children}</View>
       <Text style={type(14, 'regular')}>{label}</Text>
     </Pressable>
@@ -246,7 +300,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: extra.cardBorder,
   },
-  thumb: { width: 64, height: 64, borderRadius: 14, overflow: 'hidden', backgroundColor: extra.skeleton },
+  thumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: extra.skeleton,
+  },
   cardText: { flex: 1, minWidth: 0, gap: 3 },
   linkRow: {
     marginTop: 16,
@@ -260,10 +320,23 @@ const styles = StyleSheet.create({
     backgroundColor: color.fill,
   },
   linkText: { flex: 1, minWidth: 0 },
-  copy: { minHeight: 44, paddingHorizontal: 16, justifyContent: 'center', borderRadius: 12, backgroundColor: color.ink },
+  copy: {
+    minHeight: 44,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: color.ink,
+  },
   tiles: { marginTop: 20, flexDirection: 'row', justifyContent: 'space-around' },
   tile: { alignItems: 'center', gap: 8, minWidth: 72 },
-  tileIcon: { width: 60, height: 60, borderRadius: 18, backgroundColor: color.fill, alignItems: 'center', justifyContent: 'center' },
+  tileIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: color.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   bar: {
     flexDirection: 'row',
     alignItems: 'center',

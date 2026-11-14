@@ -31,9 +31,15 @@ export default function RequestsScreen() {
     <View style={styles.screen}>
       {back}
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingTop: 16, paddingBottom: 40 + insets.bottom }]}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: 16, paddingBottom: 40 + insets.bottom },
+        ]}
       >
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('direct.requestsTitle')}
         </Text>
         {requests.isPending ? (
@@ -42,16 +48,26 @@ export default function RequestsScreen() {
           <InlineState
             title={t('errors.serverTitle')}
             text={t('errors.serverText')}
-            action={<Button variant="outline" label={t('common.retry')} onPress={() => void requests.refetch()} />}
+            action={
+              <Button
+                variant="outline"
+                label={t('common.retry')}
+                onPress={() => void requests.refetch()}
+              />
+            }
           />
         ) : requests.data.length === 0 ? (
-          <Text style={type(15, 'regular', { color: color.secondary })}>{t('direct.requestsEmpty')}</Text>
+          <Text style={type(15, 'regular', { color: color.secondary })}>
+            {t('direct.requestsEmpty')}
+          </Text>
         ) : (
           requests.data.map((request) => (
             <View key={request.id} style={styles.card}>
               <Text style={type(17, 'semibold', { tracking: -0.3 })}>{request.fromName}</Text>
               <Text style={type(15, 'regular', { leading: 1.5 })}>{request.firstMessage}</Text>
-              <Text style={type(13, 'regular', { color: color.secondary })}>{localTime(request.createdAt)}</Text>
+              <Text style={type(13, 'regular', { color: color.secondary })}>
+                {localTime(request.createdAt)}
+              </Text>
               <View style={styles.actions}>
                 <Button
                   label={t('direct.accept')}
@@ -65,7 +81,10 @@ export default function RequestsScreen() {
                         onSuccess: (status) => {
                           // Accepting opens the conversation: go straight to it.
                           if (status === 'accepted') {
-                            router.push({ pathname: '/chat/direct/[id]', params: { id: request.fromId } });
+                            router.push({
+                              pathname: '/chat/direct/[id]',
+                              params: { id: request.fromId },
+                            });
                           }
                         },
                       },

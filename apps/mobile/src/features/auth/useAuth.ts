@@ -66,7 +66,10 @@ export function useAuth(): Auth {
     session: sessionQuery.isError ? null : session,
     profile: profileQuery.data,
     profileError: profileQuery.isError,
-    profileErrorOffline: profileQuery.isError && profileQuery.error instanceof BackendError && profileQuery.error.code === 'network',
+    profileErrorOffline:
+      profileQuery.isError &&
+      profileQuery.error instanceof BackendError &&
+      profileQuery.error.code === 'network',
     retryProfile: () => {
       void profileQuery.refetch();
     },

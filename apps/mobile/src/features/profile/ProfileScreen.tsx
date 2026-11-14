@@ -4,7 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
 import { InlineState } from '../../components/parts';
-import { AlertIcon, BellIcon, ChevronRightIcon, SproutIcon, UserIcon } from '../../components/icons';
+import {
+  AlertIcon,
+  BellIcon,
+  ChevronRightIcon,
+  SproutIcon,
+  UserIcon,
+} from '../../components/icons';
 import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { useBackend } from '../../lib/backend/BackendProvider';
@@ -37,7 +43,15 @@ export default function ProfileScreen() {
   const city = cities.data?.find((c) => c.id === profile?.cityId)?.name ?? null;
 
   const settings: Row[] = [
-    ...(hasNotice(profile) ? [{ label: isPaused(profile) ? t('safety.pausedBanner') : t('safety.frozenBanner'), href: '/suspended' as Href, icon: 'alert' as const }] : []),
+    ...(hasNotice(profile)
+      ? [
+          {
+            label: isPaused(profile) ? t('safety.pausedBanner') : t('safety.frozenBanner'),
+            href: '/suspended' as Href,
+            icon: 'alert' as const,
+          },
+        ]
+      : []),
     { label: t('profile.notifications'), href: '/profile/notifications', icon: 'bell' },
     { label: t('profile.privacy'), href: '/profile/privacy', icon: 'lock' },
     { label: t('profile.accessibility'), href: '/profile/accessibility', icon: 'user' },
@@ -59,7 +73,14 @@ export default function ProfileScreen() {
         <InlineState
           title={t('people.signedOut.title')}
           text={t('profile.signedOutText')}
-          action={<Button label={t('home.signIn')} onPress={() => { router.push({ pathname: '/sign-up', params: { next: '/profile' } }); }} />}
+          action={
+            <Button
+              label={t('home.signIn')}
+              onPress={() => {
+                router.push({ pathname: '/sign-up', params: { next: '/profile' } });
+              }}
+            />
+          }
         />
       </View>
     );
@@ -68,25 +89,42 @@ export default function ProfileScreen() {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top, paddingBottom: 120 + insets.bottom }]}
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: insets.top, paddingBottom: 120 + insets.bottom },
+      ]}
     >
       <View style={styles.titleRow}>
         <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>
           {t('profile.title')}
         </Text>
-        <Button variant="inverse" label={t('profile.edit')} onPress={() => { router.push('/profile/edit'); }} />
+        <Button
+          variant="inverse"
+          label={t('profile.edit')}
+          onPress={() => {
+            router.push('/profile/edit');
+          }}
+        />
       </View>
 
       <View style={styles.card}>
         <View style={styles.identity}>
-          <View aria-hidden style={[styles.avatar, { backgroundColor: extra.tints[0].background }]}>
-            <Text allowFontScaling={false} style={type(26, 'bold', { color: extra.tints[0].text })}>
+          <View
+            aria-hidden
+            style={[styles.avatar, { backgroundColor: extra.tints[0].background }]}
+          >
+            <Text
+              allowFontScaling={false}
+              style={type(26, 'bold', { color: extra.tints[0].text })}
+            >
               {name.charAt(0).toUpperCase()}
             </Text>
           </View>
           <View style={styles.identityText}>
             <Text style={type(21, 'bold', { tracking: -0.5 })}>{name}</Text>
-            {city ? <Text style={type(15, 'regular', { color: color.secondary })}>{city}</Text> : null}
+            {city ? (
+              <Text style={type(15, 'regular', { color: color.secondary })}>{city}</Text>
+            ) : null}
           </View>
         </View>
         <View style={styles.stats}>
@@ -96,8 +134,20 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <Group title={t('profile.settings')} rows={settings} onOpen={(href) => { router.push(href); }} />
-      <Group title={t('profile.about')} rows={about} onOpen={(href) => { router.push(href); }} />
+      <Group
+        title={t('profile.settings')}
+        rows={settings}
+        onOpen={(href) => {
+          router.push(href);
+        }}
+      />
+      <Group
+        title={t('profile.about')}
+        rows={about}
+        onOpen={(href) => {
+          router.push(href);
+        }}
+      />
 
       {session ? (
         <View style={styles.signOut}>
@@ -156,7 +206,9 @@ function Group({
 }) {
   return (
     <View style={styles.group}>
-      <Text style={[type(14, 'semibold', { color: color.secondary }), styles.groupTitle]}>{title}</Text>
+      <Text style={[type(14, 'semibold', { color: color.secondary }), styles.groupTitle]}>
+        {title}
+      </Text>
       <View style={styles.groupCard}>
         {rows.map((row, index) => (
           <Pressable
@@ -187,16 +239,36 @@ function Group({
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.fill },
   content: { paddingHorizontal: 20, gap: 22 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
   card: { backgroundColor: color.surface, borderRadius: 24, padding: 20, gap: 18 },
   identity: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatar: { width: 68, height: 68, borderRadius: 34, alignItems: 'center', justifyContent: 'center' },
+  avatar: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   identityText: { gap: 3, flex: 1 },
-  stats: { flexDirection: 'row', paddingTop: 16, borderTopWidth: 1, borderTopColor: extra.cardBorder },
+  stats: {
+    flexDirection: 'row',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: extra.cardBorder,
+  },
   stat: { flex: 1, alignItems: 'center', gap: 2 },
   group: { gap: 8 },
   groupTitle: { paddingLeft: 4 },
-  groupCard: { backgroundColor: color.surface, borderRadius: radius.card, paddingHorizontal: 16 },
+  groupCard: {
+    backgroundColor: color.surface,
+    borderRadius: radius.card,
+    paddingHorizontal: 16,
+  },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 56 },
   rowDivider: { borderBottomWidth: 1, borderBottomColor: extra.cardBorder },
   rowIcon: {
@@ -207,6 +279,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rowLabel: { flex: 1, minHeight: size.touchMin, textAlignVertical: 'center', lineHeight: size.touchMin },
+  rowLabel: {
+    flex: 1,
+    minHeight: size.touchMin,
+    textAlignVertical: 'center',
+    lineHeight: size.touchMin,
+  },
   signOut: { gap: 12, paddingTop: 8 },
 });

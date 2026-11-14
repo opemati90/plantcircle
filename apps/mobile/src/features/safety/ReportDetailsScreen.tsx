@@ -52,7 +52,15 @@ export default function ReportDetailsScreen() {
         <InlineState
           title={t('people.signedOut.title')}
           text={t('safety.signedOut')}
-          action={<Button variant="outline" label={t('home.signIn')} onPress={() => { router.push({ pathname: '/sign-up', params: { next: '/home' } }); }} />}
+          action={
+            <Button
+              variant="outline"
+              label={t('home.signIn')}
+              onPress={() => {
+                router.push({ pathname: '/sign-up', params: { next: '/home' } });
+              }}
+            />
+          }
         />
       </View>
     );
@@ -61,7 +69,11 @@ export default function ReportDetailsScreen() {
     return (
       <View style={styles.screen}>
         {header}
-        <InlineState title={t('errors.notFoundTitle')} text={t('errors.notFoundText')} action={<Button variant="outline" label={t('common.back')} onPress={back} />} />
+        <InlineState
+          title={t('errors.notFoundTitle')}
+          text={t('errors.notFoundText')}
+          action={<Button variant="outline" label={t('common.back')} onPress={back} />}
+        />
       </View>
     );
   }
@@ -70,14 +82,23 @@ export default function ReportDetailsScreen() {
     if (!confirmed || length === 0 || length > MAX) return;
     create.mutate(
       {
-        report: { targetType, targetId: params.id ?? '', category, details: details.trim(), accuracyConfirmed: true },
+        report: {
+          targetType,
+          targetId: params.id ?? '',
+          category,
+          details: details.trim(),
+          accuracyConfirmed: true,
+        },
         key,
       },
       {
         onSuccess: (receipt) => {
           router.replace({
             pathname: '/report/done',
-            params: { caseRef: receipt.caseRef, ...(params.userId ? { userId: params.userId, name: params.name ?? '' } : {}) },
+            params: {
+              caseRef: receipt.caseRef,
+              ...(params.userId ? { userId: params.userId, name: params.name ?? '' } : {}),
+            },
           });
         },
       },
@@ -87,11 +108,19 @@ export default function ReportDetailsScreen() {
   return (
     <View style={styles.screen}>
       {header}
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
+      >
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('safety.detailsTitle')}
         </Text>
-        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{t('safety.detailsLead')}</Text>
+        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+          {t('safety.detailsLead')}
+        </Text>
 
         <Text style={styles.label}>{t(`safety.whatWrong.${targetType}`)}</Text>
         <TextInput
@@ -103,26 +132,33 @@ export default function ReportDetailsScreen() {
           textAlignVertical="top"
           style={[styles.field, type(17, 'regular', { leading: 1.4 })]}
         />
-        <Text style={type(13, 'regular', { color: length > MAX ? color.danger : color.secondary })}>
+        <Text
+          style={type(13, 'regular', { color: length > MAX ? color.danger : color.secondary })}
+        >
           {t('safety.characters', { count: length, max: MAX })}
         </Text>
 
-        <Checkbox
-          label={t('safety.accurate')}
-          value={confirmed}
-          onValueChange={setConfirmed}
-        />
+        <Checkbox label={t('safety.accurate')} value={confirmed} onValueChange={setConfirmed} />
 
         {create.isError ? (
           <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
-            {errorCode(create.error) === 'rate_limited' ? t('safety.rateLimited') : t('safety.error')}
+            {errorCode(create.error) === 'rate_limited'
+              ? t('safety.rateLimited')
+              : t('safety.error')}
           </Text>
         ) : null}
 
         <View style={styles.footer}>
-          <Button label={t('safety.send')} disabled={!confirmed || length === 0 || length > MAX} loading={create.isPending} onPress={send} />
+          <Button
+            label={t('safety.send')}
+            disabled={!confirmed || length === 0 || length > MAX}
+            loading={create.isPending}
+            onPress={send}
+          />
           {!confirmed ? (
-            <Text style={[type(14, 'regular', { color: color.secondary }), styles.hint]}>{t('safety.confirmHint')}</Text>
+            <Text style={[type(14, 'regular', { color: color.secondary }), styles.hint]}>
+              {t('safety.confirmHint')}
+            </Text>
           ) : null}
         </View>
       </ScrollView>
@@ -134,7 +170,14 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 12 },
   label: { ...type(17, 'semibold'), marginTop: 14 },
-  field: { minHeight: 150, padding: 16, borderRadius: radius.control, borderWidth: 1, borderColor: extra.cardBorder, color: color.ink },
+  field: {
+    minHeight: 150,
+    padding: 16,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+    color: color.ink,
+  },
   footer: { paddingTop: 16, gap: 10 },
   hint: { textAlign: 'center' },
 });

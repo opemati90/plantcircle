@@ -5,7 +5,9 @@ test.beforeEach(async ({ page }) => {
   await freezeTime(page);
 });
 
-test('a member publishes an in-person cooking night, then sees its share link', async ({ page }) => {
+test('a member publishes an in-person cooking night, then sees its share link', async ({
+  page,
+}) => {
   // A Plan is published in the member's home city, so the member picks one first.
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: 'Change city' }).click();

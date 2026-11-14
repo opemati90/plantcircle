@@ -31,8 +31,12 @@ export default function PrivacyChoicesScreen() {
   const [draft, setDraft] = useState<{ analytics: boolean; personal: boolean } | null>(null);
   const analytics = draft?.analytics ?? settings.data?.analyticsConsent ?? false;
   const personal = draft?.personal ?? settings.data?.personalisationConsent ?? false;
-  const setAnalytics = (v: boolean) => { setDraft({ analytics: v, personal }); };
-  const setPersonal = (v: boolean) => { setDraft({ analytics, personal: v }); };
+  const setAnalytics = (v: boolean) => {
+    setDraft({ analytics: v, personal });
+  };
+  const setPersonal = (v: boolean) => {
+    setDraft({ analytics, personal: v });
+  };
   const onboarding = from !== 'profile';
   const next = safeNextPath(rawNext);
 
@@ -52,36 +56,90 @@ export default function PrivacyChoicesScreen() {
   const save = (analyticsConsent: boolean, personalisationConsent: boolean) => {
     update.mutate({ analyticsConsent, personalisationConsent }, { onSuccess: leave });
   };
-  const header = onboarding ? null : <ScreenHeader backLabel={t('common.back')} onBack={leave} />;
+  const header = onboarding ? null : (
+    <ScreenHeader backLabel={t('common.back')} onBack={leave} />
+  );
 
   if (session === null) {
     return (
       <View style={styles.screen}>
-        <ScreenHeader backLabel={t('common.back')} onBack={() => { router.replace('/home'); }} />
-        <InlineState title={t('people.signedOut.title')} text={t('account.signedOut')} action={<Button variant="outline" label={t('home.signIn')} onPress={() => { router.push({ pathname: '/sign-up', params: { next: '/privacy-choices' } }); }} />} />
+        <ScreenHeader
+          backLabel={t('common.back')}
+          onBack={() => {
+            router.replace('/home');
+          }}
+        />
+        <InlineState
+          title={t('people.signedOut.title')}
+          text={t('account.signedOut')}
+          action={
+            <Button
+              variant="outline"
+              label={t('home.signIn')}
+              onPress={() => {
+                router.push({ pathname: '/sign-up', params: { next: '/privacy-choices' } });
+              }}
+            />
+          }
+        />
       </View>
     );
   }
 
   const rows = [
-    { title: t('account.neededTitle'), note: t('account.neededNote'), control: 'always' as const },
-    { title: t('account.analyticsTitle'), note: t('account.analyticsNote'), control: 'analytics' as const },
-    { title: t('account.personalTitle'), note: t('account.personalNote'), control: 'personal' as const },
+    {
+      title: t('account.neededTitle'),
+      note: t('account.neededNote'),
+      control: 'always' as const,
+    },
+    {
+      title: t('account.analyticsTitle'),
+      note: t('account.analyticsNote'),
+      control: 'analytics' as const,
+    },
+    {
+      title: t('account.personalTitle'),
+      note: t('account.personalNote'),
+      control: 'personal' as const,
+    },
   ];
 
   return (
     <View style={styles.screen}>
       {header}
-      <ScrollView contentContainerStyle={[styles.content, { paddingTop: onboarding ? insets.headerTop + 24 : 8, paddingBottom: 40 + insets.bottom }]}>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingTop: onboarding ? insets.headerTop + 24 : 8,
+            paddingBottom: 40 + insets.bottom,
+          },
+        ]}
+      >
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('account.privacyChoicesTitle')}
         </Text>
-        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{t('account.privacyChoicesLead')}</Text>
+        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+          {t('account.privacyChoicesLead')}
+        </Text>
 
         {settings.isPending ? (
           <Skeleton width="100%" height={200} radius={radius.card} />
         ) : settings.isError ? (
-          <InlineState title={t('errors.serverTitle')} text={t('errors.serverText')} action={<Button variant="outline" label={t('common.retry')} onPress={() => void settings.refetch()} />} />
+          <InlineState
+            title={t('errors.serverTitle')}
+            text={t('errors.serverText')}
+            action={
+              <Button
+                variant="outline"
+                label={t('common.retry')}
+                onPress={() => void settings.refetch()}
+              />
+            }
+          />
         ) : (
           <View style={styles.card}>
             {rows.map((row, index) => (
@@ -90,9 +148,20 @@ export default function PrivacyChoicesScreen() {
                   <View style={styles.rowText}>
                     <View style={styles.rowHead}>
                       <Text style={[type(17, 'semibold'), styles.grow]}>{row.title}</Text>
-                      <Text style={[type(12, 'bold', { color: color.brand, tracking: 0.4 }), styles.pill]}>{t('account.alwaysOn').toUpperCase()}</Text>
+                      <Text
+                        style={[
+                          type(12, 'bold', { color: color.brand, tracking: 0.4 }),
+                          styles.pill,
+                        ]}
+                      >
+                        {t('account.alwaysOn').toUpperCase()}
+                      </Text>
                     </View>
-                    <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{row.note}</Text>
+                    <Text
+                      style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+                    >
+                      {row.note}
+                    </Text>
                   </View>
                 ) : (
                   <View style={styles.rowText}>
@@ -105,7 +174,11 @@ export default function PrivacyChoicesScreen() {
                         else setPersonal(v);
                       }}
                     />
-                    <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{row.note}</Text>
+                    <Text
+                      style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+                    >
+                      {row.note}
+                    </Text>
                   </View>
                 )}
               </View>
@@ -116,26 +189,52 @@ export default function PrivacyChoicesScreen() {
         <Pressable
           accessibilityRole="link"
           onPress={() => {
-            Linking.openURL(PRIVACY_URL).then(() => { setLinkFailed(false); }).catch(() => { setLinkFailed(true); });
+            Linking.openURL(PRIVACY_URL)
+              .then(() => {
+                setLinkFailed(false);
+              })
+              .catch(() => {
+                setLinkFailed(true);
+              });
           }}
           style={styles.link}
         >
-          <Text style={type(15, 'semibold', { color: color.brand })}>{t('account.readPrivacy')}</Text>
+          <Text style={type(15, 'semibold', { color: color.brand })}>
+            {t('account.readPrivacy')}
+          </Text>
         </Pressable>
 
         {linkFailed ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('account.linkError', { url: PRIVACY_URL })}</Text>
+          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+            {t('account.linkError', { url: PRIVACY_URL })}
+          </Text>
         ) : null}
         {update.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>{t('account.error')}</Text>
+          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+            {t('account.error')}
+          </Text>
         ) : null}
 
         <View style={styles.buttons}>
           <View style={styles.grow}>
-            <Button variant="outline" label={t('account.onlyNeeded')} disabled={settings.isPending || update.isPending} onPress={() => { save(false, false); }} />
+            <Button
+              variant="outline"
+              label={t('account.onlyNeeded')}
+              disabled={settings.isPending || update.isPending}
+              onPress={() => {
+                save(false, false);
+              }}
+            />
           </View>
           <View style={styles.grow}>
-            <Button label={t('account.saveChoices')} disabled={settings.isPending} loading={update.isPending} onPress={() => { save(analytics, personal); }} />
+            <Button
+              label={t('account.saveChoices')}
+              disabled={settings.isPending}
+              loading={update.isPending}
+              onPress={() => {
+                save(analytics, personal);
+              }}
+            />
           </View>
         </View>
       </ScrollView>
@@ -146,13 +245,25 @@ export default function PrivacyChoicesScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, gap: 14 },
-  card: { borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder, paddingHorizontal: 16, marginTop: 6 },
+  card: {
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+    paddingHorizontal: 16,
+    marginTop: 6,
+  },
   row: { paddingVertical: 14 },
   rowBorder: { borderTopWidth: 1, borderTopColor: extra.cardBorder },
   rowText: { gap: 6 },
   rowHead: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: size.touchMin },
   grow: { flex: 1, minWidth: 0 },
-  pill: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: color.brandTint, overflow: 'hidden' },
+  pill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    backgroundColor: color.brandTint,
+    overflow: 'hidden',
+  },
   link: { minHeight: size.touchMin, justifyContent: 'center', alignSelf: 'flex-start' },
   buttons: { flexDirection: 'row', gap: 10, paddingTop: 8 },
 });

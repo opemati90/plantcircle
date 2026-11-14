@@ -17,7 +17,14 @@ import { OfflineBanner } from '../../components/OfflineBanner';
 import { useNow } from '../../lib/useNow';
 import { useAuth } from '../auth/useAuth';
 import { newIdempotencyKey } from '../plans/queries';
-import { amount, canChangeInterest, money, myEstimate, orderUnit, progress } from './orderRules';
+import {
+  amount,
+  canChangeInterest,
+  money,
+  myEstimate,
+  orderUnit,
+  progress,
+} from './orderRules';
 import { useOrder, useSetInterest } from './queries';
 
 const STEP = 1;
@@ -57,14 +64,24 @@ export default function OrderScreen() {
     else router.replace('/home');
   };
   const circle = (label: string, onPress: () => void, child: React.ReactNode) => (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={styles.circle}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={styles.circle}
+    >
       {child}
     </Pressable>
   );
 
   if (order.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="100%" height={200} radius={radius.card} />
       </View>
     );
@@ -79,7 +96,12 @@ export default function OrderScreen() {
           text={missing ? t('errors.notFoundText') : t('errors.serverText')}
           actions={
             missing ? (
-              <Button label={t('common.backToHome')} onPress={() => { router.replace('/home'); }} />
+              <Button
+                label={t('common.backToHome')}
+                onPress={() => {
+                  router.replace('/home');
+                }}
+              />
             ) : (
               <Button label={t('common.retry')} onPress={() => void order.refetch()} />
             )
@@ -154,7 +176,9 @@ export default function OrderScreen() {
       return (
         <Button
           label={t('order.decideTitle')}
-          onPress={() => { router.push({ pathname: '/order/[id]/decide', params: { id: data.id } }); }}
+          onPress={() => {
+            router.push({ pathname: '/order/[id]/decide', params: { id: data.id } });
+          }}
         />
       );
     }
@@ -162,15 +186,22 @@ export default function OrderScreen() {
       return (
         <Button
           label={t('order.readyTitle')}
-          onPress={() => { router.push({ pathname: '/order/[id]/decide', params: { id: data.id } }); }}
+          onPress={() => {
+            router.push({ pathname: '/order/[id]/decide', params: { id: data.id } });
+          }}
         />
       );
     }
-    if ((data.state === 'ready' || data.state === 'locked' || data.state === 'completed') && (hasInterest || organizer)) {
+    if (
+      (data.state === 'ready' || data.state === 'locked' || data.state === 'completed') &&
+      (hasInterest || organizer)
+    ) {
       return (
         <Button
           label={t('order.openPickup')}
-          onPress={() => { router.push({ pathname: '/order/[id]/pickup', params: { id: data.id } }); }}
+          onPress={() => {
+            router.push({ pathname: '/order/[id]/pickup', params: { id: data.id } });
+          }}
         />
       );
     }
@@ -180,7 +211,9 @@ export default function OrderScreen() {
           label={hasInterest ? t('order.update') : t('order.join')}
           disabled={session !== null && changed.length === 0}
           loading={setInterest.isPending}
-          onPress={() => { void save(); }}
+          onPress={() => {
+            void save();
+          }}
         />
       );
     }
@@ -190,16 +223,25 @@ export default function OrderScreen() {
   return (
     <View style={styles.screen}>
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingTop: insets.headerTop, paddingBottom: 170 + insets.bottom }]}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.headerTop, paddingBottom: 170 + insets.bottom },
+        ]}
         {...(Platform.OS === 'web' ? { tabIndex: 0 as const } : {})}
       >
         {offline ? <OfflineBanner savedAt={order.dataUpdatedAt} /> : null}
         <View style={styles.topRow}>
-          {circle(t('common.back'), goBack, <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />)}
+          {circle(
+            t('common.back'),
+            goBack,
+            <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />,
+          )}
           {circle(
             t('create.published.share'),
             () => {
-              void Share.share({ message: `https://plantcircle.app/p/${data.id}` }).catch(() => undefined);
+              void Share.share({ message: `https://plantcircle.app/p/${data.id}` }).catch(
+                () => undefined,
+              );
             },
             <PlusIcon strokeWidth={2.2} color={color.ink} />,
           )}
@@ -209,7 +251,10 @@ export default function OrderScreen() {
           <Text style={type(13, 'semibold', { color: color.secondary, tracking: 0.6 })}>
             {t('order.eyebrow', { name: data.organizerName.toUpperCase() })}
           </Text>
-          <Text accessibilityRole="header" style={type(32, 'bold', { tracking: -1, leading: 1.06 })}>
+          <Text
+            accessibilityRole="header"
+            style={type(32, 'bold', { tracking: -1, leading: 1.06 })}
+          >
             {data.title}
           </Text>
         </View>
@@ -219,7 +264,9 @@ export default function OrderScreen() {
             accessibilityLabel={`${amount(data.interestTotal, unit, language)} ${t('order.ofTarget', { target: data.targetTotal, unit })}`}
             style={type(52, 'bold', { tracking: -2, leading: 1 })}
           >
-            {new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(data.interestTotal)}
+            {new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(
+              data.interestTotal,
+            )}
             <Text style={type(20, 'medium', { color: color.secondary, tracking: -0.3 })}>
               {` ${t('order.ofTarget', { target: data.targetTotal, unit })}`}
             </Text>
@@ -233,16 +280,24 @@ export default function OrderScreen() {
             <View style={[styles.fill, { width: `${progress(data) * 100}%` }]} />
           </View>
           <Text style={type(15, 'regular', { color: color.secondary })}>
-            {t('order.meta', { count: data.peopleCount, closes: closesLabel, pickup: pickupLabel })}
+            {t('order.meta', {
+              count: data.peopleCount,
+              closes: closesLabel,
+              pickup: pickupLabel,
+            })}
           </Text>
           {data.description ? (
             <View style={styles.note}>
               <SproutIcon size={18} strokeWidth={1.8} color={color.brand} />
-              <Text style={[type(15, 'medium', { color: color.brand }), styles.noteText]}>{data.description}</Text>
+              <Text style={[type(15, 'medium', { color: color.brand }), styles.noteText]}>
+                {data.description}
+              </Text>
             </View>
           ) : null}
           {statusLine() ? (
-            <Text role="status" style={type(15, 'semibold', { color: color.ink })}>{statusLine()}</Text>
+            <Text role="status" style={type(15, 'semibold', { color: color.ink })}>
+              {statusLine()}
+            </Text>
           ) : null}
         </View>
 
@@ -266,26 +321,35 @@ export default function OrderScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`${t('order.less')} ${item.name}`}
                     disabled={item.mine <= 0 || setInterest.isPending}
-                    onPress={() => { change(item, item.mine - STEP); }}
+                    onPress={() => {
+                      change(item, item.mine - STEP);
+                    }}
                     style={[styles.stepButton, item.mine <= 0 && styles.disabled]}
                   >
                     <Text style={type(19, 'regular')}>−</Text>
                   </Pressable>
-                  <Text accessibilityLiveRegion="polite" style={[type(16, 'semibold'), styles.qty]}>
+                  <Text
+                    accessibilityLiveRegion="polite"
+                    style={[type(16, 'semibold'), styles.qty]}
+                  >
                     {amount(item.mine, item.unit, language)}
                   </Text>
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={`${t('order.more')} ${item.name}`}
                     disabled={setInterest.isPending}
-                    onPress={() => { change(item, item.mine + STEP); }}
+                    onPress={() => {
+                      change(item, item.mine + STEP);
+                    }}
                     style={styles.stepButton}
                   >
                     <Text style={type(19, 'regular')}>+</Text>
                   </Pressable>
                 </View>
               ) : (
-                <Text style={type(16, 'semibold')}>{amount(item.mine, item.unit, language)}</Text>
+                <Text style={type(16, 'semibold')}>
+                  {amount(item.mine, item.unit, language)}
+                </Text>
               )}
             </View>
           ))}
@@ -303,15 +367,32 @@ export default function OrderScreen() {
         <Text style={type(13, 'regular', { color: color.secondary, leading: 1.5 })}>
           {t('order.notPurchase', { name: data.organizerName })}
         </Text>
-        {organizer ? null : <ReportLink targetType="order" targetId={data.id} name={data.title} userId={data.organizerId} />}
+        {organizer ? null : (
+          <ReportLink
+            targetType="order"
+            targetId={data.id}
+            name={data.title}
+            userId={data.organizerId}
+          />
+        )}
       </ScrollView>
 
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
           <Text style={type(18, 'bold', { tracking: -0.3 })}>
-            {estimate ? t('order.estimate', { amount: money(estimate.minor, estimate.currency, language) }) : amount(shown.reduce((a, i) => a + i.mine, 0), unit, language)}
+            {estimate
+              ? t('order.estimate', {
+                  amount: money(estimate.minor, estimate.currency, language),
+                })
+              : amount(
+                  shown.reduce((a, i) => a + i.mine, 0),
+                  unit,
+                  language,
+                )}
           </Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>{t('order.estimateLabel')}</Text>
+          <Text style={type(14, 'regular', { color: color.secondary })}>
+            {t('order.estimateLabel')}
+          </Text>
         </View>
         {barAction()}
       </FloatingActionBar>
@@ -323,7 +404,14 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, gap: 30 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  circle: { width: 44, height: 44, borderRadius: 22, backgroundColor: color.fill, alignItems: 'center', justifyContent: 'center' },
+  circle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: color.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   head: { gap: 10 },
   progressBlock: { gap: 12 },
   track: { height: 6, borderRadius: 3, backgroundColor: extra.skeleton, overflow: 'hidden' },
@@ -341,9 +429,24 @@ const styles = StyleSheet.create({
   },
   itemText: { flex: 1, minWidth: 0, gap: 2 },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  stepButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: color.fill, alignItems: 'center', justifyContent: 'center' },
+  stepButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: color.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   disabled: { opacity: 0.4 },
   qty: { minWidth: 52, textAlign: 'center' },
-  bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, paddingVertical: 10, paddingLeft: 20, paddingRight: 10 },
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 14,
+    paddingVertical: 10,
+    paddingLeft: 20,
+    paddingRight: 10,
+  },
   barText: { flex: 1, minWidth: 0, gap: 1 },
 });

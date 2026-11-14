@@ -10,7 +10,15 @@ import type { GroupOrder, PlanDetail } from './backend/types';
  * are in, the cities, the profile, settings and policies. Chats and discovery are always fetched
  * fresh. Nothing of another member's is kept: the cache is dropped on sign-out and account change.
  */
-const PERSISTED_KEYS = new Set(['myPlans', 'plan', 'order', 'cities', 'profile', 'settings', 'policies']);
+const PERSISTED_KEYS = new Set([
+  'myPlans',
+  'plan',
+  'order',
+  'cities',
+  'profile',
+  'settings',
+  'policies',
+]);
 const MAX_AGE_MS = 7 * 86_400_000;
 /** Bump when a persisted shape changes, so an old cache is dropped rather than misread. */
 const CACHE_VERSION = 'v2';
@@ -28,7 +36,11 @@ function worthKeeping(query: Query): boolean {
   if (key === 'plan') {
     const detail = data as PlanDetail | undefined;
     // The host sees the address without an RSVP; so does a confirmed guest once it is revealed.
-    return !!detail && (detail.address !== null || ['going', 'checked_in', 'offered', 'waitlisted'].includes(detail.rsvp));
+    return (
+      !!detail &&
+      (detail.address !== null ||
+        ['going', 'checked_in', 'offered', 'waitlisted'].includes(detail.rsvp))
+    );
   }
   if (key === 'order') {
     const order = data as GroupOrder | undefined;
@@ -64,5 +76,10 @@ export async function clearOfflineCache(): Promise<void> {
 
 /** True when the last fetch failed for want of a connection while cached data is still shown. */
 export function isOffline(query: { isError: boolean; error: unknown; data: unknown }): boolean {
-  return query.isError && query.data !== undefined && query.error instanceof BackendError && query.error.code === 'network';
+  return (
+    query.isError &&
+    query.data !== undefined &&
+    query.error instanceof BackendError &&
+    query.error.code === 'network'
+  );
 }

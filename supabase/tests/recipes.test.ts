@@ -24,7 +24,10 @@ beforeEach(async () => {
     [OUTSIDER, 'Mia'],
   ] as const) {
     await db.query('insert into auth.users (id) values ($1)', [id]);
-    await db.query('insert into public.profiles (id, display_name) values ($1, $2)', [id, name]);
+    await db.query('insert into public.profiles (id, display_name) values ($1, $2)', [
+      id,
+      name,
+    ]);
   }
   await db.query(
     `insert into public.circles (id, name, city_id, access, created_by) values ($1, 'Neukölln Plant Kitchen', $2, 'open', $3)`,
@@ -138,9 +141,10 @@ describe('reading recipes', () => {
     const created = await create(MEMBER);
     const id = created.rows[0]?.result.id ?? '';
     const seen = await asUser(db, OUTSIDER, () =>
-      db.query<{ name: string }>('select name from public.recipe_ingredients where recipe_id = $1', [
-        id,
-      ]),
+      db.query<{ name: string }>(
+        'select name from public.recipe_ingredients where recipe_id = $1',
+        [id],
+      ),
     );
     expect(seen.rows).toEqual([]);
   });

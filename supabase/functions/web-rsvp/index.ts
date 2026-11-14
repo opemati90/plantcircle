@@ -11,7 +11,10 @@ const CORS = {
   'access-control-allow-methods': 'POST, OPTIONS',
 };
 const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { ...CORS, 'content-type': 'application/json' } });
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...CORS, 'content-type': 'application/json' },
+  });
 const fail = (message: string): Response => {
   const known: Record<string, [string, number]> = {
     rate_limited: ['rate_limited', 429],
@@ -28,15 +31,29 @@ const fail = (message: string): Response => {
   return json({ error: code }, status);
 };
 
-type JoinBody = { action?: 'join'; plan_id: string; first_name: string; email: string; age_confirmed: boolean; idempotency_key: string };
+type JoinBody = {
+  action?: 'join';
+  plan_id: string;
+  first_name: string;
+  email: string;
+  age_confirmed: boolean;
+  idempotency_key: string;
+};
 type CancelBody = { action: 'cancel'; token: string; idempotency_key: string };
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  );
   // The gateway sets the real client address; the forwarded chain is a fallback.
-  const ip = req.headers.get('cf-connecting-ip') ?? req.headers.get('x-real-ip') ?? req.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+  const ip =
+    req.headers.get('cf-connecting-ip') ??
+    req.headers.get('x-real-ip') ??
+    req.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ??
+    'unknown';
   let body: unknown;
   try {
     body = await req.json();
@@ -52,15 +69,20 @@ Deno.serve(async (req) => {
 
   if (input.action === 'cancel') {
     if (typeof input.token !== 'string') return json({ error: 'invalid_input' }, 400);
-    const cancelled = await supabase.rpc('guest_rsvp_cancel', { p_token: input.token, p_idempotency_key: input.idempotency_key });
+    const cancelled = await supabase.rpc('guest_rsvp_cancel', {
+      p_token: input.token,
+      p_idempotency_key: input.idempotency_key,
+    });
     if (cancelled.error) return fail(cancelled.error.message);
     return json({ status: 'cancelled' });
   }
 
   const email = typeof input.email === 'string' ? input.email.trim().toLowerCase() : '';
   const firstName = typeof input.first_name === 'string' ? input.first_name.trim() : '';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return json({ error: 'invalid_email' }, 400);
-  if (firstName.length < 1 || [...firstName].length > 40) return json({ error: 'invalid_name' }, 400);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)
+    return json({ error: 'invalid_email' }, 400);
+  if (firstName.length < 1 || [...firstName].length > 40)
+    return json({ error: 'invalid_name' }, 400);
   if (input.age_confirmed !== true) return json({ error: 'age_required' }, 400);
   if (typeof input.plan_id !== 'string') return json({ error: 'invalid_input' }, 400);
 
@@ -72,7 +94,12 @@ Deno.serve(async (req) => {
 
   const redirect = `${Deno.env.get('APP_WEB_URL') ?? 'https://plantcircle.app'}/p/${input.plan_id}`;
   const sendLink = async (create: boolean) =>
-    (await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect, shouldCreateUser: create } })).error === null;
+    (
+      await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: redirect, shouldCreateUser: create },
+      })
+    ).error === null;
 
   // Someone who already has an account joins from the app: the link gets them there. Nothing is
   // said about whether the email is known, beyond that.
@@ -83,7 +110,11 @@ Deno.serve(async (req) => {
   }
 
   // A new guest: an unconfirmed user (the link confirms it), profile and RSVP in one transaction.
-  const created = await supabase.auth.admin.createUser({ email, email_confirm: false, user_metadata: { first_name: firstName } });
+  const created = await supabase.auth.admin.createUser({
+    email,
+    email_confirm: false,
+    user_metadata: { first_name: firstName },
+  });
   if (created.error) return json({ error: 'server' }, 500);
   const joined = await supabase.rpc('guest_rsvp_join', {
     p_user_id: created.data.user.id,
@@ -98,5 +129,10 @@ Deno.serve(async (req) => {
   }
   const result = joined.data as { status: string; cancel_token: string; position?: number };
   const emailSent = await sendLink(false);
-  return json({ status: result.status, position: result.position ?? null, cancel_token: result.cancel_token, email_sent: emailSent });
+  return json({
+    status: result.status,
+    position: result.position ?? null,
+    cancel_token: result.cancel_token,
+    email_sent: emailSent,
+  });
 });

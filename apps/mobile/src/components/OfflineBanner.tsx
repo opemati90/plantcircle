@@ -28,5 +28,13 @@ export function OfflineBanner({ savedAt }: { savedAt: number | null }) {
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 40, paddingHorizontal: 16, backgroundColor: '#111111' },
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    minHeight: 40,
+    paddingHorizontal: 16,
+    backgroundColor: '#111111',
+  },
 });

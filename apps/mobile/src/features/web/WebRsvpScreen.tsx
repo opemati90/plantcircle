@@ -2,7 +2,16 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
-import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { Button } from '../../components/Button';
 import { Checkbox } from '../../components/Checkbox';
 import { SproutIcon } from '../../components/icons';
@@ -46,17 +55,24 @@ export default function WebRsvpScreen() {
   // The done page survives a reload: the token lives in this browser only, for this Plan.
   const savedKey = `pc.web-rsvp.${id}`;
   useEffect(() => {
-    void appStorage.get(savedKey).then((raw) => {
-      if (!raw) return;
-      try {
-        const saved = JSON.parse(raw) as { result: WebRsvpResult; firstName: string; email: string };
-        setDone(saved.result);
-        setFirstName(saved.firstName);
-        setEmail(saved.email);
-      } catch {
-        // An unreadable note is dropped; the form shows again.
-      }
-    }).catch(() => undefined);
+    void appStorage
+      .get(savedKey)
+      .then((raw) => {
+        if (!raw) return;
+        try {
+          const saved = JSON.parse(raw) as {
+            result: WebRsvpResult;
+            firstName: string;
+            email: string;
+          };
+          setDone(saved.result);
+          setFirstName(saved.firstName);
+          setEmail(saved.email);
+        } catch {
+          // An unreadable note is dropped; the form shows again.
+        }
+      })
+      .catch(() => undefined);
   }, [savedKey]);
   const [key, setKey] = useState(newIdempotencyKey);
   useEffect(() => {
@@ -65,11 +81,25 @@ export default function WebRsvpScreen() {
   const [cancelKey] = useState(newIdempotencyKey);
 
   const reserve = useMutation({
-    mutationFn: () => backend.webRsvp(id, { firstName: firstName.trim(), email: email.trim(), ageConfirmed: adult }, key),
+    mutationFn: () =>
+      backend.webRsvp(
+        id,
+        { firstName: firstName.trim(), email: email.trim(), ageConfirmed: adult },
+        key,
+      ),
     onSuccess: (result) => {
       setDone(result);
       if (result.cancelToken) {
-        void appStorage.set(savedKey, JSON.stringify({ result, firstName: firstName.trim(), email: email.trim().toLowerCase() })).catch(() => undefined);
+        void appStorage
+          .set(
+            savedKey,
+            JSON.stringify({
+              result,
+              firstName: firstName.trim(),
+              email: email.trim().toLowerCase(),
+            }),
+          )
+          .catch(() => undefined);
       }
     },
   });
@@ -119,7 +149,12 @@ export default function WebRsvpScreen() {
 
   if (plan.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <View style={[styles.content, { paddingTop: insets.headerTop }]}>
           {header}
           <Skeleton width="100%" height={220} radius={radius.card} />
@@ -134,7 +169,18 @@ export default function WebRsvpScreen() {
         <EmptyState
           title={missing ? t('plan.unavailableTitle') : t('errors.serverTitle')}
           text={missing ? t('plan.unavailableText') : t('errors.serverText')}
-          actions={missing ? <Button label={t('web.openInApp')} onPress={() => { router.replace('/home'); }} /> : <Button label={t('common.tryAgain')} onPress={() => void plan.refetch()} />}
+          actions={
+            missing ? (
+              <Button
+                label={t('web.openInApp')}
+                onPress={() => {
+                  router.replace('/home');
+                }}
+              />
+            ) : (
+              <Button label={t('common.tryAgain')} onPress={() => void plan.refetch()} />
+            )
+          }
         />
       </View>
     );
@@ -145,23 +191,24 @@ export default function WebRsvpScreen() {
   // The server's word: held offers and people in line make a Plan full before the count says so.
   const full = !detail.hasOpenSpot;
   const when = `${shortDate(detail.startsAt, detail.timezone)} · ${time(detail.startsAt, detail.timezone)}`;
-  const error = invalid === 'name'
-    ? t('web.invalidName')
-    : invalid === 'email'
-      ? t('auth.invalidEmail')
-      : reserve.isError
-        ? errorCode(reserve.error) === 'rate_limited'
-          ? t('auth.rateLimited')
-          : errorCode(reserve.error) === 'plan_ended'
-            ? t('plan.error.endedDetail')
-            : errorCode(reserve.error) === 'not_found'
-              ? t('plan.unavailableText')
-              : errorCode(reserve.error) === 'suspended'
-                ? t('safety.suspendedErrorDetail')
-                : errorCode(reserve.error) === 'invalid_input'
-                  ? t('web.invalidInput')
-                  : t('web.error')
-        : null;
+  const error =
+    invalid === 'name'
+      ? t('web.invalidName')
+      : invalid === 'email'
+        ? t('auth.invalidEmail')
+        : reserve.isError
+          ? errorCode(reserve.error) === 'rate_limited'
+            ? t('auth.rateLimited')
+            : errorCode(reserve.error) === 'plan_ended'
+              ? t('plan.error.endedDetail')
+              : errorCode(reserve.error) === 'not_found'
+                ? t('plan.unavailableText')
+                : errorCode(reserve.error) === 'suspended'
+                  ? t('safety.suspendedErrorDetail')
+                  : errorCode(reserve.error) === 'invalid_input'
+                    ? t('web.invalidInput')
+                    : t('web.error')
+          : null;
 
   if (done) {
     const cancelled = cancel.isSuccess;
@@ -178,7 +225,9 @@ export default function WebRsvpScreen() {
     const lead = cancelled
       ? t('web.cancelledText')
       : done.status === 'existing'
-        ? (done.emailSent ? t('web.existingText', { email: email.trim().toLowerCase() }) : t('web.existingNoEmail'))
+        ? done.emailSent
+          ? t('web.existingText', { email: email.trim().toLowerCase() })
+          : t('web.existingNoEmail')
         : done.status === 'offered'
           ? t('web.doneOfferedText')
           : done.emailSent
@@ -186,29 +235,66 @@ export default function WebRsvpScreen() {
             : t('web.doneNoEmail');
     return (
       <View style={styles.screen}>
-        <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.headerTop, paddingBottom: 40 + insets.bottom }]}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.content,
+            { paddingTop: insets.headerTop, paddingBottom: 40 + insets.bottom },
+          ]}
+        >
           {header}
-          <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>{title}</Text>
-          <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{lead}</Text>
+          <Text
+            accessibilityRole="header"
+            style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+          >
+            {title}
+          </Text>
+          <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+            {lead}
+          </Text>
           <View style={styles.card}>
             <Text style={type(18, 'bold', { tracking: -0.4 })}>{detail.title}</Text>
-            <Text style={type(15, 'regular', { color: color.secondary })}>{`${when} · ${placeLabel(t, detail)}`}</Text>
+            <Text
+              style={type(15, 'regular', { color: color.secondary })}
+            >{`${when} · ${placeLabel(t, detail)}`}</Text>
           </View>
           {cancelled || done.status === 'existing' ? null : (
             <>
               <View style={styles.card}>
                 <Text style={type(17, 'semibold')}>{t('web.getAppTitle')}</Text>
-                <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{t('web.getAppText')}</Text>
+                <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+                  {t('web.getAppText')}
+                </Text>
                 <View style={styles.stores}>
-                  <Button variant="outline" label={t('web.appStore')} onPress={() => { void Linking.openURL(APP_STORE).catch(() => undefined); }} />
-                  <Button variant="outline" label={t('web.googlePlay')} onPress={() => { void Linking.openURL(PLAY_STORE).catch(() => undefined); }} />
+                  <Button
+                    variant="outline"
+                    label={t('web.appStore')}
+                    onPress={() => {
+                      void Linking.openURL(APP_STORE).catch(() => undefined);
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    label={t('web.googlePlay')}
+                    onPress={() => {
+                      void Linking.openURL(PLAY_STORE).catch(() => undefined);
+                    }}
+                  />
                 </View>
               </View>
               {cancel.isError ? (
-                <Text role="alert" style={type(15, 'regular', { color: color.danger })}>{t('web.error')}</Text>
+                <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+                  {t('web.error')}
+                </Text>
               ) : null}
               {done.cancelToken ? (
-                <Button variant="ghost" label={t('web.cancelSpot')} loading={cancel.isPending} onPress={() => { cancel.mutate(done.cancelToken ?? ''); }} />
+                <Button
+                  variant="ghost"
+                  label={t('web.cancelSpot')}
+                  loading={cancel.isPending}
+                  onPress={() => {
+                    cancel.mutate(done.cancelToken ?? '');
+                  }}
+                />
               ) : null}
             </>
           )}
@@ -219,47 +305,110 @@ export default function WebRsvpScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, { paddingTop: insets.headerTop, paddingBottom: 40 + insets.bottom }]}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.headerTop, paddingBottom: 40 + insets.bottom },
+        ]}
+      >
         {header}
         <View style={styles.hero}>
-          <Photo source={detail.imagePath ? imageByPath(detail.imagePath) : welcomePhoto} alt={detail.imageAlt} />
+          <Photo
+            source={detail.imagePath ? imageByPath(detail.imagePath) : welcomePhoto}
+            alt={detail.imageAlt}
+          />
         </View>
         <Text style={type(13, 'semibold', { color: color.secondary, tracking: 0.6 })}>
           {t('web.invitedBy', { host: detail.hostName.toUpperCase() })}
         </Text>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>{detail.title}</Text>
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
+          {detail.title}
+        </Text>
         <View style={styles.facts}>
           <DateTile iso={detail.startsAt} timeZone={detail.timezone} />
           <View style={styles.factText}>
             <Text style={type(17, 'semibold')}>{when}</Text>
-            <Text style={type(15, 'regular', { color: color.secondary })}>{placeLabel(t, detail)}</Text>
+            <Text style={type(15, 'regular', { color: color.secondary })}>
+              {placeLabel(t, detail)}
+            </Text>
           </View>
         </View>
         <View style={styles.chips}>
           <Text style={[type(14, 'semibold'), styles.chip]}>
             {full ? t('web.full') : t('web.spotsLeft', { count: spotsLeft })}
           </Text>
-          <Text style={[type(14, 'semibold'), styles.chip]}>{detail.priceCents === 0 ? t('plan.free') : new Intl.NumberFormat(language, { style: 'currency', currency: detail.currency }).format(detail.priceCents / 100)}</Text>
+          <Text style={[type(14, 'semibold'), styles.chip]}>
+            {detail.priceCents === 0
+              ? t('plan.free')
+              : new Intl.NumberFormat(language, {
+                  style: 'currency',
+                  currency: detail.currency,
+                }).format(detail.priceCents / 100)}
+          </Text>
         </View>
 
         <Text style={styles.label}>{t('web.firstName')}</Text>
-        <TextInput accessibilityLabel={t('web.firstName')} aria-invalid={invalid === 'name'} value={firstName} onChangeText={setFirstName} autoCapitalize="words" autoComplete="given-name" style={[styles.field, type(17)]} />
+        <TextInput
+          accessibilityLabel={t('web.firstName')}
+          aria-invalid={invalid === 'name'}
+          value={firstName}
+          onChangeText={setFirstName}
+          autoCapitalize="words"
+          autoComplete="given-name"
+          style={[styles.field, type(17)]}
+        />
         <Text style={styles.label}>{t('auth.email')}</Text>
-        <TextInput accessibilityLabel={t('auth.email')} aria-invalid={invalid === 'email'} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" autoCorrect={false} placeholder={t('auth.emailPlaceholder')} placeholderTextColor={color.secondary} style={[styles.field, type(17)]} />
+        <TextInput
+          accessibilityLabel={t('auth.email')}
+          aria-invalid={invalid === 'email'}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          autoCorrect={false}
+          placeholder={t('auth.emailPlaceholder')}
+          placeholderTextColor={color.secondary}
+          style={[styles.field, type(17)]}
+        />
         <Checkbox label={t('web.ageAgree')} value={adult} onValueChange={setAdult} />
-        <Text style={type(13, 'regular', { color: color.secondary, leading: 1.45 })}>{t('web.accountNote')}</Text>
+        <Text style={type(13, 'regular', { color: color.secondary, leading: 1.45 })}>
+          {t('web.accountNote')}
+        </Text>
         <View style={styles.legalRow}>
           {(['community_rules', 'terms', 'privacy'] as const).map((policy) => (
-            <Pressable key={policy} accessibilityRole="link" onPress={() => { void Linking.openURL(`https://plantcircle.app/legal/${policy === 'community_rules' ? 'rules' : policy}`).catch(() => undefined); }} style={styles.link}>
-              <Text style={type(13, 'semibold', { color: color.brand })}>{t(`legal.policy.${policy}`)}</Text>
+            <Pressable
+              key={policy}
+              accessibilityRole="link"
+              onPress={() => {
+                void Linking.openURL(
+                  `https://plantcircle.app/legal/${policy === 'community_rules' ? 'rules' : policy}`,
+                ).catch(() => undefined);
+              }}
+              style={styles.link}
+            >
+              <Text style={type(13, 'semibold', { color: color.brand })}>
+                {t(`legal.policy.${policy}`)}
+              </Text>
             </Pressable>
           ))}
         </View>
         {error ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger, leading: 1.4 })}>{error}</Text>
+          <Text role="alert" style={type(15, 'regular', { color: color.danger, leading: 1.4 })}>
+            {error}
+          </Text>
         ) : null}
         <View style={styles.footer}>
-          <Button label={full ? t('web.joinWaitlist') : t('web.reserve')} disabled={!adult} loading={reserve.isPending} onPress={submit} />
+          <Button
+            label={full ? t('web.joinWaitlist') : t('web.reserve')}
+            disabled={!adult}
+            loading={reserve.isPending}
+            onPress={submit}
+          />
           <Text style={[type(14, 'regular', { color: color.secondary }), styles.hint]}>
             {adult ? t('web.noApp') : t('web.confirmAge')}
           </Text>
@@ -271,20 +420,56 @@ export default function WebRsvpScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
-  content: { paddingHorizontal: 24, gap: 12, maxWidth: 560, width: '100%', alignSelf: 'center' },
-  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48, marginBottom: 6 },
+  content: {
+    paddingHorizontal: 24,
+    gap: 12,
+    maxWidth: 560,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 48,
+    marginBottom: 6,
+  },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  hero: { height: 200, borderRadius: radius.card, overflow: 'hidden', backgroundColor: color.fill },
+  hero: {
+    height: 200,
+    borderRadius: radius.card,
+    overflow: 'hidden',
+    backgroundColor: color.fill,
+  },
   facts: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 6 },
   factText: { flex: 1, minWidth: 0, gap: 2 },
   chips: { flexDirection: 'row', gap: 8 },
-  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill, backgroundColor: color.fill, overflow: 'hidden' },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+    backgroundColor: color.fill,
+    overflow: 'hidden',
+  },
   label: { ...type(17, 'semibold'), marginTop: 14 },
-  field: { minHeight: size.touchMin, paddingHorizontal: 16, borderRadius: radius.control, borderWidth: 1, borderColor: extra.cardBorder, color: color.ink },
+  field: {
+    minHeight: size.touchMin,
+    paddingHorizontal: 16,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+    color: color.ink,
+  },
   footer: { paddingTop: 10, gap: 10 },
   hint: { textAlign: 'center' },
   link: { minHeight: size.touchMin, justifyContent: 'center' },
   legalRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  card: { gap: 8, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
+  card: {
+    gap: 8,
+    padding: 16,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
   stores: { flexDirection: 'row', gap: 10, paddingTop: 4 },
 });

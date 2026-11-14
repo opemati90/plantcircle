@@ -23,11 +23,10 @@ beforeEach(async () => {
     [OUTSIDER, 'Olu'],
   ] as const) {
     await db.query('insert into auth.users (id) values ($1)', [id]);
-    await db.query('insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)', [
-      id,
-      name,
-      CITY,
-    ]);
+    await db.query(
+      'insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)',
+      [id, name, CITY],
+    );
   }
 });
 
@@ -50,25 +49,33 @@ async function plan(startsInHours: number, status = 'published'): Promise<string
 }
 
 const going = (planId: string, user: string) =>
-  db.query(`insert into public.rsvps (plan_id, user_id, state) values ($1, $2, 'going')`, [planId, user]);
+  db.query(`insert into public.rsvps (plan_id, user_id, state) values ($1, $2, 'going')`, [
+    planId,
+    user,
+  ]);
 
 const add = (user: string, planId: string, label: string, quantity: number, key = newKey()) =>
   asUser(db, user, () =>
-    db.query<{ result: { id: string } }>('select public.host_bring_add($1, $2, $3, $4) as result', [
-      planId,
-      label,
-      quantity,
-      key,
-    ]),
+    db.query<{ result: { id: string } }>(
+      'select public.host_bring_add($1, $2, $3, $4) as result',
+      [planId, label, quantity, key],
+    ),
   ).then((r) => r.rows[0]?.result.id ?? '');
 
 const update = (user: string, itemId: string, label: string, quantity: number) =>
   asUser(db, user, () =>
-    db.query('select public.host_bring_update($1, $2, $3, $4)', [itemId, label, quantity, newKey()]),
+    db.query('select public.host_bring_update($1, $2, $3, $4)', [
+      itemId,
+      label,
+      quantity,
+      newKey(),
+    ]),
   );
 
 const remove = (user: string, itemId: string) =>
-  asUser(db, user, () => db.query('select public.host_bring_remove($1, $2)', [itemId, newKey()]));
+  asUser(db, user, () =>
+    db.query('select public.host_bring_remove($1, $2)', [itemId, newKey()]),
+  );
 
 const claim = (user: string, itemId: string) =>
   asUser(db, user, () => db.query('select public.slot_claim($1, $2)', [itemId, newKey()]));
@@ -143,7 +150,9 @@ describe('adding and changing bring items', () => {
     const id = await plan(5);
     const item = await add(HOST, id, 'Salad', 1);
     const key = newKey();
-    await asUser(db, HOST, () => db.query('select public.host_bring_remove($1, $2)', [item, key]));
+    await asUser(db, HOST, () =>
+      db.query('select public.host_bring_remove($1, $2)', [item, key]),
+    );
     await expect(
       asUser(db, HOST, () => db.query('select public.host_bring_remove($1, $2)', [item, key])),
     ).resolves.toBeDefined();

@@ -49,7 +49,12 @@ export function configureForeground(): void {
   if (Platform.OS === 'web') return;
   Notifications.setNotificationHandler({
     handleNotification: () =>
-      Promise.resolve({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: false, shouldSetBadge: false }),
+      Promise.resolve({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      }),
   });
 }
 
@@ -65,5 +70,7 @@ export function onPushOpened(handle: (data: Record<string, unknown>) => void): (
   // A tap that launched the app from cold.
   const cold = Notifications.getLastNotificationResponse();
   if (cold) handle(cold.notification.request.content.data as Record<string, unknown>);
-  return () => { sub.remove(); };
+  return () => {
+    sub.remove();
+  };
 }

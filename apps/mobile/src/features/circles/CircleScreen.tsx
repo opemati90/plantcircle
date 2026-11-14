@@ -67,7 +67,12 @@ export default function CircleScreen() {
 
   if (circle.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="100%" height={360} radius={0} />
       </View>
     );
@@ -84,7 +89,13 @@ export default function CircleScreen() {
           <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />
         </IconButton>
         <EmptyState
-          {...(missing ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
+          {...(missing
+            ? {}
+            : {
+                onSavedPlans: () => {
+                  router.push('/my-plans');
+                },
+              })}
           title={missing ? t('circles.notFound') : t('errors.serverTitle')}
           text={missing ? t('errors.notFoundText') : t('errors.serverText')}
           actions={
@@ -149,9 +160,19 @@ export default function CircleScreen() {
       }}
     />
   ) : data.access === 'open' ? (
-    <Button variant="inverse" label={t('circles.join')} loading={join.isPending} onPress={joinNow} />
+    <Button
+      variant="inverse"
+      label={t('circles.join')}
+      loading={join.isPending}
+      onPress={joinNow}
+    />
   ) : requested ? (
-    <Button variant="inverse" label={t('circles.requested')} disabled onPress={() => undefined} />
+    <Button
+      variant="inverse"
+      label={t('circles.requested')}
+      disabled
+      onPress={() => undefined}
+    />
   ) : (
     <Button variant="inverse" label={t('circles.askToJoin')} onPress={startAsk} />
   );
@@ -205,7 +226,9 @@ export default function CircleScreen() {
                   />
                 ))}
               </View>
-              <Text style={type(14, 'medium', { color: '#FFFFFF' })}>{circleMeta(t, data)}</Text>
+              <Text style={type(14, 'medium', { color: '#FFFFFF' })}>
+                {circleMeta(t, data)}
+              </Text>
             </View>
             {heroAction}
           </View>
@@ -243,7 +266,9 @@ export default function CircleScreen() {
                   style={[styles.tab, selected && styles.tabSelected]}
                 >
                   <Text
-                    style={type(15, 'semibold', { color: selected ? color.ink : color.secondary })}
+                    style={type(15, 'semibold', {
+                      color: selected ? color.ink : color.secondary,
+                    })}
                   >
                     {t(`circles.${TAB_KEY[name]}`)}
                   </Text>
@@ -267,7 +292,10 @@ export default function CircleScreen() {
               <ReportLink targetType="circle" targetId={data.id} name={data.name} />
               {canModerate && data.access === 'request' ? (
                 <View style={styles.requests}>
-                  <Text accessibilityRole="header" style={type(17, 'semibold', { tracking: -0.3 })}>
+                  <Text
+                    accessibilityRole="header"
+                    style={type(17, 'semibold', { tracking: -0.3 })}
+                  >
                     {t('circles.moderatorRequests', { count: requests.data?.length ?? 0 })}
                   </Text>
                   {requests.isError ? (
@@ -296,7 +324,10 @@ export default function CircleScreen() {
                         </Text>
                         {request.answer ? (
                           <Text
-                            style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}
+                            style={type(15, 'regular', {
+                              color: color.secondary,
+                              leading: 1.5,
+                            })}
                           >
                             {`“${request.answer}”`}
                           </Text>
@@ -360,7 +391,6 @@ export default function CircleScreen() {
           }}
         />
       </BottomSheet>
-
     </View>
   );
 }
@@ -377,7 +407,11 @@ function PlansTab({ circle }: { circle: Circle }) {
         title={t('errors.serverTitle')}
         text={t('errors.serverText')}
         action={
-          <Button variant="outline" label={t('common.retry')} onPress={() => void plans.refetch()} />
+          <Button
+            variant="outline"
+            label={t('common.retry')}
+            onPress={() => void plans.refetch()}
+          />
         }
       />
     );
@@ -385,7 +419,9 @@ function PlansTab({ circle }: { circle: Circle }) {
   const shown = circle.isGlobal ? plans.data.filter((p) => p.format === 'online') : plans.data;
   if (shown.length === 0) {
     return (
-      <Text style={type(15, 'regular', { color: color.secondary })}>{t('circles.plansEmpty')}</Text>
+      <Text style={type(15, 'regular', { color: color.secondary })}>
+        {t('circles.plansEmpty')}
+      </Text>
     );
   }
   return (
@@ -416,7 +452,11 @@ function PostsTab({ circleId }: { circleId: string }) {
         title={t('errors.serverTitle')}
         text={t('errors.serverText')}
         action={
-          <Button variant="outline" label={t('common.retry')} onPress={() => void recipes.refetch()} />
+          <Button
+            variant="outline"
+            label={t('common.retry')}
+            onPress={() => void recipes.refetch()}
+          />
         }
       />
     );
@@ -424,7 +464,9 @@ function PostsTab({ circleId }: { circleId: string }) {
   const shown = recipes.data.filter((r) => r.circleId === circleId);
   if (shown.length === 0) {
     return (
-      <Text style={type(15, 'regular', { color: color.secondary })}>{t('circles.postsEmpty')}</Text>
+      <Text style={type(15, 'regular', { color: color.secondary })}>
+        {t('circles.postsEmpty')}
+      </Text>
     );
   }
   return (

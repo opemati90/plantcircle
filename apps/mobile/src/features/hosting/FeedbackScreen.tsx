@@ -52,7 +52,12 @@ export default function FeedbackScreen() {
 
   if (session === undefined) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="70%" height={34} radius={8} />
       </View>
     );
@@ -79,7 +84,12 @@ export default function FeedbackScreen() {
   }
   if (feedback.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="70%" height={34} radius={8} />
         <Skeleton width="100%" height={96} radius={radius.card} />
       </View>
@@ -90,7 +100,9 @@ export default function FeedbackScreen() {
       <View style={styles.screen}>
         {back}
         <EmptyState
-          onSavedPlans={() => { router.push('/my-plans'); }}
+          onSavedPlans={() => {
+            router.push('/my-plans');
+          }}
           title={t('errors.serverTitle')}
           text={t('errors.serverText')}
           actions={<Button label={t('common.retry')} onPress={() => void feedback.refetch()} />}
@@ -142,14 +154,21 @@ export default function FeedbackScreen() {
           { paddingTop: 16, paddingBottom: 40 + insets.bottom },
         ]}
       >
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('hostFeedback.title')}
         </Text>
         <Text style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}>
           {t('hostFeedback.lead')}
         </Text>
 
-        <View accessibilityRole="radiogroup" accessibilityLabel={t('hostFeedback.title')} style={styles.ratings}>
+        <View
+          accessibilityRole="radiogroup"
+          accessibilityLabel={t('hostFeedback.title')}
+          style={styles.ratings}
+        >
           {RATINGS.map((value) => {
             const selected = rating === value;
             return (
@@ -165,7 +184,9 @@ export default function FeedbackScreen() {
                 }}
                 style={[styles.rating, selected && styles.ratingSelected]}
               >
-                <Text style={type(17, 'semibold', { color: selected ? color.brand : color.ink })}>
+                <Text
+                  style={type(17, 'semibold', { color: selected ? color.brand : color.ink })}
+                >
                   {value}
                 </Text>
               </Pressable>

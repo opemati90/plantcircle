@@ -24,11 +24,10 @@ beforeEach(async () => {
     [NO_CITY, 'Sam', null],
   ] as const) {
     await db.query('insert into auth.users (id) values ($1)', [id]);
-    await db.query('insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)', [
-      id,
-      name,
-      city,
-    ]);
+    await db.query(
+      'insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)',
+      [id, name, city],
+    );
   }
 });
 
@@ -137,16 +136,18 @@ describe('creating a Plan', () => {
 
   it('refuses a Plan with no allergen answer, and "none" beside an allergen', async () => {
     await expect(create(HOST, { allergens: [] })).rejects.toThrow(/allergens_required/);
-    await expect(create(HOST, { allergens: ['none', 'peanuts'] })).rejects.toThrow(/invalid_plan/);
+    await expect(create(HOST, { allergens: ['none', 'peanuts'] })).rejects.toThrow(
+      /invalid_plan/,
+    );
   });
 
   it('refuses times, durations, capacities and kinds outside the rules', async () => {
-    await expect(create(HOST, { starts: '2020-01-01T17:00:00Z', ends: '2020-01-01T19:00:00Z' })).rejects.toThrow(
+    await expect(
+      create(HOST, { starts: '2020-01-01T17:00:00Z', ends: '2020-01-01T19:00:00Z' }),
+    ).rejects.toThrow(/invalid_plan/);
+    await expect(create(HOST, { ends: '2030-06-01T17:10:00+02:00' })).rejects.toThrow(
       /invalid_plan/,
     );
-    await expect(
-      create(HOST, { ends: '2030-06-01T17:10:00+02:00' }),
-    ).rejects.toThrow(/invalid_plan/);
     await expect(create(HOST, { capacity: 1 })).rejects.toThrow(/invalid_plan/);
     await expect(create(HOST, { capacity: 51 })).rejects.toThrow(/invalid_plan/);
     await expect(create(HOST, { kind: 'workshop' })).rejects.toThrow(/invalid_plan/);
@@ -156,7 +157,12 @@ describe('creating a Plan', () => {
     await expect(create(HOST, { address: null })).rejects.toThrow(/invalid_plan/);
     await expect(create(HOST, { area: '' })).rejects.toThrow(/invalid_plan/);
     await expect(
-      create(HOST, { format: 'online', area: null, address: null, link: 'http://insecure.example' }),
+      create(HOST, {
+        format: 'online',
+        area: null,
+        address: null,
+        link: 'http://insecure.example',
+      }),
     ).rejects.toThrow(/invalid_plan/);
   });
 
@@ -176,9 +182,15 @@ describe('creating a Plan', () => {
 
   it('refuses meeting links without a real host, and overlong ones', async () => {
     const online = { format: 'online', area: null, address: null };
-    await expect(create(HOST, { ...online, link: 'https://?' })).rejects.toThrow(/invalid_plan/);
-    await expect(create(HOST, { ...online, link: 'https://meet' })).rejects.toThrow(/invalid_plan/);
-    await expect(create(HOST, { ...online, link: 'https://a.b@' })).rejects.toThrow(/invalid_plan/);
+    await expect(create(HOST, { ...online, link: 'https://?' })).rejects.toThrow(
+      /invalid_plan/,
+    );
+    await expect(create(HOST, { ...online, link: 'https://meet' })).rejects.toThrow(
+      /invalid_plan/,
+    );
+    await expect(create(HOST, { ...online, link: 'https://a.b@' })).rejects.toThrow(
+      /invalid_plan/,
+    );
     await expect(
       create(HOST, { ...online, link: `https://meet.google.com/${'a'.repeat(500)}` }),
     ).rejects.toThrow(/invalid_plan/);

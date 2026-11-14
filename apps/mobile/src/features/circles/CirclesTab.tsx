@@ -70,7 +70,9 @@ export function CirclesTab({ query }: { query: string }) {
     const offline = errorCode(circles.error) === 'network';
     return (
       <EmptyState
-        onSavedPlans={() => { router.push('/my-plans'); }}
+        onSavedPlans={() => {
+          router.push('/my-plans');
+        }}
         title={offline ? t('errors.offlineTitle') : t('errors.serverTitle')}
         text={offline ? t('errors.offlineText') : t('errors.serverText')}
         {...(offline ? { icon: <OfflineIcon size={36} strokeWidth={1.7} /> } : {})}

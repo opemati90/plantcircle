@@ -17,7 +17,10 @@ import { useCheckInGuest, useEndPlan, useGuests, useHostSummary } from './querie
 import { BringSection } from './BringSection';
 import { canEnd, checkinOpen } from './rules';
 
-const STATE_LABEL: Record<GuestState, 'stateGoing' | 'stateCheckedIn' | 'stateNoShow' | 'stateWaitlisted' | 'stateOffered'> = {
+const STATE_LABEL: Record<
+  GuestState,
+  'stateGoing' | 'stateCheckedIn' | 'stateNoShow' | 'stateWaitlisted' | 'stateOffered'
+> = {
   going: 'stateGoing',
   checked_in: 'stateCheckedIn',
   no_show: 'stateNoShow',
@@ -55,7 +58,12 @@ export default function ManageScreen() {
 
   if (plan.isPending || summary.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="70%" height={34} radius={8} />
         <Skeleton width="100%" height={120} radius={radius.card} />
       </View>
@@ -123,13 +131,21 @@ export default function ManageScreen() {
             {t('host.happeningNow')}
           </Text>
         ) : null}
-        <Text accessibilityRole="header" style={type(32, 'bold', { tracking: -1, leading: 1.06 })}>
+        <Text
+          accessibilityRole="header"
+          style={type(32, 'bold', { tracking: -1, leading: 1.06 })}
+        >
           {open
-            ? t('host.hereCount', { here: summary.data.checkedIn, total: summary.data.going + summary.data.checkedIn })
+            ? t('host.hereCount', {
+                here: summary.data.checkedIn,
+                total: summary.data.going + summary.data.checkedIn,
+              })
             : t('host.title')}
         </Text>
         <Text style={type(15, 'regular', { color: color.secondary })}>
-          {open ? t('host.tapToCheckIn') : `${detail.title} · ${longDate(detail.startsAt, detail.timezone)} · ${timeRange(detail.startsAt, detail.endsAt, detail.timezone)}`}
+          {open
+            ? t('host.tapToCheckIn')
+            : `${detail.title} · ${longDate(detail.startsAt, detail.timezone)} · ${timeRange(detail.startsAt, detail.endsAt, detail.timezone)}`}
         </Text>
 
         <View style={styles.summary}>
@@ -152,7 +168,9 @@ export default function ManageScreen() {
           {t('host.guestsTitle')}
         </Text>
         {!live ? (
-          <Text style={type(15, 'regular', { color: color.secondary })}>{t('host.notLive')}</Text>
+          <Text style={type(15, 'regular', { color: color.secondary })}>
+            {t('host.notLive')}
+          </Text>
         ) : !open && !ended ? (
           <Text style={type(15, 'regular', { color: color.secondary })}>
             {now.getTime() < Date.parse(detail.startsAt) - 2 * 3_600_000
@@ -167,7 +185,9 @@ export default function ManageScreen() {
             {t('errors.serverText')}
           </Text>
         ) : rows.length === 0 ? (
-          <Text style={type(15, 'regular', { color: color.secondary })}>{t('host.guestsEmpty')}</Text>
+          <Text style={type(15, 'regular', { color: color.secondary })}>
+            {t('host.guestsEmpty')}
+          </Text>
         ) : (
           rows.map((guest, index) => {
             const canCheck = open && (guest.state === 'going' || guest.state === 'checked_in');
@@ -181,7 +201,11 @@ export default function ManageScreen() {
               <Pressable
                 key={guest.userId}
                 accessibilityRole={canCheck ? 'checkbox' : 'text'}
-                accessibilityLabel={canCheck ? name : `${guest.displayName}, ${t(`host.${STATE_LABEL[guest.state]}`)}`}
+                accessibilityLabel={
+                  canCheck
+                    ? name
+                    : `${guest.displayName}, ${t(`host.${STATE_LABEL[guest.state]}`)}`
+                }
                 aria-checked={canCheck ? checked : undefined}
                 disabled={!canCheck || busy}
                 onPress={() => {
@@ -189,7 +213,10 @@ export default function ManageScreen() {
                 }}
                 style={styles.guestRow}
               >
-                <View aria-hidden style={[styles.guestAvatar, { backgroundColor: tint.background }]}>
+                <View
+                  aria-hidden
+                  style={[styles.guestAvatar, { backgroundColor: tint.background }]}
+                >
                   <Text allowFontScaling={false} style={type(16, 'bold', { color: tint.text })}>
                     {guest.displayName.charAt(0).toUpperCase()}
                   </Text>
@@ -239,7 +266,9 @@ export default function ManageScreen() {
               }}
             />
           ) : (
-            <Text style={type(15, 'regular', { color: color.secondary })}>{t('host.endTooEarly')}</Text>
+            <Text style={type(15, 'regular', { color: color.secondary })}>
+              {t('host.endTooEarly')}
+            </Text>
           )}
           {end.isError ? (
             <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
@@ -316,7 +345,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: color.fill,
   },
-  guestAvatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  guestAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   ring: {
     width: 28,
     height: 28,

@@ -49,7 +49,11 @@ export default function MyPlansScreen() {
       const key = ['plan', item.plan.id, session?.userId ?? null];
       if (queryClient.getQueryData(key) !== undefined) continue;
       // eslint-disable-next-line @typescript-eslint/no-deprecated -- queryClient.query() is not in this release yet
-      void queryClient.prefetchQuery({ queryKey: key, queryFn: () => backend.getPlan(item.plan.id), staleTime: 60_000 });
+      void queryClient.prefetchQuery({
+        queryKey: key,
+        queryFn: () => backend.getPlan(item.plan.id),
+        staleTime: 60_000,
+      });
     }
   }, [upcoming.data, queryClient, backend, session?.userId]);
 

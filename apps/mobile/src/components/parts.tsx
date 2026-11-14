@@ -234,7 +234,14 @@ interface EmptyStateProps {
 }
 
 /** Full-screen state: errors, missing content, areas that are not built yet. */
-export function EmptyState({ title, text, icon, actions, onSavedPlans, reference }: EmptyStateProps) {
+export function EmptyState({
+  title,
+  text,
+  icon,
+  actions,
+  onSavedPlans,
+  reference,
+}: EmptyStateProps) {
   const { headerTop } = useScreenInsets();
   const { t } = useTranslation();
   const savedPlans = useSavedPlansAvailable();
@@ -257,12 +264,16 @@ export function EmptyState({ title, text, icon, actions, onSavedPlans, reference
           <Pressable accessibilityRole="link" onPress={onSavedPlans} style={styles.savedCard}>
             <View style={styles.savedText}>
               <Text style={type(16, 'semibold')}>{t('errors.savedTitle')}</Text>
-              <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{t('errors.savedText')}</Text>
+              <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+                {t('errors.savedText')}
+              </Text>
             </View>
           </Pressable>
         ) : null}
         {reference ? (
-          <Text style={type(13, 'regular', { color: color.secondary })}>{t('errors.reference', { ref: reference })}</Text>
+          <Text style={type(13, 'regular', { color: color.secondary })}>
+            {t('errors.reference', { ref: reference })}
+          </Text>
         ) : null}
       </View>
       <View style={styles.emptyActions}>{actions}</View>
@@ -361,7 +372,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyActions: { gap: 10 },
-  savedCard: { minHeight: size.touchMin, padding: 16, borderRadius: radius.card, backgroundColor: color.fill, marginTop: 6 },
+  savedCard: {
+    minHeight: size.touchMin,
+    padding: 16,
+    borderRadius: radius.card,
+    backgroundColor: color.fill,
+    marginTop: 6,
+  },
   savedText: { gap: 3 },
 });
 

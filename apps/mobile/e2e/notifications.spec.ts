@@ -5,7 +5,9 @@ test.beforeEach(async ({ page }) => {
   await freezeTime(page);
 });
 
-test('the first RSVP asks for notifications once, and the join shows up under Updates in the Inbox', async ({ page }) => {
+test('the first RSVP asks for notifications once, and the join shows up under Updates in the Inbox', async ({
+  page,
+}) => {
   await signInWithEmail(page, '/plan/cooking-night');
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Never miss a spot' })).toBeVisible();
@@ -25,7 +27,9 @@ test('the first RSVP asks for notifications once, and the join shows up under Up
   await expect(row).toBeVisible();
   await expect(row).toHaveAccessibleName(/Unread/);
   await page.getByRole('button', { name: 'Mark all read' }).click();
-  await expect(page.getByRole('link', { name: /You’re going to West African Cooking Night/ })).not.toHaveAccessibleName(/Unread/);
+  await expect(
+    page.getByRole('link', { name: /You’re going to West African Cooking Night/ }),
+  ).not.toHaveAccessibleName(/Unread/);
   await page.getByRole('link', { name: /You’re going to West African Cooking Night/ }).click();
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
 });

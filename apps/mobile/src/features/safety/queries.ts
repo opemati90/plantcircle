@@ -4,7 +4,14 @@ import type { ReportInput, StaffAction } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 
 /** Everything a block changes: People, chats, requests and the Inbox. */
-const AFTER_BLOCK = [['people'], ['blocked'], ['conversation'], ['messages'], ['directRequests'], ['inbox']];
+const AFTER_BLOCK = [
+  ['people'],
+  ['blocked'],
+  ['conversation'],
+  ['messages'],
+  ['directRequests'],
+  ['inbox'],
+];
 
 export function useBlocked() {
   const backend = useBackend();
@@ -20,8 +27,10 @@ export function useBlockUser() {
   const backend = useBackend();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { userId: string; key: string }) => backend.blockUser(input.userId, input.key),
-    onSuccess: () => Promise.all(AFTER_BLOCK.map((key) => queryClient.invalidateQueries({ queryKey: key }))),
+    mutationFn: (input: { userId: string; key: string }) =>
+      backend.blockUser(input.userId, input.key),
+    onSuccess: () =>
+      Promise.all(AFTER_BLOCK.map((key) => queryClient.invalidateQueries({ queryKey: key }))),
   });
 }
 
@@ -30,14 +39,16 @@ export function useUnblockUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => backend.unblockUser(userId),
-    onSuccess: () => Promise.all(AFTER_BLOCK.map((key) => queryClient.invalidateQueries({ queryKey: key }))),
+    onSuccess: () =>
+      Promise.all(AFTER_BLOCK.map((key) => queryClient.invalidateQueries({ queryKey: key }))),
   });
 }
 
 export function useCreateReport() {
   const backend = useBackend();
   return useMutation({
-    mutationFn: (input: { report: ReportInput; key: string }) => backend.createReport(input.report, input.key),
+    mutationFn: (input: { report: ReportInput; key: string }) =>
+      backend.createReport(input.report, input.key),
   });
 }
 
@@ -63,11 +74,23 @@ export function useCreateAppeal() {
 
 // Staff console (web).
 
-const STAFF_KEYS = [['staffQueue'], ['staffCase'], ['staffAppeals'], ['staffAudit'], ['profile'], ['suspension']];
+const STAFF_KEYS = [
+  ['staffQueue'],
+  ['staffCase'],
+  ['staffAppeals'],
+  ['staffAudit'],
+  ['profile'],
+  ['suspension'],
+];
 
 export function useStaffQueue(enabled: boolean) {
   const backend = useBackend();
-  return useQuery({ queryKey: ['staffQueue'], queryFn: () => backend.staffQueue(), enabled, refetchInterval: 30_000 });
+  return useQuery({
+    queryKey: ['staffQueue'],
+    queryFn: () => backend.staffQueue(),
+    enabled,
+    refetchInterval: 30_000,
+  });
 }
 
 export function useStaffCase(reportId: string | null) {
@@ -91,7 +114,8 @@ export function useStaffDecide() {
       until: string | null;
       key: string;
     }) => backend.staffDecide(input, input.key),
-    onSuccess: () => Promise.all(STAFF_KEYS.map((key) => queryClient.invalidateQueries({ queryKey: key }))),
+    onSuccess: () =>
+      Promise.all(STAFF_KEYS.map((key) => queryClient.invalidateQueries({ queryKey: key }))),
   });
 }
 
@@ -99,14 +123,19 @@ export function useStaffViewMessages() {
   const backend = useBackend();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { reportId: string; reason: string }) => backend.staffViewMessages(input.reportId, input.reason),
+    mutationFn: (input: { reportId: string; reason: string }) =>
+      backend.staffViewMessages(input.reportId, input.reason),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['staffAudit'] }),
   });
 }
 
 export function useStaffAppeals(enabled: boolean) {
   const backend = useBackend();
-  return useQuery({ queryKey: ['staffAppeals'], queryFn: () => backend.staffAppeals(), enabled });
+  return useQuery({
+    queryKey: ['staffAppeals'],
+    queryFn: () => backend.staffAppeals(),
+    enabled,
+  });
 }
 
 export function useStaffAppealDecide() {
@@ -115,11 +144,16 @@ export function useStaffAppealDecide() {
   return useMutation({
     mutationFn: (input: { appealId: string; uphold: boolean; reason: string; key: string }) =>
       backend.staffAppealDecide(input.appealId, input.uphold, input.reason, input.key),
-    onSuccess: () => Promise.all(STAFF_KEYS.map((key) => queryClient.invalidateQueries({ queryKey: key }))),
+    onSuccess: () =>
+      Promise.all(STAFF_KEYS.map((key) => queryClient.invalidateQueries({ queryKey: key }))),
   });
 }
 
 export function useStaffAudit(enabled: boolean) {
   const backend = useBackend();
-  return useQuery({ queryKey: ['staffAudit'], queryFn: () => backend.staffAudit(100), enabled });
+  return useQuery({
+    queryKey: ['staffAudit'],
+    queryFn: () => backend.staffAudit(100),
+    enabled,
+  });
 }

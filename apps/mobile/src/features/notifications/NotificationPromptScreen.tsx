@@ -58,7 +58,12 @@ export default function NotificationPromptScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.headerTop + 8, paddingBottom: 40 + insets.bottom }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.headerTop + 8, paddingBottom: 40 + insets.bottom },
+        ]}
+      >
         <View style={styles.hero}>
           <View style={styles.photo}>
             <Photo source={welcomePhoto} />
@@ -72,7 +77,9 @@ export default function NotificationPromptScreen() {
                 <View style={styles.sampleText}>
                   <View style={styles.sampleHead}>
                     <Text style={type(12, 'bold', { tracking: 0.2 })}>PlantCircle</Text>
-                    <Text style={type(12, 'regular', { color: color.secondary })}>{s.when}</Text>
+                    <Text style={type(12, 'regular', { color: color.secondary })}>
+                      {s.when}
+                    </Text>
                   </View>
                   <Text style={type(13, 'regular', { leading: 1.35 })}>{s.text}</Text>
                 </View>
@@ -80,18 +87,43 @@ export default function NotificationPromptScreen() {
             ))}
           </View>
         </View>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('notify.promptTitle')}
         </Text>
-        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{t('notify.promptLead')}</Text>
+        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+          {t('notify.promptLead')}
+        </Text>
         {outcome ? (
-          <Text role="alert" style={type(15, 'regular', { color: outcome === 'unavailable' ? color.secondary : color.danger })}>
-            {outcome === 'denied' ? t('notify.promptDenied') : outcome === 'unavailable' ? t('notify.promptUnavailable') : t('notify.promptError')}
+          <Text
+            role="alert"
+            style={type(15, 'regular', {
+              color: outcome === 'unavailable' ? color.secondary : color.danger,
+            })}
+          >
+            {outcome === 'denied'
+              ? t('notify.promptDenied')
+              : outcome === 'unavailable'
+                ? t('notify.promptUnavailable')
+                : t('notify.promptError')}
           </Text>
         ) : null}
         <View style={styles.buttons}>
-          <Button label={t('notify.turnOn')} loading={busy || update.isPending} onPress={() => { void turnOn(); }} />
-          <Button variant="ghost" label={t('notify.notNow')} disabled={busy} onPress={dismiss} />
+          <Button
+            label={t('notify.turnOn')}
+            loading={busy || update.isPending}
+            onPress={() => {
+              void turnOn();
+            }}
+          />
+          <Button
+            variant="ghost"
+            label={t('notify.notNow')}
+            disabled={busy}
+            onPress={dismiss}
+          />
         </View>
       </ScrollView>
     </View>
@@ -101,11 +133,31 @@ export default function NotificationPromptScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, gap: 14 },
-  hero: { borderRadius: radius.card, overflow: 'hidden', backgroundColor: color.fill, marginBottom: 10 },
+  hero: {
+    borderRadius: radius.card,
+    overflow: 'hidden',
+    backgroundColor: color.fill,
+    marginBottom: 10,
+  },
   photo: { width: '100%', height: 220 },
   samples: { position: 'absolute', left: 14, right: 14, bottom: 14, gap: 8 },
-  sample: { flexDirection: 'row', gap: 10, padding: 10, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.96)', borderWidth: 1, borderColor: extra.cardBorder },
-  sampleIcon: { width: 28, height: 28, borderRadius: 8, backgroundColor: color.brandTint, alignItems: 'center', justifyContent: 'center' },
+  sample: {
+    flexDirection: 'row',
+    gap: 10,
+    padding: 10,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.96)',
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
+  sampleIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: color.brandTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   sampleText: { flex: 1, minWidth: 0, gap: 1 },
   sampleHead: { flexDirection: 'row', justifyContent: 'space-between' },
   buttons: { gap: 6, paddingTop: 10 },

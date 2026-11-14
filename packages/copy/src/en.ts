@@ -104,7 +104,8 @@ export const en = {
     emptyWeek: 'Nothing is planned this week yet.',
     emptyFilter: 'No Plans match this filter this week.',
     emptyCityTitle: 'Be the first in {{city}}',
-    emptyCityText: 'No tables here yet. You can start one, or cook with others online from home.',
+    emptyCityText:
+      'No tables here yet. You can start one, or cook with others online from home.',
     startOwnTitle: 'Start your own Plan',
     startOwnText: 'A potluck, a cooking night or a group order',
     startOwnAction: 'Create',
@@ -385,7 +386,8 @@ export const en = {
     connected: 'Connected',
     error: 'Couldn’t connect. Try again.',
     visibleTitle: 'Show me in People',
-    visibleLead: 'Members of your Circles can see your name and city, and can connect with you. Off by default.',
+    visibleLead:
+      'Members of your Circles can see your name and city, and can connect with you. Off by default.',
     signedOut: {
       title: 'Sign in to see people',
       text: 'People show up once you’re signed in and share a Circle.',
@@ -574,7 +576,8 @@ export const en = {
   inbox: {
     unread_one: '{{count}} unread',
     unread_other: '{{count}} unread',
-    emptyDirectText: 'Message someone from People, or accept a request, and the chat shows up here.',
+    emptyDirectText:
+      'Message someone from People, or accept a request, and the chat shows up here.',
     explore: 'Explore',
     title: 'Inbox',
     filterAll: 'All',
@@ -617,8 +620,10 @@ export const en = {
     decideTitle: 'What would you like to do?',
     decideLead: '{{count}} neighbours are in.',
     goTitle: 'Go ahead with {{amount}}',
-    goLead: 'Prices may be a little higher. Members are told and see the pickup details once you mark it ready.',
-    decidedText: 'This order has been decided. Members can see where it stands on the order page.',
+    goLead:
+      'Prices may be a little higher. Members are told and see the pickup details once you mark it ready.',
+    decidedText:
+      'This order has been decided. Members can see where it stands on the order page.',
     extendTitle: 'Give it 3 more days',
     extendLead: 'Interest reopens until {{until}}.',
     cancelTitle: 'Cancel the order',
@@ -632,7 +637,8 @@ export const en = {
     yourAmount: 'Your amount',
     payment: 'Payment',
     payAtPickup: 'Pay {{name}} at pickup',
-    payNote: 'Cash or PayPal to {{name}} directly. PlantCircle doesn’t handle this payment or offer purchase protection.',
+    payNote:
+      'Cash or PayPal to {{name}} directly. PlantCircle doesn’t handle this payment or offer purchase protection.',
     collected: 'I’ve collected it',
     collectedDone: 'Collected. Thanks for coming.',
     openPickup: 'Pickup details',
@@ -660,7 +666,8 @@ export const en = {
     pickupNoteLabel: 'Pickup note (optional)',
     stepReview: 'Ready to share',
     reviewLead: 'Check it over. You can edit after sharing.',
-    moneyNote: 'You collect payment at pickup. PlantCircle doesn’t handle money or protect purchases.',
+    moneyNote:
+      'You collect payment at pickup. PlantCircle doesn’t handle money or protect purchases.',
     share: 'Share group order',
     error: 'Couldn’t save that. Try again.',
     signedOut: 'Sign in to join a group order.',
@@ -863,7 +870,8 @@ export const en = {
     accurate: 'I believe this report is accurate and complete.',
     send: 'Send report',
     confirmHint: 'Confirm above to send',
-    rateLimited: 'That’s a lot of reports for one day. Try again tomorrow, or call the emergency line if someone is in danger.',
+    rateLimited:
+      'That’s a lot of reports for one day. Try again tomorrow, or call the emergency line if someone is in danger.',
     error: 'That didn’t go through. Try again.',
     doneTitle: 'Thanks, we’re on it',
     caseRef: 'Case {{ref}}',
@@ -879,7 +887,8 @@ export const en = {
     blockedNow: '{{name}} is blocked. You can undo this under Privacy.',
     blockedTitle: 'Blocked people',
     blockedRowLead: 'Who can’t message or invite you',
-    blockedLead: 'People here can’t message you, invite you or see you in People. They aren’t told.',
+    blockedLead:
+      'People here can’t message you, invite you or see you in People. They aren’t told.',
     blockedEmptyTitle: 'Nobody blocked',
     blockedEmptyText: 'Block someone from a chat or a report, and they show up here.',
     unblock: 'Unblock',
@@ -899,7 +908,8 @@ export const en = {
     stillCanText: 'Read messages and Plans. Posting, RSVPs and messaging are paused.',
     stillCanFrozen: 'Read, join and host as usual. Sending messages is paused.',
     appealTitle: 'Appeal this decision',
-    appealLead: 'Tell us what we got wrong. Someone who didn’t make the original decision reads it.',
+    appealLead:
+      'Tell us what we got wrong. Someone who didn’t make the original decision reads it.',
     sendAppeal: 'Send appeal',
     appeal: {
       open: 'Your appeal is with a second reviewer',
@@ -914,7 +924,8 @@ export const en = {
     suspendedErrorDetail: 'Posting, RSVPs and messaging are paused. See why under Profile.',
     blockedErrorTitle: 'That’s not possible',
     blockedErrorDetail: 'You can’t contact this person.',
-    frozenErrorDetail: 'You can’t send messages right now. A staff decision paused messaging; see your account notice.',
+    frozenErrorDetail:
+      'You can’t send messages right now. A staff decision paused messaging; see your account notice.',
     consoleSignedOut: 'Sign in with your staff account.',
     severity: { urgent: 'Urgent', high: 'High', routine: 'Routine' },
     action: {
@@ -938,7 +949,8 @@ export const en = {
       pickCaseText: 'The reporter’s account, history and the decision show here.',
       caseMeta: '{{severity}} · due {{due}} · {{status}}',
       reportersAccount: 'Reporter’s account',
-      reporterHidden: 'Reporter identity hidden from the reported member · {{count}} attachments',
+      reporterHidden:
+        'Reporter identity hidden from the reported member · {{count}} attachments',
       history: 'History relevant to this case',
       historyEmpty: 'Nothing earlier on this account.',
       messages: 'Private messages',
@@ -947,7 +959,8 @@ export const en = {
       viewMessages: 'View messages',
       decision: 'Decision',
       decisionApplied: 'Decision applied',
-      memberTold: 'Saved with its reason in the audit trail. A paused member sees it on their account notice.',
+      memberTold:
+        'Saved with its reason in the audit trail. A paused member sees it on their account notice.',
       days: 'Days',
       rule: 'Rule (shown to the member)',
       reason: 'Reason · shown to the member and saved to the audit log',
@@ -1008,7 +1021,8 @@ export const en = {
     requested: 'Requested',
     deleteTitle: 'Delete account',
     removed: 'Removed',
-    removedNote: 'Your name, city and interests; your posts, RSVPs and messages are left under “Deleted member”',
+    removedNote:
+      'Your name, city and interests; your posts, RSVPs and messages are left under “Deleted member”',
     linkError: 'That link didn’t open. Visit {{url}} in a browser.',
     released: 'Released',
     releasedNote: 'Your spots go to people on waitlists',
@@ -1036,7 +1050,8 @@ export const en = {
     updateTitle: 'We’ve updated our Terms',
     updateLead_one: '{{count}} thing changed. It takes effect on {{date}}.',
     updateLead_other: '{{count}} things changed. They take effect on {{date}}.',
-    updateLeadMulti: '{{count}} things changed across our policies. Each takes effect on its own date.',
+    updateLeadMulti:
+      '{{count}} things changed across our policies. Each takes effect on its own date.',
     effectiveLine: '{{name}} · takes effect on {{date}}',
     newVersion: 'Version {{version}}',
     readFull: 'Read the full {{name}}',
@@ -1050,7 +1065,8 @@ export const en = {
       privacy: 'Privacy Policy',
     },
     underAgeTitle: 'PlantCircle is for adults',
-    underAgeLead: 'Members meet in person, so you need to be 18 or older to join. We haven’t saved any of your details.',
+    underAgeLead:
+      'Members meet in person, so you need to be 18 or older to join. We haven’t saved any of your details.',
     browseRecipes: 'Browse public recipes',
     browseRecipesNote: 'No account needed',
     gotIt: 'Got it',
@@ -1099,10 +1115,13 @@ export const en = {
     moderationNotice: 'A decision about your account',
     moderationNoticeNote: 'Read the reasons and how to appeal.',
     promptTitle: 'Never miss a spot',
-    promptLead: 'Reminders, waitlist offers and messages from your Plans. Quiet from 22:00 to 08:00.',
+    promptLead:
+      'Reminders, waitlist offers and messages from your Plans. Quiet from 22:00 to 08:00.',
     promptError: 'Couldn’t turn them on. You can try again under Profile → Notifications.',
-    promptDenied: 'Notifications are off for PlantCircle in your device settings. Turn them on there, then come back.',
-    promptUnavailable: 'This device can’t receive push notifications. Your updates still show in the Inbox.',
+    promptDenied:
+      'Notifications are off for PlantCircle in your device settings. Turn them on there, then come back.',
+    promptUnavailable:
+      'This device can’t receive push notifications. Your updates still show in the Inbox.',
     moderationAction: {
       warn: 'A warning. Please read the Community Rules.',
       freeze_messages: 'Messaging is paused for a while.',
@@ -1133,7 +1152,8 @@ export const en = {
     full: 'Full · waitlist',
     firstName: 'First name',
     ageAgree: 'I’m 18+ and agree to the Community Rules, Terms and Privacy Policy',
-    accountNote: 'We make you a PlantCircle account with this email so your spot has an owner; you can delete it any time in the app.',
+    accountNote:
+      'We make you a PlantCircle account with this email so your spot has an owner; you can delete it any time in the app.',
     reserve: 'Reserve my spot',
     joinWaitlist: 'Join the waitlist',
     confirmAge: 'Confirm you’re 18+ to reserve',

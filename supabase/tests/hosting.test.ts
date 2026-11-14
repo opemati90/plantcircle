@@ -25,11 +25,10 @@ beforeEach(async () => {
     [LATE, 'Lena'],
   ] as const) {
     await db.query('insert into auth.users (id) values ($1)', [id]);
-    await db.query('insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)', [
-      id,
-      name,
-      CITY,
-    ]);
+    await db.query(
+      'insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)',
+      [id, name, CITY],
+    );
   }
 });
 
@@ -120,10 +119,16 @@ describe('checking guests in', () => {
     await rsvp(id, MIA, 'going');
     const key = newKey();
     const first = await asUser(db, HOST, () =>
-      db.query<{ result: { state: string } }>('select public.host_check_in($1, $2, true, $3) as result', [id, MIA, key]),
+      db.query<{ result: { state: string } }>(
+        'select public.host_check_in($1, $2, true, $3) as result',
+        [id, MIA, key],
+      ),
     );
     const again = await asUser(db, HOST, () =>
-      db.query<{ result: { state: string } }>('select public.host_check_in($1, $2, true, $3) as result', [id, MIA, key]),
+      db.query<{ result: { state: string } }>(
+        'select public.host_check_in($1, $2, true, $3) as result',
+        [id, MIA, key],
+      ),
     );
     expect(again.rows[0]?.result).toEqual(first.rows[0]?.result);
   });
@@ -142,11 +147,16 @@ describe('ending a Plan', () => {
     await rsvp(id, MIA, 'going');
     await rsvp(id, JONAS, 'checked_in');
     await rsvp(id, LATE, 'waitlisted');
-    await asUser(db, HOST, () => db.query('select public.host_end_plan($1, $2)', [id, newKey()]));
+    await asUser(db, HOST, () =>
+      db.query('select public.host_end_plan($1, $2)', [id, newKey()]),
+    );
     expect(await stateOf(id, MIA)).toBe('no_show');
     expect(await stateOf(id, JONAS)).toBe('checked_in');
     expect(await stateOf(id, LATE)).toBe('cancelled');
-    const status = await db.query<{ status: string }>('select status from public.plans where id = $1', [id]);
+    const status = await db.query<{ status: string }>(
+      'select status from public.plans where id = $1',
+      [id],
+    );
     expect(status.rows[0]?.status).toBe('completed');
   });
 
@@ -154,14 +164,18 @@ describe('ending a Plan', () => {
     const id = await plan(-1);
     await rsvp(id, MIA, 'going');
     await rsvp(id, LATE, 'waitlisted');
-    await asUser(db, HOST, () => db.query('select public.host_end_plan($1, $2)', [id, newKey()]));
+    await asUser(db, HOST, () =>
+      db.query('select public.host_end_plan($1, $2)', [id, newKey()]),
+    );
     const audit = await db.query<{ action: string; subject_id: string | null }>(
       'select action, subject_id from public.audit_events where plan_id = $1 order by created_at, action',
       [id],
     );
-    expect(audit.rows.map((r) => r.action).sort()).toEqual(
-      ['host.end_cancel_waiting', 'host.end_plan', 'host.mark_no_show'],
-    );
+    expect(audit.rows.map((r) => r.action).sort()).toEqual([
+      'host.end_cancel_waiting',
+      'host.end_plan',
+      'host.mark_no_show',
+    ]);
     expect(audit.rows.find((r) => r.action === 'host.mark_no_show')?.subject_id).toBe(MIA);
   });
 
@@ -181,7 +195,10 @@ describe('what the host sees', () => {
       asUser(db, JONAS, () => db.query('select * from public.host_guest_list($1)', [id])),
     ).rejects.toThrow(/not_host/);
     const list = await asUser(db, HOST, () =>
-      db.query<{ display_name: string }>('select display_name from public.host_guest_list($1)', [id]),
+      db.query<{ display_name: string }>(
+        'select display_name from public.host_guest_list($1)',
+        [id],
+      ),
     );
     expect(list.rows.map((r) => r.display_name)).toEqual(['Mia']);
   });
@@ -192,13 +209,18 @@ describe('feedback', () => {
     const live = await plan(-1);
     await rsvp(live, MIA, 'checked_in');
     await expect(
-      asUser(db, MIA, () => db.query('select public.plan_feedback_submit($1, 5, null, $2)', [live, newKey()])),
+      asUser(db, MIA, () =>
+        db.query('select public.plan_feedback_submit($1, 5, null, $2)', [live, newKey()]),
+      ),
     ).rejects.toThrow(/feedback_not_open/);
 
     const done = await plan(-5);
     await rsvp(done, MIA, 'checked_in');
     await asUser(db, MIA, () =>
-      db.query('select public.plan_feedback_submit($1, 4, ' + "'Lovely soup.'" + ', $2)', [done, newKey()]),
+      db.query('select public.plan_feedback_submit($1, 4, ' + "'Lovely soup.'" + ', $2)', [
+        done,
+        newKey(),
+      ]),
     );
     const mine = await asUser(db, MIA, () =>
       db.query<{ result: { eligible: boolean; rating: number; comment: string } }>(
@@ -206,18 +228,26 @@ describe('feedback', () => {
         [done],
       ),
     );
-    expect(mine.rows[0]?.result).toEqual({ eligible: true, rating: 4, comment: 'Lovely soup.' });
+    expect(mine.rows[0]?.result).toEqual({
+      eligible: true,
+      rating: 4,
+      comment: 'Lovely soup.',
+    });
   });
 
   it('refuses a guest who did not come, and ratings outside 1 to 5', async () => {
     const done = await plan(-5);
     await rsvp(done, JONAS, 'no_show');
     await expect(
-      asUser(db, JONAS, () => db.query('select public.plan_feedback_submit($1, 5, null, $2)', [done, newKey()])),
+      asUser(db, JONAS, () =>
+        db.query('select public.plan_feedback_submit($1, 5, null, $2)', [done, newKey()]),
+      ),
     ).rejects.toThrow(/feedback_not_open/);
     await rsvp(done, MIA, 'checked_in');
     await expect(
-      asUser(db, MIA, () => db.query('select public.plan_feedback_submit($1, 6, null, $2)', [done, newKey()])),
+      asUser(db, MIA, () =>
+        db.query('select public.plan_feedback_submit($1, 6, null, $2)', [done, newKey()]),
+      ),
     ).rejects.toThrow(/invalid_feedback/);
   });
 
@@ -226,18 +256,26 @@ describe('feedback', () => {
     await rsvp(done, MIA, 'checked_in');
     await rsvp(done, JONAS, 'checked_in');
     await rsvp(done, LATE, 'checked_in');
-    await asUser(db, MIA, () => db.query('select public.plan_feedback_submit($1, 5, null, $2)', [done, newKey()]));
-    await asUser(db, JONAS, () => db.query('select public.plan_feedback_submit($1, 4, null, $2)', [done, newKey()]));
-    const early = await asUser(db, HOST, () =>
-      db.query<{ result: { average_rating: number | null } }>('select public.host_plan_summary($1) as result', [done]),
+    await asUser(db, MIA, () =>
+      db.query('select public.plan_feedback_submit($1, 5, null, $2)', [done, newKey()]),
     );
-    expect(early.rows[0]?.result.average_rating).toBeNull();
-    await asUser(db, LATE, () => db.query('select public.plan_feedback_submit($1, 3, null, $2)', [done, newKey()]));
-    const summary = await asUser(db, HOST, () =>
-      db.query<{ result: { feedback_count: number; average_rating: number; checked_in: number } }>(
+    await asUser(db, JONAS, () =>
+      db.query('select public.plan_feedback_submit($1, 4, null, $2)', [done, newKey()]),
+    );
+    const early = await asUser(db, HOST, () =>
+      db.query<{ result: { average_rating: number | null } }>(
         'select public.host_plan_summary($1) as result',
         [done],
       ),
+    );
+    expect(early.rows[0]?.result.average_rating).toBeNull();
+    await asUser(db, LATE, () =>
+      db.query('select public.plan_feedback_submit($1, 3, null, $2)', [done, newKey()]),
+    );
+    const summary = await asUser(db, HOST, () =>
+      db.query<{
+        result: { feedback_count: number; average_rating: number; checked_in: number };
+      }>('select public.host_plan_summary($1) as result', [done]),
     );
     expect(summary.rows[0]?.result).toMatchObject({
       feedback_count: 3,

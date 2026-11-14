@@ -146,7 +146,10 @@ export default function CreateRecipeScreen() {
           { paddingTop: 16, paddingBottom: 40 + insets.bottom },
         ]}
       >
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('learn.create.title')}
         </Text>
 
@@ -181,7 +184,11 @@ export default function CreateRecipeScreen() {
             />
           </View>
         ) : (
-          <View accessibilityRole="radiogroup" accessibilityLabel={t('learn.create.circleLabel')} style={styles.options}>
+          <View
+            accessibilityRole="radiogroup"
+            accessibilityLabel={t('learn.create.circleLabel')}
+            style={styles.options}
+          >
             {memberOf.map((circle) => {
               const selected = circleId === circle.id;
               return (
@@ -265,7 +272,9 @@ export default function CreateRecipeScreen() {
               accessibilityLabel={`${t('learn.create.ingredientName')} ${index + 1}`}
               value={row.name}
               onChangeText={(text) => {
-                setIngredients((rows) => rows.map((r) => (r.id === row.id ? { ...r, name: text } : r)));
+                setIngredients((rows) =>
+                  rows.map((r) => (r.id === row.id ? { ...r, name: text } : r)),
+                );
               }}
               maxLength={120}
               style={[styles.field, styles.grow, type(17)]}
@@ -274,7 +283,9 @@ export default function CreateRecipeScreen() {
               accessibilityLabel={`${t('learn.create.ingredientQty')} ${index + 1}`}
               value={row.qty}
               onChangeText={(text) => {
-                setIngredients((rows) => rows.map((r) => (r.id === row.id ? { ...r, qty: text } : r)));
+                setIngredients((rows) =>
+                  rows.map((r) => (r.id === row.id ? { ...r, qty: text } : r)),
+                );
               }}
               keyboardType="decimal-pad"
               maxLength={10}
@@ -284,7 +295,9 @@ export default function CreateRecipeScreen() {
               accessibilityLabel={`${t('learn.create.ingredientUnit')} ${index + 1}`}
               value={row.unit}
               onChangeText={(text) => {
-                setIngredients((rows) => rows.map((r) => (r.id === row.id ? { ...r, unit: text } : r)));
+                setIngredients((rows) =>
+                  rows.map((r) => (r.id === row.id ? { ...r, unit: text } : r)),
+                );
               }}
               maxLength={20}
               style={[styles.field, styles.small, type(17)]}
@@ -297,7 +310,10 @@ export default function CreateRecipeScreen() {
             label={t('learn.create.addIngredient')}
             disabled={ingredients.length >= MAX_INGREDIENTS}
             onPress={() => {
-              setIngredients((rows) => [...rows, { id: newIdempotencyKey(), name: '', qty: '', unit: '' }]);
+              setIngredients((rows) => [
+                ...rows,
+                { id: newIdempotencyKey(), name: '', qty: '', unit: '' },
+              ]);
             }}
           />
           {ingredients.length > 1 ? (
@@ -319,7 +335,9 @@ export default function CreateRecipeScreen() {
               accessibilityLabel={t('learn.create.stepLabel', { number: index + 1 })}
               value={row.body}
               onChangeText={(text) => {
-                setSteps((rows) => rows.map((r) => (r.id === row.id ? { ...r, body: text } : r)));
+                setSteps((rows) =>
+                  rows.map((r) => (r.id === row.id ? { ...r, body: text } : r)),
+                );
               }}
               multiline
               maxLength={1000}
@@ -364,7 +382,9 @@ export default function CreateRecipeScreen() {
                 }}
                 style={[styles.chip, selected && styles.chipSelected]}
               >
-                <Text style={type(15, 'semibold', { color: selected ? color.brand : color.ink })}>
+                <Text
+                  style={type(15, 'semibold', { color: selected ? color.brand : color.ink })}
+                >
                   {t(`allergen.${allergen}`)}
                 </Text>
               </Pressable>

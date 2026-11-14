@@ -44,15 +44,34 @@ export default function SuspendedScreen() {
     return (
       <View style={styles.screen}>
         {header}
-        <InlineState title={t('people.signedOut.title')} text={t('safety.signedOut')} action={<Button variant="outline" label={t('home.signIn')} onPress={() => { router.push({ pathname: '/sign-up', params: { next: '/suspended' } }); }} />} />
+        <InlineState
+          title={t('people.signedOut.title')}
+          text={t('safety.signedOut')}
+          action={
+            <Button
+              variant="outline"
+              label={t('home.signIn')}
+              onPress={() => {
+                router.push({ pathname: '/sign-up', params: { next: '/suspended' } });
+              }}
+            />
+          }
+        />
       </View>
     );
   }
   if (suspension.isPending || session === undefined) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         {header}
-        <View style={styles.content}><Skeleton width="100%" height={160} radius={radius.card} /></View>
+        <View style={styles.content}>
+          <Skeleton width="100%" height={160} radius={radius.card} />
+        </View>
       </View>
     );
   }
@@ -60,7 +79,16 @@ export default function SuspendedScreen() {
     return (
       <View style={styles.screen}>
         {header}
-        <EmptyState onSavedPlans={() => { router.push('/my-plans'); }} title={t('errors.serverTitle')} text={t('errors.serverText')} actions={<Button label={t('common.retry')} onPress={() => void suspension.refetch()} />} />
+        <EmptyState
+          onSavedPlans={() => {
+            router.push('/my-plans');
+          }}
+          title={t('errors.serverTitle')}
+          text={t('errors.serverText')}
+          actions={
+            <Button label={t('common.retry')} onPress={() => void suspension.refetch()} />
+          }
+        />
       </View>
     );
   }
@@ -69,7 +97,18 @@ export default function SuspendedScreen() {
     return (
       <View style={styles.screen}>
         {header}
-        <EmptyState title={t('safety.notSuspendedTitle')} text={t('safety.notSuspendedText')} actions={<Button label={t('common.backToHome')} onPress={() => { router.replace('/home'); }} />} />
+        <EmptyState
+          title={t('safety.notSuspendedTitle')}
+          text={t('safety.notSuspendedText')}
+          actions={
+            <Button
+              label={t('common.backToHome')}
+              onPress={() => {
+                router.replace('/home');
+              }}
+            />
+          }
+        />
       </View>
     );
   }
@@ -79,15 +118,27 @@ export default function SuspendedScreen() {
   const rows = [
     { title: t('safety.whatHappened'), text: data.reason },
     { title: t('safety.whichRule'), text: data.rule ?? t('safety.ruleGeneral') },
-    { title: t('safety.howDecided'), text: data.automated ? t('safety.decidedAutomated') : t('safety.decidedByPerson') },
-    { title: t('safety.stillCan'), text: frozen ? t('safety.stillCanFrozen') : t('safety.stillCanText') },
+    {
+      title: t('safety.howDecided'),
+      text: data.automated ? t('safety.decidedAutomated') : t('safety.decidedByPerson'),
+    },
+    {
+      title: t('safety.stillCan'),
+      text: frozen ? t('safety.stillCanFrozen') : t('safety.stillCanText'),
+    },
   ];
 
   return (
     <View style={styles.screen}>
       {header}
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
+      >
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {frozen && data.until
             ? t('safety.frozenUntil', { date: longDate(data.until, 'UTC') })
             : data.until
@@ -97,7 +148,9 @@ export default function SuspendedScreen() {
         <View style={styles.rows}>
           {rows.map((row) => (
             <View key={row.title} style={styles.row}>
-              <Text style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}>{row.title.toUpperCase()}</Text>
+              <Text style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}>
+                {row.title.toUpperCase()}
+              </Text>
               <Text style={type(16, 'regular', { leading: 1.45 })}>{row.text}</Text>
             </View>
           ))}
@@ -106,12 +159,16 @@ export default function SuspendedScreen() {
         {data.appealStatus ? (
           <View style={styles.card}>
             <Text style={type(16, 'semibold')}>{t(`safety.appeal.${data.appealStatus}`)}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{t('safety.appealReviewed')}</Text>
+            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+              {t('safety.appealReviewed')}
+            </Text>
           </View>
         ) : open ? (
           <View style={styles.card}>
             <Text style={type(17, 'semibold')}>{t('safety.appealTitle')}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{t('safety.appealLead')}</Text>
+            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+              {t('safety.appealLead')}
+            </Text>
             <TextInput
               accessibilityLabel={t('safety.appealTitle')}
               value={statement}
@@ -121,11 +178,17 @@ export default function SuspendedScreen() {
               textAlignVertical="top"
               style={[styles.field, type(17, 'regular', { leading: 1.4 })]}
             />
-            <Text style={type(13, 'regular', { color: length > MAX ? color.danger : color.secondary })}>
+            <Text
+              style={type(13, 'regular', {
+                color: length > MAX ? color.danger : color.secondary,
+              })}
+            >
               {t('safety.characters', { count: length, max: MAX })}
             </Text>
             {appeal.isError ? (
-              <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('safety.error')}</Text>
+              <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                {t('safety.error')}
+              </Text>
             ) : null}
             <Button
               label={t('safety.sendAppeal')}
@@ -161,7 +224,25 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 14 },
   rows: { gap: 4, marginTop: 8, marginBottom: 8 },
-  row: { gap: 4, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: extra.cardBorder },
-  card: { gap: 10, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
-  field: { minHeight: 120, padding: 14, borderRadius: radius.control, borderWidth: 1, borderColor: extra.cardBorder, color: color.ink },
+  row: {
+    gap: 4,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: extra.cardBorder,
+  },
+  card: {
+    gap: 10,
+    padding: 16,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
+  field: {
+    minHeight: 120,
+    padding: 14,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+    color: color.ink,
+  },
 });

@@ -52,8 +52,22 @@ export function Checkbox({
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.touchMin, paddingVertical: 4 },
-  box: { width: 26, height: 26, borderRadius: 7, borderWidth: 2, borderColor: color.borderControl, alignItems: 'center', justifyContent: 'center' },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: size.touchMin,
+    paddingVertical: 4,
+  },
+  box: {
+    width: 26,
+    height: 26,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: color.borderControl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   boxChecked: { backgroundColor: color.ink, borderColor: color.ink },
   label: { flex: 1 },
 });

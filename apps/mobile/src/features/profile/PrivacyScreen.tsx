@@ -28,8 +28,13 @@ export default function PrivacyScreen() {
           else router.replace('/profile');
         }}
       />
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
+      >
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('profile.privacyTitle')}
         </Text>
         <Text style={type(17, 'regular', { color: color.secondary, leading: 1.5 })}>
@@ -62,7 +67,9 @@ export default function PrivacyScreen() {
         >
           <View style={styles.linkText}>
             <Text style={type(17, 'semibold')}>{t('account.privacyChoicesTitle')}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary })}>{t('account.privacyChoicesRow')}</Text>
+            <Text style={type(14, 'regular', { color: color.secondary })}>
+              {t('account.privacyChoicesRow')}
+            </Text>
           </View>
           <ChevronRightIcon size={18} strokeWidth={2.4} color={color.secondary} />
         </Pressable>
@@ -75,7 +82,9 @@ export default function PrivacyScreen() {
         >
           <View style={styles.linkText}>
             <Text style={type(17, 'semibold')}>{t('safety.blockedTitle')}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary })}>{t('safety.blockedRowLead')}</Text>
+            <Text style={type(14, 'regular', { color: color.secondary })}>
+              {t('safety.blockedRowLead')}
+            </Text>
           </View>
           <ChevronRightIcon size={18} strokeWidth={2.4} color={color.secondary} />
         </Pressable>
@@ -85,9 +94,24 @@ export default function PrivacyScreen() {
 }
 
 const styles = StyleSheet.create({
-  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, paddingHorizontal: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 64,
+    paddingHorizontal: 16,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
   linkText: { flex: 1, minWidth: 0, gap: 2 },
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 16 },
-  card: { gap: 12, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
+  card: {
+    gap: 12,
+    padding: 16,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
 });

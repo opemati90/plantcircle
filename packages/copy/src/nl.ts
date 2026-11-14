@@ -396,7 +396,8 @@ export const nl: Catalog = {
     connected: 'Verbonden',
     error: 'Verbinden lukte niet. Probeer het opnieuw.',
     visibleTitle: 'Mij tonen bij Mensen',
-    visibleLead: 'Leden van je kringen kunnen je naam en stad zien en met je verbinden. Standaard uit.',
+    visibleLead:
+      'Leden van je kringen kunnen je naam en stad zien en met je verbinden. Standaard uit.',
     signedOut: {
       title: 'Log in om mensen te zien',
       text: 'Mensen verschijnen zodra je bent ingelogd en een kring deelt.',
@@ -496,7 +497,8 @@ export const nl: Catalog = {
     windowClosed: 'Inchecken is gesloten voor deze Plan.',
     endButton: 'Plan beëindigen',
     endTitle: 'Deze Plan beëindigen?',
-    endLead: 'Gasten die niet zijn ingecheckt, worden als niet gekomen gemarkeerd. Dit kan niet ongedaan worden gemaakt.',
+    endLead:
+      'Gasten die niet zijn ingecheckt, worden als niet gekomen gemarkeerd. Dit kan niet ongedaan worden gemaakt.',
     endConfirm: 'Plan beëindigen',
     ended: 'Deze Plan is beëindigd.',
     endTooEarly: 'Je kunt de Plan beëindigen zodra hij begint.',
@@ -580,12 +582,14 @@ export const nl: Catalog = {
     discardLead: 'Je naam en interesses gaan terug naar hoe ze waren.',
     keepEditing: 'Verder bewerken',
     discard: 'Verwerpen',
-    signedOutText: 'Je Plannen, Circles en instellingen verschijnen hier zodra je bent ingelogd.',
+    signedOutText:
+      'Je Plannen, Circles en instellingen verschijnen hier zodra je bent ingelogd.',
   },
   inbox: {
     unread_one: '{{count}} ongelezen',
     unread_other: '{{count}} ongelezen',
-    emptyDirectText: 'Stuur iemand uit Mensen een bericht of accepteer een verzoek, en de chat verschijnt hier.',
+    emptyDirectText:
+      'Stuur iemand uit Mensen een bericht of accepteer een verzoek, en de chat verschijnt hier.',
     explore: 'Ontdekken',
     title: 'Inbox',
     filterAll: 'Alles',
@@ -628,7 +632,8 @@ export const nl: Catalog = {
     decideTitle: 'Wat wil je doen?',
     decideLead: '{{count}} buren doen mee.',
     goTitle: 'Doorgaan met {{amount}}',
-    goLead: 'De prijzen kunnen iets hoger zijn. Iedereen krijgt bericht en ziet de ophaaldetails zodra je de bestelling als klaar markeert.',
+    goLead:
+      'De prijzen kunnen iets hoger zijn. Iedereen krijgt bericht en ziet de ophaaldetails zodra je de bestelling als klaar markeert.',
     decidedText: 'Deze bestelling is beslist. Iedereen ziet de stand op de bestelpagina.',
     extendTitle: 'Nog 3 dagen geven',
     extendLead: 'Aanmelden gaat weer open tot {{until}}.',
@@ -643,7 +648,8 @@ export const nl: Catalog = {
     yourAmount: 'Jouw hoeveelheid',
     payment: 'Betaling',
     payAtPickup: 'Betaal {{name}} bij het ophalen',
-    payNote: 'Contant of via PayPal rechtstreeks aan {{name}}. PlantCircle verwerkt deze betaling niet en biedt geen kopersbescherming.',
+    payNote:
+      'Contant of via PayPal rechtstreeks aan {{name}}. PlantCircle verwerkt deze betaling niet en biedt geen kopersbescherming.',
     collected: 'Ik heb het opgehaald',
     collectedDone: 'Opgehaald. Bedankt voor je komst.',
     openPickup: 'Ophaalgegevens',
@@ -659,7 +665,8 @@ export const nl: Catalog = {
     itemTarget: 'Doel',
     itemPrice: 'Geschatte prijs per eenheid (optioneel)',
     addItem: 'Artikel toevoegen',
-    itemInvalid: 'Elk item heeft een naam en een doel boven 0 nodig. Prijzen kunnen niet negatief zijn.',
+    itemInvalid:
+      'Elk item heeft een naam en een doel boven 0 nodig. Prijzen kunnen niet negatief zijn.',
     removeItem: 'Laatste artikel verwijderen',
     groupTarget: 'Groepsdoel',
     stepWhen: 'Wanneer sluit het aanmelden?',
@@ -671,7 +678,8 @@ export const nl: Catalog = {
     pickupNoteLabel: 'Ophaalnotitie (optioneel)',
     stepReview: 'Klaar om te delen',
     reviewLead: 'Kijk het na. Je kunt het na het delen bewerken.',
-    moneyNote: 'Je int de betaling bij het ophalen. PlantCircle verwerkt geen geld en beschermt geen aankopen.',
+    moneyNote:
+      'Je int de betaling bij het ophalen. PlantCircle verwerkt geen geld en beschermt geen aankopen.',
     share: 'Groepsbestelling delen',
     error: 'Opslaan lukte niet. Probeer het opnieuw.',
     signedOut: 'Log in om mee te doen aan een groepsbestelling.',
@@ -703,11 +711,13 @@ export const nl: Catalog = {
     postsEmpty: 'Hier zijn nog geen recepten gedeeld.',
     aboutAccessOpen: 'Iedereen kan meteen meedoen.',
     aboutAccessRequest: 'Meedoen vraagt goedkeuring van een moderator.',
-    aboutRules: 'Wees vriendelijk, kom als je je aanmeldt en vermeld allergenen bij alles wat je meebrengt.',
+    aboutRules:
+      'Wees vriendelijk, kom als je je aanmeldt en vermeld allergenen bij alles wat je meebrengt.',
     moderatorRequests_one: 'Moderator: {{count}} aanvraag',
     moderatorRequests_other: 'Moderator: {{count}} aanvragen',
     signUpTitle: 'Maak een account om lid te worden van deze kring',
-    signUpLead: 'Maak eerst een account aan. Dat duurt een minuut, en je kunt altijd weer stoppen.',
+    signUpLead:
+      'Maak eerst een account aan. Dat duurt een minuut, en je kunt altijd weer stoppen.',
     requests: {
       title: 'Wacht op een besluit',
       empty: 'Er wacht nu niemand.',
@@ -874,7 +884,8 @@ export const nl: Catalog = {
     accurate: 'Ik geloof dat deze melding klopt en volledig is.',
     send: 'Melding versturen',
     confirmHint: 'Bevestig hierboven om te versturen',
-    rateLimited: 'Dat zijn veel meldingen voor één dag. Probeer het morgen opnieuw of bel het noodnummer als iemand in gevaar is.',
+    rateLimited:
+      'Dat zijn veel meldingen voor één dag. Probeer het morgen opnieuw of bel het noodnummer als iemand in gevaar is.',
     error: 'Dat is niet gelukt. Probeer het opnieuw.',
     doneTitle: 'Bedankt, we gaan ermee aan de slag',
     caseRef: 'Zaak {{ref}}',
@@ -886,11 +897,13 @@ export const nl: Catalog = {
     doneUrgentNote: 'Beoordeeld door een mens, niet alleen door software.',
     alsoBlock: '{{name}} ook blokkeren',
     thisPerson: 'deze persoon',
-    alsoBlockNote: 'Geen berichten of uitnodigingen meer van deze persoon. Die krijgt hier geen bericht van.',
+    alsoBlockNote:
+      'Geen berichten of uitnodigingen meer van deze persoon. Die krijgt hier geen bericht van.',
     blockedNow: '{{name}} is geblokkeerd. Je kunt dit ongedaan maken onder Privacy.',
     blockedTitle: 'Geblokkeerde mensen',
     blockedRowLead: 'Wie je niet kan schrijven of uitnodigen',
-    blockedLead: 'Deze mensen kunnen je niet schrijven, uitnodigen of zien in Mensen. Ze krijgen hier geen bericht van.',
+    blockedLead:
+      'Deze mensen kunnen je niet schrijven, uitnodigen of zien in Mensen. Ze krijgen hier geen bericht van.',
     blockedEmptyTitle: 'Niemand geblokkeerd',
     blockedEmptyText: 'Blokkeer iemand vanuit een chat of melding en die verschijnt hier.',
     unblock: 'Deblokkeren',
@@ -904,13 +917,17 @@ export const nl: Catalog = {
     whichRule: 'Welke regel',
     ruleGeneral: 'Communityregels',
     howDecided: 'Hoe we besloten hebben',
-    decidedByPerson: 'Een mens heeft het beoordeeld; een tool heeft de melding alleen gesorteerd.',
+    decidedByPerson:
+      'Een mens heeft het beoordeeld; een tool heeft de melding alleen gesorteerd.',
     decidedAutomated: 'Automatisch gesorteerd; een mens bekijkt elk bezwaar.',
     stillCan: 'Wat je nog kunt doen',
-    stillCanText: 'Berichten en Plannen lezen. Plaatsen, aanmelden en berichten sturen zijn gepauzeerd.',
-    stillCanFrozen: 'Lees, meld je aan en organiseer zoals altijd. Berichten sturen is gepauzeerd.',
+    stillCanText:
+      'Berichten en Plannen lezen. Plaatsen, aanmelden en berichten sturen zijn gepauzeerd.',
+    stillCanFrozen:
+      'Lees, meld je aan en organiseer zoals altijd. Berichten sturen is gepauzeerd.',
     appealTitle: 'Bezwaar maken tegen dit besluit',
-    appealLead: 'Vertel ons wat we verkeerd hebben gezien. Iemand die het oorspronkelijke besluit niet nam, leest het.',
+    appealLead:
+      'Vertel ons wat we verkeerd hebben gezien. Iemand die het oorspronkelijke besluit niet nam, leest het.',
     sendAppeal: 'Bezwaar versturen',
     appeal: {
       open: 'Je bezwaar ligt bij een tweede beoordelaar',
@@ -922,10 +939,12 @@ export const nl: Catalog = {
     notSuspendedTitle: 'Je account is actief',
     notSuspendedText: 'Niets is gepauzeerd. Ga gerust door.',
     suspendedErrorTitle: 'Je account is gepauzeerd',
-    suspendedErrorDetail: 'Plaatsen, aanmelden en berichten sturen zijn gepauzeerd. Bekijk waarom onder Profiel.',
+    suspendedErrorDetail:
+      'Plaatsen, aanmelden en berichten sturen zijn gepauzeerd. Bekijk waarom onder Profiel.',
     blockedErrorTitle: 'Dat kan niet',
     blockedErrorDetail: 'Je kunt deze persoon niet bereiken.',
-    frozenErrorDetail: 'Je kunt nu geen berichten sturen. Een teambesluit heeft berichten gepauzeerd; bekijk de melding op je account.',
+    frozenErrorDetail:
+      'Je kunt nu geen berichten sturen. Een teambesluit heeft berichten gepauzeerd; bekijk de melding op je account.',
     consoleSignedOut: 'Log in met je teamaccount.',
     severity: { urgent: 'Dringend', high: 'Hoog', routine: 'Routine' },
     action: {
@@ -949,7 +968,8 @@ export const nl: Catalog = {
       pickCaseText: 'Het verhaal, de geschiedenis en het besluit verschijnen hier.',
       caseMeta: '{{severity}} · deadline {{due}} · {{status}}',
       reportersAccount: 'Verhaal van de melder',
-      reporterHidden: 'Identiteit van de melder verborgen voor het gemelde lid · {{count}} bijlagen',
+      reporterHidden:
+        'Identiteit van de melder verborgen voor het gemelde lid · {{count}} bijlagen',
       history: 'Relevante geschiedenis voor deze zaak',
       historyEmpty: 'Niets eerder op dit account.',
       messages: 'Privéberichten',
@@ -958,7 +978,8 @@ export const nl: Catalog = {
       viewMessages: 'Berichten bekijken',
       decision: 'Besluit',
       decisionApplied: 'Besluit toegepast',
-      memberTold: 'Opgeslagen met reden in het logboek. Een gepauzeerd lid ziet het op de accountmelding.',
+      memberTold:
+        'Opgeslagen met reden in het logboek. Een gepauzeerd lid ziet het op de accountmelding.',
       days: 'Dagen',
       rule: 'Regel (getoond aan het lid)',
       reason: 'Reden · getoond aan het lid en opgeslagen in het logboek',
@@ -982,7 +1003,8 @@ export const nl: Catalog = {
     signedOut: 'Log in om je accountinstellingen te zien.',
     error: 'Dat is niet opgeslagen. Probeer het opnieuw.',
     privacyChoicesTitle: 'Je privacykeuzes',
-    privacyChoicesLead: 'Alleen wat nodig is staat aan. Je kunt dit altijd wijzigen in Profiel.',
+    privacyChoicesLead:
+      'Alleen wat nodig is staat aan. Je kunt dit altijd wijzigen in Profiel.',
     privacyChoicesRow: 'Gebruiksstatistieken en suggesties, uit tenzij je anders zegt',
     neededTitle: 'Nodig om de app te laten werken',
     neededNote: 'Account, aanmeldingen, veiligheidscontroles',
@@ -1019,7 +1041,8 @@ export const nl: Catalog = {
     requested: 'Aangevraagd',
     deleteTitle: 'Account verwijderen',
     removed: 'Verwijderd',
-    removedNote: 'Je naam, stad en interesses; berichten, aanmeldingen en chats blijven staan onder ‘Verwijderd lid’',
+    removedNote:
+      'Je naam, stad en interesses; berichten, aanmeldingen en chats blijven staan onder ‘Verwijderd lid’',
     linkError: 'De link ging niet open. Bezoek {{url}} in een browser.',
     released: 'Vrijgegeven',
     releasedNote: 'Je plekken gaan naar mensen op wachtlijsten',
@@ -1027,13 +1050,15 @@ export const nl: Catalog = {
     keptNote: 'Veiligheidsmeldingen, waar de wet dat vereist',
     deleteButton: 'Mijn account verwijderen',
     confirmTitle: 'Voorgoed verwijderen?',
-    confirmLead: 'Dit kun je niet ongedaan maken. Download eerst je gegevens als je een kopie wilt.',
+    confirmLead:
+      'Dit kun je niet ongedaan maken. Download eerst je gegevens als je een kopie wilt.',
     keep: 'Mijn account houden',
     a11yLead: 'Hoe PlantCircle voor iedereen werkt, en waar we nog tekortschieten.',
     a11yStandard: 'WCAG 2.2: overal AA, AAA waar mogelijk',
     a11yChecked: 'Laatst gecontroleerd: {{date}}',
     gapWaitlistTitle: 'Bekend hiaat: wachtlijstaanbiedingen',
-    gapWaitlistNote: 'Limiet van 2 uur zodat plekken eerlijk blijven; we waarschuwen via push en e-mail',
+    gapWaitlistNote:
+      'Limiet van 2 uur zodat plekken eerlijk blijven; we waarschuwen via push en e-mail',
     gapUploadsTitle: 'Bekend hiaat: uploads van hosts',
     gapUploadsNote: 'Foto’s en videogesprekken missen soms beschrijvingen of ondertitels',
     a11yProblemTitle: 'Werkt iets niet?',
@@ -1047,7 +1072,8 @@ export const nl: Catalog = {
     updateTitle: 'We hebben onze Voorwaarden bijgewerkt',
     updateLead_one: '{{count}} ding is veranderd. Het geldt vanaf {{date}}.',
     updateLead_other: '{{count}} dingen zijn veranderd. Ze gelden vanaf {{date}}.',
-    updateLeadMulti: '{{count}} dingen zijn veranderd in ons beleid. Elk geldt vanaf zijn eigen datum.',
+    updateLeadMulti:
+      '{{count}} dingen zijn veranderd in ons beleid. Elk geldt vanaf zijn eigen datum.',
     effectiveLine: '{{name}} · geldt vanaf {{date}}',
     newVersion: 'Versie {{version}}',
     readFull: 'Lees de volledige {{name}}',
@@ -1061,7 +1087,8 @@ export const nl: Catalog = {
       privacy: 'Privacybeleid',
     },
     underAgeTitle: 'PlantCircle is voor volwassenen',
-    underAgeLead: 'Leden ontmoeten elkaar in het echt, dus je moet 18 jaar of ouder zijn. We hebben niets van je opgeslagen.',
+    underAgeLead:
+      'Leden ontmoeten elkaar in het echt, dus je moet 18 jaar of ouder zijn. We hebben niets van je opgeslagen.',
     browseRecipes: 'Openbare recepten bekijken',
     browseRecipesNote: 'Geen account nodig',
     gotIt: 'Begrepen',
@@ -1110,10 +1137,13 @@ export const nl: Catalog = {
     moderationNotice: 'Een besluit over je account',
     moderationNoticeNote: 'Lees de redenen en hoe je bezwaar maakt.',
     promptTitle: 'Mis geen enkele plek',
-    promptLead: 'Herinneringen, wachtlijstaanbiedingen en berichten van je Plannen. Stil van 22:00 tot 08:00.',
+    promptLead:
+      'Herinneringen, wachtlijstaanbiedingen en berichten van je Plannen. Stil van 22:00 tot 08:00.',
     promptError: 'Inschakelen lukte niet. Probeer het via Profiel → Meldingen.',
-    promptDenied: 'Meldingen van PlantCircle staan uit in de instellingen van je toestel. Zet ze daar aan en kom terug.',
-    promptUnavailable: 'Dit toestel kan geen pushmeldingen ontvangen. Je updates staan nog steeds in de Inbox.',
+    promptDenied:
+      'Meldingen van PlantCircle staan uit in de instellingen van je toestel. Zet ze daar aan en kom terug.',
+    promptUnavailable:
+      'Dit toestel kan geen pushmeldingen ontvangen. Je updates staan nog steeds in de Inbox.',
     moderationAction: {
       warn: 'Een waarschuwing. Lees de communityregels.',
       freeze_messages: 'Berichten zijn een tijdje gepauzeerd.',
@@ -1143,8 +1173,10 @@ export const nl: Catalog = {
     spotsLeft_other: '{{count}} plekken',
     full: 'Vol · wachtlijst',
     firstName: 'Voornaam',
-    ageAgree: 'Ik ben 18+ en ga akkoord met de Communityregels, Voorwaarden en het Privacybeleid',
-    accountNote: 'We maken met dit e-mailadres een PlantCircle-account voor je zodat je plek een eigenaar heeft; je kunt het altijd in de app verwijderen.',
+    ageAgree:
+      'Ik ben 18+ en ga akkoord met de Communityregels, Voorwaarden en het Privacybeleid',
+    accountNote:
+      'We maken met dit e-mailadres een PlantCircle-account voor je zodat je plek een eigenaar heeft; je kunt het altijd in de app verwijderen.',
     reserve: 'Mijn plek reserveren',
     joinWaitlist: 'Op de wachtlijst',
     confirmAge: 'Bevestig dat je 18+ bent om te reserveren',
@@ -1166,7 +1198,8 @@ export const nl: Catalog = {
     existingText: 'We hebben {{email}} een link gestuurd die dit Plan opent; meld je daar aan.',
     existingNoEmail: 'Log in de app in met dit e-mailadres en meld je daar aan.',
     doneOfferedTitle: 'Er kwam een plek voor je vrij, {{name}}',
-    doneOfferedText: 'Hij wordt 2 uur vastgehouden: open de link in je e-mail om te bevestigen.',
+    doneOfferedText:
+      'Hij wordt 2 uur vastgehouden: open de link in je e-mail om te bevestigen.',
     doneNoEmail: 'De bevestigingsmail kon niet worden verstuurd; je plek is toch gereserveerd.',
   },
   errors: {

@@ -12,7 +12,8 @@ const KITCHEN = '50000000-0000-4000-8000-0000000000c8';
 let db: PGlite;
 let plan = '';
 let keyCounter = 0;
-const newClientId = () => `67000000-0000-4000-8000-${String((keyCounter += 1)).padStart(12, '0')}`;
+const newClientId = () =>
+  `67000000-0000-4000-8000-${String((keyCounter += 1)).padStart(12, '0')}`;
 
 beforeEach(async () => {
   db = await createDatabase();
@@ -27,7 +28,10 @@ beforeEach(async () => {
     [CIRCLE_MEMBER, 'Lena'],
   ] as const) {
     await db.query('insert into auth.users (id) values ($1)', [id]);
-    await db.query('insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)', [id, name, CITY]);
+    await db.query(
+      'insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)',
+      [id, name, CITY],
+    );
   }
   const starts = new Date(Date.now() + 5 * 3_600_000).toISOString();
   const ends = new Date(Date.now() + 8 * 3_600_000).toISOString();
@@ -39,8 +43,14 @@ beforeEach(async () => {
     [HOST, CITY, starts, ends],
   );
   plan = rows[0]?.id ?? '';
-  await db.query(`insert into public.plan_private (plan_id, address, reveal_at) values ($1, 'Weserstraße 1', now())`, [plan]);
-  await db.query(`insert into public.rsvps (plan_id, user_id, state) values ($1, $2, 'going')`, [plan, MIA]);
+  await db.query(
+    `insert into public.plan_private (plan_id, address, reveal_at) values ($1, 'Weserstraße 1', now())`,
+    [plan],
+  );
+  await db.query(
+    `insert into public.rsvps (plan_id, user_id, state) values ($1, $2, 'going')`,
+    [plan, MIA],
+  );
   await db.query(
     `insert into public.circles (id, name, city_id, access, created_by) values ($1, 'Neukölln Plant Kitchen', $2, 'open', $3)`,
     [KITCHEN, CITY, HOST],
@@ -121,10 +131,13 @@ describe('sending', () => {
 
   it('keeps the limit when one sender sends many messages at once', async () => {
     const conversation = await open(MIA, 'plan', plan);
-    const sends = Array.from({ length: 25 }, (_, i) => post(MIA, conversation, `burst ${i}`).then(
-      () => 'ok',
-      (e: unknown) => (e instanceof Error && /rate_limited/.test(e.message) ? 'limited' : 'other'),
-    ));
+    const sends = Array.from({ length: 25 }, (_, i) =>
+      post(MIA, conversation, `burst ${i}`).then(
+        () => 'ok',
+        (e: unknown) =>
+          e instanceof Error && /rate_limited/.test(e.message) ? 'limited' : 'other',
+      ),
+    );
     const outcomes = await Promise.all(sends);
     expect(outcomes.filter((o) => o === 'ok').length).toBe(20);
     expect(outcomes.filter((o) => o === 'other').length).toBe(0);

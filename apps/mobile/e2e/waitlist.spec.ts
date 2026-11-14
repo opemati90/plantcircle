@@ -1,5 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
-import { freezeTime, NOW, signInWithEmail, type FixtureWindow, dismissNotificationPrompt } from './support';
+import {
+  freezeTime,
+  NOW,
+  signInWithEmail,
+  type FixtureWindow,
+  dismissNotificationPrompt,
+} from './support';
 
 const RAMEN = '/plan/ramen-workshop';
 

@@ -1,4 +1,10 @@
-import { calendarDay, characterCount, isMeetingUrl, planWindow, startsSoonEnough } from './rules';
+import {
+  calendarDay,
+  characterCount,
+  isMeetingUrl,
+  planWindow,
+  startsSoonEnough,
+} from './rules';
 
 describe('calendarDay', () => {
   it('reads the day in the city, not on the phone', () => {

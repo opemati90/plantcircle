@@ -5,14 +5,18 @@ test.beforeEach(async ({ page }) => {
   await freezeTime(page);
 });
 
-test('an organizer shares a group order and a member registers non-binding interest', async ({ page }) => {
+test('an organizer shares a group order and a member registers non-binding interest', async ({
+  page,
+}) => {
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: 'Change city' }).click();
   await page.getByRole('radio', { name: 'Berlin', exact: true }).click();
   await page.getByRole('link', { name: 'Start a Plan' }).click();
   await page.getByRole('link', { name: /Group order/ }).click();
 
-  await expect(page.getByRole('heading', { name: 'Where are you ordering from?' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Where are you ordering from?' }),
+  ).toBeVisible();
   await page.getByRole('textbox', { name: 'Supplier' }).fill('Organic farm shop');
   await page.getByRole('textbox', { name: 'Title' }).fill('Bulk chickpeas and lentils');
   await page.getByRole('button', { name: 'Continue' }).click();
@@ -23,8 +27,16 @@ test('an organizer shares a group order and a member registers non-binding inter
   await expect(page.getByText('50 kg · ≈')).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
 
-  await page.getByRole('radiogroup', { name: 'Interest closes' }).getByRole('radio').nth(2).click();
-  await page.getByRole('radiogroup', { name: 'Pickup starts' }).getByRole('radio').nth(4).click();
+  await page
+    .getByRole('radiogroup', { name: 'Interest closes' })
+    .getByRole('radio')
+    .nth(2)
+    .click();
+  await page
+    .getByRole('radiogroup', { name: 'Pickup starts' })
+    .getByRole('radio')
+    .nth(4)
+    .click();
   await page.getByRole('textbox', { name: 'Pickup address' }).fill('Weserstraße 1, courtyard');
   await page.getByRole('button', { name: 'Continue' }).click();
 

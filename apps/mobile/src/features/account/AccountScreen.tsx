@@ -42,25 +42,51 @@ export default function AccountScreen() {
   return (
     <View style={styles.screen}>
       <ScreenHeader backLabel={t('common.back')} onBack={back} />
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
+      >
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('profile.accountData')}
         </Text>
         {session === null ? (
-          <InlineState title={t('people.signedOut.title')} text={t('account.signedOut')} action={<Button variant="outline" label={t('home.signIn')} onPress={() => { router.push({ pathname: '/sign-up', params: { next: '/profile/account' } }); }} />} />
+          <InlineState
+            title={t('people.signedOut.title')}
+            text={t('account.signedOut')}
+            action={
+              <Button
+                variant="outline"
+                label={t('home.signIn')}
+                onPress={() => {
+                  router.push({ pathname: '/sign-up', params: { next: '/profile/account' } });
+                }}
+              />
+            }
+          />
         ) : (
           <>
             <View style={styles.section}>
-              <Text accessibilityRole="header" style={type(13, 'semibold', { color: color.secondary, tracking: 0.5 })}>{t('account.yourData').toUpperCase()}</Text>
+              <Text
+                accessibilityRole="header"
+                style={type(13, 'semibold', { color: color.secondary, tracking: 0.5 })}
+              >
+                {t('account.yourData').toUpperCase()}
+              </Text>
               <View style={styles.card}>
                 <View style={styles.rowHead}>
                   <View style={styles.grow}>
                     <Text style={type(17, 'semibold')}>{t('account.downloadTitle')}</Text>
-                    <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+                    <Text
+                      style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+                    >
                       {settings.isPending
                         ? t('common.loading')
                         : settings.data?.exportRequestedAt
-                          ? t('account.downloadRequested', { when: shortWhen(settings.data.exportRequestedAt, 'UTC') })
+                          ? t('account.downloadRequested', {
+                              when: shortWhen(settings.data.exportRequestedAt, 'UTC'),
+                            })
                           : t('account.downloadNote')}
                     </Text>
                   </View>
@@ -69,30 +95,55 @@ export default function AccountScreen() {
                   ) : (
                     <Button
                       variant="outline"
-                      label={settings.data?.exportRequestedAt ? t('account.requested') : t('account.request')}
-                      disabled={Boolean(settings.data?.exportRequestedAt) || exportRequest.isPending}
+                      label={
+                        settings.data?.exportRequestedAt
+                          ? t('account.requested')
+                          : t('account.request')
+                      }
+                      disabled={
+                        Boolean(settings.data?.exportRequestedAt) || exportRequest.isPending
+                      }
                       loading={exportRequest.isPending}
-                      onPress={() => { exportRequest.mutate(exportKey); }}
+                      onPress={() => {
+                        exportRequest.mutate(exportKey);
+                      }}
                     />
                   )}
                 </View>
                 {exportRequest.isError || settings.isError ? (
-                  <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('account.error')}</Text>
+                  <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                    {t('account.error')}
+                  </Text>
                 ) : null}
               </View>
             </View>
 
             <View style={styles.section}>
-              <Text accessibilityRole="header" style={type(13, 'semibold', { color: color.secondary, tracking: 0.5 })}>{t('account.deleteTitle').toUpperCase()}</Text>
+              <Text
+                accessibilityRole="header"
+                style={type(13, 'semibold', { color: color.secondary, tracking: 0.5 })}
+              >
+                {t('account.deleteTitle').toUpperCase()}
+              </Text>
               <View style={styles.card}>
                 {facts.map((fact, index) => (
                   <View key={fact.title} style={[styles.fact, index > 0 && styles.factBorder]}>
                     <Text style={type(16, 'semibold')}>{fact.title}</Text>
-                    <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{fact.note}</Text>
+                    <Text
+                      style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
+                    >
+                      {fact.note}
+                    </Text>
                   </View>
                 ))}
               </View>
-              <Button variant="outline" label={t('account.deleteButton')} onPress={() => { setConfirm(true); }} />
+              <Button
+                variant="outline"
+                label={t('account.deleteButton')}
+                onPress={() => {
+                  setConfirm(true);
+                }}
+              />
             </View>
           </>
         )}
@@ -108,7 +159,9 @@ export default function AccountScreen() {
       >
         <View style={styles.sheet}>
           {remove.isError ? (
-            <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('account.error')}</Text>
+            <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+              {t('account.error')}
+            </Text>
           ) : null}
           <Button
             label={t('account.deleteButton')}
@@ -122,7 +175,14 @@ export default function AccountScreen() {
               });
             }}
           />
-          <Button variant="outline" label={t('account.keep')} disabled={remove.isPending} onPress={() => { setConfirm(false); }} />
+          <Button
+            variant="outline"
+            label={t('account.keep')}
+            disabled={remove.isPending}
+            onPress={() => {
+              setConfirm(false);
+            }}
+          />
         </View>
       </BottomSheet>
     </View>
@@ -133,8 +193,20 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 24 },
   section: { gap: 10 },
-  card: { borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder, paddingHorizontal: 16, paddingVertical: 4 },
-  rowHead: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, paddingVertical: 8 },
+  card: {
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+  },
+  rowHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 64,
+    paddingVertical: 8,
+  },
   grow: { flex: 1, minWidth: 0, gap: 2 },
   fact: { paddingVertical: 12, gap: 2 },
   factBorder: { borderTopWidth: 1, borderTopColor: extra.cardBorder },

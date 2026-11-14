@@ -15,7 +15,11 @@ import { useBlockUser } from './queries';
  * reviewed by a person. When the report points at a person, the switch also blocks them.
  */
 export default function ReportDoneScreen() {
-  const { caseRef, userId, name } = useLocalSearchParams<{ caseRef?: string; userId?: string; name?: string }>();
+  const { caseRef, userId, name } = useLocalSearchParams<{
+    caseRef?: string;
+    userId?: string;
+    name?: string;
+  }>();
   const { t } = useTranslation();
   const insets = useScreenInsets();
   const router = useRouter();
@@ -31,11 +35,19 @@ export default function ReportDoneScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.headerTop + 24, paddingBottom: 40 + insets.bottom }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.headerTop + 24, paddingBottom: 40 + insets.bottom },
+        ]}
+      >
         <View style={styles.badge}>
           <CheckIcon size={30} strokeWidth={2.6} color={color.brand} />
         </View>
-        <Text accessibilityRole="header" style={[type(30, 'bold', { tracking: -0.9, leading: 1.1 }), styles.centre]}>
+        <Text
+          accessibilityRole="header"
+          style={[type(30, 'bold', { tracking: -0.9, leading: 1.1 }), styles.centre]}
+        >
           {t('safety.doneTitle')}
         </Text>
         <Text style={[type(17, 'medium', { color: color.secondary }), styles.centre]}>
@@ -48,7 +60,9 @@ export default function ReportDoneScreen() {
               <View style={styles.factDot} />
               <View style={styles.factText}>
                 <Text style={type(16, 'semibold')}>{fact.title}</Text>
-                <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{fact.note}</Text>
+                <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+                  {fact.note}
+                </Text>
               </View>
             </View>
           ))}
@@ -73,10 +87,14 @@ export default function ReportDoneScreen() {
               }}
             />
             <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
-              {blocked ? t('safety.blockedNow', { name: name || t('safety.thisPerson') }) : t('safety.alsoBlockNote')}
+              {blocked
+                ? t('safety.blockedNow', { name: name || t('safety.thisPerson') })
+                : t('safety.alsoBlockNote')}
             </Text>
             {block.isError ? (
-              <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('safety.error')}</Text>
+              <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                {t('safety.error')}
+              </Text>
             ) : null}
           </View>
         ) : null}
@@ -97,12 +115,34 @@ export default function ReportDoneScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, gap: 12, alignItems: 'stretch' },
-  badge: { width: 64, height: 64, borderRadius: 32, backgroundColor: color.brandTint, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 8 },
+  badge: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: color.brandTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 8,
+  },
   centre: { textAlign: 'center' },
   facts: { gap: 16, marginTop: 24 },
   fact: { flexDirection: 'row', gap: 14, alignItems: 'flex-start' },
-  factDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: color.brand, marginTop: 6 },
+  factDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: color.brand,
+    marginTop: 6,
+  },
   factText: { flex: 1, minWidth: 0, gap: 2 },
-  card: { gap: 10, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder, marginTop: 20 },
+  card: {
+    gap: 10,
+    padding: 16,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+    marginTop: 20,
+  },
   footer: { paddingTop: 20 },
 });

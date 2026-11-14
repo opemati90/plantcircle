@@ -43,7 +43,9 @@ test('a member shares a recipe into a Circle they are in', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Ingredient 1' }).fill('Red lentils');
   await page.getByRole('textbox', { name: 'Amount 1' }).fill('250');
   await page.getByRole('textbox', { name: 'Unit 1' }).fill('g');
-  await page.getByRole('textbox', { name: 'Step 1' }).fill('Simmer the lentils for 20 minutes.');
+  await page
+    .getByRole('textbox', { name: 'Step 1' })
+    .fill('Simmer the lentils for 20 minutes.');
   await page.getByRole('button', { name: 'Skip it for now' }).click();
   await page.getByRole('button', { name: 'Share recipe' }).click();
 

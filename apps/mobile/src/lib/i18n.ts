@@ -7,17 +7,17 @@ import {
 } from '@plantcircle/copy';
 // Hermes ships Intl.PluralRules without full CLDR data: Polish 14 came out as "few" on a device
 // (E3). The polyfill is installed only where the native rules are missing or wrong.
-import '@formatjs/intl-getcanonicallocales/polyfill';
-import '@formatjs/intl-locale/polyfill';
-import '@formatjs/intl-pluralrules/polyfill-force';
-import '@formatjs/intl-pluralrules/locale-data/en';
-import '@formatjs/intl-pluralrules/locale-data/de';
-import '@formatjs/intl-pluralrules/locale-data/es';
-import '@formatjs/intl-pluralrules/locale-data/pt';
-import '@formatjs/intl-pluralrules/locale-data/fr';
-import '@formatjs/intl-pluralrules/locale-data/pl';
-import '@formatjs/intl-pluralrules/locale-data/it';
-import '@formatjs/intl-pluralrules/locale-data/nl';
+import '@formatjs/intl-getcanonicallocales/polyfill.js';
+import '@formatjs/intl-locale/polyfill.js';
+import '@formatjs/intl-pluralrules/polyfill-force.js';
+import '@formatjs/intl-pluralrules/locale-data/en.js';
+import '@formatjs/intl-pluralrules/locale-data/de.js';
+import '@formatjs/intl-pluralrules/locale-data/es.js';
+import '@formatjs/intl-pluralrules/locale-data/pt.js';
+import '@formatjs/intl-pluralrules/locale-data/fr.js';
+import '@formatjs/intl-pluralrules/locale-data/pl.js';
+import '@formatjs/intl-pluralrules/locale-data/it.js';
+import '@formatjs/intl-pluralrules/locale-data/nl.js';
 import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';

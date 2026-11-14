@@ -41,7 +41,12 @@ export default function DecideScreen() {
 
   if (order.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="100%" height={200} radius={radius.card} />
       </View>
     );
@@ -51,7 +56,13 @@ export default function DecideScreen() {
       <View style={styles.screen}>
         <ScreenHeader backLabel={t('common.back')} onBack={back} />
         <EmptyState
-          {...(errorCode(order.error) === 'not_found' ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
+          {...(errorCode(order.error) === 'not_found'
+            ? {}
+            : {
+                onSavedPlans: () => {
+                  router.push('/my-plans');
+                },
+              })}
           title={t('errors.serverTitle')}
           text={t('errors.serverText')}
           actions={<Button label={t('common.retry')} onPress={() => void order.refetch()} />}
@@ -70,7 +81,15 @@ export default function DecideScreen() {
         <InlineState
           title={t('people.signedOut.title')}
           text={t('order.signedOut')}
-          action={<Button variant="outline" label={t('home.signIn')} onPress={() => { router.push({ pathname: '/sign-up', params: { next: `/order/${id}/decide` } }); }} />}
+          action={
+            <Button
+              variant="outline"
+              label={t('home.signIn')}
+              onPress={() => {
+                router.push({ pathname: '/sign-up', params: { next: `/order/${id}/decide` } });
+              }}
+            />
+          }
         />
       </View>
     );
@@ -82,8 +101,18 @@ export default function DecideScreen() {
       <View style={styles.screen}>
         <ScreenHeader backLabel={t('common.back')} onBack={back} />
         <EmptyState
-          title={session.userId !== data.organizerId ? t('errors.notFoundTitle') : t(`order.state${data.state === 'below_target' ? 'Below' : data.state.charAt(0).toUpperCase() + data.state.slice(1)}`)}
-          text={session.userId !== data.organizerId ? t('errors.notFoundText') : t('order.decidedText')}
+          title={
+            session.userId !== data.organizerId
+              ? t('errors.notFoundTitle')
+              : t(
+                  `order.state${data.state === 'below_target' ? 'Below' : data.state.charAt(0).toUpperCase() + data.state.slice(1)}`,
+                )
+          }
+          text={
+            session.userId !== data.organizerId
+              ? t('errors.notFoundText')
+              : t('order.decidedText')
+          }
           actions={<Button label={t('common.back')} onPress={back} />}
         />
       </View>
@@ -95,11 +124,27 @@ export default function DecideScreen() {
       : [
           // Going ahead needs someone in; otherwise only extending or cancelling makes sense.
           ...(data.peopleCount > 0
-            ? [{ value: 'go' as const, title: t('order.goTitle', { amount: amount(data.interestTotal, unit, language) }), lead: t('order.goLead') }]
+            ? [
+                {
+                  value: 'go' as const,
+                  title: t('order.goTitle', {
+                    amount: amount(data.interestTotal, unit, language),
+                  }),
+                  lead: t('order.goLead'),
+                },
+              ]
             : []),
           ...(data.extendedOnce
             ? []
-            : [{ value: 'extend' as const, title: t('order.extendTitle'), lead: t('order.extendLead', { until: shortDate(new Date(Date.now() + 72 * 3_600_000).toISOString(), tz) }) }]),
+            : [
+                {
+                  value: 'extend' as const,
+                  title: t('order.extendTitle'),
+                  lead: t('order.extendLead', {
+                    until: shortDate(new Date(Date.now() + 72 * 3_600_000).toISOString(), tz),
+                  }),
+                },
+              ]),
           { value: 'cancel', title: t('order.cancelTitle'), lead: t('order.cancelLead') },
         ];
 
@@ -120,14 +165,20 @@ export default function DecideScreen() {
   return (
     <View style={styles.screen}>
       <ScreenHeader backLabel={t('common.back')} onBack={back} />
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 170 + insets.bottom }]}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: 170 + insets.bottom }]}
+      >
         <View style={styles.pillWrap}>
           <Text style={[type(13, 'bold', { color: '#6B4000', tracking: 0.3 }), styles.pill]}>
-            {data.state === 'locked' ? t('order.stateLocked').toUpperCase() : t('order.interestClosed').toUpperCase()}
+            {data.state === 'locked'
+              ? t('order.stateLocked').toUpperCase()
+              : t('order.interestClosed').toUpperCase()}
           </Text>
         </View>
         <Text style={type(52, 'bold', { tracking: -2, leading: 1 })}>
-          {new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(data.interestTotal)}
+          {new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(
+            data.interestTotal,
+          )}
           <Text style={type(22, 'medium', { color: color.secondary, tracking: -0.3 })}>
             {` ${t('order.ofTarget', { target: data.targetTotal, unit })}`}
           </Text>
@@ -146,25 +197,40 @@ export default function DecideScreen() {
                 key={option.value}
                 accessibilityRole="radio"
                 aria-checked={selected}
-                onPress={() => { setChoice(option.value); }}
+                onPress={() => {
+                  setChoice(option.value);
+                }}
                 style={[styles.option, selected && styles.optionSelected]}
               >
                 <Text style={type(17, 'semibold')}>{option.title}</Text>
-                <Text style={type(15, 'regular', { color: color.secondary, leading: 1.45 })}>{option.lead}</Text>
+                <Text style={type(15, 'regular', { color: color.secondary, leading: 1.45 })}>
+                  {option.lead}
+                </Text>
               </Pressable>
             );
           })}
         </View>
         {decide.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>{t('order.error')}</Text>
+          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+            {t('order.error')}
+          </Text>
         ) : null}
       </ScrollView>
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
-          <Text style={type(16, 'semibold')}>{choice ? options.find((o) => o.value === choice)?.title : t('order.decideTitle')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>{t('order.notified')}</Text>
+          <Text style={type(16, 'semibold')}>
+            {choice ? options.find((o) => o.value === choice)?.title : t('order.decideTitle')}
+          </Text>
+          <Text style={type(14, 'regular', { color: color.secondary })}>
+            {t('order.notified')}
+          </Text>
         </View>
-        <Button label={t('order.confirm')} disabled={!choice} loading={decide.isPending} onPress={confirm} />
+        <Button
+          label={t('order.confirm')}
+          disabled={!choice}
+          loading={decide.isPending}
+          onPress={confirm}
+        />
       </FloatingActionBar>
     </View>
   );
@@ -174,12 +240,33 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 14, gap: 14 },
   pillWrap: { flexDirection: 'row' },
-  pill: { minHeight: 28, paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill, backgroundColor: '#FFF6E5', overflow: 'hidden' },
+  pill: {
+    minHeight: 28,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+    backgroundColor: '#FFF6E5',
+    overflow: 'hidden',
+  },
   track: { height: 8, borderRadius: 4, backgroundColor: extra.cardBorder, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 4, backgroundColor: '#6B4000' },
   options: { gap: 10, paddingTop: 8 },
-  option: { gap: 3, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
+  option: {
+    gap: 3,
+    padding: 16,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
   optionSelected: { borderColor: color.ink, backgroundColor: color.fill },
-  bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, paddingVertical: 10, paddingLeft: 20, paddingRight: 10 },
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 14,
+    paddingVertical: 10,
+    paddingLeft: 20,
+    paddingRight: 10,
+  },
   barText: { flex: 1, minWidth: 0, gap: 1 },
 });

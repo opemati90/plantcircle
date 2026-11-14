@@ -84,29 +84,51 @@ const settingsRowSchema = z.object({
   muted_until: z.string().nullable(),
   pinned_at: z.string().nullable(),
 });
-const PROFILE_COLUMNS = 'display_name, city_id, goals, people_visible, status, suspended_until, messages_frozen_until, role';
+const PROFILE_COLUMNS =
+  'display_name, city_id, goals, people_visible, status, suspended_until, messages_frozen_until, role';
 
 /**
  * Calls an Edge Function and reads its answer, including the error word in a non-2xx body
  * (the SDK hides it behind a generic error).
  */
-type FunctionsClient = { functions: { invoke: (name: string, options: { body: Record<string, unknown> }) => Promise<{ data: unknown; error: unknown }> } };
+type FunctionsClient = {
+  functions: {
+    invoke: (
+      name: string,
+      options: { body: Record<string, unknown> },
+    ) => Promise<{ data: unknown; error: unknown }>;
+  };
+};
 
-async function invokeFunction(client: FunctionsClient, name: string, body: Record<string, unknown>): Promise<unknown> {
+async function invokeFunction(
+  client: FunctionsClient,
+  name: string,
+  body: Record<string, unknown>,
+): Promise<unknown> {
   const result = await client.functions.invoke(name, { body });
   if (result.error) {
     const context = (result.error as { context?: unknown }).context;
     if (context instanceof Response) {
-      const word = await context.json().then((j: unknown) => (j && typeof j === 'object' ? (j as { error?: unknown }).error : undefined)).catch(() => undefined);
-      if (typeof word === 'string') throw new BackendError(WEB_RSVP_ERRORS[word] ?? 'unknown', word);
+      const word = await context
+        .json()
+        .then((j: unknown) =>
+          j && typeof j === 'object' ? (j as { error?: unknown }).error : undefined,
+        )
+        .catch(() => undefined);
+      if (typeof word === 'string')
+        throw new BackendError(WEB_RSVP_ERRORS[word] ?? 'unknown', word);
       if (context.status === 429) throw new BackendError('rate_limited');
     }
     const message = (result.error as { message?: unknown }).message;
-    throw toBackendError({ message: typeof message === 'string' ? message : 'failed to fetch' });
+    throw toBackendError({
+      message: typeof message === 'string' ? message : 'failed to fetch',
+    });
   }
   const data = result.data;
-  const word = data && typeof data === 'object' ? (data as { error?: unknown }).error : undefined;
-  if (typeof word === 'string') throw new BackendError(WEB_RSVP_ERRORS[word] ?? 'unknown', word);
+  const word =
+    data && typeof data === 'object' ? (data as { error?: unknown }).error : undefined;
+  if (typeof word === 'string')
+    throw new BackendError(WEB_RSVP_ERRORS[word] ?? 'unknown', word);
   return data;
 }
 
@@ -198,14 +220,24 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     },
   });
   // On the web, the magic link a guest gets from a shared-link RSVP lands here with its tokens.
-  if (Platform.OS === 'web' && typeof globalThis.location !== 'undefined' && globalThis.location.hash.includes('access_token=')) {
+  if (
+    Platform.OS === 'web' &&
+    typeof globalThis.location !== 'undefined' &&
+    globalThis.location.hash.includes('access_token=')
+  ) {
     const params = new URLSearchParams(globalThis.location.hash.slice(1));
     const accessToken = params.get('access_token');
     const refreshToken = params.get('refresh_token');
     if (accessToken && refreshToken) {
-      void client.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }).then(() => {
-        globalThis.history.replaceState(null, '', globalThis.location.pathname + globalThis.location.search);
-      });
+      void client.auth
+        .setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(() => {
+          globalThis.history.replaceState(
+            null,
+            '',
+            globalThis.location.pathname + globalThis.location.search,
+          );
+        });
     }
   }
 
@@ -326,8 +358,11 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     async updateProfile(input) {
       const userId = await requireUserId();
       const displayName = input.displayName.trim();
-      const goals = input.goals.filter((g): g is (typeof PROFILE_GOALS)[number] => (PROFILE_GOALS as readonly string[]).includes(g));
-      if (Array.from(displayName).length < 1 || Array.from(displayName).length > 40) throw new BackendError('invalid_input');
+      const goals = input.goals.filter((g): g is (typeof PROFILE_GOALS)[number] =>
+        (PROFILE_GOALS as readonly string[]).includes(g),
+      );
+      if (Array.from(displayName).length < 1 || Array.from(displayName).length > 40)
+        throw new BackendError('invalid_input');
       const { data, error } = await client
         .from('profiles')
         .update({ display_name: displayName, goals })
@@ -360,7 +395,9 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     async listCircles({ search }) {
       // Search runs on the server, so a Circle past the list cap is still found.
       const base = client.from('circle_cards').select('*');
-      const filtered = search.trim() ? base.ilike('search_text', containsPattern(search)) : base;
+      const filtered = search.trim()
+        ? base.ilike('search_text', containsPattern(search))
+        : base;
       const { data, error } = await filtered.order('name').limit(CIRCLE_LIMIT);
       if (error) throw toBackendError(error);
       return parse(z.array(circleCardSchema), data).map(toCircle);
@@ -434,9 +471,13 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     },
 
     async connectWithPerson(userId, key) {
-      const result = await client.rpc('person_connect', { p_user_id: userId, p_idempotency_key: key });
+      const result = await client.rpc('person_connect', {
+        p_user_id: userId,
+        p_idempotency_key: key,
+      });
       if (result.error) throw toBackendError(result.error);
-      return parse(z.object({ status: z.enum(['requested', 'connected']) }), result.data).status;
+      return parse(z.object({ status: z.enum(['requested', 'connected']) }), result.data)
+        .status;
     },
 
     async setPeopleVisible(visible) {
@@ -453,7 +494,9 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
 
     async listRecipes({ search }) {
       const base = client.from('recipe_cards').select('*');
-      const filtered = search.trim() ? base.ilike('search_text', containsPattern(search)) : base;
+      const filtered = search.trim()
+        ? base.ilike('search_text', containsPattern(search))
+        : base;
       const { data, error } = await filtered
         .order('created_at', { ascending: false })
         .limit(RECIPE_LIMIT);
@@ -570,7 +613,10 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     },
 
     async endPlan(planId, key) {
-      const result = await client.rpc('host_end_plan', { p_plan_id: planId, p_idempotency_key: key });
+      const result = await client.rpc('host_end_plan', {
+        p_plan_id: planId,
+        p_idempotency_key: key,
+      });
       if (result.error) throw toBackendError(result.error);
     },
 
@@ -721,15 +767,31 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       let pickupAddress: string | null = null;
       if (userId) {
         const [interests, address] = await Promise.all([
-          client.from('order_interests').select('item_id, quantity, collected_at')
-            .in('item_id', rows.map((r) => r.id)),
+          client
+            .from('order_interests')
+            .select('item_id, quantity, collected_at')
+            .in(
+              'item_id',
+              rows.map((r) => r.id),
+            ),
           client.rpc('order_pickup_address', { p_plan_id: planId }),
         ]);
         if (interests.error) throw toBackendError(interests.error);
         if (address.error) throw toBackendError(address.error);
         mine = new Map(
-          parse(z.array(z.object({ item_id: z.string(), quantity: z.coerce.number(), collected_at: z.string().nullable() })), interests.data)
-            .map((i) => [i.item_id, { quantity: i.quantity, collected: i.collected_at !== null }]),
+          parse(
+            z.array(
+              z.object({
+                item_id: z.string(),
+                quantity: z.coerce.number(),
+                collected_at: z.string().nullable(),
+              }),
+            ),
+            interests.data,
+          ).map((i) => [
+            i.item_id,
+            { quantity: i.quantity, collected: i.collected_at !== null },
+          ]),
         );
         pickupAddress = parse(z.string().nullable(), address.data);
       }
@@ -762,25 +824,44 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
           interestTotal: r.interest_total,
           mine: mine.get(r.id)?.quantity ?? 0,
         })),
-        collected: [...mine.values()].some((m) => m.quantity > 0) && [...mine.values()].every((m) => m.quantity === 0 || m.collected),
+        collected:
+          [...mine.values()].some((m) => m.quantity > 0) &&
+          [...mine.values()].every((m) => m.quantity === 0 || m.collected),
       };
     },
 
     async webRsvp(planId, input, key) {
       const data = await invokeFunction(client, 'web-rsvp', {
-        action: 'join', plan_id: planId, first_name: input.firstName, email: input.email, age_confirmed: input.ageConfirmed, idempotency_key: key,
+        action: 'join',
+        plan_id: planId,
+        first_name: input.firstName,
+        email: input.email,
+        age_confirmed: input.ageConfirmed,
+        idempotency_key: key,
       });
-      const parsed = parse(z.object({
-        status: z.enum(['going', 'waitlisted', 'offered', 'existing']),
-        position: z.number().int().nullable().optional(),
-        cancel_token: z.string().nullable().optional(),
-        email_sent: z.boolean().optional(),
-      }), data);
-      return { status: parsed.status, position: parsed.position ?? null, cancelToken: parsed.cancel_token ?? null, emailSent: parsed.email_sent ?? false };
+      const parsed = parse(
+        z.object({
+          status: z.enum(['going', 'waitlisted', 'offered', 'existing']),
+          position: z.number().int().nullable().optional(),
+          cancel_token: z.string().nullable().optional(),
+          email_sent: z.boolean().optional(),
+        }),
+        data,
+      );
+      return {
+        status: parsed.status,
+        position: parsed.position ?? null,
+        cancelToken: parsed.cancel_token ?? null,
+        emailSent: parsed.email_sent ?? false,
+      };
     },
 
     async webRsvpCancel(cancelToken, key) {
-      await invokeFunction(client, 'web-rsvp', { action: 'cancel', token: cancelToken, idempotency_key: key });
+      await invokeFunction(client, 'web-rsvp', {
+        action: 'cancel',
+        token: cancelToken,
+        idempotency_key: key,
+      });
     },
 
     async listNotifications() {
@@ -800,7 +881,10 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     },
 
     async registerPushToken(token, platform) {
-      const result = await client.rpc('push_token_register', { p_token: token, p_platform: platform });
+      const result = await client.rpc('push_token_register', {
+        p_token: token,
+        p_platform: platform,
+      });
       if (result.error) throw toBackendError(result.error);
     },
 
@@ -828,7 +912,9 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     },
 
     async updateSettings(patch) {
-      const result = await client.rpc('settings_update', { p_patch: settingsPatchToRow(patch) });
+      const result = await client.rpc('settings_update', {
+        p_patch: settingsPatchToRow(patch),
+      });
       if (result.error) throw toBackendError(result.error);
       return toSettings(parse(settingsSchema, result.data));
     },
@@ -847,7 +933,10 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     },
 
     async blockUser(userId, key) {
-      const result = await client.rpc('block_user', { p_user_id: userId, p_idempotency_key: key });
+      const result = await client.rpc('block_user', {
+        p_user_id: userId,
+        p_idempotency_key: key,
+      });
       if (result.error) throw toBackendError(result.error);
     },
 
@@ -859,8 +948,16 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     async listBlocked() {
       const result = await client.rpc('my_blocks');
       if (result.error) throw toBackendError(result.error);
-      return parse(z.array(z.object({ user_id: z.string(), display_name: z.string(), created_at: z.string() })), result.data)
-        .map((r) => ({ userId: r.user_id, displayName: r.display_name, createdAt: r.created_at }));
+      return parse(
+        z.array(
+          z.object({ user_id: z.string(), display_name: z.string(), created_at: z.string() }),
+        ),
+        result.data,
+      ).map((r) => ({
+        userId: r.user_id,
+        displayName: r.display_name,
+        createdAt: r.created_at,
+      }));
     },
 
     async createReport(input, key) {
@@ -873,7 +970,10 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         p_idempotency_key: key,
       });
       if (result.error) throw toBackendError(result.error);
-      const row = parse(z.object({ case_ref: z.string(), severity: z.enum(['urgent', 'high', 'routine']) }), result.data);
+      const row = parse(
+        z.object({ case_ref: z.string(), severity: z.enum(['urgent', 'high', 'routine']) }),
+        result.data,
+      );
       return { caseRef: row.case_ref, severity: row.severity };
     },
 
@@ -895,7 +995,11 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     },
 
     async createAppeal(actionId, statement, key) {
-      const result = await client.rpc('appeal_create', { p_action_id: actionId, p_statement: statement, p_idempotency_key: key });
+      const result = await client.rpc('appeal_create', {
+        p_action_id: actionId,
+        p_statement: statement,
+        p_idempotency_key: key,
+      });
       if (result.error) throw toBackendError(result.error);
     },
 
@@ -915,15 +1019,30 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         targetUserName: row.target_user_name,
         evidenceCount: row.evidence_count,
         history: row.history,
-        actions: row.actions.map((a) => ({ id: a.id, action: a.action, reason: a.reason, until: a.until, createdAt: a.created_at })),
+        actions: row.actions.map((a) => ({
+          id: a.id,
+          action: a.action,
+          reason: a.reason,
+          until: a.until,
+          createdAt: a.created_at,
+        })),
         appeal: row.appeal
-          ? { id: row.appeal.id, statement: row.appeal.statement, status: row.appeal.status, originalAction: row.appeal.original_action, originalReason: row.appeal.original_reason }
+          ? {
+              id: row.appeal.id,
+              statement: row.appeal.statement,
+              status: row.appeal.status,
+              originalAction: row.appeal.original_action,
+              originalReason: row.appeal.original_reason,
+            }
           : null,
       };
     },
 
     async staffViewMessages(reportId, reason) {
-      const result = await client.rpc('staff_view_messages', { p_report_id: reportId, p_reason: reason });
+      const result = await client.rpc('staff_view_messages', {
+        p_report_id: reportId,
+        p_reason: reason,
+      });
       if (result.error) throw toBackendError(result.error);
       return parse(z.array(messageCardSchema), result.data).map(toChatMessage);
     },
@@ -956,7 +1075,12 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     },
 
     async staffAppealDecide(appealId, uphold, reason, key) {
-      const result = await client.rpc('staff_appeal_decide', { p_appeal_id: appealId, p_uphold: uphold, p_reason: reason, p_idempotency_key: key });
+      const result = await client.rpc('staff_appeal_decide', {
+        p_appeal_id: appealId,
+        p_uphold: uphold,
+        p_reason: reason,
+        p_idempotency_key: key,
+      });
       if (result.error) throw toBackendError(result.error);
     },
 
@@ -986,7 +1110,10 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         p_pickup_address: input.pickupAddress,
         p_pickup_note: input.pickupNote,
         p_items: input.items.map((i) => ({
-          name: i.name, unit: i.unit, target: i.target, est_price_minor: i.estPriceMinor,
+          name: i.name,
+          unit: i.unit,
+          target: i.target,
+          est_price_minor: i.estPriceMinor,
         })),
         p_idempotency_key: key,
       });
@@ -996,21 +1123,28 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
 
     async setOrderInterest(itemId, quantity, key) {
       const result = await client.rpc('order_set_interest', {
-        p_item_id: itemId, p_quantity: quantity, p_idempotency_key: key,
+        p_item_id: itemId,
+        p_quantity: quantity,
+        p_idempotency_key: key,
       });
       if (result.error) throw toBackendError(result.error);
     },
 
     async decideOrder(planId, decision, key) {
       const result = await client.rpc('order_decide', {
-        p_plan_id: planId, p_decision: decision, p_idempotency_key: key,
+        p_plan_id: planId,
+        p_decision: decision,
+        p_idempotency_key: key,
       });
       if (result.error) throw toBackendError(result.error);
       return parse(z.object({ state: z.enum(ORDER_STATES) }), result.data).state;
     },
 
     async markOrderCollected(planId, key) {
-      const result = await client.rpc('order_mark_collected', { p_plan_id: planId, p_idempotency_key: key });
+      const result = await client.rpc('order_mark_collected', {
+        p_plan_id: planId,
+        p_idempotency_key: key,
+      });
       if (result.error) throw toBackendError(result.error);
     },
 

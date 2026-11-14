@@ -16,7 +16,11 @@ import { useAuth } from '../auth/useAuth';
 import { useDirectRequests } from '../chat/queries';
 import { imageByPath, welcomePhoto } from '../plans/planImage';
 import { describeNotification } from '../notifications/notificationCopy';
-import { useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications } from '../notifications/queries';
+import {
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotifications,
+} from '../notifications/queries';
 import { useInbox } from './queries';
 
 type Filter = 'all' | InboxKind | 'updates';
@@ -81,7 +85,12 @@ export default function InboxScreen() {
     }
     if (session === undefined || inbox.isPending) {
       return (
-        <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.list}>
+        <View
+          role="status"
+          accessibilityLabel={t('common.loading')}
+          aria-busy
+          style={styles.list}
+        >
           <Skeleton width="100%" height={80} radius={radius.card} />
           <Skeleton width="100%" height={80} radius={radius.card} />
         </View>
@@ -90,9 +99,19 @@ export default function InboxScreen() {
     if (inbox.isError) {
       return (
         <EmptyState
-          onSavedPlans={() => { router.push('/my-plans'); }}
-          title={errorCode(inbox.error) === 'network' ? t('errors.offlineTitle') : t('errors.serverTitle')}
-          text={errorCode(inbox.error) === 'network' ? t('errors.offlineText') : t('errors.serverText')}
+          onSavedPlans={() => {
+            router.push('/my-plans');
+          }}
+          title={
+            errorCode(inbox.error) === 'network'
+              ? t('errors.offlineTitle')
+              : t('errors.serverTitle')
+          }
+          text={
+            errorCode(inbox.error) === 'network'
+              ? t('errors.offlineText')
+              : t('errors.serverText')
+          }
           actions={<Button label={t('common.tryAgain')} onPress={() => void inbox.refetch()} />}
         />
       );
@@ -101,7 +120,17 @@ export default function InboxScreen() {
       const rows = notifications.data ?? [];
       if (notifications.isError) {
         return (
-          <InlineState title={t('errors.serverTitle')} text={t('errors.serverText')} action={<Button variant="outline" label={t('common.retry')} onPress={() => void notifications.refetch()} />} />
+          <InlineState
+            title={t('errors.serverTitle')}
+            text={t('errors.serverText')}
+            action={
+              <Button
+                variant="outline"
+                label={t('common.retry')}
+                onPress={() => void notifications.refetch()}
+              />
+            }
+          />
         );
       }
       if (rows.length === 0) {
@@ -111,11 +140,24 @@ export default function InboxScreen() {
         <View>
           {unreadUpdates > 0 ? (
             <View style={styles.markAll}>
-              <Button variant="ghost" label={t('notify.markAllRead')} loading={markAll.isPending} onPress={() => { markAll.mutate(); }} />
+              <Button
+                variant="ghost"
+                label={t('notify.markAllRead')}
+                loading={markAll.isPending}
+                onPress={() => {
+                  markAll.mutate();
+                }}
+              />
             </View>
           ) : null}
           {rows.map((n) => (
-            <NotificationRow key={n.id} notification={n} onPress={() => { openNotification(n); }} />
+            <NotificationRow
+              key={n.id}
+              notification={n}
+              onPress={() => {
+                openNotification(n);
+              }}
+            />
           ))}
         </View>
       );
@@ -159,7 +201,10 @@ export default function InboxScreen() {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top, paddingBottom: 120 + insets.bottom }]}
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: insets.top, paddingBottom: 120 + insets.bottom },
+      ]}
     >
       <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>
         {t('inbox.title')}
@@ -178,8 +223,12 @@ export default function InboxScreen() {
               }}
               style={[styles.filter, selected && styles.filterSelected]}
             >
-              <Text style={type(15, 'semibold', { color: selected ? color.surface : color.ink })}>
-                {item === 'updates' && unreadUpdates > 0 ? `${t(FILTER_KEY[item])} · ${unreadUpdates}` : t(FILTER_KEY[item])}
+              <Text
+                style={type(15, 'semibold', { color: selected ? color.surface : color.ink })}
+              >
+                {item === 'updates' && unreadUpdates > 0
+                  ? `${t(FILTER_KEY[item])} · ${unreadUpdates}`
+                  : t(FILTER_KEY[item])}
               </Text>
             </Pressable>
           );
@@ -188,10 +237,17 @@ export default function InboxScreen() {
 
       {session && requests.isError ? (
         <View style={styles.requests}>
-          <Text role="alert" style={[type(15, 'regular', { color: color.danger }), styles.grow]}>
+          <Text
+            role="alert"
+            style={[type(15, 'regular', { color: color.danger }), styles.grow]}
+          >
             {t('errors.serverText')}
           </Text>
-          <Button variant="outline" label={t('common.retry')} onPress={() => void requests.refetch()} />
+          <Button
+            variant="outline"
+            label={t('common.retry')}
+            onPress={() => void requests.refetch()}
+          />
         </View>
       ) : session && pendingRequests > 0 ? (
         <Pressable
@@ -205,8 +261,12 @@ export default function InboxScreen() {
             <UserIcon size={20} strokeWidth={1.9} color={color.ink} />
           </View>
           <View style={styles.grow}>
-            <Text style={type(16, 'semibold')}>{t('inbox.requests', { count: pendingRequests })}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary })}>{t('inbox.requestsLead')}</Text>
+            <Text style={type(16, 'semibold')}>
+              {t('inbox.requests', { count: pendingRequests })}
+            </Text>
+            <Text style={type(14, 'regular', { color: color.secondary })}>
+              {t('inbox.requestsLead')}
+            </Text>
           </View>
           <ChevronRightIcon size={16} strokeWidth={2.4} color={color.secondary} />
         </Pressable>
@@ -217,12 +277,21 @@ export default function InboxScreen() {
   );
 }
 
-function NotificationRow({ notification, onPress }: { notification: AppNotification; onPress: () => void }) {
+function NotificationRow({
+  notification,
+  onPress,
+}: {
+  notification: AppNotification;
+  onPress: () => void;
+}) {
   const { t } = useTranslation();
   const { title, note } = describeNotification(t, notification);
   const when = isToday(notification.createdAt, new Date())
     ? localTime(notification.createdAt)
-    : shortDate(notification.createdAt, Intl.DateTimeFormat(currentLanguage()).resolvedOptions().timeZone);
+    : shortDate(
+        notification.createdAt,
+        Intl.DateTimeFormat(currentLanguage()).resolvedOptions().timeZone,
+      );
   return (
     <Pressable
       accessibilityRole="link"
@@ -231,14 +300,30 @@ function NotificationRow({ notification, onPress }: { notification: AppNotificat
       style={styles.row}
     >
       <View style={[styles.updateIcon, !notification.readAt && styles.updateIconUnread]}>
-        <BellIcon size={18} strokeWidth={1.9} color={notification.readAt ? color.secondary : color.brand} />
+        <BellIcon
+          size={18}
+          strokeWidth={1.9}
+          color={notification.readAt ? color.secondary : color.brand}
+        />
       </View>
       <View style={styles.grow}>
         <View style={styles.rowHead}>
-          <Text numberOfLines={2} style={[type(16, notification.readAt ? 'medium' : 'semibold', { tracking: -0.2 }), styles.grow]}>{title}</Text>
+          <Text
+            numberOfLines={2}
+            style={[
+              type(16, notification.readAt ? 'medium' : 'semibold', { tracking: -0.2 }),
+              styles.grow,
+            ]}
+          >
+            {title}
+          </Text>
           <Text style={type(13, 'regular', { color: color.secondary })}>{when}</Text>
         </View>
-        {note ? <Text numberOfLines={2} style={type(14, 'regular', { color: color.secondary })}>{note}</Text> : null}
+        {note ? (
+          <Text numberOfLines={2} style={type(14, 'regular', { color: color.secondary })}>
+            {note}
+          </Text>
+        ) : null}
       </View>
       {notification.readAt ? null : <View aria-hidden style={styles.dot} />}
     </Pressable>
@@ -258,7 +343,10 @@ function ThreadRow({
   const when = thread.lastAt
     ? isToday(thread.lastAt, new Date())
       ? localTime(thread.lastAt)
-      : shortDate(thread.lastAt, Intl.DateTimeFormat(currentLanguage()).resolvedOptions().timeZone)
+      : shortDate(
+          thread.lastAt,
+          Intl.DateTimeFormat(currentLanguage()).resolvedOptions().timeZone,
+        )
     : '';
   const preview = thread.lastBody
     ? thread.lastSenderName && thread.kind !== 'direct'
@@ -268,21 +356,39 @@ function ThreadRow({
   const kind = [kindLabel, thread.muted ? t('inbox.muted') : null].filter(Boolean).join(' · ');
   const label = `${thread.title}. ${preview}. ${kind}${thread.unread > 0 ? `. ${t('inbox.unread', { count: thread.unread })}` : ''}`;
   return (
-    <Pressable accessibilityRole="link" accessibilityLabel={label} onPress={onPress} style={styles.row}>
+    <Pressable
+      accessibilityRole="link"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={styles.row}
+    >
       {thread.kind === 'plan' ? (
         <View aria-hidden style={styles.thumb}>
-          <Photo source={thread.imagePath ? (imageByPath(thread.imagePath) ?? welcomePhoto) : welcomePhoto} />
+          <Photo
+            source={
+              thread.imagePath ? (imageByPath(thread.imagePath) ?? welcomePhoto) : welcomePhoto
+            }
+          />
         </View>
       ) : (
-        <View aria-hidden style={[styles.initial, { backgroundColor: extra.tints[2].background }]}>
-          <Text allowFontScaling={false} style={type(20, 'bold', { color: extra.tints[2].text })}>
+        <View
+          aria-hidden
+          style={[styles.initial, { backgroundColor: extra.tints[2].background }]}
+        >
+          <Text
+            allowFontScaling={false}
+            style={type(20, 'bold', { color: extra.tints[2].text })}
+          >
             {thread.title.charAt(0).toUpperCase()}
           </Text>
         </View>
       )}
       <View style={styles.rowText}>
         <View style={styles.rowLine}>
-          <Text numberOfLines={1} style={[type(17, 'semibold', { tracking: -0.3 }), styles.grow]}>
+          <Text
+            numberOfLines={1}
+            style={[type(17, 'semibold', { tracking: -0.3 }), styles.grow]}
+          >
             {thread.title}
           </Text>
           <Text style={type(14, 'regular', { color: color.secondary })}>{when}</Text>
@@ -339,7 +445,14 @@ const styles = StyleSheet.create({
   grow: { flex: 1, minWidth: 0 },
   list: { gap: 12 },
   rowHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  updateIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: color.fill, alignItems: 'center', justifyContent: 'center' },
+  updateIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: color.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   updateIconUnread: { backgroundColor: color.brandTint },
   markAll: { alignItems: 'flex-end' },
   row: {
@@ -350,8 +463,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: extra.cardBorder,
   },
-  thumb: { width: 56, height: 56, borderRadius: 16, overflow: 'hidden', backgroundColor: extra.skeleton },
-  initial: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+  thumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: extra.skeleton,
+  },
+  initial: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   rowText: { flex: 1, minWidth: 0, gap: 3 },
   rowLine: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: color.brand },

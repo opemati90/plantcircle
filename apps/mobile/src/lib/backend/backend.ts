@@ -1,4 +1,53 @@
-import type {AppNotification, AuditRow, BlockedPerson, BringItemInput, ChatMessage, Circle, CircleInput, CircleRequest, City, ConversationSettings, DirectRequest, FeedbackState, GroupOrder, Guest, HostSummary, InboxThread, MyPlan, MyPlansScope, OfferOutcome, OrderDecision, OrderInput, OrderState, PendingPolicy, Person, PolicyName, Plan, PlanDetail, PlanInput, Profile, ProfileInput, ProfileStats, Recipe, RecipeDetail, RecipeInput, ReportInput, ReportReceipt, Session, SettingsPatch, StaffAction, StaffAppeal, StaffCase, StaffQueueRow, Suspension, UpNext, UserSettings, WaitlistOffer, WebRsvpInput, WebRsvpResult} from './types';
+import type {
+  AppNotification,
+  AuditRow,
+  BlockedPerson,
+  BringItemInput,
+  ChatMessage,
+  Circle,
+  CircleInput,
+  CircleRequest,
+  City,
+  ConversationSettings,
+  DirectRequest,
+  FeedbackState,
+  GroupOrder,
+  Guest,
+  HostSummary,
+  InboxThread,
+  MyPlan,
+  MyPlansScope,
+  OfferOutcome,
+  OrderDecision,
+  OrderInput,
+  OrderState,
+  PendingPolicy,
+  Person,
+  PolicyName,
+  Plan,
+  PlanDetail,
+  PlanInput,
+  Profile,
+  ProfileInput,
+  ProfileStats,
+  Recipe,
+  RecipeDetail,
+  RecipeInput,
+  ReportInput,
+  ReportReceipt,
+  Session,
+  SettingsPatch,
+  StaffAction,
+  StaffAppeal,
+  StaffCase,
+  StaffQueueRow,
+  Suspension,
+  UpNext,
+  UserSettings,
+  WaitlistOffer,
+  WebRsvpInput,
+  WebRsvpResult,
+} from './types';
 
 export type BackendErrorCode =
   | 'network'
@@ -85,7 +134,11 @@ export interface Backend {
   createCircle(input: CircleInput, idempotencyKey: string): Promise<string>;
   /** Waiting requests for a request Circle. Only its owner and moderators can read them. */
   getCircleRequests(circleId: string): Promise<CircleRequest[]>;
-  respondToCircleRequest(requestId: string, approve: boolean, idempotencyKey: string): Promise<void>;
+  respondToCircleRequest(
+    requestId: string,
+    approve: boolean,
+    idempotencyKey: string,
+  ): Promise<void>;
 
   /** Visible members who share a Circle with the viewer. */
   listPeople(): Promise<Person[]>;
@@ -125,7 +178,11 @@ export interface Backend {
   getOrder(planId: string): Promise<GroupOrder>;
   createOrder(input: OrderInput, idempotencyKey: string): Promise<string>;
   setOrderInterest(itemId: string, quantity: number, idempotencyKey: string): Promise<void>;
-  decideOrder(planId: string, decision: OrderDecision, idempotencyKey: string): Promise<OrderState>;
+  decideOrder(
+    planId: string,
+    decision: OrderDecision,
+    idempotencyKey: string,
+  ): Promise<OrderState>;
   markOrderCollected(planId: string, idempotencyKey: string): Promise<void>;
   /** Marks read up to the newest message shown; the marker never moves back or past that. */
   markConversationRead(conversationId: string, upTo: string): Promise<void>;
@@ -177,9 +234,23 @@ export interface Backend {
   staffQueue(): Promise<StaffQueueRow[]>;
   staffCase(reportId: string): Promise<StaffCase>;
   staffViewMessages(reportId: string, reason: string): Promise<ChatMessage[]>;
-  staffDecide(input: { reportId: string; action: StaffAction; reason: string; rule: string | null; until: string | null }, idempotencyKey: string): Promise<void>;
+  staffDecide(
+    input: {
+      reportId: string;
+      action: StaffAction;
+      reason: string;
+      rule: string | null;
+      until: string | null;
+    },
+    idempotencyKey: string,
+  ): Promise<void>;
   staffAppeals(): Promise<StaffAppeal[]>;
-  staffAppealDecide(appealId: string, uphold: boolean, reason: string, idempotencyKey: string): Promise<void>;
+  staffAppealDecide(
+    appealId: string,
+    uphold: boolean,
+    reason: string,
+    idempotencyKey: string,
+  ): Promise<void>;
   staffAudit(limit: number): Promise<AuditRow[]>;
 
   /** Feedback from a guest who checked in, once the Plan has ended. */
@@ -194,7 +265,12 @@ export interface Backend {
   listCities(): Promise<City[]>;
   /** `cityId: null` lists Plans everywhere (the member has not picked a city). */
   /** `cityIds: null` lists Plans everywhere; a list limits them to those cities. */
-  listUpcomingPlans(query: { cityIds: string[] | null; from: Date; to: Date; format?: 'online' }): Promise<Plan[]>;
+  listUpcomingPlans(query: {
+    cityIds: string[] | null;
+    from: Date;
+    to: Date;
+    format?: 'online';
+  }): Promise<Plan[]>;
   getPlan(planId: string): Promise<PlanDetail>;
   getUpNext(now: Date): Promise<UpNext | null>;
   /** The viewer's own Plans, soonest first (upcoming) or latest first (past). */

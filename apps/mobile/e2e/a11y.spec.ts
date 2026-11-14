@@ -1,6 +1,11 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { freezeTime, signInWithEmail, type FixtureWindow, dismissNotificationPrompt } from './support';
+import {
+  freezeTime,
+  signInWithEmail,
+  type FixtureWindow,
+  dismissNotificationPrompt,
+} from './support';
 
 // Automated scan of the web rendering only. Screen-reader behaviour, Dynamic Type
 // and Reduce Motion must be checked on devices (docs/09-accessibility.md).

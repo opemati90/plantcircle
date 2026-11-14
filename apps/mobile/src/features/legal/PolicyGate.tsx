@@ -4,7 +4,16 @@ import { useAuth } from '../auth/useAuth';
 import { usePendingPolicies } from './queries';
 
 /** Routes that stay open while a required version waits: reading it, closing the account, sign-in. */
-const OPEN = ['/legal', '/profile/account', '/sign-up', '/verify', '/welcome', '/privacy-choices', '/under-18', '/suspended'];
+const OPEN = [
+  '/legal',
+  '/profile/account',
+  '/sign-up',
+  '/verify',
+  '/welcome',
+  '/privacy-choices',
+  '/under-18',
+  '/suspended',
+];
 
 /**
  * A required policy version that is already in effect blocks the app until it is accepted. When

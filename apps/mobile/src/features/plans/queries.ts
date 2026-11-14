@@ -45,7 +45,12 @@ export function useOnlinePlans(enabled: boolean) {
     enabled,
     queryFn: () => {
       const from = new Date();
-      return backend.listUpcomingPlans({ cityIds: null, from, to: new Date(from.getTime() + MONTH_MS), format: 'online' });
+      return backend.listUpcomingPlans({
+        cityIds: null,
+        from,
+        to: new Date(from.getTime() + MONTH_MS),
+        format: 'online',
+      });
     },
   });
 }
@@ -189,7 +194,9 @@ export function useCreateCircle() {
       backend.createCircle(input.circle, input.key),
     onSuccess: () =>
       Promise.all(
-        ['circles', 'my-circles'].map((key) => queryClient.invalidateQueries({ queryKey: [key] })),
+        ['circles', 'my-circles'].map((key) =>
+          queryClient.invalidateQueries({ queryKey: [key] }),
+        ),
       ),
   });
 }

@@ -96,8 +96,7 @@ export function useConversationPrefs(conversationId: string | undefined) {
     queryClient.invalidateQueries({ queryKey: ['settings', conversationId ?? null] });
   return {
     mute: useMutation({
-      mutationFn: (until: string | null) =>
-        backend.setMutedUntil(conversationId ?? '', until),
+      mutationFn: (until: string | null) => backend.setMutedUntil(conversationId ?? '', until),
       onSuccess: refresh,
     }),
     pin: useMutation({

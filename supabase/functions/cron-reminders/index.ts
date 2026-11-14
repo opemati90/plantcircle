@@ -4,7 +4,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 Deno.serve(async () => {
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  );
   const result = await supabase.rpc('notifications_enqueue_due_and_cleanup');
   if (result.error) return new Response(result.error.message, { status: 500 });
   return new Response(`enqueued ${String(result.data)}`);

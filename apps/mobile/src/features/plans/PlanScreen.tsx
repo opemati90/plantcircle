@@ -93,7 +93,17 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function PlanView({ detail, offline = false, savedAt = null, onRetry }: { detail: PlanDetail; offline?: boolean; savedAt?: number | null; onRetry?: () => void }) {
+function PlanView({
+  detail,
+  offline = false,
+  savedAt = null,
+  onRetry,
+}: {
+  detail: PlanDetail;
+  offline?: boolean;
+  savedAt?: number | null;
+  onRetry?: () => void;
+}) {
   const { plan, rsvp, bringItems, address, meetingUrl } = detail;
   const isGoing = rsvp === 'going';
   const router = useRouter();
@@ -176,7 +186,8 @@ function PlanView({ detail, offline = false, savedAt = null, onRetry }: { detail
           : null;
   // A retry re-sends the same idempotency key, so it can never apply twice.
   const retry = () => {
-    if (failed === join && join.variables) join.mutate(join.variables, { onSuccess: afterRsvp });
+    if (failed === join && join.variables)
+      join.mutate(join.variables, { onSuccess: afterRsvp });
     else if (failed === joinWaitlist && joinWaitlist.variables) {
       joinWaitlist.mutate(joinWaitlist.variables, { onSuccess: afterRsvp });
     } else if (failed === cancel && cancel.variables) cancel.mutate(cancel.variables);
@@ -424,7 +435,8 @@ function PlanView({ detail, offline = false, savedAt = null, onRetry }: { detail
             <View style={styles.notes}>
               {isGoing ? (
                 <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
-                  <Text style={styles.strong}>{t('offline.savedOnPhone')}</Text> {t('offline.savedOnPhoneNote')}
+                  <Text style={styles.strong}>{t('offline.savedOnPhone')}</Text>{' '}
+                  {t('offline.savedOnPhoneNote')}
                 </Text>
               ) : null}
               <Text style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}>
@@ -486,77 +498,85 @@ function PlanView({ detail, offline = false, savedAt = null, onRetry }: { detail
         <FloatingActionBar style={styles.bar}>
           <View style={styles.barText}>
             <Text style={type(18, 'bold', { tracking: -0.3 })}>{t('offline.cantChange')}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary })}>{t('offline.reconnect')}</Text>
+            <Text style={type(14, 'regular', { color: color.secondary })}>
+              {t('offline.reconnect')}
+            </Text>
           </View>
-          <Button variant="outline" label={t('common.retry')} onPress={() => { onRetry?.(); }} />
+          <Button
+            variant="outline"
+            label={t('common.retry')}
+            onPress={() => {
+              onRetry?.();
+            }}
+          />
         </FloatingActionBar>
       ) : null}
       {offline ? null : (
-      <FloatingActionBar style={styles.bar}>
-        <View style={styles.barText}>
-          <Text style={type(18, 'bold', { tracking: -0.3 })}>{barTitle}</Text>
-          <Text
-            accessibilityLiveRegion="polite"
-            style={type(14, 'regular', { color: color.secondary })}
-          >
-            {barNote}
-          </Text>
-        </View>
-        {isGoing ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('plan.youreGoing')}
-            accessibilityHint={t('plan.cancelHint')}
-            onPress={() => {
-              setSheet('cancel');
-            }}
-            style={[styles.cta, styles.ctaGoing]}
-          >
-            <Text style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}>
-              {cancel.isPending ? t('plan.cancelling') : t('plan.youreGoing')}
+        <FloatingActionBar style={styles.bar}>
+          <View style={styles.barText}>
+            <Text style={type(18, 'bold', { tracking: -0.3 })}>{barTitle}</Text>
+            <Text
+              accessibilityLiveRegion="polite"
+              style={type(14, 'regular', { color: color.secondary })}
+            >
+              {barNote}
             </Text>
-          </Pressable>
-        ) : rsvp === 'waitlisted' ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('plan.onWaitlistCta')}
-            accessibilityHint={t('plan.leaveHint')}
-            onPress={() => {
-              setSheet('leave');
-            }}
-            style={[styles.cta, styles.ctaGoing]}
-          >
-            <Text style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}>
-              {t('plan.onWaitlistCta')}
-            </Text>
-          </Pressable>
-        ) : rsvp === 'offered' ? (
-          <Button
-            label={t('plan.confirmSpot')}
-            onPress={() => {
-              router.push({ pathname: '/plan/[id]/waitlist-offer', params: { id: plan.id } });
-            }}
-            style={styles.cta}
-          />
-        ) : (
-          <Button
-            label={
-              entering.isError
-                ? t('common.tryAgain')
-                : full
-                  ? t('plan.joinWaitlist')
-                  : t('plan.join')
-            }
-            loading={entering.isPending}
-            onPress={() => {
-              // Retrying re-sends the same idempotency key.
-              if (entering.isError && entering.variables) entering.mutate(entering.variables);
-              else startJoin();
-            }}
-            style={styles.cta}
-          />
-        )}
-      </FloatingActionBar>
+          </View>
+          {isGoing ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('plan.youreGoing')}
+              accessibilityHint={t('plan.cancelHint')}
+              onPress={() => {
+                setSheet('cancel');
+              }}
+              style={[styles.cta, styles.ctaGoing]}
+            >
+              <Text style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}>
+                {cancel.isPending ? t('plan.cancelling') : t('plan.youreGoing')}
+              </Text>
+            </Pressable>
+          ) : rsvp === 'waitlisted' ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('plan.onWaitlistCta')}
+              accessibilityHint={t('plan.leaveHint')}
+              onPress={() => {
+                setSheet('leave');
+              }}
+              style={[styles.cta, styles.ctaGoing]}
+            >
+              <Text style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}>
+                {t('plan.onWaitlistCta')}
+              </Text>
+            </Pressable>
+          ) : rsvp === 'offered' ? (
+            <Button
+              label={t('plan.confirmSpot')}
+              onPress={() => {
+                router.push({ pathname: '/plan/[id]/waitlist-offer', params: { id: plan.id } });
+              }}
+              style={styles.cta}
+            />
+          ) : (
+            <Button
+              label={
+                entering.isError
+                  ? t('common.tryAgain')
+                  : full
+                    ? t('plan.joinWaitlist')
+                    : t('plan.join')
+              }
+              loading={entering.isPending}
+              onPress={() => {
+                // Retrying re-sends the same idempotency key.
+                if (entering.isError && entering.variables) entering.mutate(entering.variables);
+                else startJoin();
+              }}
+              style={styles.cta}
+            />
+          )}
+        </FloatingActionBar>
       )}
 
       <BottomSheet
@@ -670,14 +690,27 @@ export default function PlanScreen() {
   }
   // Offline with a saved copy: the Plan stays readable; changes wait for the connection.
   if (isOffline(plan) && plan.data) {
-    return <PlanView detail={plan.data} offline savedAt={plan.dataUpdatedAt} onRetry={() => void plan.refetch()} />;
+    return (
+      <PlanView
+        detail={plan.data}
+        offline
+        savedAt={plan.dataUpdatedAt}
+        onRetry={() => void plan.refetch()}
+      />
+    );
   }
   if (plan.isError) {
     const code = errorCode(plan.error);
     const missing = code === 'not_found';
     return (
       <EmptyState
-        {...(missing ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
+        {...(missing
+          ? {}
+          : {
+              onSavedPlans: () => {
+                router.push('/my-plans');
+              },
+            })}
         title={
           missing
             ? t('plan.unavailableTitle')
@@ -718,7 +751,14 @@ const CLUSTER_POSITIONS = [
 ] as const;
 
 const styles = StyleSheet.create({
-  offlineBar: { position: 'absolute', left: 16, right: 16, borderRadius: 12, overflow: 'hidden', zIndex: 2 },
+  offlineBar: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    zIndex: 2,
+  },
   screen: { flex: 1, backgroundColor: color.surface },
   hero: { height: 420, backgroundColor: color.ink },
   heroText: { position: 'absolute', left: 24, right: 24, bottom: 30, gap: 10 },

@@ -22,7 +22,15 @@ import { PeopleTab } from '../people/PeopleTab';
 import { getBrowse, setBrowse, type Browse } from './browseStore';
 import { catalogs } from '@plantcircle/copy';
 import { currentLanguage } from '../../lib/i18n';
-import { activeFilterCount, filterPlans, NO_FILTERS, searchPlans, TRY_INSTEAD, type ExploreTab, type PlanFilters } from './exploreRules';
+import {
+  activeFilterCount,
+  filterPlans,
+  NO_FILTERS,
+  searchPlans,
+  TRY_INSTEAD,
+  type ExploreTab,
+  type PlanFilters,
+} from './exploreRules';
 import { FiltersSheet } from './FiltersSheet';
 import { useNow } from '../../lib/useNow';
 import { FilterIcon } from '../../components/icons';
@@ -53,22 +61,45 @@ function PlansTab({
     // No results, as the NoResults design has it: host it yourself, or try another word.
     return searching ? (
       <View style={styles.noResults}>
-        <Text role="status" accessibilityLiveRegion="polite" style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}>
+        <Text
+          role="status"
+          accessibilityLiveRegion="polite"
+          style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
+        >
           {t('explore.resultsCount', { count: 0 }).toUpperCase()}
         </Text>
         <Text accessibilityRole="header" style={type(22, 'bold', { tracking: -0.6 })}>
-          {query.trim() ? t('explore.noResults.title', { query: query.trim() }) : t('explore.noResults.filtersTitle')}
+          {query.trim()
+            ? t('explore.noResults.title', { query: query.trim() })
+            : t('explore.noResults.filtersTitle')}
         </Text>
-        <Text style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}>{t('explore.noResults.lead')}</Text>
+        <Text style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}>
+          {t('explore.noResults.lead')}
+        </Text>
         <View style={styles.noResultsCard}>
           <Text style={type(16, 'semibold')}>{t('explore.noResults.hostTitle')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{t('explore.noResults.hostText')}</Text>
-          <Button variant="outline" label={t('explore.noResults.hostAction')} onPress={onHost} />
+          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+            {t('explore.noResults.hostText')}
+          </Text>
+          <Button
+            variant="outline"
+            label={t('explore.noResults.hostAction')}
+            onPress={onHost}
+          />
         </View>
-        <Text style={type(14, 'semibold', { color: color.secondary })}>{t('explore.noResults.tryInstead')}</Text>
+        <Text style={type(14, 'semibold', { color: color.secondary })}>
+          {t('explore.noResults.tryInstead')}
+        </Text>
         <View style={styles.tryRow}>
           {TRY_INSTEAD.map((word) => (
-            <Pressable key={word} accessibilityRole="button" onPress={() => { onTry(t(`explore.noResults.try.${word}`)); }} style={styles.tryChip}>
+            <Pressable
+              key={word}
+              accessibilityRole="button"
+              onPress={() => {
+                onTry(t(`explore.noResults.try.${word}`));
+              }}
+              style={styles.tryChip}
+            >
               <Text style={type(14, 'semibold')}>{t(`explore.noResults.try.${word}`)}</Text>
             </Pressable>
           ))}
@@ -85,7 +116,11 @@ function PlansTab({
   return (
     <View style={styles.list}>
       {searching ? (
-        <Text role="status" accessibilityLiveRegion="polite" style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}>
+        <Text
+          role="status"
+          accessibilityLiveRegion="polite"
+          style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
+        >
           {t('explore.resultsCount', { count: shown.length }).toUpperCase()}
         </Text>
       ) : null}
@@ -164,7 +199,9 @@ export default function ExploreScreen() {
   // The clock ticks, so Today and the weekend roll over at midnight while Explore stays open.
   const now = useNow();
   const filtered = plans.data ? filterPlans(plans.data, filters, now, viewerZone) : [];
-  const draftCount = plans.data ? searchPlans(filterPlans(plans.data, draft, now, viewerZone), query).length : 0;
+  const draftCount = plans.data
+    ? searchPlans(filterPlans(plans.data, draft, now, viewerZone), query).length
+    : 0;
   const activeCount = activeFilterCount(filters);
 
   function renderContent() {
@@ -214,7 +251,9 @@ export default function ExploreScreen() {
       const offline = errorCode(plans.error) === 'network';
       return (
         <EmptyState
-          onSavedPlans={() => { router.push('/my-plans'); }}
+          onSavedPlans={() => {
+            router.push('/my-plans');
+          }}
           title={offline ? t('errors.offlineTitle') : t('errors.serverTitle')}
           text={offline ? t('errors.offlineText') : t('errors.serverText')}
           {...(offline ? { icon: <OfflineIcon size={36} strokeWidth={1.7} /> } : {})}
@@ -276,62 +315,78 @@ export default function ExploreScreen() {
 
       {tab === 'plans' || tab === 'circles' || tab === 'learn' ? (
         <View style={styles.searchRow}>
-        <TextInput
-          accessibilityLabel={
-            tab === 'circles'
-              ? t('circles.searchLabel')
-              : tab === 'learn'
-                ? t('learn.searchLabel')
-                : t('explore.search')
-          }
-          placeholder={
-            tab === 'circles'
-              ? t('circles.searchPlaceholder')
-              : tab === 'learn'
-                ? t('learn.searchPlaceholder')
-                : t('explore.searchPlaceholder')
-          }
-          placeholderTextColor={color.secondary}
-          value={query}
-          onChangeText={setQuery}
-          returnKeyType="search"
-          autoCorrect={false}
-          clearButtonMode="while-editing"
-          style={[styles.search, styles.grow, type(17)]}
-        />
-        {tab === 'plans' ? (
-          <Pressable
-            testID="explore-filters"
-            accessibilityRole="button"
-            accessibilityLabel={activeCount > 0 ? t('explore.filters.buttonActive', { count: activeCount }) : t('explore.filters.button')}
-            onPress={() => {
-              setDraft(filters);
-              setFiltersOpen(true);
-            }}
-            style={[styles.filterButton, activeCount > 0 && styles.filterButtonActive]}
-          >
-            <FilterIcon size={18} strokeWidth={2} color={activeCount > 0 ? '#FFFFFF' : color.ink} />
-            {activeCount > 0 ? <Text style={type(13, 'bold', { color: '#FFFFFF' })}>{activeCount}</Text> : null}
-          </Pressable>
-        ) : null}
+          <TextInput
+            accessibilityLabel={
+              tab === 'circles'
+                ? t('circles.searchLabel')
+                : tab === 'learn'
+                  ? t('learn.searchLabel')
+                  : t('explore.search')
+            }
+            placeholder={
+              tab === 'circles'
+                ? t('circles.searchPlaceholder')
+                : tab === 'learn'
+                  ? t('learn.searchPlaceholder')
+                  : t('explore.searchPlaceholder')
+            }
+            placeholderTextColor={color.secondary}
+            value={query}
+            onChangeText={setQuery}
+            returnKeyType="search"
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+            style={[styles.search, styles.grow, type(17)]}
+          />
+          {tab === 'plans' ? (
+            <Pressable
+              testID="explore-filters"
+              accessibilityRole="button"
+              accessibilityLabel={
+                activeCount > 0
+                  ? t('explore.filters.buttonActive', { count: activeCount })
+                  : t('explore.filters.button')
+              }
+              onPress={() => {
+                setDraft(filters);
+                setFiltersOpen(true);
+              }}
+              style={[styles.filterButton, activeCount > 0 && styles.filterButtonActive]}
+            >
+              <FilterIcon
+                size={18}
+                strokeWidth={2}
+                color={activeCount > 0 ? '#FFFFFF' : color.ink}
+              />
+              {activeCount > 0 ? (
+                <Text style={type(13, 'bold', { color: '#FFFFFF' })}>{activeCount}</Text>
+              ) : null}
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
       {tab === 'plans' && activeCount > 0 ? (
         <View style={styles.activeChips}>
-          {(['when', 'where', 'price'] as const).filter((k) => filters[k] !== 'any').map((k) => (
-            <Pressable
-              key={k}
-              accessibilityRole="button"
-              accessibilityLabel={t('explore.filters.remove', { name: t(`explore.filters.${k}Options.${filters[k]}`) })}
-              onPress={() => {
-                setFilters({ ...filters, [k]: 'any' });
-              }}
-              style={styles.activeChip}
-            >
-              <Text style={type(13, 'semibold')}>{t(`explore.filters.${k}Options.${filters[k]}`)}</Text>
-              <Text style={type(13, 'semibold', { color: color.secondary })}>×</Text>
-            </Pressable>
-          ))}
+          {(['when', 'where', 'price'] as const)
+            .filter((k) => filters[k] !== 'any')
+            .map((k) => (
+              <Pressable
+                key={k}
+                accessibilityRole="button"
+                accessibilityLabel={t('explore.filters.remove', {
+                  name: t(`explore.filters.${k}Options.${filters[k]}`),
+                })}
+                onPress={() => {
+                  setFilters({ ...filters, [k]: 'any' });
+                }}
+                style={styles.activeChip}
+              >
+                <Text style={type(13, 'semibold')}>
+                  {t(`explore.filters.${k}Options.${filters[k]}`)}
+                </Text>
+                <Text style={type(13, 'semibold', { color: color.secondary })}>×</Text>
+              </Pressable>
+            ))}
         </View>
       ) : null}
 
@@ -412,14 +467,46 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   grow: { flex: 1, minWidth: 0 },
-  filterButton: { minWidth: 48, height: 48, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: radius.control, borderWidth: 1, borderColor: color.borderControl },
+  filterButton: {
+    minWidth: 48,
+    height: 48,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: color.borderControl,
+  },
   filterButtonActive: { backgroundColor: color.ink, borderColor: color.ink },
   activeChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  activeChip: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: size.touchMin, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: color.fill },
+  activeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: size.touchMin,
+    paddingHorizontal: 14,
+    borderRadius: radius.pill,
+    backgroundColor: color.fill,
+  },
   noResults: { gap: 12, paddingTop: 8 },
-  noResultsCard: { gap: 8, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: color.borderControl },
+  noResultsCard: {
+    gap: 8,
+    padding: 16,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: color.borderControl,
+  },
   tryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tryChip: { minHeight: size.touchMin, paddingHorizontal: 16, justifyContent: 'center', borderRadius: radius.pill, borderWidth: 1, borderColor: color.borderControl },
+  tryChip: {
+    minHeight: size.touchMin,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderControl,
+  },
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 20, gap: 18 },
   search: {

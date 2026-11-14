@@ -307,7 +307,12 @@ export interface Profile {
   role: 'member' | 'staff';
 }
 
-export const PERSON_CONNECTIONS = ['none', 'requested', 'requested_by_them', 'connected'] as const;
+export const PERSON_CONNECTIONS = [
+  'none',
+  'requested',
+  'requested_by_them',
+  'connected',
+] as const;
 export type PersonConnection = (typeof PERSON_CONNECTIONS)[number];
 
 export const personRowSchema = z.object({
@@ -435,7 +440,13 @@ export interface RecipeInput {
   steps: string[];
 }
 
-export const GUEST_STATES = ['going', 'checked_in', 'no_show', 'waitlisted', 'offered'] as const;
+export const GUEST_STATES = [
+  'going',
+  'checked_in',
+  'no_show',
+  'waitlisted',
+  'offered',
+] as const;
 export type GuestState = (typeof GUEST_STATES)[number];
 
 export const guestRowSchema = z.object({
@@ -543,7 +554,9 @@ export interface DirectRequest {
   createdAt: string;
 }
 
-export const toDirectRequest = (row: z.infer<typeof messageRequestCardSchema>): DirectRequest => ({
+export const toDirectRequest = (
+  row: z.infer<typeof messageRequestCardSchema>,
+): DirectRequest => ({
   id: row.id,
   fromId: row.from_id,
   fromName: row.from_name,
@@ -606,7 +619,15 @@ export const toInboxThread = (row: z.infer<typeof inboxRowSchema>): InboxThread 
   imagePath: row.image_path,
 });
 
-export const ORDER_STATES = ['collecting','below_target','extended','locked','ready','completed','cancelled'] as const;
+export const ORDER_STATES = [
+  'collecting',
+  'below_target',
+  'extended',
+  'locked',
+  'ready',
+  'completed',
+  'cancelled',
+] as const;
 export type OrderState = (typeof ORDER_STATES)[number];
 
 export const orderCardSchema = z.object({
@@ -717,10 +738,25 @@ export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
 
 // Safety (C10). Report and block on every person, Plan, post, message and group order.
 
-export const REPORT_TARGETS = ['person', 'plan', 'circle', 'recipe', 'message', 'order', 'app'] as const;
+export const REPORT_TARGETS = [
+  'person',
+  'plan',
+  'circle',
+  'recipe',
+  'message',
+  'order',
+  'app',
+] as const;
 export type ReportTarget = (typeof REPORT_TARGETS)[number];
 export const REPORT_CATEGORIES = [
-  'harassment', 'threats', 'stalking', 'scam', 'unsafe_place', 'allergen_deception', 'accessibility', 'other',
+  'harassment',
+  'threats',
+  'stalking',
+  'scam',
+  'unsafe_place',
+  'allergen_deception',
+  'accessibility',
+  'other',
 ] as const;
 export type ReportCategory = (typeof REPORT_CATEGORIES)[number];
 
@@ -766,7 +802,14 @@ export const suspensionSchema = z.object({
   appeal_status: z.enum(['open', 'upheld', 'reversed']).nullable(),
 });
 
-export const STAFF_ACTIONS = ['warn', 'freeze_messages', 'remove_content', 'suspend', 'ban', 'no_action'] as const;
+export const STAFF_ACTIONS = [
+  'warn',
+  'freeze_messages',
+  'remove_content',
+  'suspend',
+  'ban',
+  'no_action',
+] as const;
 export type StaffAction = (typeof STAFF_ACTIONS)[number];
 
 export interface StaffQueueRow {
@@ -800,8 +843,20 @@ export interface StaffCase extends StaffQueueRow {
   targetUserName: string | null;
   evidenceCount: number;
   history: { when: string; what: string }[];
-  actions: { id: string; action: string; reason: string; until: string | null; createdAt: string }[];
-  appeal: { id: string; statement: string; status: string; originalAction: string; originalReason: string } | null;
+  actions: {
+    id: string;
+    action: string;
+    reason: string;
+    until: string | null;
+    createdAt: string;
+  }[];
+  appeal: {
+    id: string;
+    statement: string;
+    status: string;
+    originalAction: string;
+    originalReason: string;
+  } | null;
 }
 
 export const staffCaseSchema = staffQueueRowSchema.extend({
@@ -809,8 +864,24 @@ export const staffCaseSchema = staffQueueRowSchema.extend({
   target_user_name: z.string().nullable(),
   evidence_count: z.number().int(),
   history: z.array(z.object({ when: z.string(), what: z.string() })),
-  actions: z.array(z.object({ id: z.string(), action: z.string(), reason: z.string(), until: z.string().nullable(), created_at: z.string() })),
-  appeal: z.object({ id: z.string(), statement: z.string(), status: z.string(), original_action: z.string(), original_reason: z.string() }).nullable(),
+  actions: z.array(
+    z.object({
+      id: z.string(),
+      action: z.string(),
+      reason: z.string(),
+      until: z.string().nullable(),
+      created_at: z.string(),
+    }),
+  ),
+  appeal: z
+    .object({
+      id: z.string(),
+      statement: z.string(),
+      status: z.string(),
+      original_action: z.string(),
+      original_reason: z.string(),
+    })
+    .nullable(),
 });
 
 export interface StaffAppeal {
@@ -955,7 +1026,10 @@ export function settingsPatchToRow(patch: SettingsPatch): Record<string, boolean
     notifPromptDismissed: 'notif_prompt_dismissed',
   };
   const row: Record<string, boolean | number> = {};
-  for (const [k, v] of Object.entries(patch) as [keyof SettingsPatch, boolean | number | undefined][]) {
+  for (const [k, v] of Object.entries(patch) as [
+    keyof SettingsPatch,
+    boolean | number | undefined,
+  ][]) {
     if (v !== undefined) row[map[k]] = v;
   }
   return row;
@@ -1005,14 +1079,31 @@ export interface ProfileStats {
   circles: number;
   connections: number;
 }
-export const profileStatsSchema = z.object({ plans: z.number().int(), circles: z.number().int(), connections: z.number().int() });
+export const profileStatsSchema = z.object({
+  plans: z.number().int(),
+  circles: z.number().int(),
+  connections: z.number().int(),
+});
 
 // Notifications (C14). In-app rows the Inbox shows under Updates.
 
 export const NOTIFICATION_TYPES = [
-  'rsvp_confirmed', 'reminder_day_before', 'reminder_2h', 'address_unlocked', 'waitlist_offer', 'plan_changed',
-  'plan_cancelled', 'plan_on_hold', 'new_message', 'message_request', 'circle_approved', 'order_closing',
-  'order_decision', 'order_ready', 'report_update', 'moderation_notice',
+  'rsvp_confirmed',
+  'reminder_day_before',
+  'reminder_2h',
+  'address_unlocked',
+  'waitlist_offer',
+  'plan_changed',
+  'plan_cancelled',
+  'plan_on_hold',
+  'new_message',
+  'message_request',
+  'circle_approved',
+  'order_closing',
+  'order_decision',
+  'order_ready',
+  'report_update',
+  'moderation_notice',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -1033,7 +1124,9 @@ export const notificationRowSchema = z.object({
   created_at: z.string(),
 });
 
-export const toNotification = (row: z.infer<typeof notificationRowSchema>): AppNotification => ({
+export const toNotification = (
+  row: z.infer<typeof notificationRowSchema>,
+): AppNotification => ({
   id: row.id,
   type: row.type,
   payload: row.payload,

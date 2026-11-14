@@ -22,7 +22,12 @@ export function PeopleTab() {
   // Undefined is still loading the session. A disabled query stays pending, so signed-out is checked first.
   if (session === undefined) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.list}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.list}
+      >
         <Skeleton width="100%" height={112} radius={radius.card} />
       </View>
     );
@@ -46,7 +51,12 @@ export function PeopleTab() {
   }
   if (people.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.list}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.list}
+      >
         <Skeleton width="100%" height={112} radius={radius.card} />
       </View>
     );
@@ -55,7 +65,9 @@ export function PeopleTab() {
     const offline = errorCode(people.error) === 'network';
     return (
       <EmptyState
-        onSavedPlans={() => { router.push('/my-plans'); }}
+        onSavedPlans={() => {
+          router.push('/my-plans');
+        }}
         title={offline ? t('errors.offlineTitle') : t('errors.serverTitle')}
         text={offline ? t('errors.offlineText') : t('errors.serverText')}
         {...(offline ? { icon: <OfflineIcon size={36} strokeWidth={1.7} /> } : {})}
@@ -85,8 +97,14 @@ export function PeopleTab() {
       ) : (
         people.data.map((person) => (
           <View key={person.userId} style={styles.row}>
-            <View aria-hidden style={[styles.avatar, { backgroundColor: extra.tints[1].background }]}>
-              <Text allowFontScaling={false} style={type(17, 'bold', { color: extra.tints[1].text })}>
+            <View
+              aria-hidden
+              style={[styles.avatar, { backgroundColor: extra.tints[1].background }]}
+            >
+              <Text
+                allowFontScaling={false}
+                style={type(17, 'bold', { color: extra.tints[1].text })}
+              >
                 {person.displayName.charAt(0).toUpperCase()}
               </Text>
             </View>
@@ -100,7 +118,15 @@ export function PeopleTab() {
               accessibilityRole="link"
               accessibilityLabel={t('safety.reportName', { name: person.displayName })}
               onPress={() => {
-                router.push({ pathname: '/report', params: { type: 'person', id: person.userId, name: person.displayName, userId: person.userId } });
+                router.push({
+                  pathname: '/report',
+                  params: {
+                    type: 'person',
+                    id: person.userId,
+                    name: person.displayName,
+                    userId: person.userId,
+                  },
+                });
               }}
               style={styles.iconAction}
             >
@@ -169,7 +195,13 @@ const styles = StyleSheet.create({
   },
   grow: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56 },
-  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   text: { flex: 1, minWidth: 0, gap: 2 },
   iconAction: {
     width: 44,

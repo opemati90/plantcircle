@@ -15,7 +15,9 @@ async function signInToChoices(page: import('@playwright/test').Page): Promise<v
   await page.getByRole('button', { name: 'Verify' }).click();
 }
 
-test('the first sign-in asks the privacy choices once, with consent off by default', async ({ page }) => {
+test('the first sign-in asks the privacy choices once, with consent off by default', async ({
+  page,
+}) => {
   await signInToChoices(page);
   await expect(page.getByRole('heading', { name: 'Your privacy choices' })).toBeVisible();
   await expect(page.getByText('Always on')).toBeVisible();
@@ -26,7 +28,11 @@ test('the first sign-in asks the privacy choices once, with consent off by defau
   await expect(page).toHaveURL(/home/);
   // Dev fixtures persist a moment after the screen moves on; wait for that before a full reload.
   await expect
-    .poll(() => page.evaluate(() => (localStorage.getItem('pc.fixtures.v2') ?? '').includes('"analyticsConsent":true')))
+    .poll(() =>
+      page.evaluate(() =>
+        (localStorage.getItem('pc.fixtures.v2') ?? '').includes('"analyticsConsent":true'),
+      ),
+    )
     .toBe(true);
 
   // Not asked again; the choice is kept and can be changed from Privacy.
@@ -37,7 +43,9 @@ test('the first sign-in asks the privacy choices once, with consent off by defau
   await expect(page).toHaveURL(/profile\/privacy/);
 });
 
-test('notification settings save switch by switch and keep changes always on', async ({ page }) => {
+test('notification settings save switch by switch and keep changes always on', async ({
+  page,
+}) => {
   await signInToChoices(page);
   await page.getByRole('button', { name: 'Only needed' }).click();
   await page.goto('/profile');
@@ -54,7 +62,9 @@ test('notification settings save switch by switch and keep changes always on', a
   await expect(page.getByRole('switch', { name: /Quiet hours, 22:00–08:00/ })).toBeChecked();
 });
 
-test('a copy of the data can be requested once, and deleting the account is a two-step choice that signs out', async ({ page }) => {
+test('a copy of the data can be requested once, and deleting the account is a two-step choice that signs out', async ({
+  page,
+}) => {
   await signInToChoices(page);
   await page.getByRole('button', { name: 'Only needed' }).click();
   await page.goto('/profile');
@@ -74,7 +84,9 @@ test('a copy of the data can be requested once, and deleting the account is a tw
   await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
 });
 
-test('the accessibility statement names the standard, the gaps, and opens a report about the app', async ({ page }) => {
+test('the accessibility statement names the standard, the gaps, and opens a report about the app', async ({
+  page,
+}) => {
   await signInToChoices(page);
   await page.getByRole('button', { name: 'Only needed' }).click();
   await page.goto('/profile/accessibility');
@@ -82,7 +94,9 @@ test('the accessibility statement names the standard, the gaps, and opens a repo
   await expect(page.getByText('Known gap: waitlist offers')).toBeVisible();
   await page.getByRole('button', { name: 'Report a problem' }).click();
   await expect(page.getByRole('textbox', { name: 'What isn’t working?' })).toBeVisible();
-  await page.getByRole('textbox', { name: 'What isn’t working?' }).fill('The day strip cannot be reached with VoiceOver.');
+  await page
+    .getByRole('textbox', { name: 'What isn’t working?' })
+    .fill('The day strip cannot be reached with VoiceOver.');
   await page.getByRole('checkbox', { name: /accurate and complete/ }).click();
   await page.getByRole('button', { name: 'Send report' }).click();
   await expect(page.getByText(/Case PC-\d+/)).toBeVisible();

@@ -81,9 +81,10 @@ function useRefreshBring(planId: string) {
   const queryClient = useQueryClient();
   return () =>
     Promise.all(
-      [['plan', planId], ['hostSummary', planId]].map((key) =>
-        queryClient.invalidateQueries({ queryKey: key }),
-      ),
+      [
+        ['plan', planId],
+        ['hostSummary', planId],
+      ].map((key) => queryClient.invalidateQueries({ queryKey: key })),
     );
 }
 

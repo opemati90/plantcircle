@@ -18,7 +18,9 @@ test('a member reports a Plan and gets a case reference, anonymously', async ({ 
 
   await expect(page.getByRole('heading', { name: 'Tell us what happened' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Send report' })).toBeDisabled();
-  await page.getByRole('textbox', { name: 'What’s wrong with this Plan?' }).fill('The address is a construction site with no lighting.');
+  await page
+    .getByRole('textbox', { name: 'What’s wrong with this Plan?' })
+    .fill('The address is a construction site with no lighting.');
   await expect(page.getByRole('button', { name: 'Send report' })).toBeDisabled();
   await page.getByRole('checkbox', { name: /accurate and complete/ }).click();
   await page.getByRole('button', { name: 'Send report' }).click();
@@ -32,7 +34,9 @@ test('a member reports a Plan and gets a case reference, anonymously', async ({ 
   await expect(page).toHaveURL(/home/);
 });
 
-test('reporting a person can also block them; blocked people are listed under Privacy and can be unblocked', async ({ page }) => {
+test('reporting a person can also block them; blocked people are listed under Privacy and can be unblocked', async ({
+  page,
+}) => {
   await signInWithEmail(page, '/explore');
   await page.getByRole('tab', { name: 'Circles', exact: true }).click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
@@ -44,7 +48,9 @@ test('reporting a person can also block them; blocked people are listed under Pr
   await page.getByRole('link', { name: 'Report Mia K.' }).click();
   await page.getByRole('radio', { name: 'Stalking or unwanted contact' }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('textbox', { name: 'What’s wrong with this person?' }).fill('Kept messaging after I said no.');
+  await page
+    .getByRole('textbox', { name: 'What’s wrong with this person?' })
+    .fill('Kept messaging after I said no.');
   await page.getByRole('checkbox', { name: /accurate and complete/ }).click();
   await page.getByRole('button', { name: 'Send report' }).click();
 
@@ -52,7 +58,9 @@ test('reporting a person can also block them; blocked people are listed under Pr
   await expect(blockSwitch).not.toBeChecked();
   await blockSwitch.click();
   await expect(blockSwitch).toBeChecked();
-  await expect(page.getByText('Mia K. is blocked. You can undo this under Privacy.')).toBeVisible();
+  await expect(
+    page.getByText('Mia K. is blocked. You can undo this under Privacy.'),
+  ).toBeVisible();
 
   // Gone from People, listed under Privacy, and a way back.
   await page.goto('/explore');
@@ -65,7 +73,9 @@ test('reporting a person can also block them; blocked people are listed under Pr
   await expect(page.getByText('Nobody blocked')).toBeVisible();
 });
 
-test('a paused account sees the statement of reasons, cannot join, and can appeal once', async ({ page }) => {
+test('a paused account sees the statement of reasons, cannot join, and can appeal once', async ({
+  page,
+}) => {
   await signInWithEmail(page, '/home');
   await page.evaluate(() => {
     (window as FixtureWindow).__pcFixtures?.suspend();
@@ -73,12 +83,20 @@ test('a paused account sees the statement of reasons, cannot join, and can appea
   await page.reload();
   await page.getByRole('link', { name: 'Your account is paused. See why' }).click();
 
-  await expect(page.getByRole('heading', { name: /Your account is paused until/ })).toBeVisible();
-  await expect(page.getByText('Repeated messages after a member declined contact')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: /Your account is paused until/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByText('Repeated messages after a member declined contact'),
+  ).toBeVisible();
   await expect(page.getByText('Community Rules §3 — no unwanted contact')).toBeVisible();
-  await expect(page.getByText('A person reviewed it; a tool only sorted the report.')).toBeVisible();
+  await expect(
+    page.getByText('A person reviewed it; a tool only sorted the report.'),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Appeal this decision' }).click();
-  await page.getByRole('textbox', { name: 'Appeal this decision' }).fill('It was a group order question, not an ad.');
+  await page
+    .getByRole('textbox', { name: 'Appeal this decision' })
+    .fill('It was a group order question, not an ad.');
   await page.getByRole('button', { name: 'Send appeal' }).click();
   await expect(page.getByText('Your appeal is with a second reviewer')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Other ways to challenge it' })).toBeVisible();
@@ -87,16 +105,22 @@ test('a paused account sees the statement of reasons, cannot join, and can appea
   await page.goto('/home');
   await page.getByRole('link', { name: /Sunday Community Potluck/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
-  await expect(page.getByText('Posting, RSVPs and messaging are paused. See why under Profile.')).toBeVisible();
+  await expect(
+    page.getByText('Posting, RSVPs and messaging are paused. See why under Profile.'),
+  ).toBeVisible();
 });
 
-test('staff see the queue in the web console and apply a decision with a reason, which is logged', async ({ page }) => {
+test('staff see the queue in the web console and apply a decision with a reason, which is logged', async ({
+  page,
+}) => {
   await signInWithEmail(page, '/home');
   await page.getByRole('link', { name: /West African Cooking Night/ }).click();
   await page.getByRole('link', { name: 'Report this Plan' }).click();
   await page.getByRole('radio', { name: 'Scam or fraud' }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('textbox', { name: 'What’s wrong with this Plan?' }).fill('The host asked everyone to pay in advance to a personal account.');
+  await page
+    .getByRole('textbox', { name: 'What’s wrong with this Plan?' })
+    .fill('The host asked everyone to pay in advance to a personal account.');
   await page.getByRole('checkbox', { name: /accurate and complete/ }).click();
   await page.getByRole('button', { name: 'Send report' }).click();
   const ref = (await page.getByText(/Case PC-\d+/).textContent())?.replace('Case ', '') ?? '';
@@ -111,15 +135,21 @@ test('staff see the queue in the web console and apply a decision with a reason,
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Safety console' })).toBeVisible();
   await page.getByRole('button', { name: new RegExp(`${ref} · Scam or fraud`) }).click();
-  await expect(page.getByText('The host asked everyone to pay in advance to a personal account.')).toBeVisible();
+  await expect(
+    page.getByText('The host asked everyone to pay in advance to a personal account.'),
+  ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Choose an action' })).toBeDisabled();
   await page.getByRole('radio', { name: 'Warn' }).click();
-  await page.getByRole('textbox', { name: /^Reason/ }).fill('Advance payments outside the app are not allowed.');
+  await page
+    .getByRole('textbox', { name: /^Reason/ })
+    .fill('Advance payments outside the app are not allowed.');
   await page.getByRole('button', { name: 'Apply decision' }).click();
   await expect(page.getByText('Decision applied')).toBeVisible();
   await expect(page.getByText(/Warn · Advance payments/)).toBeVisible();
 
   await page.getByRole('tab', { name: 'Audit log' }).click();
   await expect(page.getByText(/staff\.warn/)).toBeVisible();
-  await expect(page.getByText('Advance payments outside the app are not allowed.')).toBeVisible();
+  await expect(
+    page.getByText('Advance payments outside the app are not allowed.'),
+  ).toBeVisible();
 });

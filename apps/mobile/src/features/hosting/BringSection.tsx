@@ -88,10 +88,14 @@ export function BringSection({
         {t('host.bringTitle')}
       </Text>
       {!editable ? (
-        <Text style={type(15, 'regular', { color: color.secondary })}>{t('host.bringLocked')}</Text>
+        <Text style={type(15, 'regular', { color: color.secondary })}>
+          {t('host.bringLocked')}
+        </Text>
       ) : null}
       {items.length === 0 ? (
-        <Text style={type(15, 'regular', { color: color.secondary })}>{t('host.bringEmpty')}</Text>
+        <Text style={type(15, 'regular', { color: color.secondary })}>
+          {t('host.bringEmpty')}
+        </Text>
       ) : (
         items.map((item) => {
           const claimed = item.claimedCount;
@@ -162,7 +166,9 @@ export function BringSection({
         title={sheet?.kind === 'edit' ? t('host.bringSheetEdit') : t('host.bringSheetAdd')}
       >
         <View style={styles.form}>
-          <Text style={type(14, 'semibold', { color: color.secondary })}>{t('host.bringLabel')}</Text>
+          <Text style={type(14, 'semibold', { color: color.secondary })}>
+            {t('host.bringLabel')}
+          </Text>
           <TextInput
             accessibilityLabel={t('host.bringLabel')}
             value={label}
@@ -170,7 +176,9 @@ export function BringSection({
             maxLength={120}
             style={[styles.field, type(17)]}
           />
-          <Text style={type(14, 'semibold', { color: color.secondary })}>{t('host.bringQuantity')}</Text>
+          <Text style={type(14, 'semibold', { color: color.secondary })}>
+            {t('host.bringQuantity')}
+          </Text>
           <Stepper
             value={quantity}
             min={MIN_QUANTITY}
@@ -185,12 +193,7 @@ export function BringSection({
               {t('host.error')}
             </Text>
           ) : null}
-          <Button
-            label={t('host.bringSave')}
-            disabled={!valid}
-            loading={busy}
-            onPress={save}
-          />
+          <Button label={t('host.bringSave')} disabled={!valid} loading={busy} onPress={save} />
         </View>
       </BottomSheet>
     </View>

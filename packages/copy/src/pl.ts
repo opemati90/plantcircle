@@ -412,7 +412,8 @@ export const pl: Catalog = {
     connected: 'Połączono',
     error: 'Nie udało się połączyć. Spróbuj ponownie.',
     visibleTitle: 'Pokazuj mnie w Osobach',
-    visibleLead: 'Członkowie Twoich kręgów widzą Twoje imię i miasto i mogą się z Tobą połączyć. Domyślnie wyłączone.',
+    visibleLead:
+      'Członkowie Twoich kręgów widzą Twoje imię i miasto i mogą się z Tobą połączyć. Domyślnie wyłączone.',
     signedOut: {
       title: 'Zaloguj się, aby zobaczyć osoby',
       text: 'Osoby pojawiają się, gdy się zalogujesz i dzielisz krąg.',
@@ -512,7 +513,8 @@ export const pl: Catalog = {
     windowClosed: 'Meldowanie jest zamknięte dla tego spotkania.',
     endButton: 'Zakończ spotkanie',
     endTitle: 'Zakończyć to spotkanie?',
-    endLead: 'Goście, którzy się nie zameldowali, zostaną oznaczeni jako nieobecni. Tego nie da się cofnąć.',
+    endLead:
+      'Goście, którzy się nie zameldowali, zostaną oznaczeni jako nieobecni. Tego nie da się cofnąć.',
     endConfirm: 'Zakończ spotkanie',
     ended: 'To spotkanie się zakończyło.',
     endTooEarly: 'Możesz zakończyć spotkanie, gdy się rozpocznie.',
@@ -648,8 +650,10 @@ export const pl: Catalog = {
     decideTitle: 'Co chcesz zrobić?',
     decideLead: '{{count}} sąsiadów jest w grze.',
     goTitle: 'Realizuj z {{amount}}',
-    goLead: 'Ceny mogą być nieco wyższe. Wszyscy dostaną wiadomość i zobaczą szczegóły odbioru, gdy oznaczysz zamówienie jako gotowe.',
-    decidedText: 'To zamówienie zostało rozstrzygnięte. Wszyscy widzą jego stan na stronie zamówienia.',
+    goLead:
+      'Ceny mogą być nieco wyższe. Wszyscy dostaną wiadomość i zobaczą szczegóły odbioru, gdy oznaczysz zamówienie jako gotowe.',
+    decidedText:
+      'To zamówienie zostało rozstrzygnięte. Wszyscy widzą jego stan na stronie zamówienia.',
     extendTitle: 'Daj jeszcze 3 dni',
     extendLead: 'Zgłoszenia otwarte ponownie do {{until}}.',
     cancelTitle: 'Odwołaj zamówienie',
@@ -663,14 +667,16 @@ export const pl: Catalog = {
     yourAmount: 'Twoja ilość',
     payment: 'Płatność',
     payAtPickup: 'Zapłać {{name}} przy odbiorze',
-    payNote: 'Gotówką lub przez PayPal bezpośrednio do {{name}}. PlantCircle nie obsługuje tej płatności i nie zapewnia ochrony kupującego.',
+    payNote:
+      'Gotówką lub przez PayPal bezpośrednio do {{name}}. PlantCircle nie obsługuje tej płatności i nie zapewnia ochrony kupującego.',
     collected: 'Odebrałem',
     collectedDone: 'Odebrane. Dzięki za przyjście.',
     openPickup: 'Szczegóły odbioru',
     noItems: 'Nic nie zamawiasz w tym zamówieniu.',
     createTitle: 'Nowe zamówienie grupowe',
     stepSupplier: 'Skąd zamawiasz?',
-    supplierLead: 'Podaj sklep, gospodarstwo lub dostawcę online. Katalog sklepów pojawi się później.',
+    supplierLead:
+      'Podaj sklep, gospodarstwo lub dostawcę online. Katalog sklepów pojawi się później.',
     supplierName: 'Dostawca',
     supplierArea: 'Okolica lub strona (opcjonalnie)',
     stepItems: 'Ile łącznie?',
@@ -691,7 +697,8 @@ export const pl: Catalog = {
     pickupNoteLabel: 'Uwaga do odbioru (opcjonalnie)',
     stepReview: 'Gotowe do udostępnienia',
     reviewLead: 'Sprawdź. Po udostępnieniu można edytować.',
-    moneyNote: 'Pieniądze zbierasz przy odbiorze. PlantCircle nie obsługuje pieniędzy ani nie chroni zakupów.',
+    moneyNote:
+      'Pieniądze zbierasz przy odbiorze. PlantCircle nie obsługuje pieniędzy ani nie chroni zakupów.',
     share: 'Udostępnij zamówienie grupowe',
     error: 'Nie udało się zapisać. Spróbuj ponownie.',
     signedOut: 'Zaloguj się, aby dołączyć do zamówienia grupowego.',
@@ -725,11 +732,13 @@ export const pl: Catalog = {
     postsEmpty: 'Nikt jeszcze nie udostępnił tu przepisu.',
     aboutAccessOpen: 'Każdy może dołączyć od razu.',
     aboutAccessRequest: 'Dołączenie wymaga zgody moderatora.',
-    aboutRules: 'Bądź życzliwy, przychodź, gdy się zapiszesz, i oznaczaj alergeny we wszystkim, co przynosisz.',
+    aboutRules:
+      'Bądź życzliwy, przychodź, gdy się zapiszesz, i oznaczaj alergeny we wszystkim, co przynosisz.',
     moderatorRequests_one: 'Moderacja: {{count}} prośba o dołączenie',
     moderatorRequests_other: 'Moderacja: {{count}} próśb o dołączenie',
     signUpTitle: 'Załóż konto, aby dołączyć do tego kręgu',
-    signUpLead: 'Najpierw załóż konto. Zajmie to minutę, a z kręgu możesz wyjść w każdej chwili.',
+    signUpLead:
+      'Najpierw załóż konto. Zajmie to minutę, a z kręgu możesz wyjść w każdej chwili.',
     requests: {
       title: 'Czeka na decyzję',
       empty: 'Nikt teraz nie czeka.',
@@ -898,7 +907,8 @@ export const pl: Catalog = {
     accurate: 'Uważam, że to zgłoszenie jest rzetelne i kompletne.',
     send: 'Wyślij zgłoszenie',
     confirmHint: 'Potwierdź powyżej, aby wysłać',
-    rateLimited: 'To dużo zgłoszeń jak na jeden dzień. Spróbuj jutro lub zadzwoń pod numer alarmowy, jeśli ktoś jest w niebezpieczeństwie.',
+    rateLimited:
+      'To dużo zgłoszeń jak na jeden dzień. Spróbuj jutro lub zadzwoń pod numer alarmowy, jeśli ktoś jest w niebezpieczeństwie.',
     error: 'Nie udało się wysłać. Spróbuj ponownie.',
     doneTitle: 'Dzięki, zajmujemy się tym',
     caseRef: 'Sprawa {{ref}}',
@@ -910,11 +920,13 @@ export const pl: Catalog = {
     doneUrgentNote: 'Sprawdza człowiek, nie tylko oprogramowanie.',
     alsoBlock: 'Zablokuj też: {{name}}',
     thisPerson: 'tę osobę',
-    alsoBlockNote: 'Żadnych wiadomości ani zaproszeń od tej osoby. Nie zostanie o tym poinformowana.',
+    alsoBlockNote:
+      'Żadnych wiadomości ani zaproszeń od tej osoby. Nie zostanie o tym poinformowana.',
     blockedNow: '{{name}} jest zablokowany. Możesz to cofnąć w Prywatności.',
     blockedTitle: 'Zablokowane osoby',
     blockedRowLead: 'Kto nie może do Ciebie pisać ani Cię zapraszać',
-    blockedLead: 'Te osoby nie mogą do Ciebie pisać, zapraszać Cię ani widzieć Cię w Ludziach. Nie są o tym informowane.',
+    blockedLead:
+      'Te osoby nie mogą do Ciebie pisać, zapraszać Cię ani widzieć Cię w Ludziach. Nie są o tym informowane.',
     blockedEmptyTitle: 'Nikt nie jest zablokowany',
     blockedEmptyText: 'Zablokuj kogoś z czatu lub zgłoszenia, a pojawi się tutaj.',
     unblock: 'Odblokuj',
@@ -932,9 +944,11 @@ export const pl: Catalog = {
     decidedAutomated: 'Posortowane automatycznie; każde odwołanie sprawdza człowiek.',
     stillCan: 'Co nadal możesz',
     stillCanText: 'Czytać wiadomości i Plany. Publikowanie, zapisy i wiadomości są wstrzymane.',
-    stillCanFrozen: 'Czytaj, zapisuj się i organizuj jak zwykle. Wysyłanie wiadomości jest wstrzymane.',
+    stillCanFrozen:
+      'Czytaj, zapisuj się i organizuj jak zwykle. Wysyłanie wiadomości jest wstrzymane.',
     appealTitle: 'Odwołaj się od tej decyzji',
-    appealLead: 'Powiedz, w czym się pomyliliśmy. Czyta to ktoś, kto nie podjął pierwotnej decyzji.',
+    appealLead:
+      'Powiedz, w czym się pomyliliśmy. Czyta to ktoś, kto nie podjął pierwotnej decyzji.',
     sendAppeal: 'Wyślij odwołanie',
     appeal: {
       open: 'Twoje odwołanie jest u drugiej osoby sprawdzającej',
@@ -946,10 +960,12 @@ export const pl: Catalog = {
     notSuspendedTitle: 'Twoje konto jest aktywne',
     notSuspendedText: 'Nic nie jest wstrzymane. Działaj dalej.',
     suspendedErrorTitle: 'Twoje konto jest wstrzymane',
-    suspendedErrorDetail: 'Publikowanie, zapisy i wiadomości są wstrzymane. Zobacz dlaczego w Profilu.',
+    suspendedErrorDetail:
+      'Publikowanie, zapisy i wiadomości są wstrzymane. Zobacz dlaczego w Profilu.',
     blockedErrorTitle: 'To niemożliwe',
     blockedErrorDetail: 'Nie możesz kontaktować się z tą osobą.',
-    frozenErrorDetail: 'Nie możesz teraz wysyłać wiadomości. Decyzja zespołu wstrzymała wiadomości; zobacz powiadomienie na swoim koncie.',
+    frozenErrorDetail:
+      'Nie możesz teraz wysyłać wiadomości. Decyzja zespołu wstrzymała wiadomości; zobacz powiadomienie na swoim koncie.',
     consoleSignedOut: 'Zaloguj się kontem zespołu.',
     severity: { urgent: 'Pilne', high: 'Wysokie', routine: 'Rutynowe' },
     action: {
@@ -973,7 +989,8 @@ export const pl: Catalog = {
       pickCaseText: 'Tu pojawi się relacja, historia i decyzja.',
       caseMeta: '{{severity}} · termin {{due}} · {{status}}',
       reportersAccount: 'Relacja zgłaszającego',
-      reporterHidden: 'Tożsamość zgłaszającego ukryta przed zgłoszonym członkiem · {{count}} załączników',
+      reporterHidden:
+        'Tożsamość zgłaszającego ukryta przed zgłoszonym członkiem · {{count}} załączników',
       history: 'Historia istotna dla tej sprawy',
       historyEmpty: 'Nic wcześniejszego na tym koncie.',
       messages: 'Prywatne wiadomości',
@@ -982,7 +999,8 @@ export const pl: Catalog = {
       viewMessages: 'Zobacz wiadomości',
       decision: 'Decyzja',
       decisionApplied: 'Decyzja zastosowana',
-      memberTold: 'Zapisana z powodem w dzienniku. Wstrzymany członek widzi ją w powiadomieniu na koncie.',
+      memberTold:
+        'Zapisana z powodem w dzienniku. Wstrzymany członek widzi ją w powiadomieniu na koncie.',
       days: 'Dni',
       rule: 'Zasada (widoczna dla członka)',
       reason: 'Powód · widoczny dla członka i zapisany w dzienniku',
@@ -997,7 +1015,8 @@ export const pl: Catalog = {
       memberAppeal: 'Odwołanie członka',
       uphold: 'Utrzymaj',
       reverse: 'Cofnij',
-      auditLead: 'Każde działanie zespołu i każde wyświetlenie prywatnych treści. Tylko do odczytu.',
+      auditLead:
+        'Każde działanie zespołu i każde wyświetlenie prywatnych treści. Tylko do odczytu.',
       auditEmpty: 'Nic jeszcze nie zalogowano',
       auditEmptyText: 'Decyzje i wyświetlenia zespołu trafiają tutaj.',
     },
@@ -1006,8 +1025,10 @@ export const pl: Catalog = {
     signedOut: 'Zaloguj się, aby zobaczyć ustawienia konta.',
     error: 'Nie udało się zapisać. Spróbuj ponownie.',
     privacyChoicesTitle: 'Twoje wybory dotyczące prywatności',
-    privacyChoicesLead: 'Włączone jest tylko to, co niezbędne. Możesz to zmienić w każdej chwili w Profilu.',
-    privacyChoicesRow: 'Statystyki użycia i sugestie, wyłączone, dopóki nie zdecydujesz inaczej',
+    privacyChoicesLead:
+      'Włączone jest tylko to, co niezbędne. Możesz to zmienić w każdej chwili w Profilu.',
+    privacyChoicesRow:
+      'Statystyki użycia i sugestie, wyłączone, dopóki nie zdecydujesz inaczej',
     neededTitle: 'Niezbędne do działania aplikacji',
     neededNote: 'Konto, zapisy, kontrole bezpieczeństwa',
     alwaysOn: 'Zawsze włączone',
@@ -1043,7 +1064,8 @@ export const pl: Catalog = {
     requested: 'Zamówiono',
     deleteTitle: 'Usuń konto',
     removed: 'Usunięte',
-    removedNote: 'Twoje imię, miasto i zainteresowania; wpisy, zapisy i wiadomości pozostają jako „Usunięty członek”',
+    removedNote:
+      'Twoje imię, miasto i zainteresowania; wpisy, zapisy i wiadomości pozostają jako „Usunięty członek”',
     linkError: 'Link się nie otworzył. Odwiedź {{url}} w przeglądarce.',
     released: 'Zwolnione',
     releasedNote: 'Twoje miejsca trafiają do osób z list oczekujących',
@@ -1051,13 +1073,15 @@ export const pl: Catalog = {
     keptNote: 'Zgłoszenia bezpieczeństwa, gdy wymaga tego prawo',
     deleteButton: 'Usuń moje konto',
     confirmTitle: 'Usunąć na dobre?',
-    confirmLead: 'Tego nie da się cofnąć. Najpierw pobierz swoje dane, jeśli chcesz mieć kopię.',
+    confirmLead:
+      'Tego nie da się cofnąć. Najpierw pobierz swoje dane, jeśli chcesz mieć kopię.',
     keep: 'Zachowaj moje konto',
     a11yLead: 'Jak PlantCircle działa dla wszystkich i gdzie wciąż mamy braki.',
     a11yStandard: 'WCAG 2.2: AA wszędzie, AAA tam, gdzie to możliwe',
     a11yChecked: 'Ostatnio sprawdzono: {{date}}',
     gapWaitlistTitle: 'Znany brak: oferty z listy oczekujących',
-    gapWaitlistNote: 'Limit 2 godzin, żeby miejsca były rozdzielane uczciwie; powiadamiamy pushem i e-mailem',
+    gapWaitlistNote:
+      'Limit 2 godzin, żeby miejsca były rozdzielane uczciwie; powiadamiamy pushem i e-mailem',
     gapUploadsTitle: 'Znany brak: pliki od gospodarzy',
     gapUploadsNote: 'Zdjęcia i rozmowy wideo mogą nie mieć opisów ani napisów',
     a11yProblemTitle: 'Coś nie działa?',
@@ -1073,7 +1097,8 @@ export const pl: Catalog = {
     updateLead_few: 'Zmieniły się {{count}} rzeczy. Obowiązują od {{date}}.',
     updateLead_many: 'Zmieniło się {{count}} rzeczy. Obowiązują od {{date}}.',
     updateLead_other: 'Zmieniło się {{count}} rzeczy. Obowiązują od {{date}}.',
-    updateLeadMulti: 'W naszych zasadach zmieniło się {{count}} rzeczy. Każda obowiązuje od własnej daty.',
+    updateLeadMulti:
+      'W naszych zasadach zmieniło się {{count}} rzeczy. Każda obowiązuje od własnej daty.',
     effectiveLine: '{{name}} · obowiązuje od {{date}}',
     newVersion: 'Wersja {{version}}',
     readFull: 'Przeczytaj cały dokument: {{name}}',
@@ -1087,7 +1112,8 @@ export const pl: Catalog = {
       privacy: 'Polityka prywatności',
     },
     underAgeTitle: 'PlantCircle jest dla dorosłych',
-    underAgeLead: 'Członkowie spotykają się osobiście, więc musisz mieć 18 lat lub więcej. Nie zapisaliśmy żadnych Twoich danych.',
+    underAgeLead:
+      'Członkowie spotykają się osobiście, więc musisz mieć 18 lat lub więcej. Nie zapisaliśmy żadnych Twoich danych.',
     browseRecipes: 'Przeglądaj publiczne przepisy',
     browseRecipesNote: 'Bez konta',
     gotIt: 'Rozumiem',
@@ -1136,10 +1162,13 @@ export const pl: Catalog = {
     moderationNotice: 'Decyzja dotycząca Twojego konta',
     moderationNoticeNote: 'Przeczytaj powody i jak się odwołać.',
     promptTitle: 'Nie przegap żadnego miejsca',
-    promptLead: 'Przypomnienia, oferty z listy oczekujących i wiadomości z Twoich Planów. Cisza od 22:00 do 08:00.',
+    promptLead:
+      'Przypomnienia, oferty z listy oczekujących i wiadomości z Twoich Planów. Cisza od 22:00 do 08:00.',
     promptError: 'Nie udało się włączyć. Spróbuj w Profil → Powiadomienia.',
-    promptDenied: 'Powiadomienia PlantCircle są wyłączone w ustawieniach urządzenia. Włącz je tam i wróć.',
-    promptUnavailable: 'To urządzenie nie odbiera powiadomień push. Aktualności nadal są w skrzynce.',
+    promptDenied:
+      'Powiadomienia PlantCircle są wyłączone w ustawieniach urządzenia. Włącz je tam i wróć.',
+    promptUnavailable:
+      'To urządzenie nie odbiera powiadomień push. Aktualności nadal są w skrzynce.',
     moderationAction: {
       warn: 'Ostrzeżenie. Przeczytaj zasady społeczności.',
       freeze_messages: 'Wiadomości są na jakiś czas wstrzymane.',
@@ -1172,7 +1201,8 @@ export const pl: Catalog = {
     full: 'Brak miejsc · lista oczekujących',
     firstName: 'Imię',
     ageAgree: 'Mam 18+ i akceptuję Zasady społeczności, Regulamin i Politykę prywatności',
-    accountNote: 'Zakładamy Ci konto PlantCircle z tym adresem, aby miejsce miało właściciela; możesz je usunąć w każdej chwili w aplikacji.',
+    accountNote:
+      'Zakładamy Ci konto PlantCircle z tym adresem, aby miejsce miało właściciela; możesz je usunąć w każdej chwili w aplikacji.',
     reserve: 'Zarezerwuj miejsce',
     joinWaitlist: 'Dołącz do listy oczekujących',
     confirmAge: 'Potwierdź, że masz 18+, aby zarezerwować',
@@ -1195,7 +1225,8 @@ export const pl: Catalog = {
     existingNoEmail: 'Zaloguj się w aplikacji tym adresem i zapisz się stamtąd.',
     doneOfferedTitle: 'Zwolniło się dla Ciebie miejsce, {{name}}',
     doneOfferedText: 'Jest trzymane 2 godziny: otwórz link z e-maila, aby je potwierdzić.',
-    doneNoEmail: 'Nie udało się wysłać e-maila z potwierdzeniem; miejsce i tak jest zarezerwowane.',
+    doneNoEmail:
+      'Nie udało się wysłać e-maila z potwierdzeniem; miejsce i tak jest zarezerwowane.',
   },
   errors: {
     savedTitle: 'Twoje Plany nadal działają',

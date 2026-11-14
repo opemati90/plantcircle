@@ -38,7 +38,12 @@ export default function RecipeScreen() {
 
   if (recipe.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="70%" height={34} radius={8} />
         <Skeleton width="100%" height={140} radius={radius.card} />
       </View>
@@ -50,7 +55,13 @@ export default function RecipeScreen() {
       <View style={styles.screen}>
         {back}
         <EmptyState
-          {...(missing ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
+          {...(missing
+            ? {}
+            : {
+                onSavedPlans: () => {
+                  router.push('/my-plans');
+                },
+              })}
           title={missing ? t('learn.notFound') : t('errors.serverTitle')}
           text={missing ? t('errors.notFoundText') : t('errors.serverText')}
           actions={
@@ -82,7 +93,13 @@ export default function RecipeScreen() {
         <View style={styles.hero}>
           <Photo source={recipePhoto(data.id)} />
           <LinearGradient
-            colors={['rgba(0,0,0,0.35)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.9)', 'rgba(0,0,0,0.94)']}
+            colors={[
+              'rgba(0,0,0,0.35)',
+              'rgba(0,0,0,0)',
+              'rgba(0,0,0,0)',
+              'rgba(0,0,0,0.9)',
+              'rgba(0,0,0,0.94)',
+            ]}
             locations={[0, 0.18, 0.3, 0.6, 1]}
             style={StyleSheet.absoluteFill}
           />
@@ -95,8 +112,12 @@ export default function RecipeScreen() {
             <ChevronLeftIcon strokeWidth={2.2} color="#FFFFFF" />
           </IconButton>
           <View style={styles.heroText}>
-            <Text style={type(13, 'semibold', { color: 'rgba(255,255,255,0.8)', tracking: 0.6 })}>
-              {data.cuisine ? `${t('learn.eyebrow')} · ${data.cuisine.toUpperCase()}` : t('learn.eyebrow')}
+            <Text
+              style={type(13, 'semibold', { color: 'rgba(255,255,255,0.8)', tracking: 0.6 })}
+            >
+              {data.cuisine
+                ? `${t('learn.eyebrow')} · ${data.cuisine.toUpperCase()}`
+                : t('learn.eyebrow')}
             </Text>
             <Text
               accessibilityRole="header"
@@ -114,72 +135,93 @@ export default function RecipeScreen() {
         </View>
 
         <View style={styles.content}>
-        <View style={styles.chips}>
-          {data.minutes !== null ? (
-            <View style={styles.chip}>
-              <Text style={type(14, 'semibold')}>{t('learn.minutes', { minutes: data.minutes })}</Text>
-            </View>
-          ) : null}
-          <View style={styles.chip}>
-            <Text style={type(14, 'semibold')}>{t('learn.serves', { servings: data.serves })}</Text>
-          </View>
-        </View>
-        {data.intro ? (
-          <Text style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}>{data.intro}</Text>
-        ) : null}
-
-        <View style={styles.allergens}>
-          <Text style={type(15, 'semibold', { color: data.allergensConfirmed ? color.ink : color.danger })}>
-            {data.allergensConfirmed
-              ? t('learn.detail.declared', { allergens: allergenNames(t, data.allergens) })
-              : t('learn.detail.unconfirmed')}
-          </Text>
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHead}>
-            <Text accessibilityRole="header" style={type(20, 'semibold', { tracking: -0.4 })}>
-              {t('learn.ingredients')}
-            </Text>
-            <Stepper
-              value={shown}
-              min={MIN_SERVINGS}
-              max={MAX_SERVINGS}
-              label={t('learn.servings')}
-              decreaseLabel={t('learn.fewer')}
-              increaseLabel={t('learn.more')}
-              onChange={setServings}
-            />
-          </View>
-          {data.ingredients.map((ingredient) => {
-            const amount = scaleQuantity(ingredient.qty, data.serves, shown);
-            const quantity =
-              amount === null
-                ? null
-                : [formatQuantity(amount, language), ingredient.unit].filter(Boolean).join(' ');
-            return (
-              <View key={`${ingredient.name}-${ingredient.unit ?? ''}`} style={styles.ingredient}>
-                <Text style={[type(17, 'regular'), styles.ingredientName]}>{ingredient.name}</Text>
-                {quantity ? (
-                  <Text style={type(17, 'regular', { color: color.secondary })}>{quantity}</Text>
-                ) : null}
+          <View style={styles.chips}>
+            {data.minutes !== null ? (
+              <View style={styles.chip}>
+                <Text style={type(14, 'semibold')}>
+                  {t('learn.minutes', { minutes: data.minutes })}
+                </Text>
               </View>
-            );
-          })}
-        </View>
-
-        <View style={styles.section}>
-          <Text accessibilityRole="header" style={type(20, 'semibold', { tracking: -0.4 })}>
-            {t('learn.method')}
-          </Text>
-          {data.steps.map((step, index) => (
-            <View key={`${index}-${step.slice(0, 12)}`} style={styles.step}>
-              <Text style={type(15, 'semibold', { color: color.brand })}>{index + 1}</Text>
-              <Text style={[type(17, 'regular', { leading: 1.5 }), styles.stepText]}>{step}</Text>
+            ) : null}
+            <View style={styles.chip}>
+              <Text style={type(14, 'semibold')}>
+                {t('learn.serves', { servings: data.serves })}
+              </Text>
             </View>
-          ))}
-        </View>
-        <ReportLink targetType="recipe" targetId={data.id} name={data.title} />
+          </View>
+          {data.intro ? (
+            <Text style={type(17, 'regular', { color: extra.bodyText, leading: 1.55 })}>
+              {data.intro}
+            </Text>
+          ) : null}
+
+          <View style={styles.allergens}>
+            <Text
+              style={type(15, 'semibold', {
+                color: data.allergensConfirmed ? color.ink : color.danger,
+              })}
+            >
+              {data.allergensConfirmed
+                ? t('learn.detail.declared', { allergens: allergenNames(t, data.allergens) })
+                : t('learn.detail.unconfirmed')}
+            </Text>
+          </View>
+
+          <View style={styles.section}>
+            <View style={styles.sectionHead}>
+              <Text accessibilityRole="header" style={type(20, 'semibold', { tracking: -0.4 })}>
+                {t('learn.ingredients')}
+              </Text>
+              <Stepper
+                value={shown}
+                min={MIN_SERVINGS}
+                max={MAX_SERVINGS}
+                label={t('learn.servings')}
+                decreaseLabel={t('learn.fewer')}
+                increaseLabel={t('learn.more')}
+                onChange={setServings}
+              />
+            </View>
+            {data.ingredients.map((ingredient) => {
+              const amount = scaleQuantity(ingredient.qty, data.serves, shown);
+              const quantity =
+                amount === null
+                  ? null
+                  : [formatQuantity(amount, language), ingredient.unit]
+                      .filter(Boolean)
+                      .join(' ');
+              return (
+                <View
+                  key={`${ingredient.name}-${ingredient.unit ?? ''}`}
+                  style={styles.ingredient}
+                >
+                  <Text style={[type(17, 'regular'), styles.ingredientName]}>
+                    {ingredient.name}
+                  </Text>
+                  {quantity ? (
+                    <Text style={type(17, 'regular', { color: color.secondary })}>
+                      {quantity}
+                    </Text>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
+
+          <View style={styles.section}>
+            <Text accessibilityRole="header" style={type(20, 'semibold', { tracking: -0.4 })}>
+              {t('learn.method')}
+            </Text>
+            {data.steps.map((step, index) => (
+              <View key={`${index}-${step.slice(0, 12)}`} style={styles.step}>
+                <Text style={type(15, 'semibold', { color: color.brand })}>{index + 1}</Text>
+                <Text style={[type(17, 'regular', { leading: 1.5 }), styles.stepText]}>
+                  {step}
+                </Text>
+              </View>
+            ))}
+          </View>
+          <ReportLink targetType="recipe" targetId={data.id} name={data.title} />
         </View>
       </ScrollView>
     </View>
@@ -192,7 +234,13 @@ const styles = StyleSheet.create({
   hero: { height: 400, backgroundColor: color.ink },
   heroText: { position: 'absolute', left: 24, right: 24, bottom: 30, gap: 10 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { minHeight: 32, paddingHorizontal: 12, justifyContent: 'center', borderRadius: radius.pill, backgroundColor: color.fill },
+  chip: {
+    minHeight: 32,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: color.fill,
+  },
   content: { paddingHorizontal: 24, paddingTop: 24, gap: 14 },
   allergens: {
     padding: 14,

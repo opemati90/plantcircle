@@ -1,10 +1,6 @@
 import { appStorage } from '../../storage';
 import { BackendError, type Backend } from '../backend';
-import {
-  DEFAULT_SETTINGS,
-  isRecipeAllergen,
-  PROFILE_GOALS,
-} from '../types';
+import { DEFAULT_SETTINGS, isRecipeAllergen, PROFILE_GOALS } from '../types';
 import type {
   AppNotification,
   AuditRow,
@@ -73,10 +69,20 @@ interface State {
   plansCreated: Plan[];
   /** The private details of Plans this person published: the host always sees them. */
   /** Group orders published in this session, with items and everyone's interest. */
-  orders: Record<string, GroupOrder & { pickupAddressValue: string; interests: Record<string, Record<string, number>>; collectedBy: string[] }>;
+  orders: Record<
+    string,
+    GroupOrder & {
+      pickupAddressValue: string;
+      interests: Record<string, Record<string, number>>;
+      collectedBy: string[];
+    }
+  >;
   plansSecrets: Record<string, { address: string | null; meetingUrl: string | null }>;
   /** Guests on the Plans this person hosts. Seeded on publish, like the sample requests. */
-  plansGuests: Record<string, { userId: string; displayName: string; state: GuestState; checkedInAt: string | null }[]>;
+  plansGuests: Record<
+    string,
+    { userId: string; displayName: string; state: GuestState; checkedInAt: string | null }[]
+  >;
   /** Plans the host has ended in this session. */
   plansEnded: string[];
   /** Bring items the host added or changed in this session (the sample items are read-only). */
@@ -85,7 +91,14 @@ interface State {
   /** Direct conversations open with these people (their ids). */
   directOpen: string[];
   /** First-message requests: incoming ones from people in the viewer's Circles, and the viewer's own. */
-  directIncoming: { id: string; fromId: string; fromName: string; firstMessage: string; createdAt: string; status: 'pending' | 'accepted' | 'declined' }[];
+  directIncoming: {
+    id: string;
+    fromId: string;
+    fromName: string;
+    firstMessage: string;
+    createdAt: string;
+    status: 'pending' | 'accepted' | 'declined';
+  }[];
   /** The viewer's requests, by recipient: the first message and when it was sent. */
   directOutgoing: Record<string, { firstMessage: string; createdAt: string; clientId: string }>;
   /** Mute and pin per conversation, for this person. */
@@ -104,10 +117,32 @@ interface State {
   /** In-app notification rows, newest first. */
   notifications: AppNotification[];
   /** Guests from shared links, by cancel token (web RSVP). */
-  webGuests: Record<string, { planId: string; firstName: string; email: string; status: 'going' | 'waitlisted' | 'cancelled'; position: number | null }>;
+  webGuests: Record<
+    string,
+    {
+      planId: string;
+      firstName: string;
+      email: string;
+      status: 'going' | 'waitlisted' | 'cancelled';
+      position: number | null;
+    }
+  >;
   pushTokens: string[];
-  conversationSettings: Record<string, { mutedUntil: string | null; pinned: boolean; lastReadAt?: string | null }>;
-  messages: Record<string, { id: string; clientId: string; senderId: string; senderName: string; body: string; createdAt: string }[]>;
+  conversationSettings: Record<
+    string,
+    { mutedUntil: string | null; pinned: boolean; lastReadAt?: string | null }
+  >;
+  messages: Record<
+    string,
+    {
+      id: string;
+      clientId: string;
+      senderId: string;
+      senderName: string;
+      body: string;
+      createdAt: string;
+    }[]
+  >;
   /** The viewer's feedback on Plans, by Plan id. */
   feedbackMine: Record<string, { rating: number; comment: string | null }>;
   /** Keyed creations, so a retry replays the same result as the database does. */
@@ -237,7 +272,10 @@ export async function createFixtureBackend(): Promise<Backend> {
       });
     },
     makeStaff: () => {
-      commit({ ...state, profile: state.profile ? { ...state.profile, role: 'staff' } : state.profile });
+      commit({
+        ...state,
+        profile: state.profile ? { ...state.profile, role: 'staff' } : state.profile,
+      });
     },
     publishTerms: () => {
       if (state.policiesPending.some((p) => p.version === '2026-12')) return;
@@ -266,7 +304,10 @@ export async function createFixtureBackend(): Promise<Backend> {
       commit({
         ...state,
         notifications: inLine
-          ? notifyMe('waitlist_offer', { plan_id: planId, plan: plans().find((p) => p.id === planId)?.title ?? planId })
+          ? notifyMe('waitlist_offer', {
+              plan_id: planId,
+              plan: plans().find((p) => p.id === planId)?.title ?? planId,
+            })
           : state.notifications,
         freedPlanIds: [...state.freedPlanIds, planId],
         waitlist: inLine
@@ -317,7 +358,11 @@ export async function createFixtureBackend(): Promise<Backend> {
   function requireActive(): void {
     requireSession();
     const p = withStanding(state.profile);
-    if (p && p.status === 'suspended' && (p.suspendedUntil === null || Date.parse(p.suspendedUntil) > Date.now())) {
+    if (
+      p &&
+      p.status === 'suspended' &&
+      (p.suspendedUntil === null || Date.parse(p.suspendedUntil) > Date.now())
+    ) {
       throw new BackendError('suspended');
     }
   }
@@ -374,16 +419,11 @@ export async function createFixtureBackend(): Promise<Backend> {
   const myName = () => state.profile?.displayName ?? 'You';
 
   const normalizeWords = (text: string): string[] =>
-    text
-      .normalize('NFD')
-      .replace(/\p{M}/gu, '')
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean);
+    text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().split(/\s+/).filter(Boolean);
 
   type ChatKind = 'plan' | 'circle' | 'direct';
 
-/** The kind and id a fixture conversation id was made from ("conv-plan-<id>", "conv-circle-<id>"). */
+  /** The kind and id a fixture conversation id was made from ("conv-plan-<id>", "conv-circle-<id>"). */
   function conversationRef(conversationId: string): { kind: ChatKind; refId: string } {
     const [, kind, ...rest] = conversationId.split('-');
     const parsed: ChatKind = kind === 'plan' ? 'plan' : kind === 'direct' ? 'direct' : 'circle';
@@ -396,7 +436,9 @@ export async function createFixtureBackend(): Promise<Backend> {
     if (kind === 'plan') {
       const hosted = state.plansCreated.some((p) => p.id === refId);
       const me = state.session?.userId ?? 'fixture-you';
-      const interested = Object.values(state.orders[refId]?.interests ?? {}).some((byUser) => (byUser[me] ?? 0) > 0);
+      const interested = Object.values(state.orders[refId]?.interests ?? {}).some(
+        (byUser) => (byUser[me] ?? 0) > 0,
+      );
       return hosted || interested || state.goingPlanIds.includes(refId);
     }
     return (
@@ -406,8 +448,14 @@ export async function createFixtureBackend(): Promise<Backend> {
 
   /** A collecting order past its close resolves itself, as the database does. */
   function effectiveOrderState(entry: (typeof state.orders)[string]): GroupOrder['state'] {
-    if (['collecting', 'extended'].includes(entry.state) && Date.now() >= Date.parse(entry.closesAt)) {
-      const total = Object.values(entry.interests).reduce((a, byUser) => a + Object.values(byUser).reduce((x, y) => x + y, 0), 0);
+    if (
+      ['collecting', 'extended'].includes(entry.state) &&
+      Date.now() >= Date.parse(entry.closesAt)
+    ) {
+      const total = Object.values(entry.interests).reduce(
+        (a, byUser) => a + Object.values(byUser).reduce((x, y) => x + y, 0),
+        0,
+      );
       return total >= entry.targetTotal ? 'locked' : 'below_target';
     }
     return entry.state;
@@ -428,7 +476,13 @@ export async function createFixtureBackend(): Promise<Backend> {
       mine: me ? (entry.interests[i.id]?.[me] ?? 0) : 0,
     }));
     const hasInterest = items.some((i) => i.mine > 0);
-    const people = new Set(Object.values(entry.interests).flatMap((byUser) => Object.entries(byUser).filter(([, q]) => q > 0).map(([u]) => u)));
+    const people = new Set(
+      Object.values(entry.interests).flatMap((byUser) =>
+        Object.entries(byUser)
+          .filter(([, q]) => q > 0)
+          .map(([u]) => u),
+      ),
+    );
     const organizer = me !== null && entry.organizerId === me;
     // Built field by field: the stored entry holds the address and everyone's interest, which
     // must not leak into (or be changed through) the result.
@@ -451,7 +505,10 @@ export async function createFixtureBackend(): Promise<Backend> {
       items,
       interestTotal: items.reduce((a, i) => a + i.interestTotal, 0),
       peopleCount: people.size,
-      pickupAddress: organizer || (hasInterest && ['locked', 'ready', 'completed'].includes(st)) ? entry.pickupAddressValue : null,
+      pickupAddress:
+        organizer || (hasInterest && ['locked', 'ready', 'completed'].includes(st))
+          ? entry.pickupAddressValue
+          : null,
       collected: me !== null && entry.collectedBy.includes(me),
     };
   }
@@ -459,7 +516,13 @@ export async function createFixtureBackend(): Promise<Backend> {
   /** An in-app row, as the database trigger writes one. */
   function notifyMe(type: string, payload: Record<string, unknown>): AppNotification[] {
     return [
-      { id: `notif-${Date.now()}-${state.notifications.length}`, type, payload, readAt: null, createdAt: new Date().toISOString() },
+      {
+        id: `notif-${Date.now()}-${state.notifications.length}`,
+        type,
+        payload,
+        readAt: null,
+        createdAt: new Date().toISOString(),
+      },
       ...state.notifications,
     ];
   }
@@ -536,9 +599,7 @@ export async function createFixtureBackend(): Promise<Backend> {
   const fingerprintOf = (value: unknown): string =>
     JSON.stringify(value, (_key, item: unknown) =>
       item && typeof item === 'object' && !Array.isArray(item)
-        ? Object.fromEntries(
-            Object.entries(item).sort(([a], [b]) => a.localeCompare(b)),
-          )
+        ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b)))
         : item,
     );
 
@@ -546,7 +607,8 @@ export async function createFixtureBackend(): Promise<Backend> {
   const replayKey = (key: string, fingerprint: string): string | null => {
     const seen = state.idempotent[key];
     if (!seen) return null;
-    if (seen.fingerprint !== fingerprint) throw new BackendError('invalid_input', 'idempotency_key_reused');
+    if (seen.fingerprint !== fingerprint)
+      throw new BackendError('invalid_input', 'idempotency_key_reused');
     return seen.id;
   };
 
@@ -568,8 +630,11 @@ export async function createFixtureBackend(): Promise<Backend> {
   function plans(now = new Date()): Plan[] {
     return [...fixturePlans(now), ...state.plansCreated].map((plan) => {
       const freed = state.freedPlanIds.filter((id) => id === plan.id).length;
-      const guests = Object.values(state.webGuests).filter((g) => g.planId === plan.id && g.status === 'going').length;
-      const going = plan.goingCount - freed + guests + (state.goingPlanIds.includes(plan.id) ? 1 : 0);
+      const guests = Object.values(state.webGuests).filter(
+        (g) => g.planId === plan.id && g.status === 'going',
+      ).length;
+      const going =
+        plan.goingCount - freed + guests + (state.goingPlanIds.includes(plan.id) ? 1 : 0);
       const waitlistCount = plan.waitlistCount + (plan.id in state.waitlist ? 1 : 0);
       return {
         ...plan,
@@ -778,7 +843,9 @@ export async function createFixtureBackend(): Promise<Backend> {
       return visibleRecipes()
         .map(summaryOf)
         .filter((r) => {
-          const haystack = normalizeWords(`${r.title} ${r.cuisine ?? ''} ${r.intro ?? ''}`).join(' ');
+          const haystack = normalizeWords(
+            `${r.title} ${r.cuisine ?? ''} ${r.intro ?? ''}`,
+          ).join(' ');
           return words.every((word) => haystack.includes(word));
         });
     },
@@ -796,9 +863,10 @@ export async function createFixtureBackend(): Promise<Backend> {
       const fingerprint = fingerprintOf(input);
       const replayed = replayKey(key, fingerprint);
       if (replayed) return replayed;
-      const inCircle = [...state.circlesJoined, ...state.circlesCreated.map((c) => c.id)].includes(
-        input.circleId,
-      );
+      const inCircle = [
+        ...state.circlesJoined,
+        ...state.circlesCreated.map((c) => c.id),
+      ].includes(input.circleId);
       if (!inCircle) throw new BackendError('not_found');
       if (input.allergensConfirmed && input.allergens.length === 0) {
         throw new BackendError('invalid_input');
@@ -807,8 +875,8 @@ export async function createFixtureBackend(): Promise<Backend> {
         throw new BackendError('invalid_input');
       }
       const circleName =
-        [...fixtureCircles, ...state.circlesCreated].find((c) => c.id === input.circleId)?.name ??
-        '';
+        [...fixtureCircles, ...state.circlesCreated].find((c) => c.id === input.circleId)
+          ?.name ?? '';
       const recipe: RecipeDetail = {
         id: `recipe-${Date.now()}-${key.slice(0, 8)}`,
         title: input.title,
@@ -867,8 +935,12 @@ export async function createFixtureBackend(): Promise<Backend> {
         input.capacity < 2 ||
         input.capacity > 50 ||
         (input.format === 'online'
-          ? Array.from(link).length > 500 || !/^https:\/\/[^\s/?#@:]+\.[^\s/?#@:]+([/?#]\S*)?$/.test(link)
-          : Array.from(area).length < 1 || Array.from(area).length > 60 || Array.from(address).length < 1 || Array.from(address).length > 200);
+          ? Array.from(link).length > 500 ||
+            !/^https:\/\/[^\s/?#@:]+\.[^\s/?#@:]+([/?#]\S*)?$/.test(link)
+          : Array.from(area).length < 1 ||
+            Array.from(area).length > 60 ||
+            Array.from(address).length < 1 ||
+            Array.from(address).length > 200);
       if (invalid) throw new BackendError('invalid_input');
       const plan: Plan = {
         id: `plan-${now}-${key.slice(0, 8)}`,
@@ -916,8 +988,18 @@ export async function createFixtureBackend(): Promise<Backend> {
               state: 'going',
               checkedInAt: null,
             },
-            { userId: 'fixture-mia-k', displayName: 'Mia K.', state: 'going', checkedInAt: null },
-            { userId: 'fixture-jonas-k', displayName: 'Jonas K.', state: 'waitlisted', checkedInAt: null },
+            {
+              userId: 'fixture-mia-k',
+              displayName: 'Mia K.',
+              state: 'going',
+              checkedInAt: null,
+            },
+            {
+              userId: 'fixture-jonas-k',
+              displayName: 'Jonas K.',
+              state: 'waitlisted',
+              checkedInAt: null,
+            },
           ],
         },
         plansSecrets: {
@@ -994,7 +1076,8 @@ export async function createFixtureBackend(): Promise<Backend> {
       const fingerprint = `host_end_plan:${planId}`;
       if (replayKey(key, fingerprint)) return;
       const plan = findPlan(planId);
-      if (Date.now() < new Date(plan.startsAt).getTime()) throw new BackendError('plan_not_started');
+      if (Date.now() < new Date(plan.startsAt).getTime())
+        throw new BackendError('plan_not_started');
       if (state.plansEnded.includes(planId)) throw new BackendError('invalid_input');
       // Going guests who did not check in are no-shows; people still waiting are dropped.
       const guests = (state.plansGuests[planId] ?? [])
@@ -1016,7 +1099,8 @@ export async function createFixtureBackend(): Promise<Backend> {
       const me = (state.plansGuests[planId] ?? []).find(
         (g) => g.userId === (state.session?.userId ?? 'fixture-you'),
       );
-      const eligible = me?.state === 'checked_in' && Date.now() >= new Date(plan.endsAt).getTime();
+      const eligible =
+        me?.state === 'checked_in' && Date.now() >= new Date(plan.endsAt).getTime();
       const mine = state.feedbackMine[planId];
       return {
         eligible,
@@ -1053,7 +1137,8 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireSession();
       const { kind, refId } = conversationRef(conversationId);
       if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
-      if (kind === 'direct' && state.blocked.includes(refId)) throw new BackendError('closed_chat');
+      if (kind === 'direct' && state.blocked.includes(refId))
+        throw new BackendError('closed_chat');
       return (state.messages[conversationId] ?? []).map((m) => ({
         id: m.id,
         senderId: m.senderId,
@@ -1115,7 +1200,8 @@ export async function createFixtureBackend(): Promise<Backend> {
       // A request already made reads as pending, whatever the recipient decided (a decline is silent).
       // A retry with the same client id, or any request already made, reads as pending.
       if (state.directOutgoing[userId]) return { status: 'pending' };
-      if (!visiblePeople().some((p) => p.userId === userId)) throw new BackendError('person_not_found');
+      if (!visiblePeople().some((p) => p.userId === userId))
+        throw new BackendError('person_not_found');
       const text = firstMessage.trim();
       if (Array.from(text).length < 1 || Array.from(text).length > 1000) {
         throw new BackendError('invalid_input');
@@ -1155,12 +1241,15 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireActive();
       const request = state.directIncoming.find((r) => r.id === requestId);
       if (!request) throw new BackendError('not_found');
-      if (request.status !== 'pending') return request.status === 'accepted' ? 'accepted' : 'declined';
+      if (request.status !== 'pending')
+        return request.status === 'accepted' ? 'accepted' : 'declined';
       const conversationId = `conv-direct-${request.fromId}`;
       const status: 'accepted' | 'declined' = accept ? 'accepted' : 'declined';
       commit({
         ...state,
-        directIncoming: state.directIncoming.map((r) => (r.id === requestId ? { ...r, status } : r)),
+        directIncoming: state.directIncoming.map((r) =>
+          r.id === requestId ? { ...r, status } : r,
+        ),
         directOpen: accept ? [...state.directOpen, request.fromId] : state.directOpen,
         messages: accept
           ? {
@@ -1192,8 +1281,12 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireActive();
       const { kind, refId } = conversationRef(conversationId);
       if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
-      if (kind === 'direct' && state.blocked.includes(refId)) throw new BackendError('closed_chat');
-      const current = state.conversationSettings[conversationId] ?? { mutedUntil: null, pinned: false };
+      if (kind === 'direct' && state.blocked.includes(refId))
+        throw new BackendError('closed_chat');
+      const current = state.conversationSettings[conversationId] ?? {
+        mutedUntil: null,
+        pinned: false,
+      };
       commit({
         ...state,
         conversationSettings: {
@@ -1208,10 +1301,16 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireActive();
       const { kind, refId } = conversationRef(conversationId);
       if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
-      const current = state.conversationSettings[conversationId] ?? { mutedUntil: null, pinned: false };
+      const current = state.conversationSettings[conversationId] ?? {
+        mutedUntil: null,
+        pinned: false,
+      };
       commit({
         ...state,
-        conversationSettings: { ...state.conversationSettings, [conversationId]: { ...current, pinned } },
+        conversationSettings: {
+          ...state.conversationSettings,
+          [conversationId]: { ...current, pinned },
+        },
       });
     },
 
@@ -1221,10 +1320,18 @@ export async function createFixtureBackend(): Promise<Backend> {
       const me = state.session?.userId ?? 'fixture-you';
       const places: { kind: 'plan' | 'circle' | 'direct'; refId: string; title: string }[] = [
         ...plans()
-          .filter((p) => state.goingPlanIds.includes(p.id) || state.plansCreated.some((c) => c.id === p.id))
+          .filter(
+            (p) =>
+              state.goingPlanIds.includes(p.id) ||
+              state.plansCreated.some((c) => c.id === p.id),
+          )
           .map((p) => ({ kind: 'plan' as const, refId: p.id, title: p.title })),
         ...[...fixtureCircles, ...state.circlesCreated]
-          .filter((c) => state.circlesJoined.includes(c.id) || state.circlesCreated.some((x) => x.id === c.id))
+          .filter(
+            (c) =>
+              state.circlesJoined.includes(c.id) ||
+              state.circlesCreated.some((x) => x.id === c.id),
+          )
           .map((c) => ({ kind: 'circle' as const, refId: c.id, title: c.name })),
         ...state.directOpen.map((id) => ({
           kind: 'direct' as const,
@@ -1237,7 +1344,9 @@ export async function createFixtureBackend(): Promise<Backend> {
         const messages = state.messages[conversationId] ?? [];
         const last = messages[messages.length - 1];
         const settings = state.conversationSettings[conversationId];
-        const readAt = settings?.lastReadAt ? new Date(settings.lastReadAt).getTime() : -Infinity;
+        const readAt = settings?.lastReadAt
+          ? new Date(settings.lastReadAt).getTime()
+          : -Infinity;
         const unread = messages.filter(
           (m) => m.senderId !== me && new Date(m.createdAt).getTime() > readAt,
         ).length;
@@ -1251,8 +1360,13 @@ export async function createFixtureBackend(): Promise<Backend> {
           lastAt: last?.createdAt ?? null,
           unread,
           pinned: settings?.pinned ?? false,
-          muted: settings?.mutedUntil ? new Date(settings.mutedUntil).getTime() > Date.now() : false,
-          imagePath: place.kind === 'plan' ? (plans().find((p) => p.id === place.refId)?.imagePath ?? null) : null,
+          muted: settings?.mutedUntil
+            ? new Date(settings.mutedUntil).getTime() > Date.now()
+            : false,
+          imagePath:
+            place.kind === 'plan'
+              ? (plans().find((p) => p.id === place.refId)?.imagePath ?? null)
+              : null,
         };
       });
       return threads.sort((a, b) => {
@@ -1266,7 +1380,10 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireActive();
       const { kind, refId } = conversationRef(conversationId);
       if (!chatMember(kind, refId)) throw new BackendError('closed_chat');
-      const current = state.conversationSettings[conversationId] ?? { mutedUntil: null, pinned: false };
+      const current = state.conversationSettings[conversationId] ?? {
+        mutedUntil: null,
+        pinned: false,
+      };
       commit({
         ...state,
         conversationSettings: {
@@ -1325,7 +1442,8 @@ export async function createFixtureBackend(): Promise<Backend> {
             length(i.name) > 80 ||
             !Number.isFinite(i.target) ||
             i.target <= 0 ||
-            (i.estPriceMinor !== null && (!Number.isInteger(i.estPriceMinor) || i.estPriceMinor < 0)),
+            (i.estPriceMinor !== null &&
+              (!Number.isInteger(i.estPriceMinor) || i.estPriceMinor < 0)),
         )
       ) {
         throw new BackendError('invalid_input');
@@ -1414,14 +1532,20 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireActive();
       const fingerprint = `order_interest:${itemId}:${quantity}`;
       if (replayKey(key, fingerprint)) return;
-      const entry = Object.values(state.orders).find((o) => o.items.some((i) => i.id === itemId));
+      const entry = Object.values(state.orders).find((o) =>
+        o.items.some((i) => i.id === itemId),
+      );
       if (!entry) throw new BackendError('not_found');
       if (!['collecting', 'extended'].includes(effectiveOrderState(entry))) {
         throw new BackendError('interest_closed');
       }
-      if (!Number.isFinite(quantity) || quantity < 0 || quantity > 1000) throw new BackendError('invalid_input');
+      if (!Number.isFinite(quantity) || quantity < 0 || quantity > 1000)
+        throw new BackendError('invalid_input');
       const me = state.session?.userId ?? 'fixture-you';
-      const interests = { ...entry.interests, [itemId]: { ...(entry.interests[itemId] ?? {}), [me]: quantity } };
+      const interests = {
+        ...entry.interests,
+        [itemId]: { ...(entry.interests[itemId] ?? {}), [me]: quantity },
+      };
       commit({
         ...state,
         orders: { ...state.orders, [entry.id]: { ...entry, interests } },
@@ -1437,17 +1561,20 @@ export async function createFixtureBackend(): Promise<Backend> {
       if (replayed) return replayed as GroupOrder['state'];
       const entry = state.orders[planId];
       if (!entry) throw new BackendError('not_found');
-      if (entry.organizerId !== (state.session?.userId ?? 'fixture-you')) throw new BackendError('forbidden');
+      if (entry.organizerId !== (state.session?.userId ?? 'fixture-you'))
+        throw new BackendError('forbidden');
       const current = effectiveOrderState(entry);
       let next: GroupOrder['state'];
       let patch: Partial<typeof entry> = {};
-      if (decision === 'cancel' && !['completed', 'cancelled'].includes(current)) next = 'cancelled';
+      if (decision === 'cancel' && !['completed', 'cancelled'].includes(current))
+        next = 'cancelled';
       else if (decision === 'go' && ['below_target', 'locked'].includes(current)) {
-        const anyone = Object.values(entry.interests).some((byUser) => Object.values(byUser).some((q) => q > 0));
+        const anyone = Object.values(entry.interests).some((byUser) =>
+          Object.values(byUser).some((q) => q > 0),
+        );
         if (!anyone) throw new BackendError('order_not_open');
         next = 'locked';
-      }
-      else if (decision === 'extend' && current === 'below_target' && !entry.extendedOnce) {
+      } else if (decision === 'extend' && current === 'below_target' && !entry.extendedOnce) {
         next = 'extended';
         const closes = Date.now() + 72 * 3_600_000;
         const start = Math.max(Date.parse(entry.pickupStart), closes);
@@ -1464,7 +1591,12 @@ export async function createFixtureBackend(): Promise<Backend> {
         ...state,
         plansCreated: state.plansCreated.map((p) =>
           p.id === planId && patch.pickupStart && patch.pickupEnd && patch.closesAt
-            ? { ...p, startsAt: patch.pickupStart, endsAt: patch.pickupEnd, revealAt: patch.closesAt }
+            ? {
+                ...p,
+                startsAt: patch.pickupStart,
+                endsAt: patch.pickupEnd,
+                revealAt: patch.closesAt,
+              }
             : p,
         ),
         orders: { ...state.orders, [planId]: { ...entry, ...patch, state: next } },
@@ -1485,11 +1617,20 @@ export async function createFixtureBackend(): Promise<Backend> {
       const mine = Object.values(entry.interests).some((byUser) => (byUser[me] ?? 0) > 0);
       if (!mine) throw new BackendError('rsvp_required');
       const collectedBy = [...new Set([...entry.collectedBy, me])];
-      const everyone = new Set(Object.values(entry.interests).flatMap((byUser) => Object.entries(byUser).filter(([, q]) => q > 0).map(([u]) => u)));
+      const everyone = new Set(
+        Object.values(entry.interests).flatMap((byUser) =>
+          Object.entries(byUser)
+            .filter(([, q]) => q > 0)
+            .map(([u]) => u),
+        ),
+      );
       const done = [...everyone].every((u) => collectedBy.includes(u));
       commit({
         ...state,
-        orders: { ...state.orders, [planId]: { ...entry, collectedBy, state: done ? 'completed' : entry.state } },
+        orders: {
+          ...state.orders,
+          [planId]: { ...entry, collectedBy, state: done ? 'completed' : entry.state },
+        },
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: planId } },
       });
     },
@@ -1500,19 +1641,35 @@ export async function createFixtureBackend(): Promise<Backend> {
       const replayed = replayKey(key, fingerprint);
       if (replayed) {
         const earlier = state.webGuests[replayed];
-        if (!earlier) return { status: 'existing', position: null, cancelToken: null, emailSent: true };
-        return { status: earlier.status === 'cancelled' ? 'going' : earlier.status, position: earlier.position, cancelToken: replayed, emailSent: true };
+        if (!earlier)
+          return { status: 'existing', position: null, cancelToken: null, emailSent: true };
+        return {
+          status: earlier.status === 'cancelled' ? 'going' : earlier.status,
+          position: earlier.position,
+          cancelToken: replayed,
+          emailSent: true,
+        };
       }
       const email = input.email.trim().toLowerCase();
       const firstName = input.firstName.trim();
       if (!input.ageConfirmed) throw new BackendError('age_required');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || Array.from(firstName).length < 1 || Array.from(firstName).length > 40) {
+      if (
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+        Array.from(firstName).length < 1 ||
+        Array.from(firstName).length > 40
+      ) {
         throw new BackendError('invalid_input');
       }
       const plan = findPlan(planId);
       // The dev member's own address, or one used before, already belongs to a member.
-      if (email === 'lena@example.com' || Object.values(state.webGuests).some((g) => g.email === email)) {
-        commit({ ...state, idempotent: { ...state.idempotent, [key]: { fingerprint, id: 'existing' } } });
+      if (
+        email === 'lena@example.com' ||
+        Object.values(state.webGuests).some((g) => g.email === email)
+      ) {
+        commit({
+          ...state,
+          idempotent: { ...state.idempotent, [key]: { fingerprint, id: 'existing' } },
+        });
         return { status: 'existing', position: null, cancelToken: null, emailSent: true };
       }
       const status = plan.hasOpenSpot ? 'going' : 'waitlisted';
@@ -1520,7 +1677,10 @@ export async function createFixtureBackend(): Promise<Backend> {
       const token = `guest-${Date.now()}-${key.slice(0, 8)}`;
       commit({
         ...state,
-        webGuests: { ...state.webGuests, [token]: { planId, firstName, email, status, position } },
+        webGuests: {
+          ...state.webGuests,
+          [token]: { planId, firstName, email, status, position },
+        },
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: token } },
       });
       return { status, position, cancelToken: token, emailSent: true };
@@ -1534,7 +1694,10 @@ export async function createFixtureBackend(): Promise<Backend> {
       commit({
         ...state,
         webGuests: { ...state.webGuests, [cancelToken]: { ...guest, status: 'cancelled' } },
-        idempotent: { ...state.idempotent, [key]: { fingerprint: `web_cancel:${cancelToken}`, id: cancelToken } },
+        idempotent: {
+          ...state.idempotent,
+          [key]: { fingerprint: `web_cancel:${cancelToken}`, id: cancelToken },
+        },
       });
     },
 
@@ -1547,20 +1710,29 @@ export async function createFixtureBackend(): Promise<Backend> {
     async markNotificationRead(id) {
       await call();
       requireSession();
-      commit({ ...state, notifications: state.notifications.map((n) => (n.id === id && !n.readAt ? { ...n, readAt: new Date().toISOString() } : n)) });
+      commit({
+        ...state,
+        notifications: state.notifications.map((n) =>
+          n.id === id && !n.readAt ? { ...n, readAt: new Date().toISOString() } : n,
+        ),
+      });
     },
 
     async markAllNotificationsRead() {
       await call();
       requireSession();
       const at = new Date().toISOString();
-      commit({ ...state, notifications: state.notifications.map((n) => (n.readAt ? n : { ...n, readAt: at })) });
+      commit({
+        ...state,
+        notifications: state.notifications.map((n) => (n.readAt ? n : { ...n, readAt: at })),
+      });
     },
 
     async registerPushToken(token) {
       await call();
       requireSession();
-      if (!state.pushTokens.includes(token)) commit({ ...state, pushTokens: [...state.pushTokens, token] });
+      if (!state.pushTokens.includes(token))
+        commit({ ...state, pushTokens: [...state.pushTokens, token] });
     },
 
     async removePushToken(token) {
@@ -1578,8 +1750,13 @@ export async function createFixtureBackend(): Promise<Backend> {
     async acceptPolicies(versions) {
       await call();
       requireSession();
-      const accepted = state.policiesPending.filter((p) => versions.some((v) => v.policy === p.policy && v.version === p.version));
-      commit({ ...state, policiesPending: state.policiesPending.filter((p) => !accepted.includes(p)) });
+      const accepted = state.policiesPending.filter((p) =>
+        versions.some((v) => v.policy === p.policy && v.version === p.version),
+      );
+      commit({
+        ...state,
+        policiesPending: state.policiesPending.filter((p) => !accepted.includes(p)),
+      });
       return accepted.length;
     },
 
@@ -1601,9 +1778,16 @@ export async function createFixtureBackend(): Promise<Backend> {
         ...current,
         ...rest,
         consentDecidedAt: decided ? new Date().toISOString() : current.consentDecidedAt,
-        notifPromptDismissedAt: notifPromptDismissed ? new Date().toISOString() : current.notifPromptDismissedAt,
+        notifPromptDismissedAt: notifPromptDismissed
+          ? new Date().toISOString()
+          : current.notifPromptDismissedAt,
       };
-      if (next.quietStart < 0 || next.quietStart > 23 || next.quietEnd < 0 || next.quietEnd > 23) {
+      if (
+        next.quietStart < 0 ||
+        next.quietStart > 23 ||
+        next.quietEnd < 0 ||
+        next.quietEnd > 23
+      ) {
         throw new BackendError('invalid_input');
       }
       commit({ ...state, settings: next });
@@ -1642,14 +1826,18 @@ export async function createFixtureBackend(): Promise<Backend> {
       const me = state.session?.userId ?? 'fixture-you';
       if (userId === me) throw new BackendError('person_not_found');
       // Pending contact both ways ends; the other side is told nothing.
-      const outgoing = Object.fromEntries(Object.entries(state.directOutgoing).filter(([id]) => id !== userId));
+      const outgoing = Object.fromEntries(
+        Object.entries(state.directOutgoing).filter(([id]) => id !== userId),
+      );
       commit({
         ...state,
         blocked: state.blocked.includes(userId) ? state.blocked : [...state.blocked, userId],
         peopleRequested: state.peopleRequested.filter((id) => id !== userId),
         directOutgoing: outgoing,
         directIncoming: state.directIncoming.map((r) =>
-          r.fromId === userId && r.status === 'pending' ? { ...r, status: 'declined' as const } : r,
+          r.fromId === userId && r.status === 'pending'
+            ? { ...r, status: 'declined' as const }
+            : r,
         ),
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: userId } },
       });
@@ -1685,22 +1873,30 @@ export async function createFixtureBackend(): Promise<Backend> {
         return { caseRef: earlier.caseRef, severity: earlier.severity };
       }
       const details = input.details.trim();
-      if (!input.accuracyConfirmed || Array.from(details).length < 1 || Array.from(details).length > 2000) {
+      if (
+        !input.accuracyConfirmed ||
+        Array.from(details).length < 1 ||
+        Array.from(details).length > 2000
+      ) {
         throw new BackendError('invalid_input');
       }
       const severity: ReportReceipt['severity'] =
         input.category === 'threats' || input.category === 'stalking'
           ? 'urgent'
-          : ['harassment', 'scam', 'unsafe_place', 'allergen_deception'].includes(input.category)
+          : ['harassment', 'scam', 'unsafe_place', 'allergen_deception'].includes(
+                input.category,
+              )
             ? 'high'
             : 'routine';
       const caseRef = `PC-${3100 + state.reports.length + 1}`;
       const receipt: ReportReceipt = { caseRef, severity };
       const label =
         input.targetType === 'person'
-          ? (fixturePeople.find((p) => p.person.userId === input.targetId)?.person.displayName ?? input.targetId)
+          ? (fixturePeople.find((p) => p.person.userId === input.targetId)?.person
+              .displayName ?? input.targetId)
           : input.targetType === 'plan' || input.targetType === 'order'
-            ? (plans().find((candidate) => candidate.id === input.targetId)?.title ?? input.targetId)
+            ? (plans().find((candidate) => candidate.id === input.targetId)?.title ??
+              input.targetId)
             : input.targetId;
       const hours = severity === 'urgent' ? 1 : severity === 'high' ? 24 : 72;
       commit({
@@ -1745,10 +1941,12 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireSession();
       const fingerprint = `appeal:${actionId}:${statement.trim()}`;
       if (replayKey(key, fingerprint)) return;
-      if (!state.suspension || state.suspension.actionId !== actionId) throw new BackendError('not_found');
+      if (!state.suspension || state.suspension.actionId !== actionId)
+        throw new BackendError('not_found');
       if (state.suspension.appealStatus) throw new BackendError('invalid_input');
       const text = statement.trim();
-      if (Array.from(text).length < 1 || Array.from(text).length > 2000) throw new BackendError('invalid_input');
+      if (Array.from(text).length < 1 || Array.from(text).length > 2000)
+        throw new BackendError('invalid_input');
       commit({
         ...state,
         suspension: { ...state.suspension, appealStatus: 'open' },
@@ -1775,7 +1973,10 @@ export async function createFixtureBackend(): Promise<Backend> {
       const rank = { urgent: 0, high: 1, routine: 2 };
       return state.reports
         .filter((r) => ['open', 'triaged', 'appealed'].includes(r.status))
-        .sort((a, b) => rank[a.severity] - rank[b.severity] || a.createdAt.localeCompare(b.createdAt));
+        .sort(
+          (a, b) =>
+            rank[a.severity] - rank[b.severity] || a.createdAt.localeCompare(b.createdAt),
+        );
     },
 
     async staffCase(reportId) {
@@ -1792,7 +1993,9 @@ export async function createFixtureBackend(): Promise<Backend> {
       if (!reason.trim()) throw new BackendError('invalid_input');
       const found = state.reports.find((r) => r.id === reportId);
       if (!found || found.targetType !== 'message') throw new BackendError('not_found');
-      const conversationId = Object.keys(state.messages).find((c) => state.messages[c]?.some((m) => m.id === found.targetId));
+      const conversationId = Object.keys(state.messages).find((c) =>
+        state.messages[c]?.some((m) => m.id === found.targetId),
+      );
       commit({
         ...state,
         audit: [auditRow('staff.view_messages', 'report', reason.trim()), ...state.audit],
@@ -1807,10 +2010,14 @@ export async function createFixtureBackend(): Promise<Backend> {
       if (replayKey(key, fingerprint)) return;
       const found = state.reports.find((r) => r.id === input.reportId);
       if (!found) throw new BackendError('not_found');
-      if (['actioned', 'dismissed', 'closed'].includes(found.status)) throw new BackendError('invalid_input');
+      if (['actioned', 'dismissed', 'closed'].includes(found.status))
+        throw new BackendError('invalid_input');
       const reason = input.reason.trim();
       if (!reason) throw new BackendError('invalid_input');
-      if (input.action === 'suspend' && (!input.until || Date.parse(input.until) <= Date.now())) {
+      if (
+        input.action === 'suspend' &&
+        (!input.until || Date.parse(input.until) <= Date.now())
+      ) {
         throw new BackendError('invalid_input');
       }
       const actionId = `action-${found.caseRef}`;
@@ -1818,7 +2025,9 @@ export async function createFixtureBackend(): Promise<Backend> {
       // Dev only: a suspension in the fixture pauses the viewer's own account, so the Suspended
       // screen can be walked through on a device.
       const suspension: Suspension | null =
-        input.action === 'suspend' || input.action === 'ban' || input.action === 'freeze_messages'
+        input.action === 'suspend' ||
+        input.action === 'ban' ||
+        input.action === 'freeze_messages'
           ? {
               actionId,
               action: input.action,
@@ -1837,7 +2046,16 @@ export async function createFixtureBackend(): Promise<Backend> {
             ? {
                 ...r,
                 status,
-                actions: [...r.actions, { id: actionId, action: input.action, reason, until: input.until, createdAt: new Date().toISOString() }],
+                actions: [
+                  ...r.actions,
+                  {
+                    id: actionId,
+                    action: input.action,
+                    reason,
+                    until: input.until,
+                    createdAt: new Date().toISOString(),
+                  },
+                ],
               }
             : r,
         ),
@@ -1864,8 +2082,19 @@ export async function createFixtureBackend(): Promise<Backend> {
       commit({
         ...state,
         appeals: state.appeals.filter((a) => a.id !== appealId),
-        suspension: state.suspension ? (lifted ? null : { ...state.suspension, appealStatus: 'upheld' }) : null,
-        audit: [auditRow(uphold ? 'staff.appeal_upheld' : 'staff.appeal_reversed', 'appeal', reason.trim()), ...state.audit],
+        suspension: state.suspension
+          ? lifted
+            ? null
+            : { ...state.suspension, appealStatus: 'upheld' }
+          : null,
+        audit: [
+          auditRow(
+            uphold ? 'staff.appeal_upheld' : 'staff.appeal_reversed',
+            'appeal',
+            reason.trim(),
+          ),
+          ...state.audit,
+        ],
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: appealId } },
       });
     },
@@ -1918,7 +2147,8 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireSession();
       return {
         plans: new Set([...state.goingPlanIds, ...state.plansCreated.map((p) => p.id)]).size,
-        circles: new Set([...state.circlesJoined, ...state.circlesCreated.map((c) => c.id)]).size,
+        circles: new Set([...state.circlesJoined, ...state.circlesCreated.map((c) => c.id)])
+          .size,
         connections: visiblePeople().filter((p) => p.connection === 'connected').length,
       };
     },
@@ -1936,7 +2166,11 @@ export async function createFixtureBackend(): Promise<Backend> {
       if (!state.profile) throw new BackendError('not_found');
       const displayName = input.displayName.trim();
       const goals = input.goals.filter((g) => (PROFILE_GOALS as readonly string[]).includes(g));
-      if (Array.from(displayName).length < 1 || Array.from(displayName).length > 40 || goals.length > 8) {
+      if (
+        Array.from(displayName).length < 1 ||
+        Array.from(displayName).length > 40 ||
+        goals.length > 8
+      ) {
         throw new BackendError('invalid_input');
       }
       const profile = { ...state.profile, displayName, goals };
@@ -1985,10 +2219,7 @@ export async function createFixtureBackend(): Promise<Backend> {
           : isGoing && revealed
             ? (fixtureMeetingUrls[planId] ?? null)
             : null,
-        bringItems: [
-          ...fixtureBringItems,
-          ...state.bringCreated,
-        ]
+        bringItems: [...fixtureBringItems, ...state.bringCreated]
           .filter((item) => item.planId === planId)
           .map((item) => {
             const claimedByMe = state.claimedItemIds.includes(item.id);
@@ -2137,7 +2368,13 @@ export async function createFixtureBackend(): Promise<Backend> {
       }
       requireLive(planId);
       const id = `bring-${Date.now()}-${key.slice(0, 8)}`;
-      const created: FixtureBringItem = { id, planId, label, quantity: item.quantity, claimedBy: [] };
+      const created: FixtureBringItem = {
+        id,
+        planId,
+        label,
+        quantity: item.quantity,
+        claimedBy: [],
+      };
       commit({
         ...state,
         bringCreated: [...state.bringCreated, created],

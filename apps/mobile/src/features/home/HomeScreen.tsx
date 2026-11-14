@@ -4,7 +4,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
-import { AlertIcon, BellIcon, ChevronRightIcon, OfflineIcon, PinIcon, PlusIcon } from '../../components/icons';
+import {
+  AlertIcon,
+  BellIcon,
+  ChevronRightIcon,
+  OfflineIcon,
+  PinIcon,
+  PlusIcon,
+} from '../../components/icons';
 import { DateTile, EmptyState, Skeleton } from '../../components/parts';
 import { Photo } from '../../components/Photo';
 import { color, extra, radius, shadow, type } from '../../components/theme';
@@ -241,7 +248,9 @@ export default function HomeScreen() {
     const offline = errorCode(plans.error) === 'network';
     return (
       <EmptyState
-        onSavedPlans={() => { router.push('/my-plans'); }}
+        onSavedPlans={() => {
+          router.push('/my-plans');
+        }}
         title={offline ? t('errors.offlineTitle') : t('errors.serverTitle')}
         text={offline ? t('errors.offlineText') : t('errors.serverText')}
         {...(offline ? { icon: <OfflineIcon size={36} strokeWidth={1.7} /> } : {})}
@@ -315,14 +324,22 @@ export default function HomeScreen() {
         {hasNotice(profile) ? (
           <Pressable
             accessibilityRole="link"
-            accessibilityLabel={isFrozen(profile) && !isPaused(profile) ? t('safety.frozenBanner') : t('safety.pausedBanner')}
+            accessibilityLabel={
+              isFrozen(profile) && !isPaused(profile)
+                ? t('safety.frozenBanner')
+                : t('safety.pausedBanner')
+            }
             onPress={() => {
               router.push('/suspended');
             }}
             style={styles.paused}
           >
             <AlertIcon size={18} strokeWidth={2} color="#FFFFFF" />
-            <Text style={[type(14, 'semibold', { color: '#FFFFFF' }), styles.pausedText]}>{isFrozen(profile) && !isPaused(profile) ? t('safety.frozenBanner') : t('safety.pausedBanner')}</Text>
+            <Text style={[type(14, 'semibold', { color: '#FFFFFF' }), styles.pausedText]}>
+              {isFrozen(profile) && !isPaused(profile)
+                ? t('safety.frozenBanner')
+                : t('safety.pausedBanner')}
+            </Text>
             <ChevronRightIcon size={16} strokeWidth={2.4} color="#FFFFFF" />
           </Pressable>
         ) : null}
@@ -404,10 +421,16 @@ export default function HomeScreen() {
           />
         ) : emptyCity && cityName ? (
           <View style={[styles.row, styles.emptyCity]}>
-            <Text accessibilityRole="header" aria-level={2} style={type(26, 'bold', { tracking: -0.8, leading: 1.1 })}>
+            <Text
+              accessibilityRole="header"
+              aria-level={2}
+              style={type(26, 'bold', { tracking: -0.8, leading: 1.1 })}
+            >
               {t('home.emptyCityTitle', { city: cityName })}
             </Text>
-            <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{t('home.emptyCityText')}</Text>
+            <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+              {t('home.emptyCityText')}
+            </Text>
             <Pressable
               accessibilityRole="link"
               onPress={() => {
@@ -417,13 +440,23 @@ export default function HomeScreen() {
             >
               <View style={styles.emptyCityCardText}>
                 <Text style={type(17, 'semibold')}>{t('home.startOwnTitle')}</Text>
-                <Text style={type(14, 'regular', { color: color.secondary })}>{t('home.startOwnText')}</Text>
+                <Text style={type(14, 'regular', { color: color.secondary })}>
+                  {t('home.startOwnText')}
+                </Text>
               </View>
-              <Text style={[type(15, 'semibold', { color: '#FFFFFF' }), styles.emptyCityAction]}>{t('home.startOwnAction')}</Text>
+              <Text
+                style={[type(15, 'semibold', { color: '#FFFFFF' }), styles.emptyCityAction]}
+              >
+                {t('home.startOwnAction')}
+              </Text>
             </Pressable>
             {fromHome.length > 0 ? (
               <>
-                <Text accessibilityRole="header" aria-level={2} style={[type(20, 'bold', { tracking: -0.5 }), styles.fromHomeTitle]}>
+                <Text
+                  accessibilityRole="header"
+                  aria-level={2}
+                  style={[type(20, 'bold', { tracking: -0.5 }), styles.fromHomeTitle]}
+                >
                   {t('home.joinFromHome')}
                 </Text>
                 {fromHome.map((plan) => (
@@ -535,11 +568,34 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   emptyCity: { gap: 12 },
-  emptyCityCard: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 72, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
+  emptyCityCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 72,
+    padding: 16,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
   emptyCityCardText: { flex: 1, minWidth: 0, gap: 2 },
-  emptyCityAction: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: radius.pill, backgroundColor: color.ink, overflow: 'hidden' },
+  emptyCityAction: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: radius.pill,
+    backgroundColor: color.ink,
+    overflow: 'hidden',
+  },
   fromHomeTitle: { marginTop: 12 },
-  paused: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingHorizontal: 14, borderRadius: 14, backgroundColor: color.ink },
+  paused: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 48,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    backgroundColor: color.ink,
+  },
   pausedText: { flex: 1, minWidth: 0 },
   screen: { flex: 1, backgroundColor: color.surface },
   content: { gap: 18 },

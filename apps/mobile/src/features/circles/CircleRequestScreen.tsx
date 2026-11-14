@@ -43,16 +43,34 @@ export default function CircleRequestScreen() {
         <InlineState
           title={t('people.signedOut.title')}
           text={t('circles.signUpLead')}
-          action={<Button variant="outline" label={t('home.signIn')} onPress={() => { router.push({ pathname: '/sign-up', params: { next: `/circle/${id}/request` } }); }} />}
+          action={
+            <Button
+              variant="outline"
+              label={t('home.signIn')}
+              onPress={() => {
+                router.push({
+                  pathname: '/sign-up',
+                  params: { next: `/circle/${id}/request` },
+                });
+              }}
+            />
+          }
         />
       </View>
     );
   }
   if (circle.isPending || session === undefined) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         {header}
-        <View style={styles.content}><Skeleton width="100%" height={200} radius={radius.card} /></View>
+        <View style={styles.content}>
+          <Skeleton width="100%" height={200} radius={radius.card} />
+        </View>
       </View>
     );
   }
@@ -64,7 +82,13 @@ export default function CircleRequestScreen() {
         <EmptyState
           title={missing ? t('circles.notFound') : t('errors.serverTitle')}
           text={missing ? t('errors.notFoundText') : t('errors.serverText')}
-          actions={missing ? <Button label={t('common.back')} onPress={back} /> : <Button label={t('common.retry')} onPress={() => void circle.refetch()} />}
+          actions={
+            missing ? (
+              <Button label={t('common.back')} onPress={back} />
+            ) : (
+              <Button label={t('common.retry')} onPress={() => void circle.refetch()} />
+            )
+          }
         />
       </View>
     );
@@ -73,14 +97,30 @@ export default function CircleRequestScreen() {
   const data = circle.data;
   const where = data.isGlobal ? t('circles.globalWhere') : (data.city ?? '');
   // Already in, already waiting, or no approval needed: the Circle page says what to do.
-  if (data.viewerRole !== null || data.viewerRequestPending || data.access !== 'request' || join.isSuccess) {
+  if (
+    data.viewerRole !== null ||
+    data.viewerRequestPending ||
+    data.access !== 'request' ||
+    join.isSuccess
+  ) {
     return (
       <View style={styles.screen}>
         {header}
         <EmptyState
           title={data.viewerRole !== null ? t('circles.member') : t('circles.requestSentTitle')}
-          text={data.viewerRole !== null ? t('circles.memberLead') : t('circles.requestSentText', { name: data.name })}
-          actions={<Button label={t('circles.openCircle')} onPress={() => { router.replace({ pathname: '/circle/[id]', params: { id } }); }} />}
+          text={
+            data.viewerRole !== null
+              ? t('circles.memberLead')
+              : t('circles.requestSentText', { name: data.name })
+          }
+          actions={
+            <Button
+              label={t('circles.openCircle')}
+              onPress={() => {
+                router.replace({ pathname: '/circle/[id]', params: { id } });
+              }}
+            />
+          }
         />
       </View>
     );
@@ -94,28 +134,55 @@ export default function CircleRequestScreen() {
   return (
     <View style={styles.screen}>
       {header}
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, { paddingBottom: 140 + insets.bottom }]}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[styles.content, { paddingBottom: 140 + insets.bottom }]}
+      >
         <Text style={type(13, 'semibold', { color: color.secondary, tracking: 0.6 })}>
           {`${data.isGlobal ? t('circles.eyebrowGlobal') : t('circles.eyebrowLocal')} · ${t('circles.approvalNeeded')}`.toUpperCase()}
         </Text>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>{data.name}</Text>
-        {where ? <Text style={type(15, 'regular', { color: color.secondary })}>{where}</Text> : null}
-        {data.tagline ? <Text style={type(17, 'regular', { leading: 1.5 })}>{data.tagline}</Text> : null}
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
+          {data.name}
+        </Text>
+        {where ? (
+          <Text style={type(15, 'regular', { color: color.secondary })}>{where}</Text>
+        ) : null}
+        {data.tagline ? (
+          <Text style={type(17, 'regular', { leading: 1.5 })}>{data.tagline}</Text>
+        ) : null}
 
         <View style={styles.card}>
           <Text style={type(16, 'semibold')}>{t('circles.privateTitle')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{t('circles.privateText')}</Text>
+          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+            {t('circles.privateText')}
+          </Text>
         </View>
 
         <View style={styles.facts}>
-          <Text style={type(16, 'semibold')}>{t('circles.memberCount', { count: data.memberCount })}</Text>
+          <Text style={type(16, 'semibold')}>
+            {t('circles.memberCount', { count: data.memberCount })}
+          </Text>
           {data.ownerName ? (
-            <Text style={type(15, 'regular', { color: color.secondary })}>{t('circles.moderatedBy', { name: data.ownerName })}</Text>
+            <Text style={type(15, 'regular', { color: color.secondary })}>
+              {t('circles.moderatedBy', { name: data.ownerName })}
+            </Text>
           ) : null}
         </View>
 
-        <Text style={[type(13, 'semibold', { color: color.secondary, tracking: 0.4 }), styles.askLabel]}>{t('circles.moderatorsAsk').toUpperCase()}</Text>
-        <Text style={type(18, 'semibold')}>{data.joinQuestion ?? t('circles.requestLead')}</Text>
+        <Text
+          style={[
+            type(13, 'semibold', { color: color.secondary, tracking: 0.4 }),
+            styles.askLabel,
+          ]}
+        >
+          {t('circles.moderatorsAsk').toUpperCase()}
+        </Text>
+        <Text style={type(18, 'semibold')}>
+          {data.joinQuestion ?? t('circles.requestLead')}
+        </Text>
         <TextInput
           accessibilityLabel={data.joinQuestion ?? t('circles.answerLabel')}
           value={answer}
@@ -124,19 +191,35 @@ export default function CircleRequestScreen() {
           textAlignVertical="top"
           style={[styles.answer, type(17, 'regular', { leading: 1.4 })]}
         />
-        <Text style={[type(13, 'regular', { color: length > ANSWER_MAX ? color.danger : color.secondary }), styles.counter]}>
+        <Text
+          style={[
+            type(13, 'regular', {
+              color: length > ANSWER_MAX ? color.danger : color.secondary,
+            }),
+            styles.counter,
+          ]}
+        >
           {`${length} / ${ANSWER_MAX}`}
         </Text>
         {join.isError ? (
-          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>{t('circles.genericError')}</Text>
+          <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+            {t('circles.genericError')}
+          </Text>
         ) : null}
       </ScrollView>
       <FloatingActionBar style={styles.bar}>
         <View style={styles.barText}>
           <Text style={type(16, 'semibold')}>{t('circles.freeToJoin')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>{t('circles.notifyYou')}</Text>
+          <Text style={type(14, 'regular', { color: color.secondary })}>
+            {t('circles.notifyYou')}
+          </Text>
         </View>
-        <Button label={t('circles.requestJoin')} disabled={length > ANSWER_MAX} loading={join.isPending} onPress={send} />
+        <Button
+          label={t('circles.requestJoin')}
+          disabled={length > ANSWER_MAX}
+          loading={join.isPending}
+          onPress={send}
+        />
       </FloatingActionBar>
     </View>
   );
@@ -145,11 +228,38 @@ export default function CircleRequestScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 10 },
-  card: { gap: 4, padding: 16, borderRadius: radius.card, backgroundColor: color.fill, marginTop: 8 },
-  facts: { gap: 3, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: extra.cardBorder },
+  card: {
+    gap: 4,
+    padding: 16,
+    borderRadius: radius.card,
+    backgroundColor: color.fill,
+    marginTop: 8,
+  },
+  facts: {
+    gap: 3,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: extra.cardBorder,
+  },
   askLabel: { marginTop: 14 },
-  answer: { minHeight: 120, padding: 14, borderRadius: radius.control, borderWidth: 1, borderColor: extra.cardBorder, color: color.ink },
+  answer: {
+    minHeight: 120,
+    padding: 14,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+    color: color.ink,
+  },
   counter: { alignSelf: 'flex-end' },
-  bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, paddingVertical: 10, paddingLeft: 20, paddingRight: 10, minHeight: size.touchMin },
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 14,
+    paddingVertical: 10,
+    paddingLeft: 20,
+    paddingRight: 10,
+    minHeight: size.touchMin,
+  },
   barText: { flex: 1, minWidth: 0, gap: 1 },
 });

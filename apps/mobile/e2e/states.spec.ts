@@ -5,7 +5,9 @@ test.beforeEach(async ({ page }) => {
   await freezeTime(page);
 });
 
-test('a city with nothing this week invites you to start a Plan and to join online from home', async ({ page }) => {
+test('a city with nothing this week invites you to start a Plan and to join online from home', async ({
+  page,
+}) => {
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: /Change city/ }).click();
   await page.getByRole('radio', { name: 'Porto', exact: true }).click();

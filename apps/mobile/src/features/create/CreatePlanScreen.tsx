@@ -191,7 +191,12 @@ export default function CreatePlanScreen() {
   }
   if (cities.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="100%" height={120} radius={radius.card} />
       </View>
     );
@@ -230,10 +235,7 @@ export default function CreatePlanScreen() {
       {header}
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: 40 + insets.bottom },
-        ]}
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         {step === 'type' ? (
           <>
@@ -258,7 +260,9 @@ export default function CreatePlanScreen() {
                       {t(`plan.category.${kind}`)}
                     </Text>
                     <Text style={styles.lead}>
-                      {kind === 'cooking_night' ? t('create.hintCookingNight') : t('create.hintPotluck')}
+                      {kind === 'cooking_night'
+                        ? t('create.hintCookingNight')
+                        : t('create.hintPotluck')}
                     </Text>
                   </Pressable>
                 );
@@ -270,7 +274,9 @@ export default function CreatePlanScreen() {
                 }}
                 style={styles.tile}
               >
-                <Text style={type(17, 'semibold', { tracking: -0.3 })}>{t('plan.category.group_order')}</Text>
+                <Text style={type(17, 'semibold', { tracking: -0.3 })}>
+                  {t('plan.category.group_order')}
+                </Text>
                 <Text style={styles.lead}>{t('create.hintGroupOrder')}</Text>
               </Pressable>
             </View>
@@ -307,12 +313,7 @@ export default function CreatePlanScreen() {
         ) : null}
 
         {step === 'when' ? (
-          <WhenStep
-            draft={draft}
-            now={now}
-            zone={zone}
-            onChange={update}
-          />
+          <WhenStep draft={draft} now={now} zone={zone} onChange={update} />
         ) : null}
 
         {step === 'where' ? (
@@ -320,7 +321,11 @@ export default function CreatePlanScreen() {
             <Text accessibilityRole="header" style={styles.title}>
               {t('create.whereTitle')}
             </Text>
-            <View accessibilityRole="radiogroup" accessibilityLabel={t('create.formatGroup')} style={styles.segments}>
+            <View
+              accessibilityRole="radiogroup"
+              accessibilityLabel={t('create.formatGroup')}
+              style={styles.segments}
+            >
               {(['in_person', 'online'] as const).map((format) => {
                 const selected = draft.format === format;
                 return (
@@ -333,8 +338,14 @@ export default function CreatePlanScreen() {
                     }}
                     style={[styles.segment, selected && styles.segmentSelected]}
                   >
-                    <Text style={type(15, 'semibold', { color: selected ? color.brand : color.ink })}>
-                      {format === 'in_person' ? t('create.formatInPerson') : t('create.formatOnline')}
+                    <Text
+                      style={type(15, 'semibold', {
+                        color: selected ? color.brand : color.ink,
+                      })}
+                    >
+                      {format === 'in_person'
+                        ? t('create.formatInPerson')
+                        : t('create.formatOnline')}
                     </Text>
                   </Pressable>
                 );
@@ -439,7 +450,11 @@ export default function CreatePlanScreen() {
                     }}
                     style={[styles.chip, selected && styles.chipSelected]}
                   >
-                    <Text style={type(15, 'semibold', { color: selected ? color.brand : color.ink })}>
+                    <Text
+                      style={type(15, 'semibold', {
+                        color: selected ? color.brand : color.ink,
+                      })}
+                    >
                       {t(`allergen.${allergen}`)}
                     </Text>
                   </Pressable>
@@ -468,7 +483,9 @@ export default function CreatePlanScreen() {
           {isLast ? (
             <Button
               label={t('create.publish')}
-              disabled={!valid.allergens || !valid.when || !valid.where || !valid.name || !valid.type}
+              disabled={
+                !valid.allergens || !valid.when || !valid.where || !valid.name || !valid.type
+              }
               loading={create.isPending}
               onPress={publish}
             />
@@ -553,7 +570,9 @@ function WhenStep({
               }}
               style={[styles.day, selected && styles.tileSelected]}
             >
-              <Text style={type(13, 'semibold', { color: color.secondary })}>{weekday(offset)}</Text>
+              <Text style={type(13, 'semibold', { color: color.secondary })}>
+                {weekday(offset)}
+              </Text>
               <Text style={type(20, 'semibold', { tracking: -0.4 })}>{dayNumber(offset)}</Text>
             </Pressable>
           );
@@ -561,7 +580,11 @@ function WhenStep({
       </ScrollView>
 
       <Text style={styles.label}>{t('create.startGroup')}</Text>
-      <View accessibilityRole="radiogroup" accessibilityLabel={t('create.startGroup')} style={styles.timeGrid}>
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t('create.startGroup')}
+        style={styles.timeGrid}
+      >
         {START_MINUTES.map((minutes) => {
           const selected = draft.startMinutes === minutes;
           const ok = startsOk(minutes);
@@ -586,7 +609,11 @@ function WhenStep({
       </View>
 
       <Text style={styles.label}>{t('create.durationGroup')}</Text>
-      <View accessibilityRole="radiogroup" accessibilityLabel={t('create.durationGroup')} style={styles.pill}>
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t('create.durationGroup')}
+        style={styles.pill}
+      >
         {DURATION_MINUTES.map((minutes) => {
           const selected = draft.duration === minutes;
           return (
@@ -632,7 +659,11 @@ const styles = StyleSheet.create({
   },
   back: {},
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 12 },
-  title: { ...type(32, 'bold', { tracking: -1, leading: 1.08 }), marginTop: 32, marginBottom: 2 },
+  title: {
+    ...type(32, 'bold', { tracking: -1, leading: 1.08 }),
+    marginTop: 32,
+    marginBottom: 2,
+  },
   lead: { ...type(15, 'regular', { color: color.secondary, leading: 1.5 }) },
   label: { ...type(17, 'semibold'), marginTop: 18, marginBottom: 2 },
   field: {
@@ -693,8 +724,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: extra.cardBorder,
   },
-  pill: { flexDirection: 'row', gap: 4, padding: 4, borderRadius: 16, backgroundColor: color.fill },
-  pillItem: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 12 },
+  pill: {
+    flexDirection: 'row',
+    gap: 4,
+    padding: 4,
+    borderRadius: 16,
+    backgroundColor: color.fill,
+  },
+  pillItem: {
+    flex: 1,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+  },
   pillItemSelected: { backgroundColor: color.surface },
   chip: {
     minHeight: size.touchMin,

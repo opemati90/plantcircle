@@ -5,7 +5,9 @@ test.beforeEach(async ({ page }) => {
   await freezeTime(page);
 });
 
-test('a shared link reserves a spot with a name, an email and the age confirmation, and can be cancelled', async ({ page }) => {
+test('a shared link reserves a spot with a name, an email and the age confirmation, and can be cancelled', async ({
+  page,
+}) => {
   await page.goto('/p/cooking-night');
   await expect(page.getByText('AMA O. INVITED YOU')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'West African Cooking Night' })).toBeVisible();
@@ -25,13 +27,17 @@ test('a shared link reserves a spot with a name, an email and the age confirmati
   await expect(page.getByRole('heading', { name: 'Your spot is released' })).toBeVisible();
 });
 
-test('an email that already belongs to a member gets a sign-in link, and a full Plan offers the waitlist', async ({ page }) => {
+test('an email that already belongs to a member gets a sign-in link, and a full Plan offers the waitlist', async ({
+  page,
+}) => {
   await page.goto('/p/cooking-night');
   await page.getByRole('textbox', { name: 'First name' }).fill('Lena');
   await page.getByRole('textbox', { name: 'Email' }).fill('lena@example.com');
   await page.getByRole('checkbox', { name: /I’m 18\+ and agree/ }).click();
   await page.getByRole('button', { name: 'Reserve my spot' }).click();
-  await expect(page.getByRole('heading', { name: 'You already have a PlantCircle account' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'You already have a PlantCircle account' }),
+  ).toBeVisible();
   await expect(page.getByRole('button', { name: /Cancel my spot/ })).toHaveCount(0);
 
   await page.goto('/p/ramen-workshop');
@@ -43,7 +49,9 @@ test('an email that already belongs to a member gets a sign-in link, and a full 
   await expect(page.getByRole('heading', { name: /in line, Sara/ })).toBeVisible();
 });
 
-test('a bad email is caught before anything is sent, and Open in app leads to the Plan', async ({ page }) => {
+test('a bad email is caught before anything is sent, and Open in app leads to the Plan', async ({
+  page,
+}) => {
   await page.goto('/p/cooking-night');
   await page.getByRole('textbox', { name: 'First name' }).fill('Sara');
   await page.getByRole('textbox', { name: 'Email' }).fill('not-an-email');

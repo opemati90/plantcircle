@@ -12,7 +12,8 @@ export function checkinOpen(
   if (ended) return false;
   const at = now.getTime();
   return (
-    at >= Date.parse(window.startsAt) - 2 * HOUR_MS && at <= Date.parse(window.endsAt) + 2 * HOUR_MS
+    at >= Date.parse(window.startsAt) - 2 * HOUR_MS &&
+    at <= Date.parse(window.endsAt) + 2 * HOUR_MS
   );
 }
 

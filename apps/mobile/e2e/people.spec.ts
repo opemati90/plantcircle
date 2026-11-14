@@ -5,7 +5,9 @@ test.beforeEach(async ({ page }) => {
   await freezeTime(page);
 });
 
-test('a member connects back with someone in a shared Circle who asked first', async ({ page }) => {
+test('a member connects back with someone in a shared Circle who asked first', async ({
+  page,
+}) => {
   await signInWithEmail(page, '/explore');
   await page.getByRole('tab', { name: 'Circles', exact: true }).click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
@@ -20,7 +22,9 @@ test('a member connects back with someone in a shared Circle who asked first', a
   await expect(page.getByRole('button', { name: 'Message Mia K.' })).toBeVisible();
 });
 
-test('the People choice is off by default and can be turned on from Profile', async ({ page }) => {
+test('the People choice is off by default and can be turned on from Profile', async ({
+  page,
+}) => {
   // The People choice lives under Profile → Privacy.
   await signInWithEmail(page, '/profile');
   await page.getByRole('link', { name: 'Privacy' }).click();
@@ -32,7 +36,9 @@ test('the People choice is off by default and can be turned on from Profile', as
   await expect(choice).toBeChecked();
 });
 
-test('a visitor who is not signed in is asked to sign in, not shown an error', async ({ page }) => {
+test('a visitor who is not signed in is asked to sign in, not shown an error', async ({
+  page,
+}) => {
   await page.goto('/explore');
   await page.getByRole('tab', { name: 'People', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Sign in to see people' })).toBeVisible();

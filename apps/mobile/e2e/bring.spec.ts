@@ -5,7 +5,9 @@ test.beforeEach(async ({ page }) => {
   await freezeTime(page);
 });
 
-test('a host adds an item to bring, changes it, and sees how many are brought', async ({ page }) => {
+test('a host adds an item to bring, changes it, and sees how many are brought', async ({
+  page,
+}) => {
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: 'Change city' }).click();
   await page.getByRole('radio', { name: 'Berlin', exact: true }).click();

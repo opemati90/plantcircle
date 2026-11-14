@@ -34,19 +34,37 @@ export interface PlanFilters {
 export const NO_FILTERS: PlanFilters = { when: 'any', where: 'any', price: 'any' };
 
 export const activeFilterCount = (filters: PlanFilters): number =>
-  (filters.when === 'any' ? 0 : 1) + (filters.where === 'any' ? 0 : 1) + (filters.price === 'any' ? 0 : 1);
+  (filters.when === 'any' ? 0 : 1) +
+  (filters.where === 'any' ? 0 : 1) +
+  (filters.price === 'any' ? 0 : 1);
 
 /** The viewer's calendar day for an instant: "today" and "this weekend" follow their clock. */
-function dayKey(date: Date, timeZone: string): { key: string; weekday: number; ordinal: number } {
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }).formatToParts(date);
+function dayKey(
+  date: Date,
+  timeZone: string,
+): { key: string; weekday: number; ordinal: number } {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+  }).formatToParts(date);
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
   const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday'));
   // Days counted on the calendar, so DST never shifts a date.
-  const ordinal = Math.round(Date.UTC(Number(get('year')), Number(get('month')) - 1, Number(get('day'))) / 86_400_000);
+  const ordinal = Math.round(
+    Date.UTC(Number(get('year')), Number(get('month')) - 1, Number(get('day'))) / 86_400_000,
+  );
   return { key: `${get('year')}-${get('month')}-${get('day')}`, weekday, ordinal };
 }
 
-export function matchesWhen(plan: Plan, when: PlanFilters['when'], now: Date, timeZone: string): boolean {
+export function matchesWhen(
+  plan: Plan,
+  when: PlanFilters['when'],
+  now: Date,
+  timeZone: string,
+): boolean {
   if (when === 'any') return true;
   const today = dayKey(now, timeZone);
   const day = dayKey(new Date(plan.startsAt), timeZone);
@@ -59,7 +77,9 @@ export function matchesWhen(plan: Plan, when: PlanFilters['when'], now: Date, ti
   }
   // The coming Saturday and Sunday (or the Sunday that is today).
   const daysToSaturday = (6 - today.weekday + 7) % 7;
-  return today.weekday === 0 ? offset === 0 : offset === daysToSaturday || offset === daysToSaturday + 1;
+  return today.weekday === 0
+    ? offset === 0
+    : offset === daysToSaturday || offset === daysToSaturday + 1;
 }
 
 export const matchesWhere = (plan: Plan, where: PlanFilters['where']): boolean =>
@@ -68,9 +88,17 @@ export const matchesWhere = (plan: Plan, where: PlanFilters['where']): boolean =
 export const matchesPrice = (plan: Plan, price: PlanFilters['price']): boolean =>
   price === 'any' || (price === 'free' ? plan.priceCents === 0 : plan.priceCents > 0);
 
-export function filterPlans(plans: Plan[], filters: PlanFilters, now: Date, timeZone: string): Plan[] {
+export function filterPlans(
+  plans: Plan[],
+  filters: PlanFilters,
+  now: Date,
+  timeZone: string,
+): Plan[] {
   return plans.filter(
-    (plan) => matchesWhen(plan, filters.when, now, timeZone) && matchesWhere(plan, filters.where) && matchesPrice(plan, filters.price),
+    (plan) =>
+      matchesWhen(plan, filters.when, now, timeZone) &&
+      matchesWhere(plan, filters.where) &&
+      matchesPrice(plan, filters.price),
   );
 }
 

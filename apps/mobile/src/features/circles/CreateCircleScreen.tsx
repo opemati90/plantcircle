@@ -190,7 +190,9 @@ export default function CreateCircleScreen() {
 
         {cityName ? (
           <View style={styles.where}>
-            <Text style={[type(15, 'medium'), styles.whereText]}>{t('circles.createWhere', { city: cityName })}</Text>
+            <Text style={[type(15, 'medium'), styles.whereText]}>
+              {t('circles.createWhere', { city: cityName })}
+            </Text>
             <Pressable
               accessibilityRole="link"
               onPress={() => {
@@ -198,7 +200,9 @@ export default function CreateCircleScreen() {
               }}
               style={styles.whereLink}
             >
-              <Text style={type(15, 'semibold', { color: color.brand })}>{t('circles.changeInSettings')}</Text>
+              <Text style={type(15, 'semibold', { color: color.brand })}>
+                {t('circles.changeInSettings')}
+              </Text>
             </Pressable>
           </View>
         ) : null}
@@ -216,7 +220,13 @@ export default function CreateCircleScreen() {
 const label = { ...type(14, 'semibold', { color: color.secondary }), marginTop: 4 };
 
 const styles = StyleSheet.create({
-  where: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingTop: 6 },
+  where: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingTop: 6,
+  },
   whereText: { flexShrink: 1 },
   whereLink: { minHeight: 44, justifyContent: 'center' },
   screen: { flex: 1, backgroundColor: color.surface },

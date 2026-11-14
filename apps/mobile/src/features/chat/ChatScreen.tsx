@@ -56,10 +56,13 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
     setClientId(newIdempotencyKey());
   }, [text]);
   const list = useRef<ScrollViewInstance>(null);
-  const lead = kind === 'plan' ? t('chat.lead') : kind === 'circle' ? t('chat.circleLead') : null;
+  const lead =
+    kind === 'plan' ? t('chat.lead') : kind === 'circle' ? t('chat.circleLead') : null;
   const settings = useConversationSettings(conversationId);
   const prefs = useConversationPrefs(conversationId);
-  const mutedNow = settings.data?.mutedUntil ? Date.parse(settings.data.mutedUntil) > Date.now() : false;
+  const mutedNow = settings.data?.mutedUntil
+    ? Date.parse(settings.data.mutedUntil) > Date.now()
+    : false;
 
   const markRead = useMarkRead();
   const markReadMutate = markRead.mutate;
@@ -102,7 +105,12 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
   }
   if (conversation.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="60%" height={34} radius={8} />
       </View>
     );
@@ -124,7 +132,13 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
       <View style={styles.screen}>
         {back}
         <EmptyState
-          {...(closed ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
+          {...(closed
+            ? {}
+            : {
+                onSavedPlans: () => {
+                  router.push('/my-plans');
+                },
+              })}
           title={closed ? t('chat.closed') : t('errors.serverTitle')}
           text={closed ? (lead ?? t('chat.lead')) : t('errors.serverText')}
           actions={
@@ -166,19 +180,24 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
     ? errorCode(send.error) === 'messages_frozen'
       ? t('safety.frozenErrorDetail')
       : errorCode(send.error) === 'rate_limited'
-      ? t('chat.rateLimited')
-      : errorCode(send.error) === 'closed_chat'
-        ? t('chat.closed')
-        : errorCode(send.error) === 'suspended'
-          ? t('safety.suspendedErrorDetail')
-          : errorCode(send.error) === 'blocked'
-            ? t('safety.blockedErrorDetail')
-            : t('chat.error')
+        ? t('chat.rateLimited')
+        : errorCode(send.error) === 'closed_chat'
+          ? t('chat.closed')
+          : errorCode(send.error) === 'suspended'
+            ? t('safety.suspendedErrorDetail')
+            : errorCode(send.error) === 'blocked'
+              ? t('safety.blockedErrorDetail')
+              : t('chat.error')
     : null;
   const reportMessage = (message: ChatMessage) => {
     router.push({
       pathname: '/report',
-      params: { type: 'message', id: message.id, name: message.senderName, userId: message.senderId },
+      params: {
+        type: 'message',
+        id: message.id,
+        name: message.senderName,
+        userId: message.senderId,
+      },
     });
   };
 
@@ -196,11 +215,21 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
           <ChevronLeftIcon strokeWidth={2.2} color={color.ink} />
         </Pressable>
         <View style={styles.barText}>
-          <Text numberOfLines={1} accessibilityRole="header" style={type(17, 'semibold', { tracking: -0.3 })}>
-            {kind === 'plan' ? t('chat.openPlan') : kind === 'circle' ? t('chat.openCircle') : t('direct.messageButton')}
+          <Text
+            numberOfLines={1}
+            accessibilityRole="header"
+            style={type(17, 'semibold', { tracking: -0.3 })}
+          >
+            {kind === 'plan'
+              ? t('chat.openPlan')
+              : kind === 'circle'
+                ? t('chat.openCircle')
+                : t('direct.messageButton')}
           </Text>
           {lead ? (
-            <Text numberOfLines={1} style={type(13, 'regular', { color: color.secondary })}>{lead}</Text>
+            <Text numberOfLines={1} style={type(13, 'regular', { color: color.secondary })}>
+              {lead}
+            </Text>
           ) : null}
         </View>
         <Pressable
@@ -226,10 +255,18 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
           <Skeleton width="100%" height={56} radius={radius.card} />
         ) : messages.isError ? (
           <EmptyState
-            {...(closed ? {} : { onSavedPlans: () => { router.push('/my-plans'); } })}
+            {...(closed
+              ? {}
+              : {
+                  onSavedPlans: () => {
+                    router.push('/my-plans');
+                  },
+                })}
             title={t('errors.serverTitle')}
             text={t('errors.serverText')}
-            actions={<Button label={t('common.retry')} onPress={() => void messages.refetch()} />}
+            actions={
+              <Button label={t('common.retry')} onPress={() => void messages.refetch()} />
+            }
           />
         ) : shown.length === 0 ? (
           <InlineState
@@ -239,39 +276,63 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
         ) : (
           shown.map((message) => {
             const mine = message.senderId === session.userId;
-            const tint = extra.tints[message.senderName.charCodeAt(0) % extra.tints.length] ?? extra.tints[0];
+            const tint =
+              extra.tints[message.senderName.charCodeAt(0) % extra.tints.length] ??
+              extra.tints[0];
             return (
               <View
                 key={message.id}
                 accessible={!mine}
-                accessibilityActions={mine ? [] : [{ name: 'report', label: t('safety.reportMessage') }]}
+                accessibilityActions={
+                  mine ? [] : [{ name: 'report', label: t('safety.reportMessage') }]
+                }
                 onAccessibilityAction={(event) => {
                   if (event.nativeEvent.actionName === 'report') reportMessage(message);
                 }}
                 style={[styles.line, mine && styles.lineMine]}
               >
                 {mine ? null : (
-                  <View aria-hidden style={[styles.avatarSmall, { backgroundColor: tint.background }]}>
-                    <Text allowFontScaling={false} style={type(13, 'bold', { color: tint.text })}>
+                  <View
+                    aria-hidden
+                    style={[styles.avatarSmall, { backgroundColor: tint.background }]}
+                  >
+                    <Text
+                      allowFontScaling={false}
+                      style={type(13, 'bold', { color: tint.text })}
+                    >
                       {message.senderName.charAt(0).toUpperCase()}
                     </Text>
                   </View>
                 )}
                 <View style={styles.stack}>
                   {mine ? null : (
-                    <Text style={[type(13, 'semibold', { color: color.secondary }), styles.senderName]}>
+                    <Text
+                      style={[
+                        type(13, 'semibold', { color: color.secondary }),
+                        styles.senderName,
+                      ]}
+                    >
                       {message.senderName}
                     </Text>
                   )}
                   <Pressable
                     disabled={mine}
                     accessibilityRole={mine ? undefined : 'button'}
-                    accessibilityLabel={mine ? undefined : `${message.senderName}: ${message.body}`}
+                    accessibilityLabel={
+                      mine ? undefined : `${message.senderName}: ${message.body}`
+                    }
                     accessibilityHint={mine ? undefined : t('safety.holdToReport')}
-                    onLongPress={() => { reportMessage(message); }}
+                    onLongPress={() => {
+                      reportMessage(message);
+                    }}
                     style={[styles.bubble, mine && styles.mine]}
                   >
-                    <Text style={type(16, 'regular', { leading: 1.45, color: mine ? '#FFFFFF' : color.ink })}>
+                    <Text
+                      style={type(16, 'regular', {
+                        leading: 1.45,
+                        color: mine ? '#FFFFFF' : color.ink,
+                      })}
+                    >
                       {message.body}
                     </Text>
                   </Pressable>
@@ -283,11 +344,15 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel={`${t('safety.reportMessage')}: ${message.senderName}`}
-                        onPress={() => { reportMessage(message); }}
+                        onPress={() => {
+                          reportMessage(message);
+                        }}
                         hitSlop={10}
                         style={styles.reportLink}
                       >
-                        <Text style={type(12, 'semibold', { color: color.secondary })}>{t('safety.reportShort')}</Text>
+                        <Text style={type(12, 'semibold', { color: color.secondary })}>
+                          {t('safety.reportShort')}
+                        </Text>
                       </Pressable>
                     )}
                   </View>
@@ -312,7 +377,9 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
             disabled={!settings.data || prefs.mute.isPending}
             loading={prefs.mute.isPending}
             onPress={() => {
-              prefs.mute.mutate(mutedNow ? null : new Date(Date.now() + 8 * 3_600_000).toISOString());
+              prefs.mute.mutate(
+                mutedNow ? null : new Date(Date.now() + 8 * 3_600_000).toISOString(),
+              );
             }}
           />
           <Button
@@ -348,11 +415,16 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
                 label={t('safety.reportPerson')}
                 onPress={() => {
                   setOptionsOpen(false);
-                  router.push({ pathname: '/report', params: { type: 'person', id: refId, name: '', userId: refId } });
+                  router.push({
+                    pathname: '/report',
+                    params: { type: 'person', id: refId, name: '', userId: refId },
+                  });
                 }}
               />
               {block.isError ? (
-                <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('safety.error')}</Text>
+                <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                  {t('safety.error')}
+                </Text>
               ) : null}
             </>
           ) : null}
@@ -361,7 +433,11 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
               <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
                 {t('direct.prefsError')}
               </Text>
-              <Button variant="outline" label={t('common.retry')} onPress={() => void settings.refetch()} />
+              <Button
+                variant="outline"
+                label={t('common.retry')}
+                onPress={() => void settings.refetch()}
+              />
             </>
           ) : null}
           {prefs.mute.isError || prefs.pin.isError ? (
@@ -455,7 +531,9 @@ function DirectRequest({
           </Text>
         ) : request.isError ? (
           <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
-            {errorCode(request.error) === 'rate_limited' ? t('direct.requestLimit') : t('chat.error')}
+            {errorCode(request.error) === 'rate_limited'
+              ? t('direct.requestLimit')
+              : t('chat.error')}
           </Text>
         ) : null}
         <View style={styles.row}>
@@ -525,7 +603,13 @@ const styles = StyleSheet.create({
   options: { gap: 12 },
   line: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, maxWidth: '86%' },
   lineMine: { alignSelf: 'flex-end', flexDirection: 'row-reverse' },
-  avatarSmall: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  avatarSmall: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   stack: { gap: 3, flexShrink: 1 },
   senderName: { paddingLeft: 4 },
   time: { paddingLeft: 4 },
@@ -543,7 +627,13 @@ const styles = StyleSheet.create({
     backgroundColor: color.fill,
   },
   mine: { backgroundColor: color.ink, borderBottomLeftRadius: 18, borderBottomRightRadius: 6 },
-  composer: { paddingHorizontal: 20, paddingTop: 8, gap: 8, borderTopWidth: 1, borderTopColor: extra.cardBorder },
+  composer: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: extra.cardBorder,
+  },
   row: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
   input: {
     flex: 1,

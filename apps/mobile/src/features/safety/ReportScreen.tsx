@@ -8,7 +8,11 @@ import { AlertIcon } from '../../components/icons';
 import { InlineState } from '../../components/parts';
 import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
-import { REPORT_CATEGORIES, REPORT_TARGETS, type ReportCategory } from '../../lib/backend/types';
+import {
+  REPORT_CATEGORIES,
+  REPORT_TARGETS,
+  type ReportCategory,
+} from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 import { useCities } from '../plans/queries';
 
@@ -79,7 +83,11 @@ export default function ReportScreen() {
     return (
       <View style={styles.screen}>
         {header}
-        <InlineState title={t('errors.notFoundTitle')} text={t('errors.notFoundText')} action={<Button variant="outline" label={t('common.back')} onPress={back} />} />
+        <InlineState
+          title={t('errors.notFoundTitle')}
+          text={t('errors.notFoundText')}
+          action={<Button variant="outline" label={t('common.back')} onPress={back} />}
+        />
       </View>
     );
   }
@@ -87,8 +95,13 @@ export default function ReportScreen() {
   return (
     <View style={styles.screen}>
       {header}
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
+      >
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('safety.title')}
         </Text>
         <Text style={type(15, 'regular', { color: color.secondary })}>
@@ -119,7 +132,11 @@ export default function ReportScreen() {
           </Pressable>
         </View>
 
-        <View accessibilityRole="radiogroup" accessibilityLabel={t('safety.title')} style={styles.options}>
+        <View
+          accessibilityRole="radiogroup"
+          accessibilityLabel={t('safety.title')}
+          style={styles.options}
+        >
           {REPORT_CATEGORIES.filter((c) => c !== 'accessibility').map((option) => {
             const selected = category === option;
             return (
@@ -147,7 +164,13 @@ export default function ReportScreen() {
               if (!category) return;
               router.push({
                 pathname: '/report/details',
-                params: { type: targetType, id: params.id, name: params.name ?? '', category, ...(params.userId ? { userId: params.userId } : {}) },
+                params: {
+                  type: targetType,
+                  id: params.id,
+                  name: params.name ?? '',
+                  category,
+                  ...(params.userId ? { userId: params.userId } : {}),
+                },
               });
             }}
           />
@@ -169,9 +192,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF3F1',
     marginTop: 6,
   },
-  emergencyIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  emergencyIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emergencyText: { flex: 1, minWidth: 0, gap: 2 },
-  callButton: { minWidth: size.touchMin, minHeight: size.touchMin, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: color.danger, alignItems: 'center', justifyContent: 'center' },
+  callButton: {
+    minWidth: size.touchMin,
+    minHeight: size.touchMin,
+    paddingHorizontal: 14,
+    borderRadius: radius.pill,
+    backgroundColor: color.danger,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   options: { gap: 8, marginTop: 8 },
   option: {
     minHeight: 56,
@@ -185,7 +223,13 @@ const styles = StyleSheet.create({
     borderColor: extra.cardBorder,
   },
   optionSelected: { borderColor: color.ink, backgroundColor: color.fill },
-  dot: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: extra.cardBorder },
+  dot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: extra.cardBorder,
+  },
   dotSelected: { borderColor: color.ink, borderWidth: 6 },
   footer: { paddingTop: 12 },
 });

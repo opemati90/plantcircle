@@ -21,7 +21,8 @@ export function useAcceptPolicies() {
   const backend = useBackend();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (versions: { policy: PolicyName; version: string }[]) => backend.acceptPolicies(versions),
+    mutationFn: (versions: { policy: PolicyName; version: string }[]) =>
+      backend.acceptPolicies(versions),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['policies'] }),
   });
 }

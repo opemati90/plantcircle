@@ -48,7 +48,9 @@ export default function CreateOrderScreen() {
   const [supplierName, setSupplierName] = useState('');
   const [supplierArea, setSupplierArea] = useState('');
   const [title, setTitle] = useState('');
-  const [items, setItems] = useState<ItemRow[]>([{ id: newIdempotencyKey(), name: '', target: '', price: '' }]);
+  const [items, setItems] = useState<ItemRow[]>([
+    { id: newIdempotencyKey(), name: '', target: '', price: '' },
+  ]);
   const [closeOffset, setCloseOffset] = useState<number | null>(null);
   const [pickupOffset, setPickupOffset] = useState<number | null>(null);
   const [pickupStart, setPickupStart] = useState(10 * 60);
@@ -76,8 +78,14 @@ export default function CreateOrderScreen() {
     target: num(i.target),
     estPriceMinor: i.price.trim() ? Math.round(num(i.price) * 100) : null,
   }));
-  const closesAt = closeOffset === null ? null : planWindow(calendarDay(now, closeOffset, zone), CLOSE_HOUR, 0, zone).startsAt;
-  const pickup = pickupOffset === null ? null : planWindow(calendarDay(now, pickupOffset, zone), pickupStart, pickupLength, zone);
+  const closesAt =
+    closeOffset === null
+      ? null
+      : planWindow(calendarDay(now, closeOffset, zone), CLOSE_HOUR, 0, zone).startsAt;
+  const pickup =
+    pickupOffset === null
+      ? null
+      : planWindow(calendarDay(now, pickupOffset, zone), pickupStart, pickupLength, zone);
   const valid: Record<Step, boolean> = {
     supplier: supplierName.trim().length > 0 && title.trim().length >= 3,
     items: itemsValid,
@@ -92,7 +100,16 @@ export default function CreateOrderScreen() {
   const targetTotal = cleanItems.reduce((a, i) => a + i.target, 0);
   const estimateMinor = cleanItems.reduce((a, i) => a + (i.estPriceMinor ?? 0) * i.target, 0);
 
-  const payload = JSON.stringify({ supplierName, supplierArea, title, items, closesAt, pickup, address, note });
+  const payload = JSON.stringify({
+    supplierName,
+    supplierArea,
+    title,
+    items,
+    closesAt,
+    pickup,
+    address,
+    note,
+  });
   useEffect(() => {
     setKey(newIdempotencyKey());
   }, [payload]);
@@ -118,14 +135,25 @@ export default function CreateOrderScreen() {
         <InlineState
           title={t('errors.serverTitle')}
           text={t('errors.serverText')}
-          action={<Button variant="outline" label={t('common.retry')} onPress={() => void cities.refetch()} />}
+          action={
+            <Button
+              variant="outline"
+              label={t('common.retry')}
+              onPress={() => void cities.refetch()}
+            />
+          }
         />
       </View>
     );
   }
   if (session === undefined || cities.isPending) {
     return (
-      <View role="status" accessibilityLabel={t('common.loading')} aria-busy style={styles.screen}>
+      <View
+        role="status"
+        accessibilityLabel={t('common.loading')}
+        aria-busy
+        style={styles.screen}
+      >
         <Skeleton width="100%" height={120} radius={radius.card} />
       </View>
     );
@@ -137,7 +165,15 @@ export default function CreateOrderScreen() {
         <InlineState
           title={t('people.signedOut.title')}
           text={t('order.signedOut')}
-          action={<Button variant="outline" label={t('home.signIn')} onPress={() => { router.push({ pathname: '/sign-up', params: { next: '/create/order' } }); }} />}
+          action={
+            <Button
+              variant="outline"
+              label={t('home.signIn')}
+              onPress={() => {
+                router.push({ pathname: '/sign-up', params: { next: '/create/order' } });
+              }}
+            />
+          }
         />
       </View>
     );
@@ -149,7 +185,15 @@ export default function CreateOrderScreen() {
         <InlineState
           title={t('create.cityRequired')}
           text={t('home.cityLead')}
-          action={<Button variant="outline" label={t('home.changeCity')} onPress={() => { router.replace('/home'); }} />}
+          action={
+            <Button
+              variant="outline"
+              label={t('home.changeCity')}
+              onPress={() => {
+                router.replace('/home');
+              }}
+            />
+          }
         />
       </View>
     );
@@ -181,7 +225,11 @@ export default function CreateOrderScreen() {
     );
   };
 
-  const dayStrip = (selected: number | null, onPick: (offset: number) => void, label: string) => (
+  const dayStrip = (
+    selected: number | null,
+    onPick: (offset: number) => void,
+    label: string,
+  ) => (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
@@ -191,7 +239,10 @@ export default function CreateOrderScreen() {
     >
       {Array.from({ length: DAY_COUNT }, (_, offset) => {
         const day = calendarDay(now, offset, zone);
-        const weekday = new Intl.DateTimeFormat(language, { weekday: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(day.year, day.month - 1, day.day)));
+        const weekday = new Intl.DateTimeFormat(language, {
+          weekday: 'short',
+          timeZone: 'UTC',
+        }).format(new Date(Date.UTC(day.year, day.month - 1, day.day)));
         const isSelected = selected === offset;
         return (
           <Pressable
@@ -199,10 +250,14 @@ export default function CreateOrderScreen() {
             accessibilityRole="radio"
             aria-checked={isSelected}
             accessibilityLabel={`${weekday} ${day.day}`}
-            onPress={() => { onPick(offset); }}
+            onPress={() => {
+              onPick(offset);
+            }}
             style={[styles.day, isSelected && styles.selected]}
           >
-            <Text style={type(12, 'semibold', { color: color.secondary, tracking: 0.4 })}>{weekday}</Text>
+            <Text style={type(12, 'semibold', { color: color.secondary, tracking: 0.4 })}>
+              {weekday}
+            </Text>
             <Text style={type(21, 'bold', { tracking: -0.4 })}>{day.day}</Text>
           </Pressable>
         );
@@ -213,37 +268,70 @@ export default function CreateOrderScreen() {
   return (
     <View style={styles.screen}>
       {header}
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
+      >
         {step === 'supplier' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>{t('order.stepSupplier')}</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              {t('order.stepSupplier')}
+            </Text>
             <Text style={styles.lead}>{t('order.supplierLead')}</Text>
             <Text style={styles.label}>{t('order.supplierName')}</Text>
-            <TextInput accessibilityLabel={t('order.supplierName')} value={supplierName} onChangeText={setSupplierName} maxLength={80} style={[styles.field, type(17)]} />
+            <TextInput
+              accessibilityLabel={t('order.supplierName')}
+              value={supplierName}
+              onChangeText={setSupplierName}
+              maxLength={80}
+              style={[styles.field, type(17)]}
+            />
             <Text style={styles.label}>{t('order.supplierArea')}</Text>
-            <TextInput accessibilityLabel={t('order.supplierArea')} value={supplierArea} onChangeText={setSupplierArea} maxLength={80} style={[styles.field, type(17)]} />
+            <TextInput
+              accessibilityLabel={t('order.supplierArea')}
+              value={supplierArea}
+              onChangeText={setSupplierArea}
+              maxLength={80}
+              style={[styles.field, type(17)]}
+            />
             <Text style={styles.label}>{t('create.titleLabel')}</Text>
-            <TextInput accessibilityLabel={t('create.titleLabel')} value={title} onChangeText={setTitle} maxLength={80} style={[styles.field, type(17)]} />
+            <TextInput
+              accessibilityLabel={t('create.titleLabel')}
+              value={title}
+              onChangeText={setTitle}
+              maxLength={80}
+              style={[styles.field, type(17)]}
+            />
           </>
         ) : null}
 
         {step === 'items' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>{t('order.stepItems')}</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              {t('order.stepItems')}
+            </Text>
             <Text style={styles.lead}>{t('order.itemsLead')}</Text>
             {items.map((row, i) => (
               <View key={row.id} style={styles.itemRow}>
                 <TextInput
                   accessibilityLabel={`${t('order.itemName')} ${i + 1}`}
                   value={row.name}
-                  onChangeText={(v) => { setItems((rows) => rows.map((r) => (r.id === row.id ? { ...r, name: v } : r))); }}
+                  onChangeText={(v) => {
+                    setItems((rows) =>
+                      rows.map((r) => (r.id === row.id ? { ...r, name: v } : r)),
+                    );
+                  }}
                   maxLength={80}
                   style={[styles.field, styles.grow, type(17)]}
                 />
                 <TextInput
                   accessibilityLabel={`${t('order.itemTarget')} ${i + 1}`}
                   value={row.target}
-                  onChangeText={(v) => { setItems((rows) => rows.map((r) => (r.id === row.id ? { ...r, target: v } : r))); }}
+                  onChangeText={(v) => {
+                    setItems((rows) =>
+                      rows.map((r) => (r.id === row.id ? { ...r, target: v } : r)),
+                    );
+                  }}
                   keyboardType="decimal-pad"
                   placeholder="kg"
                   placeholderTextColor={color.secondary}
@@ -252,7 +340,11 @@ export default function CreateOrderScreen() {
                 <TextInput
                   accessibilityLabel={`${t('order.itemPrice')} ${i + 1}`}
                   value={row.price}
-                  onChangeText={(v) => { setItems((rows) => rows.map((r) => (r.id === row.id ? { ...r, price: v } : r))); }}
+                  onChangeText={(v) => {
+                    setItems((rows) =>
+                      rows.map((r) => (r.id === row.id ? { ...r, price: v } : r)),
+                    );
+                  }}
                   keyboardType="decimal-pad"
                   placeholder="€"
                   placeholderTextColor={color.secondary}
@@ -261,14 +353,36 @@ export default function CreateOrderScreen() {
               </View>
             ))}
             {touched.some((i) => !rowValid(i)) ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>{t('order.itemInvalid')}</Text>
+              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+                {t('order.itemInvalid')}
+              </Text>
             ) : null}
             <View style={styles.rowButtons}>
-              <Button variant="outline" label={t('order.addItem')} disabled={items.length >= 20} onPress={() => { setItems((rows) => [...rows, { id: newIdempotencyKey(), name: '', target: '', price: '' }]); }} />
-              {items.length > 1 ? <Button variant="outline" label={t('order.removeItem')} onPress={() => { setItems((rows) => rows.slice(0, -1)); }} /> : null}
+              <Button
+                variant="outline"
+                label={t('order.addItem')}
+                disabled={items.length >= 20}
+                onPress={() => {
+                  setItems((rows) => [
+                    ...rows,
+                    { id: newIdempotencyKey(), name: '', target: '', price: '' },
+                  ]);
+                }}
+              />
+              {items.length > 1 ? (
+                <Button
+                  variant="outline"
+                  label={t('order.removeItem')}
+                  onPress={() => {
+                    setItems((rows) => rows.slice(0, -1));
+                  }}
+                />
+              ) : null}
             </View>
             <View style={styles.total}>
-              <Text style={type(15, 'semibold', { color: color.secondary })}>{t('order.groupTarget')}</Text>
+              <Text style={type(15, 'semibold', { color: color.secondary })}>
+                {t('order.groupTarget')}
+              </Text>
               <Text style={type(17, 'semibold')}>
                 {`${targetTotal} kg${estimateMinor > 0 ? ` · ≈ ${money(estimateMinor, 'EUR', language)}` : ''}`}
               </Text>
@@ -278,65 +392,129 @@ export default function CreateOrderScreen() {
 
         {step === 'when' ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>{t('order.stepWhen')}</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              {t('order.stepWhen')}
+            </Text>
             <Text style={styles.lead}>{t('order.whenLead')}</Text>
             <Text style={styles.label}>{t('order.closesAt')}</Text>
             {dayStrip(closeOffset, setCloseOffset, t('order.closesAt'))}
-            {closesAt ? <Text style={styles.summary}>{`${longDate(closesAt, zone)} · ${time(closesAt, zone)}`}</Text> : null}
+            {closesAt ? (
+              <Text
+                style={styles.summary}
+              >{`${longDate(closesAt, zone)} · ${time(closesAt, zone)}`}</Text>
+            ) : null}
             {closesAt && !startsSoonEnough(closesAt, now) ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>{t('create.tooSoon')}</Text>
+              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+                {t('create.tooSoon')}
+              </Text>
             ) : null}
             <Text style={styles.label}>{t('order.pickupStart')}</Text>
             {dayStrip(pickupOffset, setPickupOffset, t('order.pickupStart'))}
-            <View accessibilityRole="radiogroup" accessibilityLabel={t('order.pickupStart')} style={styles.chips}>
+            <View
+              accessibilityRole="radiogroup"
+              accessibilityLabel={t('order.pickupStart')}
+              style={styles.chips}
+            >
               {PICKUP_STARTS.map((minutes) => {
                 const isSelected = pickupStart === minutes;
                 const label = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:00`;
                 return (
-                  <Pressable key={minutes} accessibilityRole="radio" aria-checked={isSelected} onPress={() => { setPickupStart(minutes); }} style={[styles.chip, isSelected && styles.selected]}>
-                    <Text style={type(15, 'semibold', { color: isSelected ? color.brand : color.ink })}>{label}</Text>
+                  <Pressable
+                    key={minutes}
+                    accessibilityRole="radio"
+                    aria-checked={isSelected}
+                    onPress={() => {
+                      setPickupStart(minutes);
+                    }}
+                    style={[styles.chip, isSelected && styles.selected]}
+                  >
+                    <Text
+                      style={type(15, 'semibold', {
+                        color: isSelected ? color.brand : color.ink,
+                      })}
+                    >
+                      {label}
+                    </Text>
                   </Pressable>
                 );
               })}
             </View>
             <Text style={styles.label}>{t('order.pickupLength')}</Text>
-            <View accessibilityRole="radiogroup" accessibilityLabel={t('order.pickupLength')} style={styles.pill}>
+            <View
+              accessibilityRole="radiogroup"
+              accessibilityLabel={t('order.pickupLength')}
+              style={styles.pill}
+            >
               {PICKUP_LENGTHS.map((minutes) => {
                 const isSelected = pickupLength === minutes;
                 return (
-                  <Pressable key={minutes} accessibilityRole="radio" aria-checked={isSelected} onPress={() => { setPickupLength(minutes); }} style={[styles.pillItem, isSelected && styles.pillItemSelected]}>
+                  <Pressable
+                    key={minutes}
+                    accessibilityRole="radio"
+                    aria-checked={isSelected}
+                    onPress={() => {
+                      setPickupLength(minutes);
+                    }}
+                    style={[styles.pillItem, isSelected && styles.pillItemSelected]}
+                  >
                     <Text style={type(15, 'semibold')}>{t('learn.minutes', { minutes })}</Text>
                   </Pressable>
                 );
               })}
             </View>
             {pickup && closesAt && Date.parse(pickup.startsAt) < Date.parse(closesAt) ? (
-              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>{t('order.error')}</Text>
+              <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
+                {t('order.error')}
+              </Text>
             ) : null}
             <Text style={styles.label}>{t('order.pickupAddress')}</Text>
-            <TextInput accessibilityLabel={t('order.pickupAddress')} value={address} onChangeText={setAddress} maxLength={200} style={[styles.field, type(17)]} />
+            <TextInput
+              accessibilityLabel={t('order.pickupAddress')}
+              value={address}
+              onChangeText={setAddress}
+              maxLength={200}
+              style={[styles.field, type(17)]}
+            />
             <Text style={styles.label}>{t('order.pickupNoteLabel')}</Text>
-            <TextInput accessibilityLabel={t('order.pickupNoteLabel')} value={note} onChangeText={setNote} maxLength={200} style={[styles.field, type(17)]} />
+            <TextInput
+              accessibilityLabel={t('order.pickupNoteLabel')}
+              value={note}
+              onChangeText={setNote}
+              maxLength={200}
+              style={[styles.field, type(17)]}
+            />
           </>
         ) : null}
 
         {step === 'review' && closesAt && pickup ? (
           <>
-            <Text accessibilityRole="header" style={styles.title}>{t('order.stepReview')}</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              {t('order.stepReview')}
+            </Text>
             <Text style={styles.lead}>{t('order.reviewLead')}</Text>
             <View style={styles.card}>
               <Text style={type(20, 'bold', { tracking: -0.5 })}>{title.trim()}</Text>
-              <Text style={type(15, 'regular', { color: color.secondary })}>{`${supplierName.trim()}${supplierArea.trim() ? ` · ${supplierArea.trim()}` : ''}`}</Text>
+              <Text
+                style={type(15, 'regular', { color: color.secondary })}
+              >{`${supplierName.trim()}${supplierArea.trim() ? ` · ${supplierArea.trim()}` : ''}`}</Text>
               <Text style={type(15, 'regular', { color: color.secondary })}>
                 {`${targetTotal} kg${estimateMinor > 0 ? ` · ≈ ${money(estimateMinor, 'EUR', language)}` : ''} · ${cleanItems.length} ${t('order.stepItems').toLowerCase()}`}
               </Text>
-              <Text style={type(15, 'regular', { color: color.secondary })}>{`${t('order.closesAt')} ${longDate(closesAt, zone)}, ${time(closesAt, zone)}`}</Text>
-              <Text style={type(15, 'regular', { color: color.secondary })}>{`${t('order.pickupStart')} ${longDate(pickup.startsAt, zone)} ${time(pickup.startsAt, zone)} – ${time(pickup.endsAt, zone)}`}</Text>
+              <Text
+                style={type(15, 'regular', { color: color.secondary })}
+              >{`${t('order.closesAt')} ${longDate(closesAt, zone)}, ${time(closesAt, zone)}`}</Text>
+              <Text
+                style={type(15, 'regular', { color: color.secondary })}
+              >{`${t('order.pickupStart')} ${longDate(pickup.startsAt, zone)} ${time(pickup.startsAt, zone)} – ${time(pickup.endsAt, zone)}`}</Text>
             </View>
-            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>{t('order.moneyNote')}</Text>
+            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>
+              {t('order.moneyNote')}
+            </Text>
             {create.isError ? (
               <Text role="alert" style={type(15, 'regular', { color: color.danger })}>
-                {errorCode(create.error) === 'city_required' ? t('create.cityRequired') : t('order.error')}
+                {errorCode(create.error) === 'city_required'
+                  ? t('create.cityRequired')
+                  : t('order.error')}
               </Text>
             ) : null}
           </>
@@ -344,9 +522,20 @@ export default function CreateOrderScreen() {
 
         <View style={styles.footer}>
           {index === STEPS.length - 1 ? (
-            <Button label={t('order.share')} loading={create.isPending} disabled={!valid.supplier || !valid.items || !valid.when} onPress={publish} />
+            <Button
+              label={t('order.share')}
+              loading={create.isPending}
+              disabled={!valid.supplier || !valid.items || !valid.when}
+              onPress={publish}
+            />
           ) : (
-            <Button label={t('common.continue')} disabled={!valid[step]} onPress={() => { setIndex(index + 1); }} />
+            <Button
+              label={t('common.continue')}
+              disabled={!valid[step]}
+              onPress={() => {
+                setIndex(index + 1);
+              }}
+            />
           )}
         </View>
       </ScrollView>
@@ -357,24 +546,74 @@ export default function CreateOrderScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 12 },
-  title: { ...type(32, 'bold', { tracking: -1, leading: 1.08 }), marginTop: 32, marginBottom: 2 },
+  title: {
+    ...type(32, 'bold', { tracking: -1, leading: 1.08 }),
+    marginTop: 32,
+    marginBottom: 2,
+  },
   lead: { ...type(16, 'regular', { color: color.secondary, leading: 1.5 }) },
   label: { ...type(17, 'semibold'), marginTop: 18, marginBottom: 2 },
-  field: { minHeight: size.touchMin, paddingHorizontal: 16, borderRadius: radius.control, borderWidth: 1, borderColor: extra.cardBorder, color: color.ink },
+  field: {
+    minHeight: size.touchMin,
+    paddingHorizontal: 16,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+    color: color.ink,
+  },
   itemRow: { flexDirection: 'row', gap: 8 },
   grow: { flex: 1 },
   small: { width: 76 },
   rowButtons: { flexDirection: 'row', gap: 10 },
-  total: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12 },
+  total: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 12,
+  },
   dayStrip: { gap: 6, paddingVertical: 4 },
-  day: { width: 60, minHeight: 68, alignItems: 'center', justifyContent: 'center', gap: 2, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
+  day: {
+    width: 60,
+    minHeight: 68,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
   selected: { borderColor: color.brand, backgroundColor: color.brandTint },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { minHeight: size.touchMin, paddingHorizontal: 14, justifyContent: 'center', borderRadius: radius.pill, borderWidth: 1, borderColor: extra.cardBorder },
-  pill: { flexDirection: 'row', gap: 4, padding: 4, borderRadius: 16, backgroundColor: color.fill },
-  pillItem: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 12 },
+  chip: {
+    minHeight: size.touchMin,
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
+  pill: {
+    flexDirection: 'row',
+    gap: 4,
+    padding: 4,
+    borderRadius: 16,
+    backgroundColor: color.fill,
+  },
+  pillItem: {
+    flex: 1,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+  },
   pillItemSelected: { backgroundColor: color.surface },
   summary: { ...type(17, 'semibold', { tracking: -0.2 }) },
-  card: { gap: 8, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
+  card: {
+    gap: 8,
+    padding: 16,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
   footer: { paddingTop: 16 },
 });

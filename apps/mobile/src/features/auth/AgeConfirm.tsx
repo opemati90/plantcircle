@@ -5,7 +5,13 @@ import { Checkbox } from '../../components/Checkbox';
 import { color, size, type } from '../../components/theme';
 
 /** The 18+ self-declaration every sign-in path shows, with the way out for anyone under 18. */
-export function AgeConfirm({ value, onValueChange }: { value: boolean; onValueChange: (next: boolean) => void }) {
+export function AgeConfirm({
+  value,
+  onValueChange,
+}: {
+  value: boolean;
+  onValueChange: (next: boolean) => void;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
   return (
@@ -18,7 +24,9 @@ export function AgeConfirm({ value, onValueChange }: { value: boolean; onValueCh
         }}
         style={styles.underAge}
       >
-        <Text style={type(14, 'semibold', { color: color.secondary })}>{t('auth.underAge')}</Text>
+        <Text style={type(14, 'semibold', { color: color.secondary })}>
+          {t('auth.underAge')}
+        </Text>
       </Pressable>
     </View>
   );

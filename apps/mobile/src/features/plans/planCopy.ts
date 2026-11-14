@@ -117,7 +117,10 @@ export function rsvpErrorCopy(
     case 'rate_limited':
       return pick('rate');
     case 'suspended':
-      return { title: t('safety.suspendedErrorTitle'), detail: t('safety.suspendedErrorDetail') };
+      return {
+        title: t('safety.suspendedErrorTitle'),
+        detail: t('safety.suspendedErrorDetail'),
+      };
     case 'blocked':
       return { title: t('safety.blockedErrorTitle'), detail: t('safety.blockedErrorDetail') };
     default:

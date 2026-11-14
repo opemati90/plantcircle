@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail, type FixtureWindow, dismissNotificationPrompt } from './support';
+import {
+  freezeTime,
+  signInWithEmail,
+  type FixtureWindow,
+  dismissNotificationPrompt,
+} from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);

@@ -23,7 +23,10 @@ beforeEach(async () => {
     [JONAS, 'Jonas'],
   ] as const) {
     await db.query('insert into auth.users (id) values ($1)', [id]);
-    await db.query('insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)', [id, name, CITY]);
+    await db.query(
+      'insert into public.profiles (id, display_name, city_id) values ($1, $2, $3)',
+      [id, name, CITY],
+    );
   }
 });
 
@@ -38,13 +41,19 @@ async function plan(startsInHours: number): Promise<{ id: string; item: string }
     [HOST, CITY, starts, ends],
   );
   const id = rows[0]?.id ?? '';
-  await db.query(`insert into public.plan_private (plan_id, address, reveal_at) values ($1, 'Weserstraße 1', now())`, [id]);
+  await db.query(
+    `insert into public.plan_private (plan_id, address, reveal_at) values ($1, 'Weserstraße 1', now())`,
+    [id],
+  );
   const item = await db.query<{ id: string }>(
     `insert into public.contribution_slots (plan_id, label, needed, position) values ($1, 'Bread', 1, 0) returning id`,
     [id],
   );
   for (const guest of [MIA, JONAS]) {
-    await db.query(`insert into public.rsvps (plan_id, user_id, state) values ($1, $2, 'going')`, [id, guest]);
+    await db.query(
+      `insert into public.rsvps (plan_id, user_id, state) values ($1, $2, 'going')`,
+      [id, guest],
+    );
   }
   return { id, item: item.rows[0]?.id ?? '' };
 }
@@ -54,7 +63,12 @@ const claim = (user: string, item: string) =>
 const unclaim = (user: string, item: string) =>
   asUser(db, user, () => db.query('select public.slot_unclaim($1, $2)', [item, newKey()]));
 const claimers = async (item: string) =>
-  (await db.query<{ n: number }>('select count(*)::int as n from public.contribution_claims where slot_id = $1', [item])).rows[0]?.n;
+  (
+    await db.query<{ n: number }>(
+      'select count(*)::int as n from public.contribution_claims where slot_id = $1',
+      [item],
+    )
+  ).rows[0]?.n;
 
 describe('withdrawing a claim', () => {
   it('lets a guest withdraw their own claim, which frees the place for someone else', async () => {
@@ -76,14 +90,20 @@ describe('withdrawing a claim', () => {
 
   it('refuses once the Plan has ended', async () => {
     const { id, item } = await plan(-5);
-    await db.query(`insert into public.contribution_claims (slot_id, user_id) values ($1, $2)`, [item, MIA]);
+    await db.query(
+      `insert into public.contribution_claims (slot_id, user_id) values ($1, $2)`,
+      [item, MIA],
+    );
     await expect(unclaim(MIA, item)).rejects.toThrow(/plan_not_live/);
     expect(id).toBeTruthy();
   });
 
   it('refuses once the host has ended the Plan early', async () => {
     const { id, item } = await plan(-1);
-    await db.query(`insert into public.contribution_claims (slot_id, user_id) values ($1, $2)`, [item, MIA]);
+    await db.query(
+      `insert into public.contribution_claims (slot_id, user_id) values ($1, $2)`,
+      [item, MIA],
+    );
     await db.query(`update public.plans set status = 'completed' where id = $1`, [id]);
     await expect(unclaim(MIA, item)).rejects.toThrow(/plan_not_live/);
   });

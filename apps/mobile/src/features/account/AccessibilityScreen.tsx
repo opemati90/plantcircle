@@ -35,32 +35,53 @@ export default function AccessibilityScreen() {
   return (
     <View style={styles.screen}>
       <ScreenHeader backLabel={t('common.back')} onBack={back} />
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
+      >
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('profile.accessibility')}
         </Text>
-        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{t('account.a11yLead')}</Text>
+        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+          {t('account.a11yLead')}
+        </Text>
 
         <View style={styles.card}>
           <Text style={type(17, 'semibold')}>{t('account.a11yStandard')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary })}>{t('account.a11yChecked', { date: LAST_CHECKED })}</Text>
+          <Text style={type(14, 'regular', { color: color.secondary })}>
+            {t('account.a11yChecked', { date: LAST_CHECKED })}
+          </Text>
         </View>
 
         {gaps.map((gap) => (
           <View key={gap.title} style={styles.gap}>
             <Text style={type(16, 'semibold')}>{gap.title}</Text>
-            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{gap.note}</Text>
+            <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+              {gap.note}
+            </Text>
           </View>
         ))}
 
         <View style={styles.card}>
           <Text style={type(17, 'semibold')}>{t('account.a11yProblemTitle')}</Text>
-          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>{t('account.a11yProblemNote')}</Text>
+          <Text style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}>
+            {t('account.a11yProblemNote')}
+          </Text>
           <Button
             variant="outline"
             label={t('account.a11yReport')}
             onPress={() => {
-              router.push({ pathname: '/report/details', params: { type: 'app', id: APP_TARGET_ID, name: 'PlantCircle', category: 'accessibility' } });
+              router.push({
+                pathname: '/report/details',
+                params: {
+                  type: 'app',
+                  id: APP_TARGET_ID,
+                  name: 'PlantCircle',
+                  category: 'accessibility',
+                },
+              });
             }}
           />
         </View>
@@ -68,14 +89,24 @@ export default function AccessibilityScreen() {
         <Pressable
           accessibilityRole="link"
           onPress={() => {
-            Linking.openURL(RIGHTS_URL).then(() => { setLinkFailed(false); }).catch(() => { setLinkFailed(true); });
+            Linking.openURL(RIGHTS_URL)
+              .then(() => {
+                setLinkFailed(false);
+              })
+              .catch(() => {
+                setLinkFailed(true);
+              });
           }}
           style={styles.link}
         >
-          <Text style={type(15, 'semibold', { color: color.brand })}>{t('account.a11yRights')}</Text>
+          <Text style={type(15, 'semibold', { color: color.brand })}>
+            {t('account.a11yRights')}
+          </Text>
         </Pressable>
         {linkFailed ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('account.linkError', { url: RIGHTS_URL })}</Text>
+          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+            {t('account.linkError', { url: RIGHTS_URL })}
+          </Text>
         ) : null}
       </ScrollView>
     </View>
@@ -85,7 +116,18 @@ export default function AccessibilityScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 14 },
-  card: { gap: 8, padding: 16, borderRadius: radius.card, borderWidth: 1, borderColor: extra.cardBorder },
-  gap: { gap: 3, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: extra.cardBorder },
+  card: {
+    gap: 8,
+    padding: 16,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
+  gap: {
+    gap: 3,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: extra.cardBorder,
+  },
   link: { minHeight: size.touchMin, justifyContent: 'center', alignSelf: 'flex-start' },
 });

@@ -26,33 +26,68 @@ export default function BlockedScreen() {
   return (
     <View style={styles.screen}>
       <ScreenHeader backLabel={t('common.back')} onBack={back} />
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}>
-        <Text accessibilityRole="header" style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
+      >
+        <Text
+          accessibilityRole="header"
+          style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
+        >
           {t('safety.blockedTitle')}
         </Text>
-        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>{t('safety.blockedLead')}</Text>
+        <Text style={type(16, 'regular', { color: color.secondary, leading: 1.5 })}>
+          {t('safety.blockedLead')}
+        </Text>
         {session === null ? (
           <InlineState
             title={t('people.signedOut.title')}
             text={t('safety.signedOut')}
-            action={<Button variant="outline" label={t('home.signIn')} onPress={() => { router.push({ pathname: '/sign-up', params: { next: '/profile/blocked' } }); }} />}
+            action={
+              <Button
+                variant="outline"
+                label={t('home.signIn')}
+                onPress={() => {
+                  router.push({ pathname: '/sign-up', params: { next: '/profile/blocked' } });
+                }}
+              />
+            }
           />
         ) : blocked.isPending ? (
           <Skeleton width="100%" height={64} radius={radius.card} />
         ) : blocked.isError ? (
-          <EmptyState onSavedPlans={() => { router.push('/my-plans'); }} title={t('errors.serverTitle')} text={t('errors.serverText')} actions={<Button label={t('common.retry')} onPress={() => void blocked.refetch()} />} />
+          <EmptyState
+            onSavedPlans={() => {
+              router.push('/my-plans');
+            }}
+            title={t('errors.serverTitle')}
+            text={t('errors.serverText')}
+            actions={
+              <Button label={t('common.retry')} onPress={() => void blocked.refetch()} />
+            }
+          />
         ) : blocked.data.length === 0 ? (
-          <InlineState title={t('safety.blockedEmptyTitle')} text={t('safety.blockedEmptyText')} />
+          <InlineState
+            title={t('safety.blockedEmptyTitle')}
+            text={t('safety.blockedEmptyText')}
+          />
         ) : (
           <View style={styles.list}>
             {blocked.data.map((person) => (
               <View key={person.userId} style={styles.row}>
-                <View aria-hidden style={[styles.avatar, { backgroundColor: extra.tints[2].background }]}>
-                  <Text allowFontScaling={false} style={type(17, 'bold', { color: extra.tints[2].text })}>
+                <View
+                  aria-hidden
+                  style={[styles.avatar, { backgroundColor: extra.tints[2].background }]}
+                >
+                  <Text
+                    allowFontScaling={false}
+                    style={type(17, 'bold', { color: extra.tints[2].text })}
+                  >
                     {person.displayName.charAt(0).toUpperCase()}
                   </Text>
                 </View>
-                <Text style={[type(16, 'semibold', { tracking: -0.3 }), styles.name]}>{person.displayName}</Text>
+                <Text style={[type(16, 'semibold', { tracking: -0.3 }), styles.name]}>
+                  {person.displayName}
+                </Text>
                 <Button
                   variant="outline"
                   label={t('safety.unblock')}
@@ -67,7 +102,9 @@ export default function BlockedScreen() {
           </View>
         )}
         {unblock.isError ? (
-          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>{t('safety.error')}</Text>
+          <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+            {t('safety.error')}
+          </Text>
         ) : null}
       </ScrollView>
     </View>
@@ -78,7 +115,20 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.surface },
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 14 },
   list: { marginTop: 6 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, borderBottomWidth: 1, borderBottomColor: extra.cardBorder },
-  avatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 64,
+    borderBottomWidth: 1,
+    borderBottomColor: extra.cardBorder,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   name: { flex: 1, minWidth: 0 },
 });
