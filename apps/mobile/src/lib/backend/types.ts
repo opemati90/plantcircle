@@ -18,9 +18,21 @@ export type PlanCategory = (typeof PLAN_CATEGORIES)[number];
 export const PLAN_FORMATS = ['in_person', 'online'] as const;
 export type PlanFormat = (typeof PLAN_FORMATS)[number];
 
+export const PLAN_STATUSES = [
+  'draft',
+  'published',
+  'changed',
+  'on_hold',
+  'cancelled',
+  'completed',
+] as const;
+export type PlanStatus = (typeof PLAN_STATUSES)[number];
+
 export const planCardSchema = z.object({
   id: z.string(),
   title: z.string(),
+  status: z.enum(PLAN_STATUSES).optional(),
+  cancelled_reason: z.string().nullable().optional(),
   category: z.enum(PLAN_CATEGORIES),
   format: z.enum(PLAN_FORMATS),
   city_id: z.string(),
@@ -153,6 +165,14 @@ export interface BringItem {
 export interface PlanDetail {
   plan: Plan;
   bringItems: BringItem[];
+  /** Where the Plan stands (docs/07): `changed` asks going guests to re-confirm. */
+  status: PlanStatus;
+  /** The host's words when they cancelled; null otherwise. */
+  cancelledReason: string | null;
+  /** The viewer hosts this Plan. */
+  isHost: boolean;
+  /** The time or place changed and this going guest has not said yet whether they still come. */
+  needsReconfirm: boolean;
   /** The viewer's own state for this Plan. */
   rsvp: RsvpState;
   /** 1 = next in line. Present while waitlisted or offered. */
@@ -531,6 +551,18 @@ export interface PlanInput {
   keepAddressPrivate: boolean;
   /** Online: the Google Meet link, https only. */
   meetingUrl: string | null;
+}
+
+/** What a host may change on a live Plan. A new time or place asks going guests to re-confirm. */
+export interface PlanPatch {
+  title: string;
+  description: string;
+  startsAt: string;
+  endsAt: string;
+  capacity: number;
+  /** In person only; ignored for online Plans. */
+  areaName: string | null;
+  address: string | null;
 }
 
 export const messageCardSchema = z.object({

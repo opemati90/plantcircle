@@ -16,18 +16,15 @@ import {
   type PlanInput,
   type RecipeAllergen,
 } from '../../lib/backend/types';
-import { longDate, time, timeRange } from '../../lib/dates';
 import { useAuth } from '../auth/useAuth';
 import { newIdempotencyKey, useCities } from '../plans/queries';
 import { HostLevelCard } from '../hosting/HostLevelCard';
 import { useHostLevel } from '../hosting/queries';
 import { useRecipe } from '../learn/queries';
 import { useCreatePlan } from './queries';
+import { WhenStep } from './WhenStep';
 import {
-  DAY_COUNT,
   DURATION_MINUTES,
-  START_MINUTES,
-  calendarDay,
   characterCount,
   type CalendarDay,
   isMeetingUrl,
@@ -670,167 +667,6 @@ function toggleAllergen(current: RecipeAllergen[], allergen: RecipeAllergen): Re
   // "None" stands alone: choosing it clears the rest, and choosing another clears "None".
   if (allergen === 'none') return ['none'];
   return [...current.filter((a) => a !== 'none'), allergen];
-}
-
-/** The day strip, the start-time grid and the length, with a summary of the chosen window. */
-function WhenStep({
-  draft,
-  now,
-  zone,
-  onChange,
-}: {
-  draft: Draft;
-  now: Date;
-  zone: string;
-  onChange: (patch: Partial<Draft>) => void;
-}) {
-  const { t, i18n } = useTranslation();
-  const days = Array.from({ length: DAY_COUNT }, (_, offset) => offset);
-  const dayAt = (offset: number) => calendarDay(now, offset, zone);
-  const sameDay = (a: CalendarDay | null, b: CalendarDay) =>
-    a !== null && a.year === b.year && a.month === b.month && a.day === b.day;
-  // The weekday of a calendar date, read in UTC so the clock's zone cannot move it.
-  const weekday = (offset: number) => {
-    const { year, month, day } = dayAt(offset);
-    return new Intl.DateTimeFormat(i18n.language, { weekday: 'short', timeZone: 'UTC' }).format(
-      new Date(Date.UTC(year, month - 1, day)),
-    );
-  };
-  const dayNumber = (offset: number) => dayAt(offset).day;
-  const startLabel = (minutes: number) =>
-    time(planWindow(draft.day ?? dayAt(0), minutes, draft.duration, zone).startsAt, zone);
-  const startsOk = (minutes: number) =>
-    draft.day !== null &&
-    startsSoonEnough(planWindow(draft.day, minutes, draft.duration, zone).startsAt, now);
-  const window =
-    draft.day === null ? null : planWindow(draft.day, draft.startMinutes, draft.duration, zone);
-
-  return (
-    <>
-      <Text maxFontSizeMultiplier={2.0} accessibilityRole="header" style={styles.title}>
-        {t('create.whenTitle')}
-      </Text>
-      <Text maxFontSizeMultiplier={2.0} style={styles.label}>
-        {t('create.dayGroup')}
-      </Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        accessibilityRole="radiogroup"
-        accessibilityLabel={t('create.dayGroup')}
-        contentContainerStyle={styles.dayStrip}
-      >
-        {days.map((offset) => {
-          const selected = sameDay(draft.day, dayAt(offset));
-          return (
-            <Pressable
-              key={offset}
-              accessibilityRole="radio"
-              aria-checked={selected}
-              accessibilityLabel={`${weekday(offset)} ${dayNumber(offset)}`}
-              onPress={() => {
-                onChange({ day: dayAt(offset) });
-              }}
-              style={[styles.day, selected && styles.tileSelected]}
-            >
-              <Text
-                maxFontSizeMultiplier={2.0}
-                style={type(13, 'semibold', { color: color.secondary })}
-              >
-                {weekday(offset)}
-              </Text>
-              <Text
-                maxFontSizeMultiplier={1.6}
-                style={type(20, 'semibold', { tracking: -0.4 })}
-              >
-                {dayNumber(offset)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
-
-      <Text maxFontSizeMultiplier={2.0} style={styles.label}>
-        {t('create.startGroup')}
-      </Text>
-      <View
-        accessibilityRole="radiogroup"
-        accessibilityLabel={t('create.startGroup')}
-        style={styles.timeGrid}
-      >
-        {START_MINUTES.map((minutes) => {
-          const selected = draft.startMinutes === minutes;
-          const ok = startsOk(minutes);
-          return (
-            <Pressable
-              key={minutes}
-              accessibilityRole="radio"
-              aria-checked={selected}
-              accessibilityState={{ disabled: !ok }}
-              disabled={!ok}
-              onPress={() => {
-                onChange({ startMinutes: minutes });
-              }}
-              style={[styles.timeCell, selected && styles.chipSelected, !ok && styles.disabled]}
-            >
-              <Text
-                maxFontSizeMultiplier={2.0}
-                style={type(15, 'semibold', { color: selected ? color.brand : color.ink })}
-              >
-                {startLabel(minutes)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      <Text maxFontSizeMultiplier={2.0} style={styles.label}>
-        {t('create.durationGroup')}
-      </Text>
-      <View
-        accessibilityRole="radiogroup"
-        accessibilityLabel={t('create.durationGroup')}
-        style={styles.pill}
-      >
-        {DURATION_MINUTES.map((minutes) => {
-          const selected = draft.duration === minutes;
-          return (
-            <Pressable
-              key={minutes}
-              accessibilityRole="radio"
-              aria-checked={selected}
-              onPress={() => {
-                onChange({ duration: minutes });
-              }}
-              style={[styles.pillItem, selected && styles.pillItemSelected]}
-            >
-              <Text
-                maxFontSizeMultiplier={2.0}
-                style={type(15, 'semibold', { color: color.ink })}
-              >
-                {t('learn.minutes', { minutes })}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {window ? (
-        <Text maxFontSizeMultiplier={2.0} style={styles.summary}>
-          {`${longDate(window.startsAt, zone)} · ${timeRange(window.startsAt, window.endsAt, zone)}`}
-        </Text>
-      ) : null}
-      {window && !startsSoonEnough(window.startsAt, now) ? (
-        <Text
-          maxFontSizeMultiplier={2.0}
-          role="alert"
-          style={type(15, 'regular', { color: color.danger })}
-        >
-          {t('create.tooSoon')}
-        </Text>
-      ) : null}
-    </>
-  );
 }
 
 const styles = StyleSheet.create({

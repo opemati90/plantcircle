@@ -308,6 +308,10 @@ export function useRsvpMutations(planId: string) {
       mutationFn: (key: string) => backend.confirmWaitlistOffer(planId, key),
       ...options,
     }),
+    reconfirm: useMutation({
+      mutationFn: (key: string) => backend.reconfirmRsvp(planId, key),
+      ...options,
+    }),
     claim: useMutation({
       mutationFn: (input: { itemId: string; key: string }) =>
         backend.claimBringItem(input.itemId, input.key),

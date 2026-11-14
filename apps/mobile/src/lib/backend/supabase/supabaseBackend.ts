@@ -178,6 +178,7 @@ const myRsvpSchema = z.object({
   status: z.string(),
   offer_expires_at: z.string().nullable(),
   waitlist_position: z.number().int().nullable(),
+  needs_reconfirm: z.boolean().optional(),
 });
 
 function toRsvpState(status: string | undefined): RsvpState {
@@ -647,6 +648,39 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
 
     async endPlan(planId, key) {
       const result = await client.rpc('host_end_plan', {
+        p_plan_id: planId,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async updatePlan(planId, patch, key) {
+      const result = await client.rpc('plan_update', {
+        p_plan_id: planId,
+        p_title: patch.title,
+        p_description: patch.description,
+        p_starts_at: patch.startsAt,
+        p_ends_at: patch.endsAt,
+        p_capacity: patch.capacity,
+        p_area_label: patch.areaName,
+        p_address: patch.address,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.object({ status: z.enum(['published', 'changed']) }), result.data).status;
+    },
+
+    async cancelPlan(planId, reason, key) {
+      const result = await client.rpc('plan_cancel', {
+        p_plan_id: planId,
+        p_reason: reason,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+    },
+
+    async reconfirmRsvp(planId, key) {
+      const result = await client.rpc('rsvp_reconfirm', {
         p_plan_id: planId,
         p_idempotency_key: key,
       });
@@ -1273,8 +1307,9 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       let address: string | null = null;
       let meetingUrl: string | null = null;
       let myItemIds = new Set<string>();
+      let isHost = false;
       if (userId) {
-        const [rsvp, secret, link, claims] = await Promise.all([
+        const [rsvp, secret, link, claims, hosted] = await Promise.all([
           client.from('my_rsvps').select('*').eq('plan_id', planId).maybeSingle(),
           // RLS returns no row unless this member is allowed to see the address.
           client.from('plan_private').select('address').eq('plan_id', planId).maybeSingle(),
@@ -1291,11 +1326,14 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
               'slot_id',
               itemRows.map((item) => item.id),
             ),
+          client.from('my_hosted_plans').select('plan_id').eq('plan_id', planId).maybeSingle(),
         ]);
         if (rsvp.error) throw toBackendError(rsvp.error);
         if (secret.error) throw toBackendError(secret.error);
         if (link.error) throw toBackendError(link.error);
         if (claims.error) throw toBackendError(claims.error);
+        if (hosted.error) throw toBackendError(hosted.error);
+        isHost = hosted.data !== null;
         mine = parse(myRsvpSchema.nullable(), rsvp.data);
         // Online Plans have no address, so the private row's address can be null.
         address =
@@ -1309,8 +1347,13 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         );
       }
 
+      const cardRow = parse(planCardSchema, card.data);
       return {
-        plan: toPlan(parse(planCardSchema, card.data)),
+        plan: toPlan(cardRow),
+        status: cardRow.status ?? 'published',
+        cancelledReason: cardRow.cancelled_reason ?? null,
+        isHost,
+        needsReconfirm: mine?.needs_reconfirm === true && toRsvpState(mine.status) === 'going',
         bringItems: itemRows.map((item) => ({
           id: item.id,
           label: item.label,

@@ -14,6 +14,7 @@ import type {
   GroupOrder,
   GuestState,
   HostSummary,
+  PlanStatus,
   MyPlan,
   OrderItem,
   Plan,
@@ -96,6 +97,12 @@ interface State {
   >;
   /** Plans the host has ended in this session. */
   plansEnded: string[];
+  /** Plans the host cancelled in this session, with the reason guests see. */
+  plansCancelled: Record<string, string>;
+  /** Plans whose time or place the host changed; the viewer (as a guest) still has to answer. */
+  plansChanged: Record<string, { needsReconfirm: boolean }>;
+  /** New times for sample Plans (test hook), since the sample data itself is read-only. */
+  plansMoved: Record<string, { startsAt: string; endsAt: string }>;
   /** Bring items the host added or changed in this session (the sample items are read-only). */
   bringCreated: FixtureBringItem[];
   /** Group chat messages by conversation id; a client id makes a send idempotent. */
@@ -186,6 +193,10 @@ interface FixtureHooks {
     publishTerms: () => void;
     /** Test hook: what the viewer has earned towards hosting (recipes shared here add to it). */
     setHostStats: (stats: Partial<HostStats>) => void;
+    /** Test hook: the host of a sample Plan moves it an hour later; the viewer must re-confirm. */
+    hostChanges: (planId: string) => void;
+    /** Test hook: the host of a sample Plan cancels it with a message. */
+    hostCancels: (planId: string, reason: string) => void;
   };
   /** Test hook: failures to simulate from the very first call after load. */
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
@@ -216,6 +227,9 @@ const EMPTY: State = {
   orders: {},
   plansGuests: {},
   plansEnded: [],
+  plansCancelled: {},
+  plansChanged: {},
+  plansMoved: {},
   bringCreated: [],
   messages: {},
   directOpen: [],
@@ -319,6 +333,43 @@ export async function createFixtureBackend(): Promise<Backend> {
     },
     setHostStats: (stats) => {
       commit({ ...state, hostStats: { ...state.hostStats, ...stats } });
+    },
+    hostChanges: (planId) => {
+      const plan = findPlan(planId);
+      const shift = 3_600_000;
+      const moved = {
+        ...plan,
+        startsAt: new Date(Date.parse(plan.startsAt) + shift).toISOString(),
+        endsAt: new Date(Date.parse(plan.endsAt) + shift).toISOString(),
+      };
+      commit({
+        ...state,
+        plansMoved: {
+          ...state.plansMoved,
+          [planId]: { startsAt: moved.startsAt, endsAt: moved.endsAt },
+        },
+        plansChanged: { ...state.plansChanged, [planId]: { needsReconfirm: true } },
+        notifications: notifyMe('plan_changed', {
+          plan_id: planId,
+          plan: plan.title,
+          time: moved.startsAt,
+        }),
+      });
+    },
+    hostCancels: (planId, reason) => {
+      const plan = findPlan(planId);
+      commit({
+        ...state,
+        plansCancelled: { ...state.plansCancelled, [planId]: reason },
+        goingPlanIds: state.goingPlanIds.filter((id) => id !== planId),
+        waitlist: withoutEntry(planId),
+        notifications: notifyMe('plan_cancelled', {
+          plan_id: planId,
+          plan: plan.title,
+          host: plan.hostName,
+          reason,
+        }),
+      });
     },
     freeSpot: (planId, offerMs = OFFER_MS) => {
       const inLine = planId in state.waitlist;
@@ -681,6 +732,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       const waitlistCount = plan.waitlistCount + (plan.id in state.waitlist ? 1 : 0);
       return {
         ...plan,
+        ...(state.plansMoved[plan.id] ?? {}),
         goingCount: going,
         waitlistCount,
         hasOpenSpot: going < plan.capacity && waitlistCount === 0,
@@ -1099,7 +1151,7 @@ export async function createFixtureBackend(): Promise<Backend> {
         checkedIn: guests.filter((g) => g.state === 'checked_in').length,
         noShow: guests.filter((g) => g.state === 'no_show').length,
         ended: state.plansEnded.includes(planId),
-        live: !state.plansEnded.includes(planId),
+        live: !state.plansEnded.includes(planId) && !(planId in state.plansCancelled),
         feedbackCount: mine ? 1 : 0,
         averageRating: mine ? mine.rating : null,
       } satisfies HostSummary;
@@ -1153,6 +1205,122 @@ export async function createFixtureBackend(): Promise<Backend> {
         plansGuests: { ...state.plansGuests, [planId]: guests },
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: 'completed' } },
       });
+    },
+
+    async updatePlan(planId, patch, key) {
+      await call();
+      requireActive();
+      requireHost(planId);
+      const fingerprint = `plan_update:${planId}:${JSON.stringify(patch)}`;
+      const replayed = replayKey(key, fingerprint);
+      if (replayed) return replayed as PlanStatus;
+      const plan = findPlan(planId);
+      if (planId in state.plansCancelled || state.plansEnded.includes(planId)) {
+        throw new BackendError('plan_not_live');
+      }
+      if (Date.now() >= Date.parse(plan.startsAt)) throw new BackendError('plan_started');
+      const starts = Date.parse(patch.startsAt);
+      const ends = Date.parse(patch.endsAt);
+      const title = patch.title.trim();
+      const area = (patch.areaName ?? '').trim();
+      const address = (patch.address ?? '').trim();
+      const invalid =
+        Array.from(title).length < 3 ||
+        Array.from(title).length > 80 ||
+        Array.from(patch.description.trim()).length > 2000 ||
+        starts <= Date.now() + 3_600_000 ||
+        ends - starts < 30 * 60_000 ||
+        ends - starts > 8 * 3_600_000 ||
+        patch.capacity < 2 ||
+        patch.capacity > 50 ||
+        (plan.format === 'in_person' &&
+          (Array.from(area).length < 1 ||
+            Array.from(area).length > 60 ||
+            Array.from(address).length < 1 ||
+            Array.from(address).length > 200));
+      if (invalid) throw new BackendError('invalid_input');
+      const going = (state.plansGuests[planId] ?? []).filter(
+        (g) => g.state === 'going' || g.state === 'checked_in' || g.state === 'offered',
+      ).length;
+      if (patch.capacity < going) throw new BackendError('capacity_below_going');
+      if (patch.capacity > plan.capacity && patch.capacity > hostLevel().maxCapacity) {
+        throw new BackendError('host_level_capacity');
+      }
+      const secret = state.plansSecrets[planId];
+      const moved =
+        patch.startsAt !== plan.startsAt ||
+        patch.endsAt !== plan.endsAt ||
+        (plan.format === 'in_person' &&
+          (area !== plan.areaName || address !== (secret?.address ?? '')));
+      const status: PlanStatus = moved ? 'changed' : 'published';
+      commit({
+        ...state,
+        plansCreated: state.plansCreated.map((p) =>
+          p.id === planId
+            ? {
+                ...p,
+                title,
+                description: patch.description.trim(),
+                startsAt: patch.startsAt,
+                endsAt: patch.endsAt,
+                capacity: patch.capacity,
+                areaName: plan.format === 'in_person' ? area : p.areaName,
+              }
+            : p,
+        ),
+        plansSecrets:
+          plan.format === 'in_person' && secret
+            ? { ...state.plansSecrets, [planId]: { ...secret, address } }
+            : state.plansSecrets,
+        plansChanged: moved
+          ? { ...state.plansChanged, [planId]: { needsReconfirm: true } }
+          : state.plansChanged,
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: status } },
+      });
+      return status;
+    },
+
+    async cancelPlan(planId, reason, key) {
+      await call();
+      requireActive();
+      requireHost(planId);
+      const fingerprint = `plan_cancel:${planId}`;
+      if (replayKey(key, fingerprint)) return;
+      if (planId in state.plansCancelled || state.plansEnded.includes(planId)) {
+        throw new BackendError('plan_not_live');
+      }
+      const text = reason.trim();
+      if (Array.from(text).length < 1 || Array.from(text).length > 300) {
+        throw new BackendError('invalid_input');
+      }
+      // Every spot, place in line and bring claim is released; the record stays.
+      const guests = (state.plansGuests[planId] ?? []).map((g) => ({
+        ...g,
+        state: 'cancelled' as GuestState,
+      }));
+      const planItemIds = [...fixtureBringItems, ...state.bringCreated]
+        .filter((item) => item.planId === planId)
+        .map((item) => item.id);
+      commit({
+        ...state,
+        plansCancelled: { ...state.plansCancelled, [planId]: text },
+        plansGuests: { ...state.plansGuests, [planId]: guests },
+        goingPlanIds: state.goingPlanIds.filter((id) => id !== planId),
+        claimedItemIds: state.claimedItemIds.filter((id) => !planItemIds.includes(id)),
+        waitlist: withoutEntry(planId),
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: 'cancelled' } },
+      });
+    },
+
+    async reconfirmRsvp(planId, key) {
+      await call();
+      requireSession();
+      if (replayed(key)) return;
+      if (!state.goingPlanIds.includes(planId)) throw new BackendError('rsvp_required');
+      const rest = Object.fromEntries(
+        Object.entries(state.plansChanged).filter(([id]) => id !== planId),
+      );
+      commit({ ...state, plansChanged: rest });
     },
 
     async getFeedback(planId) {
@@ -2388,8 +2556,20 @@ export async function createFixtureBackend(): Promise<Backend> {
       const entry = liveEntry(planId);
       const revealed = Date.now() >= new Date(plan.revealAt).getTime();
       const hosted = state.plansSecrets[planId] ?? null;
+      const cancelledReason = state.plansCancelled[planId] ?? null;
+      const status: PlanStatus = cancelledReason
+        ? 'cancelled'
+        : state.plansEnded.includes(planId)
+          ? 'completed'
+          : state.plansChanged[planId]?.needsReconfirm
+            ? 'changed'
+            : 'published';
       return {
         plan,
+        status,
+        cancelledReason,
+        isHost: state.plansCreated.some((p) => p.id === planId),
+        needsReconfirm: isGoing && status === 'changed',
         rsvp: isGoing ? 'going' : entry ? (entry.expiresAt ? 'offered' : 'waitlisted') : 'none',
         // The viewer joined after the people already in the sample data.
         waitlistPosition: entry ? plan.waitlistCount : null,
@@ -2443,6 +2623,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireActive();
       if (replayed(key) || state.goingPlanIds.includes(planId)) return;
       const plan = findPlan(planId);
+      if (planId in state.plansCancelled) throw new BackendError('plan_ended');
       if (!plan.hasOpenSpot) throw new BackendError('plan_full');
       commit({
         ...state,

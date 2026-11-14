@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBackend } from '../../lib/backend/BackendProvider';
-import type { BringItemInput } from '../../lib/backend/types';
+import type { BringItemInput, PlanPatch } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 
 export function useGuests(planId: string) {
@@ -28,9 +28,15 @@ function useRefreshHosting(planId: string) {
   const queryClient = useQueryClient();
   return () =>
     Promise.all(
-      [['guests', planId], ['hostSummary', planId], ['plan', planId], ['myPlans']].map((key) =>
-        queryClient.invalidateQueries({ queryKey: key }),
-      ),
+      [
+        ['guests', planId],
+        ['hostSummary', planId],
+        ['plan', planId],
+        ['myPlans'],
+        ['plans'],
+        ['explorePlans'],
+        ['upNext'],
+      ].map((key) => queryClient.invalidateQueries({ queryKey: key })),
     );
 }
 
@@ -49,6 +55,26 @@ export function useEndPlan(planId: string) {
   const refresh = useRefreshHosting(planId);
   return useMutation({
     mutationFn: (input: { key: string }) => backend.endPlan(planId, input.key),
+    onSuccess: refresh,
+  });
+}
+
+export function useUpdatePlan(planId: string) {
+  const backend = useBackend();
+  const refresh = useRefreshHosting(planId);
+  return useMutation({
+    mutationFn: (input: { patch: PlanPatch; key: string }) =>
+      backend.updatePlan(planId, input.patch, input.key),
+    onSuccess: refresh,
+  });
+}
+
+export function useCancelPlan(planId: string) {
+  const backend = useBackend();
+  const refresh = useRefreshHosting(planId);
+  return useMutation({
+    mutationFn: (input: { reason: string; key: string }) =>
+      backend.cancelPlan(planId, input.reason, input.key),
     onSuccess: refresh,
   });
 }

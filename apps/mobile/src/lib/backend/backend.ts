@@ -50,6 +50,8 @@ import type {
   WebRsvpInput,
   WebRsvpResult,
   PlanFormat,
+  PlanPatch,
+  PlanStatus,
 } from './types';
 
 export type BackendErrorCode =
@@ -74,6 +76,9 @@ export type BackendErrorCode =
   | 'own_recipe'
   | 'checkin_closed'
   | 'plan_not_started'
+  | 'plan_started'
+  | 'plan_not_live'
+  | 'capacity_below_going'
   | 'item_claimed'
   | 'closed_chat'
   | 'person_not_found'
@@ -171,6 +176,12 @@ export interface Backend {
 
   /** Publishes a Plan in the host's home city. Returns the new Plan's id. */
   createPlan(input: PlanInput, idempotencyKey: string): Promise<string>;
+  /** Host edits a live Plan. Returns the Plan's status afterwards (`changed` if guests must re-confirm). */
+  updatePlan(planId: string, patch: PlanPatch, idempotencyKey: string): Promise<PlanStatus>;
+  /** Host cancels with a reason: every spot, place in line and bring claim is released. */
+  cancelPlan(planId: string, reason: string, idempotencyKey: string): Promise<void>;
+  /** A going guest says they still come after a time or place change. */
+  reconfirmRsvp(planId: string, idempotencyKey: string): Promise<void>;
 
   /** Group chats for a Plan or a Circle, for members only. */
   openConversation(kind: 'plan' | 'circle' | 'direct', refId: string): Promise<string>;

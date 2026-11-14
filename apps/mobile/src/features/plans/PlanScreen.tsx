@@ -120,8 +120,14 @@ function PlanView({
   savedAt?: number | null;
   onRetry?: () => void;
 }) {
-  const { plan, rsvp, bringItems, address, meetingUrl } = detail;
+  const { plan, rsvp, bringItems, address, meetingUrl, status, cancelledReason, isHost } =
+    detail;
   const isGoing = rsvp === 'going';
+  const cancelled = status === 'cancelled';
+  const onHold = status === 'on_hold';
+  const asksReconfirm = status === 'changed' && detail.needsReconfirm;
+  // Nothing to join on a cancelled or held Plan; the host manages theirs instead.
+  const closed = cancelled || onHold || isHost;
   // With large type the price and the buttons no longer fit side by side: the bar stacks.
   const { fontScale } = useWindowDimensions();
   const stacked = fontScale >= 1.3;
@@ -147,7 +153,7 @@ function PlanView({
   const insets = useScreenInsets();
   const { session } = useAuth();
   const { t } = useTranslation();
-  const { join, cancel, claim, unclaim, joinWaitlist } = useRsvpMutations(plan.id);
+  const { join, cancel, claim, unclaim, joinWaitlist, reconfirm } = useRsvpMutations(plan.id);
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const params = useLocalSearchParams<{ join?: string }>();
@@ -282,8 +288,13 @@ function PlanView({
               maxFontSizeMultiplier={2.0}
               style={[type(13, 'semibold', { color: '#FFFFFF', tracking: 0.6 }), styles.upper]}
             >
-              {categoryLabel(t, plan)}
-              {full ? ` · ${t('plan.full')}` : ''}
+              {cancelled
+                ? t('plan.statusCancelled')
+                : onHold
+                  ? t('plan.statusOnHold')
+                  : status === 'changed'
+                    ? t('plan.statusChanged')
+                    : `${categoryLabel(t, plan)}${full ? ` · ${t('plan.full')}` : ''}`}
             </Text>
             <Text
               maxFontSizeMultiplier={1.4}
@@ -299,6 +310,57 @@ function PlanView({
         </View>
 
         <View style={styles.body}>
+          {cancelled ? (
+            <View style={styles.statusCard}>
+              <Text
+                maxFontSizeMultiplier={1.6}
+                accessibilityRole="header"
+                aria-level={2}
+                style={type(20, 'bold', { tracking: -0.5 })}
+              >
+                {t('plan.cancelledTitle')}
+              </Text>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}
+              >
+                {t('plan.cancelledLead')}
+              </Text>
+              {cancelledReason ? (
+                <View style={styles.quote}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(13, 'semibold', { color: color.secondary, tracking: 0.3 })}
+                  >
+                    {t('plan.hostMessage', { host: plan.hostName })}
+                  </Text>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(17, 'regular', { leading: 1.5 })}
+                  >
+                    {cancelledReason}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          ) : onHold ? (
+            <View style={styles.statusCard}>
+              <Text
+                maxFontSizeMultiplier={1.6}
+                accessibilityRole="header"
+                aria-level={2}
+                style={type(20, 'bold', { tracking: -0.5 })}
+              >
+                {t('plan.onHoldTitle')}
+              </Text>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(15, 'regular', { color: extra.bodyText, leading: 1.5 })}
+              >
+                {t('plan.onHoldLead')}
+              </Text>
+            </View>
+          ) : null}
           <View style={styles.facts}>
             <Fact
               lead={<DateTile iso={plan.startsAt} timeZone={plan.timezone} />}
@@ -587,7 +649,84 @@ function PlanView({
           />
         </FloatingActionBar>
       ) : null}
-      {offline ? null : (
+      {offline ? null : closed ? (
+        <FloatingActionBar style={[styles.bar, stacked && styles.barStacked]}>
+          <View style={styles.barText}>
+            <Text maxFontSizeMultiplier={1.6} style={type(18, 'bold', { tracking: -0.3 })}>
+              {isHost
+                ? t('plan.youreHosting')
+                : cancelled
+                  ? t('plan.cancelledTitle')
+                  : t('plan.onHoldTitle')}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(14, 'regular', { color: color.secondary })}
+            >
+              {isHost
+                ? `${weekdayLong(plan.startsAt, plan.timezone)} · ${t('plan.goingCount', { count: plan.goingCount })}`
+                : cancelled
+                  ? t('notify.planCancelledNote')
+                  : t('plan.onHoldLead')}
+            </Text>
+          </View>
+          {isHost ? (
+            <Button
+              label={t('plan.manage')}
+              onPress={() => {
+                router.push({ pathname: '/plan/[id]/manage', params: { id: plan.id } });
+              }}
+              style={styles.cta}
+            />
+          ) : (
+            <Button
+              variant="outline"
+              label={t('plan.findOthers')}
+              onPress={() => {
+                router.push('/explore');
+              }}
+              style={styles.cta}
+            />
+          )}
+        </FloatingActionBar>
+      ) : asksReconfirm ? (
+        <FloatingActionBar style={[styles.bar, styles.barStacked]}>
+          <View style={styles.barText}>
+            <Text maxFontSizeMultiplier={1.6} style={type(18, 'bold', { tracking: -0.3 })}>
+              {t('plan.stillMakeIt')}
+            </Text>
+            <Text
+              maxFontSizeMultiplier={2.0}
+              accessibilityLiveRegion="polite"
+              style={type(14, 'regular', { color: color.secondary })}
+            >
+              {reconfirm.isError
+                ? t('plan.notSaved')
+                : `${longDate(plan.startsAt, plan.timezone)} · ${timeRange(plan.startsAt, plan.endsAt, plan.timezone)}`}
+            </Text>
+          </View>
+          <View style={styles.goingActions}>
+            <Button
+              label={t('plan.stillGoing')}
+              loading={reconfirm.isPending}
+              onPress={() => {
+                reconfirm.mutate(newIdempotencyKey(), {
+                  onSuccess: () => {
+                    setNotice(t('plan.reconfirmed'));
+                  },
+                });
+              }}
+            />
+            <Button
+              variant="outline"
+              label={t('plan.cantMakeItButton')}
+              onPress={() => {
+                setSheet('cancel');
+              }}
+            />
+          </View>
+        </FloatingActionBar>
+      ) : (
         <FloatingActionBar style={[styles.bar, stacked && styles.barStacked]}>
           <View style={styles.barText}>
             <Text maxFontSizeMultiplier={1.6} style={type(18, 'bold', { tracking: -0.3 })}>
@@ -935,6 +1074,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   notes: { gap: 10 },
+  statusCard: {
+    gap: 8,
+    padding: 18,
+    marginBottom: 28,
+    borderRadius: radius.card,
+    backgroundColor: color.fill,
+  },
+  quote: {
+    gap: 4,
+    marginTop: 6,
+    paddingLeft: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: color.brand,
+  },
   strong: { fontWeight: '700', color: color.ink },
   bar: {
     flexDirection: 'row',

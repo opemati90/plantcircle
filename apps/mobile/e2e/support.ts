@@ -22,6 +22,8 @@ export interface FixtureWindow {
     setHostStats: (
       stats: Partial<{ recipes: number; hosted: number; followers: number; upvotes: number }>,
     ) => void;
+    hostChanges: (planId: string) => void;
+    hostCancels: (planId: string, reason: string) => void;
   };
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
 }

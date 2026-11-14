@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '../../components/Button';
 import { CheckIcon } from '../../components/icons';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -13,7 +13,13 @@ import type { Guest, GuestState } from '../../lib/backend/types';
 import { timeRange, longDate } from '../../lib/dates';
 import { useNow } from '../../lib/useNow';
 import { newIdempotencyKey, usePlan } from '../plans/queries';
-import { useCheckInGuest, useEndPlan, useGuests, useHostSummary } from './queries';
+import {
+  useCancelPlan,
+  useCheckInGuest,
+  useEndPlan,
+  useGuests,
+  useHostSummary,
+} from './queries';
 import { BringSection } from './BringSection';
 import { canEnd, checkinOpen } from './rules';
 
@@ -30,7 +36,7 @@ const STATE_LABEL: Record<
 
 /** The host's view of a Plan: who is coming, check-in while the window is open, and ending it. */
 export default function ManageScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, changed } = useLocalSearchParams<{ id: string; changed?: string }>();
   const { t } = useTranslation();
   const insets = useScreenInsets();
   const router = useRouter();
@@ -39,7 +45,11 @@ export default function ManageScreen() {
   const summary = useHostSummary(id);
   const checkIn = useCheckInGuest(id);
   const end = useEndPlan(id);
+  const cancelPlan = useCancelPlan(id);
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [reason, setReason] = useState('');
+  const [cancelKey] = useState(newIdempotencyKey);
   // One key for this visit's End Plan, so a retry after a lost response replays the same ending.
   const [endKey] = useState(newIdempotencyKey);
   // Per guest and per change, so a retry of the same tap reuses its key.
@@ -92,10 +102,13 @@ export default function ManageScreen() {
   }
 
   const detail = plan.data.plan;
+  const status = plan.data.status;
   const window = { startsAt: detail.startsAt, endsAt: detail.endsAt };
   const ended = summary.data.ended;
   // A Plan that is on hold or cancelled is not running, whatever its times say.
   const live = summary.data.live;
+  // Time, place and cancelling are open until the Plan starts.
+  const editable = live && !ended && now.getTime() < Date.parse(detail.startsAt);
   const open = live && checkinOpen(window, ended, now);
   const endable = live && canEnd(detail.startsAt, ended, now);
   // Bring items change only while the Plan can still take guests: live, not ended, before its end.
@@ -184,9 +197,10 @@ export default function ManageScreen() {
         {!live ? (
           <Text
             maxFontSizeMultiplier={2.0}
+            role="status"
             style={type(15, 'regular', { color: color.secondary })}
           >
-            {t('host.notLive')}
+            {status === 'cancelled' ? t('host.cancelled') : t('host.notLive')}
           </Text>
         ) : !open && !ended ? (
           <Text
@@ -288,6 +302,34 @@ export default function ManageScreen() {
 
         <BringSection planId={id} items={plan.data.bringItems} editable={itemsEditable} />
 
+        {editable ? (
+          <View style={styles.edit}>
+            {changed === '1' ? (
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="status"
+                style={type(15, 'regular', { color: color.secondary })}
+              >
+                {status === 'changed' ? t('host.changed') : t('host.changedQuiet')}
+              </Text>
+            ) : null}
+            <Button
+              variant="outline"
+              label={t('host.changeButton')}
+              onPress={() => {
+                router.push({ pathname: '/plan/[id]/change', params: { id } });
+              }}
+            />
+            <Button
+              variant="ghost"
+              label={t('host.cancelButton')}
+              onPress={() => {
+                setConfirmCancel(true);
+              }}
+            />
+          </View>
+        ) : null}
+
         <View style={styles.end}>
           {ended ? (
             <Text
@@ -345,6 +387,62 @@ export default function ManageScreen() {
                 },
               },
             );
+          }}
+        />
+      </BottomSheet>
+
+      <BottomSheet
+        open={confirmCancel}
+        onClose={() => {
+          setConfirmCancel(false);
+        }}
+        title={t('host.cancelTitle')}
+        lead={t('host.cancelLead')}
+      >
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(14, 'semibold', { color: color.secondary })}
+        >
+          {t('host.cancelReason')}
+        </Text>
+        <TextInput
+          maxFontSizeMultiplier={2.0}
+          accessibilityLabel={t('host.cancelReason')}
+          value={reason}
+          onChangeText={setReason}
+          maxLength={300}
+          multiline
+          style={[styles.reason, type(17)]}
+        />
+        {cancelPlan.isError ? (
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="alert"
+            style={type(15, 'regular', { color: color.danger })}
+          >
+            {t('host.error')}
+          </Text>
+        ) : null}
+        <Button
+          label={t('host.cancelConfirm')}
+          disabled={reason.trim().length === 0}
+          loading={cancelPlan.isPending}
+          onPress={() => {
+            cancelPlan.mutate(
+              { reason: reason.trim(), key: cancelKey },
+              {
+                onSuccess: () => {
+                  setConfirmCancel(false);
+                },
+              },
+            );
+          }}
+        />
+        <Button
+          variant="ghost"
+          label={t('host.keepPlan')}
+          onPress={() => {
+            setConfirmCancel(false);
           }}
         />
       </BottomSheet>
@@ -414,4 +512,15 @@ const styles = StyleSheet.create({
   },
   ringChecked: { backgroundColor: color.brand, borderColor: color.brand },
   end: { gap: 12, paddingTop: 16 },
+  edit: { gap: 10, paddingTop: 8 },
+  reason: {
+    minHeight: 96,
+    padding: 14,
+    marginBottom: 12,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+    textAlignVertical: 'top',
+    color: color.ink,
+  },
 });
