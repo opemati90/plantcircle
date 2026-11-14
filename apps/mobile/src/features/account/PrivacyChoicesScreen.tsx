@@ -178,6 +178,7 @@ export default function PrivacyChoicesScreen() {
                   <View style={styles.rowText}>
                     <Toggle
                       label={row.title}
+                      note={row.note}
                       value={row.control === 'analytics' ? analytics : personal}
                       disabled={update.isPending}
                       onValueChange={(v) => {
@@ -185,12 +186,6 @@ export default function PrivacyChoicesScreen() {
                         else setPersonal(v);
                       }}
                     />
-                    <Text
-                      maxFontSizeMultiplier={2.0}
-                      style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
-                    >
-                      {row.note}
-                    </Text>
                   </View>
                 )}
               </View>
