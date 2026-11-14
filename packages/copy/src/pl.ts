@@ -444,7 +444,8 @@ export const pl: Catalog = {
     fromRecipeTitle: 'Ugotujmy razem: {{recipe}}',
     fromRecipeDescription:
       'Gotujemy {{recipe}} według przepisu {{author}} z kręgu {{circle}}, a potem jemy razem.',
-    fromRecipeNote: 'Wypełnione z przepisu {{recipe}} od {{author}}. Zmień, co chcesz.',
+    fromRecipeNote:
+      'Wypełnione na podstawie przepisu „{{recipe}}” od {{author}}. Zmień, co chcesz.',
     hintGroupOrder: 'Kupuj hurtowo z sąsiadami. Nikt nie płaci w aplikacji.',
     title: 'Zaplanuj spotkanie',
     stepOf: 'Krok {{step}} z {{total}}',

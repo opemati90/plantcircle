@@ -418,7 +418,7 @@ export const en = {
     fromRecipeTitle: 'Cook {{recipe}} together',
     fromRecipeDescription:
       'We cook {{recipe}} from the recipe by {{author}} in {{circle}}, then eat together.',
-    fromRecipeNote: 'Prefilled from {{recipe}} by {{author}}. Change anything.',
+    fromRecipeNote: 'From {{author}}’s recipe “{{recipe}}”. Change anything you like.',
     hintGroupOrder: 'Buy in bulk with neighbours. Nobody pays in the app.',
     title: 'Start a Plan',
     stepOf: 'Step {{step}} of {{total}}',

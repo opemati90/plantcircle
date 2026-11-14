@@ -7,11 +7,14 @@ import { color, size, type } from './theme';
  */
 export function Toggle({
   label,
+  note,
   value,
   disabled,
   onValueChange,
 }: {
   label: string;
+  /** A line under the label; part of the switch's accessible description. */
+  note?: string;
   value: boolean;
   disabled?: boolean;
   onValueChange: (next: boolean) => void;
@@ -20,6 +23,7 @@ export function Toggle({
     <Pressable
       accessibilityRole="switch"
       accessibilityLabel={label}
+      accessibilityHint={note}
       aria-checked={value}
       accessibilityState={{ disabled: Boolean(disabled) }}
       disabled={disabled}
@@ -28,12 +32,19 @@ export function Toggle({
       }}
       style={styles.row}
     >
-      <Text
-        maxFontSizeMultiplier={2.0}
-        style={[type(17, 'semibold', { tracking: -0.3 }), styles.label]}
-      >
-        {label}
-      </Text>
+      <View style={styles.text}>
+        <Text maxFontSizeMultiplier={2.0} style={type(17, 'semibold', { tracking: -0.3 })}>
+          {label}
+        </Text>
+        {note ? (
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(14, 'regular', { color: color.secondary })}
+          >
+            {note}
+          </Text>
+        ) : null}
+      </View>
       <View
         importantForAccessibility="no"
         accessibilityElementsHidden
@@ -47,7 +58,7 @@ export function Toggle({
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.touchMin },
-  label: { flex: 1 },
+  text: { flex: 1, minWidth: 0, gap: 2 },
   track: {
     width: 51,
     height: 31,

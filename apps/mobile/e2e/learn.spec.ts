@@ -75,6 +75,6 @@ test('“Cook this together” starts a Plan from the recipe, prefilled and cred
     'Cook Efo Riro with Smoked Tofu together',
   );
   await expect(
-    page.getByText('Prefilled from Efo Riro with Smoked Tofu by Ama O.'),
+    page.getByText('From Ama O.’s recipe “Efo Riro with Smoked Tofu”', { exact: false }),
   ).toBeVisible();
 });

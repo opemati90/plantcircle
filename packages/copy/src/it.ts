@@ -425,7 +425,8 @@ export const it: Catalog = {
     fromRecipeTitle: 'Cucinare {{recipe}} insieme',
     fromRecipeDescription:
       'Cuciniamo {{recipe}} dalla ricetta di {{author}} in {{circle}}, poi mangiamo insieme.',
-    fromRecipeNote: 'Precompilato da {{recipe}} di {{author}}. Cambia quello che vuoi.',
+    fromRecipeNote:
+      'Precompilato dalla ricetta “{{recipe}}” di {{author}}. Cambia quello che vuoi.',
     hintGroupOrder: 'Compra all’ingrosso con i vicini. Nessuno paga nell’app.',
     title: 'Organizza un incontro',
     stepOf: 'Passo {{step}} di {{total}}',

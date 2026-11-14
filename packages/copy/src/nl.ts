@@ -428,7 +428,8 @@ export const nl: Catalog = {
     fromRecipeTitle: '{{recipe}} samen koken',
     fromRecipeDescription:
       'We koken {{recipe}} naar het recept van {{author}} in {{circle}} en eten daarna samen.',
-    fromRecipeNote: 'Vooraf ingevuld vanuit {{recipe}} van {{author}}. Pas aan wat je wilt.',
+    fromRecipeNote:
+      'Vooraf ingevuld vanuit het recept “{{recipe}}” van {{author}}. Pas aan wat je wilt.',
     hintGroupOrder: 'Koop in bulk met buren. Niemand betaalt in de app.',
     title: 'Een plan starten',
     stepOf: 'Stap {{step}} van {{total}}',

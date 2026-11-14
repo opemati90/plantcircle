@@ -425,7 +425,8 @@ export const es: Catalog = {
     fromRecipeTitle: 'Cocinar {{recipe}} juntos',
     fromRecipeDescription:
       'Cocinamos {{recipe}} con la receta de {{author}} en {{circle}} y luego comemos juntos.',
-    fromRecipeNote: 'Rellenado desde {{recipe}} de {{author}}. Cambia lo que quieras.',
+    fromRecipeNote:
+      'Rellenado con la receta “{{recipe}}” de {{author}}. Cambia lo que quieras.',
     hintGroupOrder: 'Compra al por mayor con tus vecinos. Nadie paga en la app.',
     title: 'Empezar un plan',
     stepOf: 'Paso {{step}} de {{total}}',

@@ -163,18 +163,13 @@ export default function NotificationSettingsScreen() {
                       <>
                         <Toggle
                           label={row.title}
+                          note={row.note}
                           value={Boolean(settings.data[row.key])}
                           disabled={update.isPending}
                           onValueChange={(v) => {
                             update.mutate({ [row.key]: v });
                           }}
                         />
-                        <Text
-                          maxFontSizeMultiplier={2.0}
-                          style={type(14, 'regular', { color: color.secondary, leading: 1.45 })}
-                        >
-                          {row.note}
-                        </Text>
                       </>
                     )}
                   </View>

@@ -425,7 +425,8 @@ export const pt: Catalog = {
     fromRecipeTitle: 'Cozinhar {{recipe}} em grupo',
     fromRecipeDescription:
       'Cozinhamos {{recipe}} com a receita de {{author}} em {{circle}} e depois comemos juntos.',
-    fromRecipeNote: 'Preenchido a partir de {{recipe}} de {{author}}. Muda o que quiseres.',
+    fromRecipeNote:
+      'Preenchido a partir da receita “{{recipe}}” de {{author}}. Muda o que quiseres.',
     hintGroupOrder: 'Compre a granel com os vizinhos. Ninguém paga no app.',
     title: 'Criar um plano',
     stepOf: 'Passo {{step}} de {{total}}',

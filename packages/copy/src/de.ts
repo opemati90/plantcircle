@@ -431,7 +431,8 @@ export const de: Catalog = {
     fromRecipeTitle: '{{recipe}} gemeinsam kochen',
     fromRecipeDescription:
       'Wir kochen {{recipe}} nach dem Rezept von {{author}} aus {{circle}} und essen dann zusammen.',
-    fromRecipeNote: 'Vorausgefüllt aus {{recipe}} von {{author}}. Ändere, was du willst.',
+    fromRecipeNote:
+      'Nach dem Rezept „{{recipe}}“ von {{author}} vorausgefüllt. Ändere, was du willst.',
     hintGroupOrder: 'Gemeinsam in großen Mengen kaufen. Niemand zahlt in der App.',
     title: 'Eine Runde starten',
     stepOf: 'Schritt {{step}} von {{total}}',
