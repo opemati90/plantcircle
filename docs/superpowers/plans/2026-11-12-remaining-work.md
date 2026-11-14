@@ -177,3 +177,12 @@ blocks respected, counts shared per run, off with reminders).
 
 Open: push text is still English for every language (recorded earlier under push copy per
 language); the digest is in the Inbox in the reader’s language.
+
+## Open items closed (14 November 2026, evening)
+
+- Push text in the member's language: `user_settings.language` (synced by `LanguageSync`), `functions/push-dispatch/render.ts` renders from `copy.json` (generated from `packages/copy` by `pushCopy.test.ts`; `pushRender.test.ts` keeps it equal to the Inbox copy in all 8 languages).
+- Staff city merge: `staff_cities`, `staff_city_merge`, Cities tab in the console.
+- Translation review: a Codex review per catalogue (reports in the session scratchpad) applied for de, es, pt, fr, pl, it, nl: meaning, count agreement, register, glossary, plural categories. Still not a native-speaker sign-off.
+- Accessibility pass: default line heights in `type()`, `maxFontSizeMultiplier` caps on every text, dark glass controls on photos, keyboard-aware sheets, stacked Plan bar at large type, toggles carry their note.
+
+Still owner-blocked: a Supabase project (ref, URL, anon key, db password, access token), native-speaker sign-off.
