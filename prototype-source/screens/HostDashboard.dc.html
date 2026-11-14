@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PlantCircle — Host dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+html,body{margin:0;height:100%;background:#FAFAFA}
+:focus-visible{outline:3px solid #0A0A0A;outline-offset:2px;box-shadow:0 0 0 6px #FFFFFF}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+a{color:#0A0A0A}
+</style>
+</helmet>
+<div style="min-height: 100%; display: grid; grid-template-columns: 252px minmax(0, 1fr); background: #FAFAFA; color: #0A0A0A; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased">
+
+  <aside style="background: #FFFFFF; border-right: 1px solid #EDEDED; padding: 24px 16px; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 4px 10px 24px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#155A37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 20h10"></path><path d="M10 20c5.5-2.5.8-6.4 3-10"></path><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"></path><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"></path></svg>
+      <span style="font-size: 17px; font-weight: 600; letter-spacing: -0.3px">PlantCircle</span>
+      <span style="font-size: 13px; font-weight: 600; color: #155A37; padding: 3px 9px; border-radius: 999px; background: #EAF5EE">Host</span>
+    </div>
+    <nav aria-label="Host sections" style="display: flex; flex-direction: column; gap: 2px">
+      <sc-for list="{{navItems}}" as="n" hint-placeholder-count="5">
+        <button onClick="{{n.go}}" aria-current="{{n.current}}" style="{{n.style}}">{{n.label}}</button>
+      </sc-for>
+    </nav>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 14px 10px; border-top: 1px solid #EDEDED">
+      <span style="width: 40px; height: 40px; border-radius: 999px; background: #E3ECE2; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #1E4D33; flex-shrink: 0">A</span>
+      <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><span style="font-size: 15px; font-weight: 600">Ama O.</span><span style="font-size: 13px; color: #505054">Host Pro · Founding Host</span></span>
+    </div>
+  </aside>
+
+  <main style="padding: 36px 44px 56px; min-width: 0; display: flex; flex-direction: column; gap: 28px">
+
+    <sc-if value="{{isDash}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap">
+        <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 16px; color: #505054">Good morning, Ama</span><h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -1px">Your cooking night is in 4 days</h1></div>
+        <div style="display: flex; gap: 10px">
+          <button style="min-height: 44px; padding: 0 18px; border: 1px solid #8A8A8E; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; color: #0A0A0A; cursor: pointer">Share host page</button>
+          <button onClick="{{goNew}}" style="min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; background: #0A0A0A; font: inherit; font-size: 15px; font-weight: 600; color: #FFFFFF; cursor: pointer">New Plan</button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+        <sc-for list="{{kpis}}" as="k" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; gap: 6px; padding: 20px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED">
+            <span style="font-size: 14px; color: #505054">{{k.label}}</span>
+            <span style="font-size: 32px; font-weight: 700; letter-spacing: -1px">{{k.value}}</span>
+            <span style="font-size: 14px; color: #505054">{{k.sub}}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); gap: 20px; align-items: start">
+        <section aria-labelledby="up-h" style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; overflow: hidden">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 18px 20px"><h2 id="up-h" style="margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">Coming up</h2><button onClick="{{goPlans}}" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 600; color: #0A0A0A; cursor: pointer">All Plans</button></div>
+          <sc-for list="{{upcoming}}" as="p" hint-placeholder-count="3">
+            <button onClick="{{p.open}}" style="width: 100%; display: flex; align-items: center; gap: 16px; padding: 14px 20px; border: 0; border-top: 1px solid #EDEDED; background: transparent; font: inherit; text-align: left; color: #0A0A0A; cursor: pointer">
+              <img src="{{p.img}}" alt="" style="width: 56px; height: 56px; border-radius: 12px; object-fit: cover; flex-shrink: 0">
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 16px; font-weight: 600">{{p.title}}</span><span style="font-size: 14px; color: #505054">{{p.when}}</span></span>
+              <span style="font-size: 15px; color: #0A0A0A; white-space: nowrap">{{p.guests}}</span>
+              <span style="{{p.pill}}">{{p.status}}</span>
+            </button>
+          </sc-for>
+        </section>
+
+        <div style="display: flex; flex-direction: column; gap: 20px">
+          <section aria-labelledby="todo-h" style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; padding: 18px 20px 6px">
+            <h2 id="todo-h" style="margin: 0 0 6px; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">To do</h2>
+            <sc-for list="{{todos}}" as="t" hint-placeholder-count="3">
+              <button onClick="{{t.go}}" style="width: 100%; display: flex; flex-direction: column; gap: 3px; padding: 14px 0; border: 0; border-top: 1px solid #EDEDED; background: transparent; font: inherit; text-align: left; color: #0A0A0A; cursor: pointer"><span style="font-size: 15px; font-weight: 600">{{t.title}}</span><span style="font-size: 14px; color: #505054">{{t.sub}}</span></button>
+            </sc-for>
+          </section>
+          <section style="border-radius: 18px; background: #0A0A0A; color: #FFFFFF; padding: 22px; display: flex; flex-direction: column; gap: 10px">
+            <span style="font-size: 14px; font-weight: 600; color: #8FD3AE">Demand</span>
+            <span style="font-size: 20px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.3">23 people are on waitlists for your cooking nights</span>
+            <span style="font-size: 15px; line-height: 1.5; color: #D9D9DE">Another date would likely fill within a week.</span>
+            <button onClick="{{goNew}}" style="align-self: flex-start; margin-top: 6px; min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; color: #0A0A0A; cursor: pointer">Add a date</button>
+          </section>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isPlans}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px">
+        <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -1px">Plans</h1>
+        <button onClick="{{goNew}}" style="min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; background: #0A0A0A; font: inherit; font-size: 15px; font-weight: 600; color: #FFFFFF; cursor: pointer">New Plan</button>
+      </div>
+      <div role="tablist" aria-label="Plan status" style="display: flex; gap: 8px">
+        <sc-for list="{{planTabs}}" as="t" hint-placeholder-count="3"><button role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for>
+      </div>
+      <div style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; overflow: hidden">
+        <div style="display: grid; grid-template-columns: minmax(0, 2.6fr) 1.2fr 1fr 1fr 130px; gap: 16px; padding: 12px 20px; font-size: 13px; font-weight: 600; color: #505054; background: #FAFAFA"><span>Plan</span><span>When</span><span>Guests</span><span>Details</span><span>Status</span></div>
+        <sc-for list="{{planRows}}" as="p" hint-placeholder-count="2">
+          <button onClick="{{p.open}}" style="width: 100%; display: grid; grid-template-columns: minmax(0, 2.6fr) 1.2fr 1fr 1fr 130px; gap: 16px; align-items: center; padding: 14px 20px; border: 0; border-top: 1px solid #EDEDED; background: transparent; font: inherit; font-size: 15px; text-align: left; color: #0A0A0A; cursor: pointer">
+            <span style="display: flex; align-items: center; gap: 14px; min-width: 0"><img src="{{p.img}}" alt="" style="width: 48px; height: 48px; border-radius: 10px; object-fit: cover; flex-shrink: 0"><span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{p.title}}</span></span>
+            <span>{{p.when}}</span><span>{{p.guests}}</span><span style="color: #505054">{{p.extra}}</span><span><span style="{{p.pill}}">{{p.status}}</span></span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isDetail}}" hint-placeholder-val="{{ false }}">
+      <nav aria-label="Breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 15px"><button onClick="{{goPlans}}" style="min-height: 44px; padding: 0; border: 0; background: transparent; font: inherit; color: #505054; cursor: pointer">Plans</button><span aria-hidden="true" style="color: #505054">/</span><span style="font-weight: 600">{{sel.title}}</span></nav>
+      <div style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap">
+        <img src="{{sel.img}}" alt="" style="width: 120px; height: 120px; border-radius: 20px; object-fit: cover">
+        <div style="flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 8px">
+          <span style="align-self: flex-start"><span style="{{sel.pill}}">{{sel.status}}</span></span>
+          <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -1px">{{sel.title}}</h1>
+          <span style="font-size: 16px; color: #505054">{{sel.when}} · Neukölln · {{hereLine}}</span>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <button style="min-height: 44px; padding: 0 18px; border: 1px solid #8A8A8E; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; color: #0A0A0A; cursor: pointer">Edit</button>
+          <button style="min-height: 44px; padding: 0 18px; border: 1px solid #8A8A8E; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; color: #0A0A0A; cursor: pointer">Copy link</button>
+          <button style="min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; background: #0A0A0A; font: inherit; font-size: 15px; font-weight: 600; color: #FFFFFF; cursor: pointer">Message guests</button>
+        </div>
+      </div>
+      <div role="tablist" aria-label="Plan sections" style="display: flex; gap: 28px; border-bottom: 1px solid #EDEDED">
+        <sc-for list="{{detailTabs}}" as="t" hint-placeholder-count="3"><button role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for>
+      </div>
+      <sc-if value="{{dGuests}}" hint-placeholder-val="{{ true }}">
+        <div style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; overflow: hidden">
+          <sc-for list="{{guests}}" as="g" hint-placeholder-count="6">
+            <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1fr) 160px; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid #EDEDED">
+              <span style="{{g.av}}">{{g.initial}}</span>
+              <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">{{g.name}}</span><span style="font-size: 14px; color: #505054">{{g.source}}</span></span>
+              <span style="font-size: 15px; color: #505054">Bringing: {{g.bring}}</span>
+              <button onClick="{{g.toggle}}" aria-pressed="{{g.pressed}}" style="{{g.btn}}">{{g.btnLabel}}</button>
+            </div>
+          </sc-for>
+        </div>
+        <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #505054">Guests show first names and what they’re bringing. Contact details aren’t shown or exportable. Check-in closes 2 hours after the end time.</p>
+      </sc-if>
+      <sc-if value="{{dWait}}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; padding: 8px 20px">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #EDEDED"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">1. Kenji T.</span><span style="font-size: 14px; color: #505054">Offered a spot · 1 h 42 min left to confirm</span></span><span style="font-size: 14px; font-weight: 600; color: #6B4000">Offer sent</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 0"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">2. Nora B.</span><span style="font-size: 14px; color: #505054">Waiting · joined Tuesday</span></span><span style="font-size: 14px; color: #505054">Next in line</span></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{dBring}}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; padding: 8px 20px">
+          <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #EDEDED; font-size: 16px"><span>Plantains · 2 needed</span><span style="color: #505054">Jonas K. · 1 open</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #EDEDED; font-size: 16px"><span>Drinks</span><span style="color: #505054">Mia S.</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 14px 0; font-size: 16px"><span>A side dish · 3 needed</span><span style="color: #505054">Lena, Tobias W., Kemi A.</span></div>
+        </div>
+      </sc-if>
+      <button style="align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 600; color: #8C1D12; cursor: pointer">Cancel this Plan</button>
+    </sc-if>
+
+    <sc-if value="{{isNew}}" hint-placeholder-val="{{ false }}">
+      <nav aria-label="Breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 15px"><button onClick="{{goPlans}}" style="min-height: 44px; padding: 0; border: 0; background: transparent; font: inherit; color: #505054; cursor: pointer">Plans</button><span aria-hidden="true" style="color: #505054">/</span><span style="font-weight: 600">New Plan</span></nav>
+      <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); gap: 32px; align-items: start">
+        <div style="display: flex; flex-direction: column; gap: 28px">
+          <fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 14px"><legend style="padding: 0; margin-bottom: 14px; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">What is it?</legend>
+            <label style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 600; color: #505054">Title<input value="Vegan Ramen Night" style="min-height: 48px; padding: 0 14px; border: 1px solid #8A8A8E; border-radius: 12px; font: inherit; font-size: 16px; font-weight: 400; color: #0A0A0A"></label>
+            <div role="radiogroup" aria-label="Type" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{types}}" as="t" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for></div>
+          </fieldset>
+          <fieldset style="margin: 0; padding: 0; border: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px"><legend style="padding: 0; margin-bottom: 14px; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">When and where</legend>
+            <label style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 600; color: #505054">Date<input value="Sat, 21 Nov 2026" style="min-height: 48px; padding: 0 14px; border: 1px solid #8A8A8E; border-radius: 12px; font: inherit; font-size: 16px; font-weight: 400; color: #0A0A0A"></label>
+            <label style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 600; color: #505054">Time<input value="18:00 – 21:00" style="min-height: 48px; padding: 0 14px; border: 1px solid #8A8A8E; border-radius: 12px; font: inherit; font-size: 16px; font-weight: 400; color: #0A0A0A"></label>
+            <label style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 600; color: #505054">Area<input value="Neukölln, Berlin" style="min-height: 48px; padding: 0 14px; border: 1px solid #8A8A8E; border-radius: 12px; font: inherit; font-size: 16px; font-weight: 400; color: #0A0A0A"></label>
+          </fieldset>
+          <fieldset style="margin: 0; padding: 0; border: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px"><legend style="padding: 0; margin-bottom: 14px; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">Guests</legend>
+            <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 14px; font-weight: 600; color: #505054">Spots</span><span style="display: flex; align-items: center; gap: 6px"><button type="button" onClick="{{capDec}}" aria-label="Fewer spots" style="width: 48px; height: 48px; border: 1px solid #8A8A8E; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 20px; color: #0A0A0A; cursor: pointer">−</button><span style="min-width: 56px; text-align: center; font-size: 20px; font-weight: 700">{{cap}}</span><button type="button" onClick="{{capInc}}" aria-label="More spots" style="width: 48px; height: 48px; border: 1px solid #8A8A8E; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 20px; color: #0A0A0A; cursor: pointer">+</button></span></div>
+            <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 14px; font-weight: 600; color: #505054">Price</span><span role="radiogroup" aria-label="Price" style="display: flex; gap: 8px"><sc-for list="{{prices}}" as="t" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for></span></div>
+          </fieldset>
+          <fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 10px"><legend style="padding: 0; margin-bottom: 6px; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">Allergens in your dishes</legend>
+            <span style="font-size: 15px; color: #505054">Required. Choose “None” if there aren’t any.</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{allergens}}" as="t" hint-placeholder-count="6"><button type="button" aria-pressed="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for></div>
+          </fieldset>
+        </div>
+        <aside aria-label="Preview" style="position: sticky; top: 24px; display: flex; flex-direction: column; gap: 14px">
+          <span style="font-size: 14px; font-weight: 600; color: #505054">Preview</span>
+          <div style="position: relative; height: 340px; border-radius: 22px; overflow: hidden; color: #FFFFFF">
+            <img src="/_blob/b9fb496816ae3a83b0f692223b0e24c9" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+            <span style="position: absolute; inset: 0; background: linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,0.9) 62%,rgba(0,0,0,0.94) 100%)"></span>
+            <span style="position: absolute; left: 20px; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 600; letter-spacing: 0.6px">{{typeUpper}} · {{priceLabel}}</span><span style="font-size: 26px; font-weight: 700; letter-spacing: -0.8px">Vegan Ramen Night</span><span style="font-size: 15px">Sat 21 Nov · 18:00 · {{cap}} spots</span></span>
+          </div>
+          <sc-if value="{{ready}}" hint-placeholder-val="{{ false }}"><button onClick="{{publish}}" style="min-height: 52px; border: 0; border-radius: 14px; background: #0A0A0A; font: inherit; font-size: 16px; font-weight: 600; color: #FFFFFF; cursor: pointer">Publish Plan</button></sc-if>
+          <sc-if value="{{notReady}}" hint-placeholder-val="{{ true }}"><button disabled style="min-height: 52px; border: 0; border-radius: 14px; background: #E5E5EA; font: inherit; font-size: 16px; font-weight: 600; color: #505054">Add allergens to publish</button></sc-if>
+          <button style="min-height: 44px; border: 0; background: transparent; font: inherit; font-size: 15px; color: #505054; cursor: pointer">Save as draft</button>
+        </aside>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEarn}}" hint-placeholder-val="{{ false }}">
+      <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -1px">Earnings</h1>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+        <div style="padding: 22px; border-radius: 18px; background: #0A0A0A; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; color: #D9D9DE">Next payout · Monday</span><span style="font-size: 34px; font-weight: 700; letter-spacing: -1px">€90,00</span><span style="font-size: 14px; color: #D9D9DE">To IBAN ··42</span></div>
+        <div style="padding: 22px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; color: #505054">November so far</span><span style="font-size: 34px; font-weight: 700; letter-spacing: -1px">€270,00</span><span style="font-size: 14px; color: #505054">15 tickets</span></div>
+        <div style="padding: 22px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; color: #505054">Fees your guests saved with Pro</span><span style="font-size: 34px; font-weight: 700; letter-spacing: -1px">€10,80</span><span style="font-size: 14px; color: #505054">4% instead of 8%</span></div>
+      </div>
+      <section aria-labelledby="pay-h" style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; overflow: hidden">
+        <h2 id="pay-h" style="margin: 0; padding: 18px 20px; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">Payouts</h2>
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; padding: 12px 20px; font-size: 13px; font-weight: 600; color: #505054; background: #FAFAFA"><span>Date</span><span>For</span><span>Amount</span><span>Status</span></div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; padding: 14px 20px; border-top: 1px solid #EDEDED; font-size: 15px"><span>Mon 16 Nov</span><span>Fermentation Basics · 5 tickets</span><span>€90,00</span><span style="color: #6B4000; font-weight: 600">Scheduled</span></div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; padding: 14px 20px; border-top: 1px solid #EDEDED; font-size: 15px"><span>Mon 26 Oct</span><span>Jollof Masterclass · 10 tickets</span><span>€180,00</span><span style="color: #155A37; font-weight: 600">Paid</span></div>
+      </section>
+      <section style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+        <div style="padding: 20px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; display: flex; justify-content: space-between; align-items: center; gap: 12px"><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 16px; font-weight: 600">Hosting as a private person</span><span style="font-size: 14px; color: #505054">Tax ID added · shown to guests at checkout</span></span><button style="min-height: 44px; padding: 0 16px; border: 1px solid #8A8A8E; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; color: #0A0A0A; cursor: pointer">Change</button></div>
+        <div style="padding: 20px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; display: flex; justify-content: space-between; align-items: center; gap: 12px"><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 16px; font-weight: 600">Yearly earnings statement</span><span style="font-size: 14px; color: #505054">The same figures we report to the tax office</span></span><button style="min-height: 44px; padding: 0 16px; border: 1px solid #8A8A8E; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; color: #0A0A0A; cursor: pointer">Download</button></div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{isSettings}}" hint-placeholder-val="{{ false }}">
+      <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -1px">Settings</h1>
+      <section aria-labelledby="sub-h" style="padding: 24px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; display: flex; flex-direction: column; gap: 14px">
+        <h2 id="sub-h" style="margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">Subscription</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap"><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 600">Host Pro · Founding Host</span><span style="font-size: 15px; color: #505054">Free until 31 May 2027, then €9,99 a month. Renews monthly; cancel any time.</span></span>
+          <button style="min-height: 44px; padding: 0 18px; border: 1px solid #8C1D12; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; color: #8C1D12; cursor: pointer">Cancel subscription here</button></div>
+      </section>
+      <section aria-labelledby="page-h" style="padding: 24px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; display: flex; flex-direction: column; gap: 14px">
+        <h2 id="page-h" style="margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">Your host page</h2>
+        <div style="display: flex; align-items: center; gap: 10px"><span style="flex: 1; min-height: 48px; display: flex; align-items: center; padding: 0 14px; border-radius: 12px; background: #F5F5F7; font-size: 16px">plantcircle.app/@ama.cooks</span><button style="min-height: 48px; padding: 0 18px; border: 0; border-radius: 12px; background: #0A0A0A; font: inherit; font-size: 15px; font-weight: 600; color: #FFFFFF; cursor: pointer">Copy</button></div>
+        <span style="font-size: 15px; color: #505054">[N] followers get a notification for every new Plan.</span>
+      </section>
+      <section aria-labelledby="co-h" style="padding: 24px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 id="co-h" style="margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">Co-hosts</h2><button style="min-height: 44px; padding: 0 16px; border: 1px solid #8A8A8E; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; color: #0A0A0A; cursor: pointer">Invite</button></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid #EDEDED; margin-top: 10px"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">Jonas K.</span><span style="font-size: 14px; color: #505054">Check-in, messages, waitlist</span></span><button style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 600; color: #8C1D12; cursor: pointer">Remove</button></div>
+      </section>
+    </sc-if>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { view: 'dash', planTab: 'Upcoming', sel: 'p1', dTab: 'Guests', ins: [0, 1, 3], type: 'Cooking night', price: 'Free', cap: 8, al: [] };
+  }
+  renderVals() {
+    const S = this.state;
+    const go = (view, extra) => () => this.setState({ view, ...(extra || {}) });
+    const pillOf = (status) => {
+      const base = 'display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap';
+      if (status === 'Published') return base + '; background: #EAF5EE; color: #155A37';
+      if (status === 'Draft') return base + '; background: #FFF6E5; color: #6B4000';
+      return base + '; background: #F5F5F7; color: #505054';
+    };
+    const HERO = '/_blob/b9fb496816ae3a83b0f692223b0e24c9', POT = '/_blob/8158e11caf9d4913049bf3946ebb5bbb', COVER = '/_blob/e126b3a48441e5d6a48d6a3852b44c7a';
+    const plans = [
+      { id: 'p1', img: HERO, title: 'West African Cooking Night', when: 'Sat 7 Nov · 17:00', guests: '6 / 8', extra: '2 waiting', status: 'Published', group: 'Upcoming' },
+      { id: 'p2', img: COVER, title: 'Fermentation Basics', when: 'Sun 15 Nov · 14:00', guests: '5 / 10', extra: '€18 ticket', status: 'Published', group: 'Upcoming' },
+      { id: 'p3', img: POT, title: 'Sunday Potluck', when: 'Sun 22 Nov · 13:00', guests: '0 / 20', extra: 'Every 2 weeks', status: 'Draft', group: 'Drafts' },
+      { id: 'p4', img: HERO, title: 'Jollof Masterclass', when: 'Sat 24 Oct · 17:00', guests: '10 / 10', extra: '9 checked in', status: 'Completed', group: 'Past' }
+    ];
+    const withUi = (p) => ({ ...p, pill: pillOf(p.status), open: go('detail', { sel: p.id, dTab: 'Guests' }) });
+    const navDefs = [['dash', 'Dashboard'], ['plans', 'Plans'], ['earn', 'Earnings'], ['settings', 'Settings']];
+    const navOn = (k) => S.view === k || (k === 'plans' && (S.view === 'detail' || S.view === 'new'));
+    const navItems = navDefs.map(([k, label]) => ({ label, go: go(k), current: navOn(k) ? 'page' : 'false',
+      style: 'min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; font: inherit; font-size: 15px; text-align: left; cursor: pointer; ' + (navOn(k) ? 'background: #F5F5F7; color: #0A0A0A; font-weight: 600' : 'background: transparent; color: #505054; font-weight: 500') }));
+    const chip = (on) => 'min-height: 44px; padding: 0 16px; border-radius: 999px; font: inherit; font-size: 15px; cursor: pointer; ' + (on ? 'border: 1px solid #0A0A0A; background: #0A0A0A; color: #FFFFFF; font-weight: 600' : 'border: 1px solid #8A8A8E; background: #FFFFFF; color: #0A0A0A; font-weight: 500');
+    const tabLine = (on) => 'min-height: 44px; padding: 0; margin-bottom: -1px; border: 0; background: transparent; font: inherit; font-size: 15px; cursor: pointer; ' + (on ? 'border-bottom: 2px solid #0A0A0A; color: #0A0A0A; font-weight: 600' : 'border-bottom: 2px solid transparent; color: #505054; font-weight: 500');
+    const sel = withUi(plans.find((p) => p.id === S.sel) || plans[0]);
+    const people = [['M', 'Mia S.', 'App', 'Drinks', '#E8E3DA', '#5A4A33'], ['J', 'Jonas K.', 'App · co-host', 'Plantains', '#E3ECE2', '#1E4D33'], ['S', 'Sara', 'RSVP’d from link, no app', 'A side dish', '#DCE6EE', '#2E4A60'], ['L', 'Lena', 'App', 'A side dish', '#EDE6F2', '#4A3560'], ['T', 'Tobias W.', 'App', 'Bread', '#F2EBDD', '#6A4E20'], ['K', 'Kemi A.', 'App', 'Dessert', '#E3ECE2', '#1E4D33']];
+    const guests = people.map(([initial, name, source, bring, bg, fg], i) => {
+      const on = S.ins.includes(i);
+      return { initial, name, source, bring, pressed: on ? 'true' : 'false', btnLabel: on ? 'Checked in' : 'Check in',
+        av: 'width: 44px; height: 44px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: ' + bg + '; color: ' + fg,
+        btn: 'min-height: 44px; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; ' + (on ? 'border: 0; background: #EAF5EE; color: #155A37' : 'border: 1px solid #0A0A0A; background: #FFFFFF; color: #0A0A0A'),
+        toggle: () => this.setState({ ins: on ? S.ins.filter((x) => x !== i) : S.ins.concat(i) }) };
+    });
+    const types = ['Cooking night', 'Potluck', 'Workshop', 'Online class'].map((label) => ({ label, sel: S.type === label ? 'true' : 'false', style: chip(S.type === label), pick: () => this.setState({ type: label }) }));
+    const prices = ['Free', 'Paid'].map((label) => ({ label, sel: S.price === label ? 'true' : 'false', style: chip(S.price === label), pick: () => this.setState({ price: label }) }));
+    const allergens = ['None', 'Peanuts', 'Tree nuts', 'Soy', 'Gluten', 'Sesame'].map((a) => {
+      const on = S.al.includes(a);
+      return { label: a, sel: on ? 'true' : 'false', style: chip(on), pick: () => {
+        const next = a === 'None' ? (on ? [] : ['None']) : (on ? S.al.filter((x) => x !== a) : S.al.filter((x) => x !== 'None').concat(a));
+        this.setState({ al: next });
+      } };
+    });
+    return {
+      navItems,
+      isDash: S.view === 'dash', isPlans: S.view === 'plans', isDetail: S.view === 'detail', isNew: S.view === 'new', isEarn: S.view === 'earn', isSettings: S.view === 'settings',
+      goNew: go('new', { al: [] }), goPlans: go('plans'),
+      kpis: [
+        { label: 'Guests checked in', value: '38', sub: 'this month' },
+        { label: 'Came back again', value: '42%', sub: 'within 30 days' },
+        { label: 'No-shows', value: '6%', sub: 'of confirmed guests' },
+        { label: 'Ticket earnings', value: '€270', sub: 'this month' }
+      ],
+      upcoming: plans.filter((p) => p.group !== 'Past').map(withUi),
+      todos: [
+        { title: 'Add allergens to your draft', sub: 'Sunday Potluck can’t be published without them', go: go('detail', { sel: 'p3', dTab: 'Guests' }) },
+        { title: '1 item still unclaimed', sub: 'Plantains for Cooking Night', go: go('detail', { sel: 'p1', dTab: 'Bring' }) },
+        { title: 'Waitlist offer pending', sub: 'Kenji has 1 h 42 min to confirm', go: go('detail', { sel: 'p1', dTab: 'Waitlist' }) }
+      ],
+      planTabs: ['Upcoming', 'Drafts', 'Past'].map((label) => ({ label, sel: S.planTab === label ? 'true' : 'false', style: chip(S.planTab === label), pick: () => this.setState({ planTab: label }) })),
+      planRows: plans.filter((p) => p.group === S.planTab).map(withUi),
+      sel, hereLine: S.ins.length + ' of 6 checked in',
+      detailTabs: [['Guests', 'Guests · 6'], ['Waitlist', 'Waitlist · 2'], ['Bring', 'What to bring']].map(([k, label]) => ({ label, sel: S.dTab === k ? 'true' : 'false', style: tabLine(S.dTab === k), pick: () => this.setState({ dTab: k }) })),
+      dGuests: S.dTab === 'Guests', dWait: S.dTab === 'Waitlist', dBring: S.dTab === 'Bring',
+      guests,
+      types, prices, allergens, cap: S.cap,
+      capInc: () => this.setState({ cap: Math.min(60, S.cap + 1) }), capDec: () => this.setState({ cap: Math.max(2, S.cap - 1) }),
+      typeUpper: S.type.toUpperCase(), priceLabel: S.price === 'Free' ? 'FREE' : '€18',
+      ready: S.al.length > 0, notReady: S.al.length === 0,
+      publish: go('plans', { planTab: 'Upcoming' })
+    };
+  }
+}
+</script>
+</body>
+</html>

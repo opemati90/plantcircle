@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PlantCircle — Seeds</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+:focus-visible{outline:3px solid #0A0A0A;outline-offset:2px;box-shadow:0 0 0 6px #FFFFFF}
+a{color:#0A0A0A}a:hover{color:#000000}
+.scrim{background:linear-gradient(180deg,rgba(0,0,0,0.35) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 30%,rgba(0,0,0,0.9) 60%,rgba(0,0,0,0.94) 100%)}
+.glass{background:rgba(255,255,255,0.22);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%)}
+.bar{background:rgba(255,255,255,0.86);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #FFFFFF; color: #0A0A0A; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased">
+<div style="padding: 54px 24px 40px; display: flex; flex-direction: column; gap: 20px"><div style="display: flex"><a href="HostLevels.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; background: #F5F5F7; display: flex; align-items: center; justify-content: center; border: 0; cursor: pointer; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></a></div><div style="display: flex; flex-direction: column; gap: 14px; "><h1 style="margin: 0; font-size: 30px; font-weight: 700; line-height: 1.1; letter-spacing: -0.9px">Seeds</h1></div><div style="padding: 20px; border-radius: 24px; background: #155A37; color: #FFFFFF; display: flex; align-items: center; justify-content: space-between"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px">Your balance</span><span aria-live="polite" style="font-size: 44px; font-weight: 700; letter-spacing: -1.4px; line-height: 1.05">{{bal}}</span><span style="font-size: 13px">Spend in PlantCircle · no cash-out</span></span><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-8"></path><path d="M12 13c-4 0-7-3-7-7 4 0 7 3 7 7z"></path><path d="M12 13c0-4 3-7 7-7 0 4-3 7-7 7z"></path></svg></div><div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 20px; font-weight: 700; letter-spacing: -0.5px">Spend</span><button onClick="{{r_pro}}" style="{{rs_pro}}"><span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #EAF5EE"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#155A37" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"></path></svg></span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-size: 16px; font-weight: 600">Host Pro · 1 month</span><span style="font-size: 14px; color: #505054">Lower fees, AI, co-hosts</span></span><span style="min-width: 76px; display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 0 10px; border-radius: 999px; background: #F5F5F7; font-size: 14px; font-weight: 700; white-space: nowrap">{{rl_pro}}</span></button><button onClick="{{r_fee}}" style="{{rs_fee}}"><span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #EAF5EE"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#155A37" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M4 14h9M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"></path></svg></span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-size: 16px; font-weight: 600">Half fee · next workshop</span><span style="font-size: 14px; color: #505054">Guests pay 4%</span></span><span style="min-width: 76px; display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 0 10px; border-radius: 999px; background: #F5F5F7; font-size: 14px; font-weight: 700; white-space: nowrap">{{rl_fee}}</span></button><button onClick="{{r_perk}}" style="{{rs_perk}}"><span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #EAF5EE"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#155A37" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"></rect><path d="M12 8v13M19 12v9H5v-9M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"></path></svg></span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-size: 16px; font-weight: 600">Partner perk</span><span style="font-size: 14px; color: #505054">10% off at a partner shop</span></span><span style="min-width: 76px; display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 0 10px; border-radius: 999px; background: #F5F5F7; font-size: 14px; font-weight: 700; white-space: nowrap">{{rl_perk}}</span></button></div><div style="display: flex; flex-direction: column"><span style="font-size: 20px; font-weight: 700; letter-spacing: -0.5px">Recently earned</span><div style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; font-size: 15px"><span>6 guests checked in</span><b style="color: #155A37">+60</b></div><div style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; font-size: 15px"><span>2 first-timers came back</span><b style="color: #155A37">+40</b></div></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { bal: 420, got: [] };
+  }
+  renderVals() {
+    const S = this.state, cost = { pro: 300, fee: 150, perk: 100 }, out = { bal: String(S.bal) };
+    ['pro', 'fee', 'perk'].forEach((k) => { const got = S.got.includes(k), can = S.bal >= cost[k];
+      out['r_' + k] = () => { if (!got && can) this.setState({ bal: S.bal - cost[k], got: S.got.concat(k) }); };
+      out['rl_' + k] = got ? 'Redeemed' : String(cost[k]);
+      out['rs_' + k] = 'display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 18px; font: inherit; color: #0A0A0A; cursor: pointer; background: #FFFFFF; ' + (got ? 'border: 2px solid #155A37' : 'border: 1px solid #EDEDED') + (can || got ? '' : '; opacity: 0.55'); });
+    return out;
+  }
+}
+</script>
+</body>
+</html>

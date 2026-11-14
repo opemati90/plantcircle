@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PlantCircle — Store dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+html,body{margin:0;height:100%;background:#FAFAFA}
+:focus-visible{outline:3px solid #0A0A0A;outline-offset:2px;box-shadow:0 0 0 6px #FFFFFF}
+</style>
+</helmet>
+<div style="min-height: 100vh; height: 100%; box-sizing: border-box; display: grid; grid-template-columns: 252px minmax(0, 1fr); background: #FAFAFA; color: #0A0A0A; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased">
+  <aside style="background: #FFFFFF; border-right: 1px solid #EDEDED; padding: 24px 16px; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 4px 10px 24px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#155A37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 20h10"></path><path d="M10 20c5.5-2.5.8-6.4 3-10"></path><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"></path><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"></path></svg>
+      <span style="font-size: 17px; font-weight: 600">PlantCircle</span>
+      <span style="font-size: 13px; font-weight: 600; color: #155A37; padding: 3px 9px; border-radius: 999px; background: #EAF5EE">Shops</span>
+    </div>
+    <nav aria-label="Store sections" style="display: flex; flex-direction: column; gap: 2px">
+      <sc-for list="{{navItems}}" as="n" hint-placeholder-count="3"><button onClick="{{n.go}}" aria-current="{{n.current}}" style="{{n.style}}">{{n.label}}</button></sc-for>
+    </nav>
+    <div style="margin-top: auto; padding: 14px 10px; border-top: 1px solid #EDEDED; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Neighbourhood Zero-Waste Store</span><span style="font-size: 13px; color: #505054">{{planLabel}}</span></div>
+  </aside>
+
+  <main style="padding: 36px 44px 56px; min-width: 0; display: flex; flex-direction: column; gap: 26px">
+    <sc-if value="{{isOverview}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 16px; color: #505054">Good morning</span><h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -1px">People near you want to order 186 kg this month</h1></div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+        <div style="padding: 20px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; color: #505054">Group orders with you</span><span style="font-size: 32px; font-weight: 700; letter-spacing: -1px">4</span><span style="font-size: 14px; color: #505054">this month</span></div>
+        <div style="padding: 20px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; color: #505054">Ordered through PlantCircle</span><span style="font-size: 32px; font-weight: 700; letter-spacing: -1px">212 kg</span><span style="font-size: 14px; color: #505054">this month</span></div>
+        <div style="padding: 20px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; color: #505054">Circles using you</span><span style="font-size: 32px; font-weight: 700; letter-spacing: -1px">3</span><span style="font-size: 14px; color: #505054">plus 41 profile visits</span></div>
+        <div style="padding: 20px; border-radius: 18px; background: #155A37; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px">Packaging avoided</span><span style="font-size: 32px; font-weight: 700; letter-spacing: -1px">≈ 420 packs</span><span style="font-size: 14px">Shown on your profile</span></div>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr); gap: 20px; align-items: start">
+        <section aria-labelledby="dem-h" style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; overflow: hidden">
+          <div style="padding: 18px 20px; display: flex; flex-direction: column; gap: 4px"><h2 id="dem-h" style="margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">Demand near you</h2><span style="font-size: 14px; color: #505054">Members within 10 km who said they’d order. Anonymous; shown only when 5 or more people ask.</span></div>
+          <div style="display: grid; grid-template-columns: minmax(0, 2fr) 1fr 1fr 1fr; gap: 16px; padding: 12px 20px; font-size: 13px; font-weight: 600; color: #505054; background: #FAFAFA"><span>Item</span><span>People</span><span>Amount</span><span>vs last month</span></div>
+          <div style="display: grid; grid-template-columns: minmax(0, 2fr) 1fr 1fr 1fr; gap: 16px; padding: 14px 20px; border-top: 1px solid #EDEDED; font-size: 15px"><span style="font-weight: 600">Chickpeas</span><span>18</span><span>74 kg</span><span style="color: #155A37; font-weight: 600">Up</span></div>
+          <div style="display: grid; grid-template-columns: minmax(0, 2fr) 1fr 1fr 1fr; gap: 16px; padding: 14px 20px; border-top: 1px solid #EDEDED; font-size: 15px"><span style="font-weight: 600">Red lentils</span><span>12</span><span>48 kg</span><span style="color: #505054">Same</span></div>
+          <div style="display: grid; grid-template-columns: minmax(0, 2fr) 1fr 1fr 1fr; gap: 16px; padding: 14px 20px; border-top: 1px solid #EDEDED; font-size: 15px"><span style="font-weight: 600">Rolled oats</span><span>9</span><span>40 kg</span><span style="color: #155A37; font-weight: 600">Up</span></div>
+          <div style="display: grid; grid-template-columns: minmax(0, 2fr) 1fr 1fr 1fr; gap: 16px; padding: 14px 20px; border-top: 1px solid #EDEDED; font-size: 15px"><span style="font-weight: 600">Black beans</span><span>6</span><span>24 kg</span><span style="color: #505054">New</span></div>
+        </section>
+        <section aria-labelledby="ord-h" style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; padding: 18px 20px; display: flex; flex-direction: column; gap: 4px">
+          <h2 id="ord-h" style="margin: 0 0 8px; font-size: 19px; font-weight: 700; letter-spacing: -0.4px">Orders that picked you</h2>
+          <sc-for list="{{orders}}" as="o" hint-placeholder-count="2">
+            <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 0; border-top: 1px solid #EDEDED">
+              <span style="display: flex; justify-content: space-between; gap: 12px"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">{{o.title}}</span><span style="font-size: 14px; color: #505054">{{o.meta}}</span></span><span style="font-size: 16px; font-weight: 700; white-space: nowrap">{{o.kg}}</span></span>
+              <button onClick="{{o.confirm}}" aria-pressed="{{o.pressed}}" style="{{o.style}}">{{o.label}}</button>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isPartner}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -1px">Become a Partner</h1><span style="font-size: 17px; color: #505054">Be the first choice when people near you order together.</span></div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr); gap: 20px; align-items: start">
+        <section style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EDEDED; padding: 8px 22px">
+          <div style="display: flex; flex-direction: column; gap: 3px; padding: 16px 0; border-bottom: 1px solid #EDEDED"><span style="font-size: 17px; font-weight: 600">Shown first in the supplier picker</span><span style="font-size: 15px; color: #505054">When organizers near you start a group order — always labelled “Partner”.</span></div>
+          <div style="display: flex; flex-direction: column; gap: 3px; padding: 16px 0; border-bottom: 1px solid #EDEDED"><span style="font-size: 17px; font-weight: 600">Offers for Circles</span><span style="font-size: 15px; color: #505054">e.g. 5% off orders over 50 kg, shown on your profile and in orders.</span></div>
+          <div style="display: flex; flex-direction: column; gap: 3px; padding: 16px 0; border-bottom: 1px solid #EDEDED"><span style="font-size: 17px; font-weight: 600">Full demand insights</span><span style="font-size: 15px; color: #505054">Every item, by week, with alerts when demand jumps.</span></div>
+          <div style="display: flex; flex-direction: column; gap: 3px; padding: 16px 0"><span style="font-size: 17px; font-weight: 600">Never targeted at people’s diet</span><span style="font-size: 15px; color: #505054">You appear where people order and browse shops — not based on who they are.</span></div>
+        </section>
+        <section style="border-radius: 18px; background: #0A0A0A; color: #FFFFFF; padding: 24px; display: flex; flex-direction: column; gap: 12px">
+          <span style="font-size: 15px">Partner</span><span style="font-size: 40px; font-weight: 700; letter-spacing: -1.2px">€[N] <span style="font-size: 18px; font-weight: 500">/ month</span></span><span style="font-size: 15px; line-height: 1.5">Cancel any time. Your free listing stays either way.</span>
+          <sc-if value="{{notPartner}}" hint-placeholder-val="{{ true }}"><button onClick="{{upgrade}}" style="min-height: 52px; border: 0; border-radius: 14px; background: #FFFFFF; font: inherit; font-size: 16px; font-weight: 600; color: #0A0A0A; cursor: pointer">Start Partner</button></sc-if>
+          <sc-if value="{{partner}}" hint-placeholder-val="{{ false }}"><div role="status" style="display: flex; flex-direction: column; gap: 10px"><span style="min-height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 14px; background: #EAF5EE; color: #155A37; font-size: 16px; font-weight: 600">Partner is active ✓</span><button onClick="{{upgrade}}" style="min-height: 44px; border: 1px solid #FFFFFF; border-radius: 12px; background: transparent; font: inherit; font-size: 15px; font-weight: 600; color: #FFFFFF; cursor: pointer">Cancel Partner here</button></div></sc-if>
+        </section>
+      </div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { view: 'overview', partner: false, ok: [] };
+  }
+  renderVals() {
+    const S = this.state;
+    const nav = [['overview', 'Overview'], ['partner', 'Partner']];
+    const navItems = nav.map(([k, label]) => ({ label, go: () => this.setState({ view: k }), current: S.view === k ? 'page' : 'false',
+      style: 'min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; font: inherit; font-size: 15px; text-align: left; cursor: pointer; ' + (S.view === k ? 'background: #F5F5F7; color: #0A0A0A; font-weight: 600' : 'background: transparent; color: #505054; font-weight: 500') }));
+    const orders = [
+      { k: 'a', title: 'Neukölln Plant Kitchen', meta: 'Organizer Jonas · pickup Sat 14 Nov', kg: '100 kg' },
+      { k: 'b', title: 'Budget Plant Cooking', meta: 'Organizer Sara · pickup Sat 21 Nov', kg: '60 kg' }
+    ].map((o) => { const on = S.ok.includes(o.k); return { ...o, pressed: on ? 'true' : 'false', label: on ? 'Confirmed ✓' : 'Confirm pickup date', confirm: () => this.setState({ ok: on ? S.ok.filter((x) => x !== o.k) : S.ok.concat(o.k) }),
+      style: 'align-self: flex-start; min-height: 44px; padding: 0 16px; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; ' + (on ? 'border: 0; background: #EAF5EE; color: #155A37' : 'border: 1px solid #0A0A0A; background: #FFFFFF; color: #0A0A0A') }; });
+    return { navItems, orders, isOverview: S.view === 'overview', isPartner: S.view === 'partner',
+      partner: S.partner, notPartner: !S.partner, upgrade: () => this.setState({ partner: !S.partner }),
+      planLabel: S.partner ? 'Partner' : 'Free listing' };
+  }
+}
+</script>
+</body>
+</html>

@@ -41,13 +41,11 @@ to a city, country, currency or language.
 | What is built, verified, deviations | `README.md`                                                                                           |
 | This handover                       | `HANDOVER.md`                                                                                         |
 
-**Missing inputs.** `CLAUDE.md` refers to these files, but they have not been provided yet:
-`docs/05-data-model.md`, `06-api.md`, `07-state-machines.md`, `08-flows.md`,
-`09-accessibility.md`, `10-compliance.md`, `11-ai-features.md`,
-`12-notifications-analytics.md`, `13-i18n-copy.md`, `14-testing.md`, `15-backlog.md`,
-`16-open-questions.md`, plus the folders `prototype-source/` and `source-docs/`. Without
-`15-backlog.md`, work has not followed the owner's sprint order. Without `05`/`06`/`07`, the
-database schema is provisional.
+**Inputs that arrived late.** `docs/05`–`16`, `prototype-source/` and `source-docs/` were
+added on 14 November 2026 from the owner's handoff bundle, after most of the implementation.
+A gap analysis against them is recorded in `docs/superpowers/plans/2026-11-12-remaining-work.md`
+(section "Gap analysis against the full handoff"). The brand kit (`design/brand/`) is wired into
+`apps/mobile/app.json` (icon, adaptive icon, splash, notification icon, favicon).
 
 ---
 

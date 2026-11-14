@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PlantCircle — After the event</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+:focus-visible{outline:3px solid #0A0A0A;outline-offset:2px;box-shadow:0 0 0 6px #FFFFFF}
+a{color:#0A0A0A}a:hover{color:#000000}
+.scrim{background:linear-gradient(180deg,rgba(0,0,0,0.35) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 30%,rgba(0,0,0,0.9) 60%,rgba(0,0,0,0.94) 100%)}
+.glass{background:rgba(255,255,255,0.22);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%)}
+.bar{background:rgba(255,255,255,0.86);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #FFFFFF; color: #0A0A0A; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased">
+<div style="position: relative; height: 230px"><img src="/_blob/b9fb496816ae3a83b0f692223b0e24c9" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover"><span class="scrim" style="position: absolute; inset: 0"></span><span style="position: absolute; left: 16px; top: 54px"><a href="Home.dc.html" aria-label="Close" class="glass" style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></a></span><span style="position: absolute; left: 24px; right: 24px; bottom: 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; font-weight: 700; letter-spacing: 0.6px">LAST NIGHT</span><span style="font-size: 26px; font-weight: 700; letter-spacing: -0.8px">West African Cooking Night</span></span></div><div style="padding: 24px 24px 170px"><span style="font-size: 20px; font-weight: 700; letter-spacing: -0.5px">How was it?</span><div role="radiogroup" aria-label="Rating" style="display: flex; gap: 4px; margin: 10px 0 16px"><sc-for list="{{stars}}" as="s" hint-placeholder-count="5"><button role="radio" aria-checked="{{s.sel}}" aria-label="{{s.label}}" onClick="{{s.pick}}" style="{{s.style}}"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"></path></svg></button></sc-for></div><div style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{tags}}" as="t" hint-placeholder-count="4"><button aria-pressed="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for></div><div style="height: 28px"></div><section style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px"><h2 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.5px">Keep in touch</h2><div style="display: flex; gap: 16px; align-items: center"><span aria-hidden="true" style="width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0; overflow: hidden; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: #E8E3DA; font-size: 21px; font-weight: 700; color: #5A4A33">M</span><span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 600; letter-spacing: -0.3px">Mia S.</span><span style="font-size: 15px; line-height: 1.45; color: #505054">Sat next to you</span></span><button onClick="{{c1}}" style="{{c1s}}">{{c1l}}</button></div><div style="display: flex; gap: 16px; align-items: center"><span aria-hidden="true" style="width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0; overflow: hidden; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: #E3ECE2; font-size: 21px; font-weight: 700; color: #1E4D33">J</span><span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 600; letter-spacing: -0.3px">Jonas K.</span><span style="font-size: 15px; line-height: 1.45; color: #505054">Brought plantains</span></span><button onClick="{{c2}}" style="{{c2s}}">{{c2l}}</button></div><p style="margin: 0; font-size: 14px; color: #505054">They only see a request if you send one.</p></section><div style="height: 1px; background: #EDEDED; margin: 0 0 28px"></div><section style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px"><h2 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.5px">Come back</h2><a href="Circle.dc.html" style="display: flex; gap: 14px; align-items: center; padding: 12px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E5E5EA; text-decoration: none; color: #0A0A0A"><img src="/_blob/e126b3a48441e5d6a48d6a3852b44c7a" alt="" style="width: 64px; height: 64px; border-radius: 14px; object-fit: cover; flex-shrink: 0"><span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 600; letter-spacing: -0.3px">Neukölln Plant Kitchen</span><span style="font-size: 15px; color: #505054">Ama’s next cooking night is in 2 weeks</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A8A8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></a></section></div><div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 150px; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #FFFFFF 55%); pointer-events: none"></div><div class="bar" style="position: absolute; left: 14px; right: 14px; bottom: 22px; padding: 10px 10px 10px 20px; border-radius: 24px; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 10px 30px rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: space-between; gap: 14px"><span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 16px; font-weight: 600">Thanks for coming</span><span style="font-size: 14px; color: #505054">Ama will see your feedback</span></span><a href="Home.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px; padding: 0 20px; border-radius: 14px; font: inherit; font-size: 17px; font-weight: 600; letter-spacing: -0.2px; text-decoration: none; cursor: pointer; border: 0; background: #0A0A0A; color: #FFFFFF; min-height: 52px; min-width: 110px">Send</a></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { r: 5, tags: ['Great host', 'Learned a lot'], m: false, j: false };
+  }
+  renderVals() {
+    const S = this.state;
+    const stars = [1, 2, 3, 4, 5].map((n) => ({ sel: S.r === n ? 'true' : 'false', label: n + (n === 1 ? ' star' : ' stars'), pick: () => this.setState({ r: n }),
+      style: 'width: 48px; height: 48px; padding: 0; border: 0; background: transparent; cursor: pointer; color: ' + (n <= S.r ? '#B88400' : '#8A8A8E') }));
+    const tags = ['Great host', 'Learned a lot', 'Friendly group', 'Tasty food'].map((label) => { const on = S.tags.includes(label); return { label, sel: on ? 'true' : 'false',
+      pick: () => this.setState({ tags: on ? S.tags.filter((x) => x !== label) : S.tags.concat(label) }),
+      style: 'min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; cursor: pointer; ' + (on ? 'background: #0A0A0A; color: #FFFFFF; font-weight: 600' : 'background: #F5F5F7; color: #0A0A0A; font-weight: 500') }; });
+    const cb = (on) => 'min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; ' + (on ? 'background: #EAF5EE; color: #155A37' : 'background: #F5F5F7; color: #0A0A0A');
+    return { stars, tags,
+      c1: () => this.setState({ m: !S.m }), c1s: cb(S.m), c1l: S.m ? 'Requested' : 'Connect',
+      c2: () => this.setState({ j: !S.j }), c2s: cb(S.j), c2l: S.j ? 'Requested' : 'Connect' };
+  }
+}
+</script>
+</body>
+</html>

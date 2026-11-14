@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PlantCircle — Filters</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+:focus-visible{outline:3px solid #0A0A0A;outline-offset:2px;box-shadow:0 0 0 6px #FFFFFF}
+a{color:#0A0A0A}a:hover{color:#000000}
+.scrim{background:linear-gradient(180deg,rgba(0,0,0,0.35) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 30%,rgba(0,0,0,0.9) 60%,rgba(0,0,0,0.94) 100%)}
+.glass{background:rgba(255,255,255,0.22);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%)}
+.bar{background:rgba(255,255,255,0.86);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #FFFFFF; color: #0A0A0A; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased">
+<div style="padding: 58px 20px"><div style="display: flex; align-items: center; justify-content: space-between; gap: 12px"><h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -1.1px">Explore</h1></div></div><div style="position: absolute; inset: 0; background: rgba(10,10,10,0.45)"></div><div role="dialog" aria-modal="true" style="position: absolute; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-radius: 28px 28px 0 0; padding: 10px 24px 34px; display: flex; flex-direction: column; gap: 16px"><span aria-hidden="true" style="align-self: center; width: 38px; height: 5px; border-radius: 999px; background: #C7C7CC"></span><div style="display: flex; justify-content: space-between; align-items: center"><h2 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.6px">Filters</h2><button onClick="{{reset}}" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 600; color: #155A37; cursor: pointer">Reset</button></div><div style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 16px; font-weight: 600">When</span><div role="radiogroup" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: #F5F5F7"><sc-for list="{{when}}" as="t" hint-placeholder-count="4"><button role="radio" aria-checked="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for></div></div><div style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 16px; font-weight: 600">Where</span><div role="radiogroup" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: #F5F5F7"><sc-for list="{{where}}" as="t" hint-placeholder-count="3"><button role="radio" aria-checked="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for></div></div><div style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 16px; font-weight: 600">Price</span><div role="radiogroup" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: #F5F5F7"><sc-for list="{{price}}" as="t" hint-placeholder-count="3"><button role="radio" aria-checked="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for></div></div><div style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 16px; font-weight: 600">Language</span><div style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{lang}}" as="t" hint-placeholder-count="4"><button aria-pressed="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for></div></div><a href="SearchResults.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: 16px; background: #0A0A0A; color: #FFFFFF; font-size: 17px; font-weight: 600; text-decoration: none">Show results</a></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { when: 'Week', where: 'Near me', price: 'Free', lang: ['English', 'Deutsch'] };
+  }
+  renderVals() {
+    const S = this.state;
+    const segS = (on) => 'min-height: 44px; border: 0; border-radius: 11px; font: inherit; font-size: 15px; cursor: pointer; ' + (on ? 'background: #FFFFFF; color: #0A0A0A; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.1)' : 'background: transparent; color: #505054; font-weight: 500');
+    const one = (labels, key) => labels.map((label) => ({ label, sel: S[key] === label ? 'true' : 'false', style: segS(S[key] === label), pick: () => this.setState({ [key]: label }) }));
+    const lang = ['English', 'Deutsch', 'Português', 'Français'].map((label) => { const on = S.lang.includes(label); return { label, sel: on ? 'true' : 'false',
+      pick: () => this.setState({ lang: on ? S.lang.filter((x) => x !== label) : S.lang.concat(label) }),
+      style: 'min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; cursor: pointer; ' + (on ? 'background: #0A0A0A; color: #FFFFFF; font-weight: 600' : 'background: #F5F5F7; color: #0A0A0A; font-weight: 500') }; });
+    return { when: one(['Any', 'Today', 'Week', 'Weekend'], 'when'), where: one(['Near me', 'Berlin', 'Online'], 'where'), price: one(['Any', 'Free', 'Paid'], 'price'), lang,
+      reset: () => this.setState({ when: 'Any', where: 'Berlin', price: 'Any', lang: [] }) };
+  }
+}
+</script>
+</body>
+</html>

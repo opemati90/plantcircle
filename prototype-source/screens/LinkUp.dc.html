@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PlantCircle — Live link-up</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+:focus-visible{outline:3px solid #0A0A0A;outline-offset:2px;box-shadow:0 0 0 6px #FFFFFF}
+a{color:#0A0A0A}a:hover{color:#000000}
+.scrim{background:linear-gradient(180deg,rgba(0,0,0,0.35) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 30%,rgba(0,0,0,0.9) 60%,rgba(0,0,0,0.94) 100%)}
+.glass{background:rgba(255,255,255,0.22);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%)}
+.bar{background:rgba(255,255,255,0.86);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #FFFFFF; color: #0A0A0A; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased">
+<div style="height: 844px; box-sizing: border-box; padding: 56px 16px 32px; display: flex; flex-direction: column; gap: 14px; background: #0A0A0A; color: #FFFFFF"><div style="display: flex; align-items: center; justify-content: space-between"><span style="display: flex; flex-direction: column; gap: 2px"><span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.6px; color: #FF8A80"><span style="width: 8px; height: 8px; border-radius: 999px; background: #FF8A80"></span>LIVE · 12 TABLES</span><span style="font-size: 20px; font-weight: 700; letter-spacing: -0.4px">Jollof Weekend link-up</span></span><a href="Plan.dc.html" style="min-height: 44px; display: flex; align-items: center; padding: 0 16px; border-radius: 999px; background: #8C1D12; color: #FFFFFF; font-size: 15px; font-weight: 600; text-decoration: none">Leave</a></div><div style="flex: 0 0 270px; display: grid"><div style="position: relative; border-radius: 16px; overflow: hidden; background: #222222; outline: 3px solid #8FD3AE; outline-offset: -3px;"><img src="/_blob/b9fb496816ae3a83b0f692223b0e24c9" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9"><span style="position: absolute; left: 8px; bottom: 8px; padding: 4px 9px; border-radius: 8px; background: rgba(0,0,0,0.78); color: #FFFFFF; font-size: 13px; font-weight: 600">Lagos · Kemi A. (host)</span></div></div><div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; min-height: 0"><div style="position: relative; border-radius: 16px; overflow: hidden; background: #222222; "><img src="/_blob/8158e11caf9d4913049bf3946ebb5bbb" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9"><span style="position: absolute; left: 8px; bottom: 8px; padding: 4px 9px; border-radius: 8px; background: rgba(0,0,0,0.78); color: #FFFFFF; font-size: 13px; font-weight: 600">Berlin · your table</span></div><div style="position: relative; border-radius: 16px; overflow: hidden; background: #222222; "><img src="/_blob/e126b3a48441e5d6a48d6a3852b44c7a" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9"><span style="position: absolute; left: 8px; bottom: 8px; padding: 4px 9px; border-radius: 8px; background: rgba(0,0,0,0.78); color: #FFFFFF; font-size: 13px; font-weight: 600">Warsaw · Ola K.</span></div><div style="position: relative; border-radius: 16px; overflow: hidden; background: #222222; "><img src="/_blob/b999cc043f2f043fd5226cf1d032ce63" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9"><span style="position: absolute; left: 8px; bottom: 8px; padding: 4px 9px; border-radius: 8px; background: rgba(0,0,0,0.78); color: #FFFFFF; font-size: 13px; font-weight: 600">Toronto · Dev P.</span></div><div style="position: relative; border-radius: 16px; overflow: hidden; background: #222222; "><img src="/_blob/8158e11caf9d4913049bf3946ebb5bbb" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9"><span style="position: absolute; left: 8px; bottom: 8px; padding: 4px 9px; border-radius: 8px; background: rgba(0,0,0,0.78); color: #FFFFFF; font-size: 13px; font-weight: 600">São Paulo · Rafaela S.</span></div></div><sc-if value="{{cc}}" hint-placeholder-val="{{ true }}"><p style="margin: 0; padding: 12px 14px; border-radius: 14px; background: #1E1E1E; font-size: 17px; line-height: 1.5">Kemi: “Whatever city you’re in — let the base fry until it’s deep red. That’s where the flavour is.”</p></sc-if><div style="display: flex; justify-content: center; gap: 14px"><button onClick="{{mic}}" aria-label="Microphone" aria-pressed="{{micA}}" style="{{micS}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0M12 17v5"></path></svg></button><button onClick="{{cam}}" aria-label="Camera" aria-pressed="{{camA}}" style="{{camS}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="2"></rect><path d="m22 8-6 4 6 4z"></path></svg></button><button onClick="{{ccT}}" aria-label="Captions" aria-pressed="{{ccA}}" style="{{ccS}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M10 10.5a2 2 0 1 0 0 3M17 10.5a2 2 0 1 0 0 3"></path></svg></button></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mic: false, cam: true, cc: true };
+  }
+  renderVals() {
+    const S = this.state;
+    const st = (on) => 'width: 56px; height: 56px; border-radius: 999px; display: flex; align-items: center; justify-content: center; cursor: pointer; font: inherit; ' + (on ? 'border: 0; background: #FFFFFF; color: #0A0A0A' : 'border: 2px solid #8A8A8E; background: transparent; color: #FFFFFF');
+    return { cc: S.cc,
+      mic: () => this.setState({ mic: !S.mic }), cam: () => this.setState({ cam: !S.cam }), ccT: () => this.setState({ cc: !S.cc }),
+      micA: S.mic ? 'true' : 'false', camA: S.cam ? 'true' : 'false', ccA: S.cc ? 'true' : 'false',
+      micS: st(S.mic), camS: st(S.cam), ccS: st(S.cc) };
+  }
+}
+</script>
+</body>
+</html>
