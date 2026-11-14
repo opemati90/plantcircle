@@ -511,7 +511,9 @@ export const de: Catalog = {
     summaryGoing: 'Dabei',
     summaryCheckedIn: 'Eingecheckt',
     summaryNoShow: 'Nicht erschienen',
-    ratingLine: 'Durchschnitt: {{average}} · Bewertungen von Gästen: {{count}}',
+    ratingLine_one: 'Durchschnitt: {{average}} · Bewertungen von Gästen: {{count}}',
+
+    ratingLine_other: 'Durchschnitt: {{average}} · Bewertungen von Gästen: {{count}}',
     ratingNone: 'Noch kein Feedback.',
     guestsTitle: 'Gäste',
     guestsEmpty: 'Noch niemand hat zugesagt.',
@@ -702,7 +704,9 @@ export const de: Catalog = {
     stateCancelled: 'Abgesagt',
     organizerDecide: '{{name}} entscheidet, wie es weitergeht.',
     decideTitle: 'Wie möchtest du weitermachen?',
-    decideLead: 'Bisher dabei: {{count}}.',
+    decideLead_one: 'Bisher dabei: {{count}}.',
+
+    decideLead_other: 'Bisher dabei: {{count}}.',
     goTitle: 'Mit {{amount}} weitermachen',
     goLead:
       'Die Preise könnten etwas höher sein. Alle werden informiert und sehen die Abholdetails, sobald du die Bestellung als bereit markierst.',

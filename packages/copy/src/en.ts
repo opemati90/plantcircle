@@ -495,7 +495,9 @@ export const en = {
     summaryGoing: 'Going',
     summaryCheckedIn: 'Checked in',
     summaryNoShow: 'No-shows',
-    ratingLine: 'Rated {{average}} by {{count}} guests',
+    ratingLine_one: 'Rated {{average}} by {{count}} guests',
+
+    ratingLine_other: 'Rated {{average}} by {{count}} guests',
     ratingNone: 'No feedback yet.',
     guestsTitle: 'Guests',
     guestsEmpty: 'No one has joined yet.',
@@ -681,7 +683,9 @@ export const en = {
     stateCancelled: 'Cancelled',
     organizerDecide: '{{name}} is deciding what happens next.',
     decideTitle: 'What would you like to do?',
-    decideLead: '{{count}} neighbours are in.',
+    decideLead_one: '{{count}} neighbours are in.',
+
+    decideLead_other: '{{count}} neighbours are in.',
     goTitle: 'Go ahead with {{amount}}',
     goLead:
       'Prices may be a little higher. Members are told and see the pickup details once you mark it ready.',

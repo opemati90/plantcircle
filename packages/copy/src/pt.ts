@@ -503,7 +503,9 @@ export const pt: Catalog = {
     summaryGoing: 'Confirmados',
     summaryCheckedIn: 'Presentes',
     summaryNoShow: 'Faltaram',
-    ratingLine: 'Avaliado em {{average}} por {{count}} convidados',
+    ratingLine_one: 'Avaliado em {{average}} por {{count}} convidados',
+
+    ratingLine_other: 'Avaliado em {{average}} por {{count}} convidados',
     ratingNone: 'Ainda não há avaliações.',
     guestsTitle: 'Convidados',
     guestsEmpty: 'Ainda ninguém entrou.',
@@ -692,7 +694,9 @@ export const pt: Catalog = {
     stateCancelled: 'Cancelado',
     organizerDecide: '{{name}} está decidindo o próximo passo.',
     decideTitle: 'O que você quer fazer?',
-    decideLead: 'Participantes confirmados: {{count}}.',
+    decideLead_one: 'Participantes confirmados: {{count}}.',
+
+    decideLead_other: 'Participantes confirmados: {{count}}.',
     goTitle: 'Seguir com {{amount}}',
     goLead:
       'Os preços podem ficar um pouco mais altos. Todos são avisados e veem os detalhes da retirada quando marcar como pronto.',

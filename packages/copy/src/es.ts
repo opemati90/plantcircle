@@ -503,7 +503,9 @@ export const es: Catalog = {
     summaryGoing: 'Apuntados',
     summaryCheckedIn: 'Registrados',
     summaryNoShow: 'No vinieron',
-    ratingLine: 'Valoración: {{average}} · Número de valoraciones: {{count}}',
+    ratingLine_one: 'Valoración: {{average}} · Número de valoraciones: {{count}}',
+
+    ratingLine_other: 'Valoración: {{average}} · Número de valoraciones: {{count}}',
     ratingNone: 'Todavía no hay valoraciones.',
     guestsTitle: 'Invitados',
     guestsEmpty: 'Todavía nadie se ha apuntado.',
@@ -690,7 +692,9 @@ export const es: Catalog = {
     stateCancelled: 'Cancelado',
     organizerDecide: '{{name}} está decidiendo qué pasa ahora.',
     decideTitle: '¿Qué quieres hacer?',
-    decideLead: 'Personas apuntadas: {{count}}.',
+    decideLead_one: 'Personas apuntadas: {{count}}.',
+
+    decideLead_other: 'Personas apuntadas: {{count}}.',
     goTitle: 'Seguir con {{amount}}',
     goLead:
       'Los precios pueden ser algo más altos. Avisamos a todos y verán los detalles de recogida cuando lo marques como listo.',

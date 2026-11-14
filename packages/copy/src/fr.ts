@@ -513,7 +513,9 @@ export const fr: Catalog = {
     summaryGoing: 'Inscrits',
     summaryCheckedIn: 'Présents',
     summaryNoShow: 'Absents',
-    ratingLine: 'Noté {{average}} par {{count}} invités',
+    ratingLine_one: 'Noté {{average}} par {{count}} invités',
+
+    ratingLine_other: 'Noté {{average}} par {{count}} invités',
     ratingNone: 'Pas encore d’avis.',
     guestsTitle: 'Invités',
     guestsEmpty: 'Personne ne s’est encore inscrit.',
@@ -700,7 +702,9 @@ export const fr: Catalog = {
     stateCancelled: 'Annulée',
     organizerDecide: '{{name}} décide de la suite.',
     decideTitle: 'Que veux-tu faire ?',
-    decideLead: 'Nombre de voisins inscrits : {{count}}.',
+    decideLead_one: 'Nombre de voisins inscrits : {{count}}.',
+
+    decideLead_other: 'Nombre de voisins inscrits : {{count}}.',
     goTitle: 'Continuer avec {{amount}}',
     goLead:
       'Les prix peuvent être un peu plus élevés. Tout le monde est prévenu et verra les détails du retrait quand tu la marqueras comme prête.',
