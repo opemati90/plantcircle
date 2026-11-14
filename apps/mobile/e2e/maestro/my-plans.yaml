@@ -10,10 +10,14 @@ appId: app.plantcircle.mobile
 - tapOn: 'Get started'
 - tapOn: 'Cook and learn together'
 - tapOn: 'Continue'
-- tapOn: '.*Berlin.*'
+- tapOn: 'Type your city'
+- inputText: 'berli'
+- tapOn:
+    id: 'city-berlin'
 - tapOn: 'Continue'
 - assertVisible: 'This week in Berlin'
-- tapOn: '.*West African Cooking Night.*'
+# By link: on a Saturday the next Cooking Night is outside “this week” on Home.
+- openLink: plantcircle://plan/cooking-night
 - tapOn: 'Join'
 - tapOn: 'Use email instead'
 - tapOn: 'I’m 18 or older'

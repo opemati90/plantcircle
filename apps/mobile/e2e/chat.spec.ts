@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail } from './support';
+import { chooseCity, freezeTime, signInWithEmail } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
@@ -23,7 +23,7 @@ test('a Circle member sends a message and sees it in the chat', async ({ page })
 test('a host opens the Plan chat from Manage and posts to it', async ({ page }) => {
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: 'Change city' }).click();
-  await page.getByRole('radio', { name: 'Berlin', exact: true }).click();
+  await chooseCity(page, 'Berlin');
 
   await page.getByRole('link', { name: 'Start a Plan' }).click();
   await page.getByRole('radio', { name: 'Potluck' }).click();

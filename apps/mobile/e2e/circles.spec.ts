@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail } from './support';
+import { chooseCity, freezeTime, signInWithEmail } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
@@ -38,7 +38,7 @@ test('a member starts a Circle from Explore and lands on its page', async ({ pag
   // A Circle belongs to a home city, so the member picks one first, then navigates in the app.
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: 'Change city' }).click();
-  await page.getByRole('radio', { name: 'Berlin', exact: true }).click();
+  await chooseCity(page, 'Berlin');
   await page.getByRole('tab', { name: 'Explore' }).click();
   await page.getByRole('tab', { name: 'Circles', exact: true }).click();
   await page.getByRole('button', { name: 'Start a Circle' }).click();
@@ -51,7 +51,7 @@ test('a member starts a Circle from Explore and lands on its page', async ({ pag
 test('an owner reviews a request to their Circle and approves it', async ({ page }) => {
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: 'Change city' }).click();
-  await page.getByRole('radio', { name: 'Berlin', exact: true }).click();
+  await chooseCity(page, 'Berlin');
   await page.getByRole('tab', { name: 'Explore' }).click();
   await page.getByRole('tab', { name: 'Circles', exact: true }).click();
   await page.getByRole('button', { name: 'Start a Circle' }).click();

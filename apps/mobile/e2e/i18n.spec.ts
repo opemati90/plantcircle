@@ -17,6 +17,7 @@ test.describe('on a German device', () => {
     await page.getByRole('button', { name: 'Weiter' }).click();
 
     // Country names are localised too: the heading above the cities is in German.
+    await page.getByRole('textbox', { name: 'Städte suchen' }).fill('Berlin');
     await expect(page.getByText('DEUTSCHLAND', { exact: true })).toBeVisible();
     await page.getByRole('radio', { name: 'Berlin', exact: true }).click();
     await page.getByRole('button', { name: 'Weiter' }).click();

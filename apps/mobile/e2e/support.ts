@@ -51,3 +51,9 @@ export async function dismissNotificationPrompt(page: Page): Promise<void> {
     await expect(notNow).toHaveCount(0);
   }
 }
+
+/** Types a city into the picker (there is no prebuilt list) and chooses it. */
+export async function chooseCity(page: Page, name: string): Promise<void> {
+  await page.getByRole('textbox', { name: 'Search cities' }).fill(name);
+  await page.getByRole('radio', { name, exact: true }).click();
+}

@@ -5,6 +5,7 @@ import type {
   AppNotification,
   AuditRow,
   Circle,
+  City,
   CircleRequest,
   FeedbackState,
   GroupOrder,
@@ -67,6 +68,8 @@ interface State {
   peopleRequested: string[];
   /** Plans the person published in this session, shown alongside the fixture Plans. */
   plansCreated: Plan[];
+  /** Cities typed in that the seed does not have (mirrors city_ensure). */
+  citiesAdded: City[];
   /** The private details of Plans this person published: the host always sees them. */
   /** Group orders published in this session, with items and everyone's interest. */
   orders: Record<
@@ -194,6 +197,7 @@ const EMPTY: State = {
   recipesCreated: [],
   peopleRequested: [],
   plansCreated: [],
+  citiesAdded: [],
   plansSecrets: {},
   orders: {},
   plansGuests: {},
@@ -319,6 +323,9 @@ export async function createFixtureBackend(): Promise<Backend> {
       });
     },
   };
+
+  /** Seed cities plus the ones typed in, for every lookup by id. */
+  const allCities = (): City[] => [...fixtureCities, ...state.citiesAdded];
 
   function commit(next: State, notify = false): void {
     state = next;
@@ -771,7 +778,7 @@ export async function createFixtureBackend(): Promise<Backend> {
         (at) => now - new Date(at).getTime() < 86_400_000,
       );
       if (recent.length >= 3) throw new BackendError('rate_limited');
-      const city = fixtureCities.find((c) => c.id === input.cityId);
+      const city = allCities().find((c) => c.id === input.cityId);
       const circle: Circle = {
         id: `created-${now}-${key.slice(0, 8)}`,
         name: input.name,
@@ -907,7 +914,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       const fingerprint = fingerprintOf(input);
       const replayed = replayKey(key, fingerprint);
       if (replayed) return replayed;
-      const city = fixtureCities.find((c) => c.id === state.profile?.cityId);
+      const city = allCities().find((c) => c.id === state.profile?.cityId);
       if (!state.profile?.cityId || !city) throw new BackendError('city_required');
       const now = Date.now();
       const starts = Date.parse(input.startsAt);
@@ -1411,7 +1418,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       const fingerprint = fingerprintOf(input);
       const replayed = replayKey(key, fingerprint);
       if (replayed) return replayed;
-      const city = fixtureCities.find((c) => c.id === state.profile?.cityId);
+      const city = allCities().find((c) => c.id === state.profile?.cityId);
       if (!city) throw new BackendError('city_required');
       const closes = Date.parse(input.closesAt);
       const ps = Date.parse(input.pickupStart);
@@ -2180,7 +2187,33 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async listCities() {
       await call();
-      return fixtureCities;
+      return allCities();
+    },
+
+    async ensureCity(input) {
+      await call();
+      const name = input.name.trim();
+      const countryCode = input.countryCode.trim().toUpperCase();
+      if (
+        Array.from(name).length < 1 ||
+        Array.from(name).length > 80 ||
+        !/^[A-Z]{2}$/.test(countryCode)
+      ) {
+        throw new BackendError('invalid_input');
+      }
+      const known = allCities().find(
+        (city) =>
+          city.countryCode === countryCode && city.name.toLowerCase() === name.toLowerCase(),
+      );
+      if (known) return known;
+      const city: City = {
+        id: `city-${String(state.citiesAdded.length + 1)}-${String(Date.now())}`,
+        name,
+        countryCode,
+        timezone: input.timezone,
+      };
+      commit({ ...state, citiesAdded: [...state.citiesAdded, city] });
+      return city;
     },
 
     async listUpcomingPlans({ cityIds, from, to, format }) {

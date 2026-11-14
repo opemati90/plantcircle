@@ -37,6 +37,7 @@ import { imageFocus, planImage } from '../plans/planImage';
 import {
   useCities,
   usePlansThisWeek,
+  useEnsureCity,
   useSetCity,
   useUpNext,
   useWaitlistOffers,
@@ -231,6 +232,7 @@ export default function HomeScreen() {
   const [filter, setFilter] = useState<HomeFilter>('forYou');
   const [cityOpen, setCityOpen] = useState(false);
   const setCity = useSetCity();
+  const ensureCity = useEnsureCity();
   const { t } = useTranslation();
   const openPlan = (plan: Plan) => {
     router.push({ pathname: '/plan/[id]', params: { id: plan.id } });
@@ -550,6 +552,19 @@ export default function HomeScreen() {
             },
           });
         }}
+        onCreate={(name) => {
+          ensureCity.mutate(name, {
+            onSuccess: (city) => {
+              setCity.mutate(city.id, {
+                onSuccess: () => {
+                  setCityOpen(false);
+                },
+              });
+            },
+          });
+        }}
+        creating={ensureCity.isPending}
+        createFailed={ensureCity.isError}
       />
 
       <Pressable

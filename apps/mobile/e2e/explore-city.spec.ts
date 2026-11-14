@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime } from './support';
+import { chooseCity, freezeTime } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 test('browsing another city in Explore does not change the home city', async ({ page }) => {
   await page.goto('/explore');
   await page.getByRole('button', { name: 'Browse another city' }).click();
-  await page.getByRole('radio', { name: 'Lisbon' }).click();
+  await chooseCity(page, 'Lisbon');
   await expect(page.getByRole('button', { name: 'Browse another city' })).toContainText(
     'Lisbon',
   );

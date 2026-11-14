@@ -131,3 +131,15 @@ Every card on the Claude Design canvas is in `prototype-source/screens/` (95 fil
 - C5 follow-ups: `AfterEvent` (guest feedback matches), `PlanChanged`, `PlanFull`, `PlanCancelled`, `WaitlistOffer` (built), `ManageGuests` (built).
 - C1 gap: `CreateCircle` cover-photo slot and the city/language footer; `CircleRequest` as its own screen.
 - v1.1 / Later per scope (not built on purpose): monetization (`PaidPlan`, `Checkout`, `TicketConfirmed`, `PaidCancelled`, `HostPayouts`, `HostPro`, `ProUpgrade`, `CancelSub`, `MembershipSetup`), impact (`ImpactExplain`, `ImpactDashboard`, `Leftovers`, `HabitCheckin`), global layer (`GlobalCreate`, `GlobalPlan`, `AdoptTable`, `CookAlongList`, `LinkUp`, `ExploreGlobal`, `Online*`), stores (`StoreProfile`, `AddShop`, `StoreDashboard`), host program (`HostLevels`, `SeedsWallet`, `DemandNudge`), AI (`AIDraft` is S3-2 v1; `AITranslate`, `AIRecap` v1.1), `Filters`/`SearchResults` (search is v1 but filters sheet pending: add to C-list as C18).
+
+## Typed cities (14 November 2026)
+
+Done: people type their city; unknown ones are added by `city_ensure` (anon-callable, 5 new
+rows an hour per caller, Intl-safe time zones). Design note: `docs/superpowers/specs/2026-11-14-hosting-levels-city-flow-design.md`.
+
+Open questions:
+
+- A typed city is filed under the device's region and time zone (the row shows the country). A
+  traveller, or a device with no region (`ZZ`), files it wrongly; no correction control yet.
+- Spelling duplicates ("Köln" / "Cologne") need a staff merge tool.
+- The city list is fetched whole (up to 1,000 rows); past that, search cities on the server.

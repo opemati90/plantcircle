@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail } from './support';
+import { chooseCity, freezeTime, signInWithEmail } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
@@ -9,7 +9,7 @@ test('a host checks a guest in, undoes it, and sees the summary change', async (
   // A Plan is published in the home city, so the host picks one first.
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: 'Change city' }).click();
-  await page.getByRole('radio', { name: 'Berlin', exact: true }).click();
+  await chooseCity(page, 'Berlin');
 
   // Two hours ahead: check-in is already open, and End Plan is not yet.
   await page.getByRole('link', { name: 'Start a Plan' }).click();

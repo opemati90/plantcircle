@@ -263,6 +263,11 @@ export interface Backend {
   ): Promise<void>;
 
   listCities(): Promise<City[]>;
+  /**
+   * The city a person typed: the known row if one has that name in that country (case
+   * ignored), otherwise a new one with the device's country and time zone. Works before sign-up.
+   */
+  ensureCity(input: { name: string; countryCode: string; timezone: string }): Promise<City>;
   /** `cityId: null` lists Plans everywhere (the member has not picked a city). */
   /** `cityIds: null` lists Plans everywhere; a list limits them to those cities. */
   listUpcomingPlans(query: {

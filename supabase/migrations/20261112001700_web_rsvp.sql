@@ -36,7 +36,7 @@ revoke all on public.web_rsvp_attempts from anon, authenticated;
 
 -- Ten attempts in a rolling hour per scope ("email:x" and "ip:y"): quarter-hour buckets, the
 -- last four summed, so the hour boundary gives nothing away.
-create function public.web_rsvp_rate_check(p_scope text)
+create function public.web_rsvp_rate_check(p_scope text, p_limit integer default 10)
 returns void
 language plpgsql
 security definer
@@ -50,7 +50,7 @@ begin
   on conflict (scope, window_start) do update set count = public.web_rsvp_attempts.count + 1;
   select coalesce(sum(count), 0) into v_count from public.web_rsvp_attempts
   where scope = p_scope and window_start > now() - interval '1 hour';
-  if v_count > 10 then
+  if v_count > p_limit then
     raise exception 'rate_limited' using errcode = 'P0001';
   end if;
 end;
@@ -191,7 +191,7 @@ as $$
 $$;
 revoke all on function public.auth_user_id_by_email(text) from public, anon, authenticated;
 
-revoke all on function public.web_rsvp_rate_check(text) from public, anon, authenticated;
+revoke all on function public.web_rsvp_rate_check(text, integer) from public, anon, authenticated;
 revoke all on function public.guest_profile_ensure(uuid, text, uuid) from public, anon, authenticated;
 revoke all on function public.guest_rsvp_join(uuid, uuid, text, text, uuid) from public, anon, authenticated;
 revoke all on function public.guest_rsvp_cancel(uuid, uuid) from public, anon, authenticated;

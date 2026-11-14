@@ -1148,8 +1148,20 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       if (result.error) throw toBackendError(result.error);
     },
 
+    async ensureCity(input) {
+      const result = await client.rpc('city_ensure', {
+        p_name: input.name,
+        p_country_code: input.countryCode,
+        p_tz: input.timezone,
+      });
+      if (result.error) throw toBackendError(result.error);
+      const row = parse(cityRowSchema, result.data);
+      return { id: row.id, name: row.name, countryCode: row.country_code, timezone: row.tz };
+    },
+
     async listCities() {
-      const { data, error } = await client.from('cities').select('*').order('name').limit(200);
+      // Typed-in cities grow this list; a server-side search replaces it past a thousand (open questions).
+      const { data, error } = await client.from('cities').select('*').order('name').limit(1000);
       if (error) throw toBackendError(error);
       return parse(z.array(cityRowSchema), data).map((row) => ({
         id: row.id,

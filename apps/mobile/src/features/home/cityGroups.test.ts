@@ -1,5 +1,10 @@
 import type { City } from '../../lib/backend/types';
-import { countryNameResolver, filterCities, groupCitiesByCountry } from './cityGroups';
+import {
+  countryNameResolver,
+  filterCities,
+  groupCitiesByCountry,
+  sameCityName,
+} from './cityGroups';
 
 const city = (name: string, countryCode: string): City => ({
   id: name.toLowerCase(),
@@ -35,6 +40,14 @@ describe('groupCitiesByCountry', () => {
 
   it('keeps an empty list empty', () => {
     expect(groupCitiesByCountry([], 'en')).toEqual([]);
+  });
+});
+
+describe('sameCityName', () => {
+  it('matches a typed name to a known city ignoring case, accents and spacing', () => {
+    expect(sameCityName('São Paulo', 'sao  paulo')).toBe(true);
+    expect(sameCityName('Berlin', 'Berlin ')).toBe(true);
+    expect(sameCityName('Berlin', 'Berl')).toBe(false);
   });
 });
 

@@ -14,7 +14,7 @@ import type { Profile } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 import { CityPickerSheet } from '../home/CityPickerSheet';
 import { GOALS } from '../onboarding/onboardingStore';
-import { useCities, useSetCity } from '../plans/queries';
+import { useCities, useEnsureCity, useSetCity } from '../plans/queries';
 
 const NAME_MAX = 40;
 
@@ -31,6 +31,7 @@ export default function EditProfileScreen() {
   const { session, profile, profileError, retryProfile } = useAuth();
   const cities = useCities();
   const setCity = useSetCity();
+  const ensureCity = useEnsureCity();
   const [draft, setDraft] = useState<{ name: string; goals: string[] } | null>(null);
   const [cityOpen, setCityOpen] = useState(false);
   const name = draft?.name ?? profile?.displayName ?? '';
@@ -259,6 +260,19 @@ export default function EditProfileScreen() {
             },
           });
         }}
+        onCreate={(name) => {
+          ensureCity.mutate(name, {
+            onSuccess: (city) => {
+              setCity.mutate(city.id, {
+                onSuccess: () => {
+                  setCityOpen(false);
+                },
+              });
+            },
+          });
+        }}
+        creating={ensureCity.isPending}
+        createFailed={ensureCity.isError}
       />
     </View>
   );

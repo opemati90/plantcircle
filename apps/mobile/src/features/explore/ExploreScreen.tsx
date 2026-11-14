@@ -15,7 +15,7 @@ import { useAuth } from '../auth/useAuth';
 import { getOnboarding } from '../onboarding/onboardingStore';
 import { placeLabel, spotsLeftShort } from '../plans/planCopy';
 import { PlanListItem } from '../plans/PlanListItem';
-import { useCities, useExplorePlans } from '../plans/queries';
+import { useCities, useEnsureCity, useExplorePlans } from '../plans/queries';
 import { CirclesTab } from '../circles/CirclesTab';
 import { LearnTab } from '../learn/LearnTab';
 import { PeopleTab } from '../people/PeopleTab';
@@ -163,6 +163,7 @@ export default function ExploreScreen() {
   const homeKnown = session === null || (session !== undefined && profile !== undefined);
   const waiting = browseChoice === undefined && !homeKnown;
   const cities = useCities();
+  const ensureCity = useEnsureCity();
   const allCities = cities.data ?? [];
   const choice: Browse =
     browseChoice ?? (cityId ? { kind: 'city', id: cityId } : { kind: 'anywhere' });
@@ -459,6 +460,16 @@ export default function ExploreScreen() {
           setBrowseChoice({ kind: 'country', code: group.countryCode });
           setBrowseOpen(false);
         }}
+        onCreate={(name) => {
+          ensureCity.mutate(name, {
+            onSuccess: (city) => {
+              setBrowseChoice({ kind: 'city', id: city.id });
+              setBrowseOpen(false);
+            },
+          });
+        }}
+        creating={ensureCity.isPending}
+        createFailed={ensureCity.isError}
       />
     </ScrollView>
   );

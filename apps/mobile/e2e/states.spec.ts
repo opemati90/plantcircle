@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail, type FixtureWindow } from './support';
+import { chooseCity, freezeTime, signInWithEmail, type FixtureWindow } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
@@ -10,7 +10,7 @@ test('a city with nothing this week invites you to start a Plan and to join onli
 }) => {
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: /Change city/ }).click();
-  await page.getByRole('radio', { name: 'Porto', exact: true }).click();
+  await chooseCity(page, 'Porto');
   await expect(page.getByRole('heading', { name: 'Be the first in Porto' })).toBeVisible();
   await expect(page.getByRole('link', { name: /Start your own Plan/ })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Join from home' })).toBeVisible();

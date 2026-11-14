@@ -1,13 +1,18 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime } from './support';
+import { chooseCity, freezeTime } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
 });
 
-test('typing in the city picker narrows the list, by city or by country', async ({ page }) => {
+test('the city picker suggests known cities as you type, by city or by country', async ({
+  page,
+}) => {
   await page.goto('/home');
   await page.getByRole('button', { name: 'Change city' }).click();
+  // Nothing typed: no list, only Anywhere and the hint.
+  await expect(page.getByRole('radio', { name: 'Berlin' })).toHaveCount(0);
+  await expect(page.getByText('Any city in the world', { exact: false })).toBeVisible();
   const search = page.getByRole('textbox', { name: 'Search cities' });
   await search.fill('lis');
   await expect(page.getByRole('radio', { name: 'Lisbon' })).toBeVisible();
@@ -16,7 +21,39 @@ test('typing in the city picker narrows the list, by city or by country', async 
   await search.fill('germ');
   await expect(page.getByRole('radio', { name: 'Berlin' })).toBeVisible();
   await expect(page.getByRole('radio', { name: 'Lisbon' })).toHaveCount(0);
+  // A new city goes under the device's country (en-GB here), so Berlin can still be used there,
+  // and the row says which country it would be filed under; a namesake in that country cannot.
+  await search.fill('berlin');
+  await expect(
+    page.getByRole('button', { name: /Use “berlin” · United Kingdom/ }),
+  ).toBeVisible();
+  await search.fill('london');
+  await expect(page.getByRole('radio', { name: 'London' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Use “london”/ })).toHaveCount(0);
+});
 
-  await search.fill('zzz');
-  await expect(page.getByText('No city matches “zzz”')).toBeVisible();
+test('a city not on the list is added and becomes the home city', async ({ page }) => {
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Change city' }).click();
+  await page.getByRole('textbox', { name: 'Search cities' }).fill('Tbilisi');
+  await page.getByRole('button', { name: /Use “Tbilisi”/ }).click();
+  await expect(page.getByRole('heading', { name: 'This week in Tbilisi' })).toBeVisible();
+  // It is now a known city.
+  await page.getByRole('button', { name: 'Change city' }).click();
+  await chooseCity(page, 'Berlin');
+  await expect(page.getByRole('heading', { name: 'This week in Berlin' })).toBeVisible();
+  await page.getByRole('button', { name: 'Change city' }).click();
+  await chooseCity(page, 'Tbilisi');
+  await expect(page.getByRole('heading', { name: 'This week in Tbilisi' })).toBeVisible();
+});
+
+test('onboarding takes a typed city', async ({ page }) => {
+  await page.goto('/city');
+  await expect(page.getByRole('heading', { name: 'Where are you based?' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
+  await page.getByRole('textbox', { name: 'Search cities' }).fill('Kigali');
+  await page.getByRole('button', { name: /Use “Kigali”/ }).click();
+  await expect(page.getByRole('radio', { name: 'Kigali' })).toBeChecked();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByRole('heading', { name: 'This week in Kigali' })).toBeVisible();
 });

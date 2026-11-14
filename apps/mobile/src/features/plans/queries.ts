@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import { useBackend } from '../../lib/backend/BackendProvider';
-import type { CircleInput, MyPlansScope } from '../../lib/backend/types';
+import type { CircleInput, City, MyPlansScope } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
+import { deviceRegionCode, deviceTimeZone } from '../../lib/device';
 import { getOnboarding, saveOnboardingStrict } from '../onboarding/onboardingStore';
 
 const WEEK_MS = 7 * 86_400_000;
@@ -133,6 +134,28 @@ export function useSetCity() {
           queryClient.invalidateQueries({ queryKey: [key] }),
         ),
       ),
+  });
+}
+
+/**
+ * A city typed in: found or added on the server with the device's country and time zone, then
+ * listed with the others. Selecting it is the caller's next step (useSetCity).
+ */
+export function useEnsureCity() {
+  const backend = useBackend();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) =>
+      backend.ensureCity({
+        name,
+        countryCode: deviceRegionCode(),
+        timezone: deviceTimeZone(),
+      }),
+    onSuccess: (city) => {
+      queryClient.setQueryData<City[]>(['cities'], (cities) =>
+        cities && !cities.some((c) => c.id === city.id) ? [...cities, city] : cities,
+      );
+    },
   });
 }
 

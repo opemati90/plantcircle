@@ -69,6 +69,11 @@ export function filterCities(
   });
 }
 
+/** Whether a typed name is a known city's name, ignoring case, accents and spacing. */
+export function sameCityName(a: string, b: string): boolean {
+  return normalizeWords(a).join(' ') === normalizeWords(b).join(' ');
+}
+
 function normalizeWords(text: string): string[] {
   return text
     .normalize('NFD')

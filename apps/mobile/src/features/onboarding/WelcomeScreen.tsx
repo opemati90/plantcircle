@@ -10,13 +10,11 @@ import { BottomSheet, Skeleton } from '../../components/parts';
 import { Photo } from '../../components/Photo';
 import { color, extra, radius, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
-import { catalogs } from '@plantcircle/copy';
-import type { City } from '../../lib/backend/types';
-import { groupCitiesByCountry } from '../home/cityGroups';
+import { CityChooser } from '../home/CityPickerSheet';
 import { currentLanguage, setLanguage } from '../../lib/i18n';
 import { useAuth } from '../auth/useAuth';
 import { welcomePhoto } from '../plans/planImage';
-import { useCities } from '../plans/queries';
+import { useCities, useEnsureCity } from '../plans/queries';
 import { GOALS, getOnboarding, saveOnboarding, type Goal } from './onboardingStore';
 
 function Progress({ step }: { step: 1 | 2 }) {
@@ -77,6 +75,7 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
   const [goals, setGoals] = useState<Goal[]>(stored.goals);
   const [cityId, setCityId] = useState<string | null>(stored.cityId);
   const cities = useCities();
+  const ensureCity = useEnsureCity();
   const { t } = useTranslation();
   const language = currentLanguage();
   const [languageSheet, setLanguageSheet] = useState(false);
@@ -232,7 +231,11 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.step, frame]}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.step, frame]}
+      keyboardShouldPersistTaps="handled"
+    >
       <Progress step={2} />
       <Text
         accessibilityRole="header"
@@ -243,56 +246,32 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
       <Text style={[type(16, 'regular', { color: color.secondary }), styles.lead]}>
         {t('city.lead')}
       </Text>
-      <View
-        accessibilityRole="radiogroup"
-        accessibilityLabel={t('city.group')}
-        style={styles.options}
-      >
-        {cities.isPending ? (
-          <View role="status" accessibilityLabel={t('city.loading')} style={styles.options}>
-            <Skeleton width="100%" height={60} radius={radius.control} />
-            <Skeleton width="100%" height={60} radius={radius.control} />
-          </View>
-        ) : cities.isError ? (
-          <View style={styles.options}>
-            <Text
-              role="alert"
-              style={type(15, 'regular', { color: color.danger, leading: 1.4 })}
-            >
-              {t('city.loadError')}
-            </Text>
-            <Button
-              variant="outline"
-              label={t('common.tryAgain')}
-              onPress={() => void cities.refetch()}
-            />
-          </View>
-        ) : (
-          groupCitiesByCountry(cities.data, language, catalogs[language].countries).map(
-            (group) => (
-              <View key={group.countryCode} style={styles.group}>
-                <Text
-                  accessibilityRole="header"
-                  style={type(13, 'bold', { color: color.secondary, tracking: 0.5 })}
-                >
-                  {group.countryName.toUpperCase()}
-                </Text>
-                {group.cities.map((city: City) => (
-                  <OptionRow
-                    key={city.id}
-                    role="radio"
-                    selected={cityId === city.id}
-                    title={city.name}
-                    onPress={() => {
-                      setCityId(city.id);
-                    }}
-                  />
-                ))}
-              </View>
-            ),
-          )
-        )}
-      </View>
+      {cities.isPending ? (
+        <View role="status" accessibilityLabel={t('city.loading')} style={styles.options}>
+          <Skeleton width="100%" height={60} radius={radius.control} />
+          <Skeleton width="100%" height={60} radius={radius.control} />
+        </View>
+      ) : (
+        <CityChooser
+          cities={cities.data ?? []}
+          loadError={cities.isError}
+          onRetry={() => void cities.refetch()}
+          selectedId={cityId}
+          saving={false}
+          onSelect={(city) => {
+            setCityId(city.id);
+          }}
+          onCreate={(name) => {
+            ensureCity.mutate(name, {
+              onSuccess: (city) => {
+                setCityId(city.id);
+              },
+            });
+          }}
+          creating={ensureCity.isPending}
+          createFailed={ensureCity.isError}
+        />
+      )}
       <Text
         style={[type(14, 'regular', { color: color.secondary, leading: 1.5 }), styles.note]}
       >
@@ -301,7 +280,7 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
       <View style={styles.actions}>
         <Button
           label={t('common.continue')}
-          disabled={!cityId}
+          disabled={!cityId || ensureCity.isPending}
           onPress={() => {
             finish(cityId);
           }}

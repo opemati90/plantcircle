@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail } from './support';
+import { chooseCity, freezeTime, signInWithEmail } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
@@ -13,7 +13,7 @@ test('a member edits their name, home city and interests from Profile', async ({
   await page.getByRole('textbox', { name: 'Your name' }).fill('Lena Ko');
   await page.getByRole('checkbox', { name: 'Buy food together' }).click();
   await page.getByRole('button', { name: /^Home city/ }).click();
-  await page.getByRole('radio', { name: 'Hamburg', exact: true }).click();
+  await chooseCity(page, 'Hamburg');
   await expect(page.getByRole('button', { name: /^Home city: Hamburg/ })).toBeVisible();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('heading', { name: 'Profile' })).toBeVisible();

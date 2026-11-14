@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { chooseCity } from './support';
 import {
   freezeTime,
   signInWithEmail,
@@ -25,7 +26,7 @@ test('first run: pick a city, browse, sign up with an email code, join, bring so
   // Cities come from data; nothing is preselected and Continue waits for a choice.
   await expect(page.getByRole('heading', { name: 'Where are you based?' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
-  await page.getByRole('radio', { name: /Berlin/ }).click();
+  await chooseCity(page, 'Berlin');
   await page.getByRole('button', { name: 'Continue' }).click();
 
   // Value before account: Home is visible without signing in.
