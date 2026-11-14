@@ -23,12 +23,14 @@ import {
   useStaffAppeals,
   useStaffAudit,
   useStaffCase,
+  useStaffCities,
+  useStaffCityMerge,
   useStaffDecide,
   useStaffQueue,
   useStaffViewMessages,
 } from './queries';
 
-type Tab = 'queue' | 'appeals' | 'audit';
+type Tab = 'queue' | 'appeals' | 'cities' | 'audit';
 const SEVERITY_TINT: Record<string, string> = {
   urgent: '#FFE8E5',
   high: '#FFF6E5',
@@ -53,6 +55,15 @@ export default function ConsoleScreen() {
   const current = useStaffCase(selected);
   const appeals = useStaffAppeals(staff && tab === 'appeals');
   const audit = useStaffAudit(staff && tab === 'audit');
+  const cities = useStaffCities(staff && tab === 'cities');
+  const cityMerge = useStaffCityMerge();
+  const [mergeFrom, setMergeFrom] = useState<string | null>(null);
+  const [mergeInto, setMergeInto] = useState<string | null>(null);
+  const [mergeReason, setMergeReason] = useState('');
+  const [mergeKey, setMergeKey] = useState(newIdempotencyKey);
+  useEffect(() => {
+    setMergeKey(newIdempotencyKey());
+  }, [mergeFrom, mergeInto, mergeReason]);
   const decide = useStaffDecide();
   const view = useStaffViewMessages();
   const appealDecide = useStaffAppealDecide();
@@ -144,6 +155,7 @@ export default function ConsoleScreen() {
   const tabs: { id: Tab; label: string }[] = [
     { id: 'queue', label: t('safety.console.queue') },
     { id: 'appeals', label: t('safety.console.appeals') },
+    { id: 'cities', label: t('safety.console.cities') },
     { id: 'audit', label: t('safety.console.audit') },
   ];
 
@@ -566,6 +578,122 @@ export default function ConsoleScreen() {
                   ) : null}
                 </View>
               ))
+            )}
+          </View>
+        ) : null}
+
+        {tab === 'cities' ? (
+          <View style={styles.column}>
+            <Text style={type(14, 'regular', { color: color.secondary })}>
+              {t('safety.console.citiesLead')}
+            </Text>
+            {cities.isPending ? (
+              <Skeleton width="100%" height={80} radius={radius.card} />
+            ) : cities.isError ? (
+              <InlineState
+                title={t('errors.serverTitle')}
+                text={t('errors.serverText')}
+                action={
+                  <Button
+                    variant="outline"
+                    label={t('common.retry')}
+                    onPress={() => void cities.refetch()}
+                  />
+                }
+              />
+            ) : (
+              <>
+                {(['from', 'into'] as const).map((side) => (
+                  <View key={side} style={styles.column}>
+                    <Text accessibilityRole="header" style={type(15, 'semibold')}>
+                      {side === 'from'
+                        ? t('safety.console.mergeFrom')
+                        : t('safety.console.mergeInto')}
+                    </Text>
+                    <View
+                      accessibilityRole="radiogroup"
+                      accessibilityLabel={
+                        side === 'from'
+                          ? t('safety.console.mergeFrom')
+                          : t('safety.console.mergeInto')
+                      }
+                      style={styles.column}
+                    >
+                      {cities.data.map((c) => {
+                        const selected = (side === 'from' ? mergeFrom : mergeInto) === c.id;
+                        return (
+                          <Pressable
+                            key={c.id}
+                            accessibilityRole="radio"
+                            aria-checked={selected}
+                            onPress={() => {
+                              if (side === 'from') setMergeFrom(c.id);
+                              else setMergeInto(c.id);
+                            }}
+                            style={[styles.caseRow, selected && styles.caseRowActive]}
+                          >
+                            <Text
+                              style={type(15, 'semibold')}
+                            >{`${c.name} · ${c.countryCode}`}</Text>
+                            <Text style={type(13, 'regular', { color: color.secondary })}>
+                              {t('safety.console.cityCounts', {
+                                members: c.members,
+                                plans: c.plans,
+                                circles: c.circles,
+                              })}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </View>
+                ))}
+                <TextInput
+                  accessibilityLabel={t('safety.console.mergeReason')}
+                  placeholder={t('safety.console.mergeReason')}
+                  placeholderTextColor={color.secondary}
+                  value={mergeReason}
+                  onChangeText={setMergeReason}
+                  style={[styles.field, type(15)]}
+                />
+                <Button
+                  label={t('safety.console.mergeAction')}
+                  disabled={
+                    !mergeFrom ||
+                    !mergeInto ||
+                    mergeFrom === mergeInto ||
+                    mergeReason.trim().length < 3
+                  }
+                  loading={cityMerge.isPending}
+                  onPress={() => {
+                    if (!mergeFrom || !mergeInto) return;
+                    cityMerge.mutate(
+                      {
+                        fromId: mergeFrom,
+                        intoId: mergeInto,
+                        reason: mergeReason.trim(),
+                        key: mergeKey,
+                      },
+                      {
+                        onSuccess: () => {
+                          setMergeFrom(null);
+                          setMergeReason('');
+                        },
+                      },
+                    );
+                  }}
+                />
+                {cityMerge.isSuccess ? (
+                  <Text role="status" style={type(14, 'regular', { color: color.brand })}>
+                    {t('safety.console.mergeDone', cityMerge.data)}
+                  </Text>
+                ) : null}
+                {cityMerge.isError ? (
+                  <Text role="alert" style={type(14, 'regular', { color: color.danger })}>
+                    {t('errors.serverText')}
+                  </Text>
+                ) : null}
+              </>
             )}
           </View>
         ) : null}

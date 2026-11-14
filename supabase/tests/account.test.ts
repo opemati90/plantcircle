@@ -256,3 +256,12 @@ describe('deleting the account', () => {
     ).rejects.toThrow(/not_member/);
   });
 });
+
+describe('the push language', () => {
+  it('defaults to English, follows the app, and refuses an unknown one', async () => {
+    expect((await settings(ANA))?.['language']).toBe('en');
+    expect((await update(ANA, { language: 'pl' }))?.['language']).toBe('pl');
+    await expect(update(ANA, { language: 'xx' })).rejects.toThrow(/invalid_settings/);
+    await expect(update(ANA, { language: 3 })).rejects.toThrow(/invalid_settings/);
+  });
+});

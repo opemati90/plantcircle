@@ -1042,6 +1042,15 @@ export const en = {
       auditLead: 'Every staff action and every view of private content. Read-only.',
       auditEmpty: 'Nothing logged yet',
       auditEmptyText: 'Staff decisions and views land here.',
+      cities: 'Cities',
+      citiesLead:
+        'Two spellings of one city: move everything from the duplicate into the one to keep. Logged.',
+      mergeFrom: 'Duplicate to remove',
+      mergeInto: 'City to keep',
+      cityCounts: '{{members}} members · {{plans}} Plans · {{circles}} Circles',
+      mergeReason: 'Reason (logged)',
+      mergeAction: 'Merge cities',
+      mergeDone: 'Merged: {{members}} members, {{plans}} Plans, {{circles}} Circles moved.',
     },
   },
   account: {
@@ -1136,6 +1145,10 @@ export const en = {
     gotIt: 'Got it',
   },
   notify: {
+    reminder2h: '{{plan}} starts at {{time}}',
+    orderClosing: '{{order}} closes tomorrow',
+    orderClosingNote: 'Last chance to add your amount.',
+    newMessageGeneric: 'New message',
     weeklyDigest_one: 'This week: {{count}} Plan near you in {{city}}',
     weeklyDigest_other: 'This week: {{count}} Plans near you in {{city}}',
     weeklyDigestOnline_one: 'This week: {{count}} online Plan to join from home',

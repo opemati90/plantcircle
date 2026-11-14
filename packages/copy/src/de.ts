@@ -1069,6 +1069,16 @@ export const de: Catalog = {
       auditLead: 'Jede Mitarbeitenden-Aktion und jeder Aufruf privater Inhalte. Nur lesen.',
       auditEmpty: 'Noch nichts protokolliert',
       auditEmptyText: 'Entscheidungen und Aufrufe landen hier.',
+      cities: 'Städte',
+      citiesLead:
+        'Zwei Schreibweisen einer Stadt: alles vom Duplikat wandert in die Stadt, die bleibt. Wird protokolliert.',
+      mergeFrom: 'Duplikat (wird entfernt)',
+      mergeInto: 'Stadt, die bleibt',
+      cityCounts: '{{members}} Mitglieder · {{plans}} Pläne · {{circles}} Circles',
+      mergeReason: 'Grund (wird protokolliert)',
+      mergeAction: 'Städte zusammenführen',
+      mergeDone:
+        'Zusammengeführt: {{members}} Mitglieder, {{plans}} Pläne, {{circles}} Circles verschoben.',
     },
   },
   account: {
@@ -1166,6 +1176,10 @@ export const de: Catalog = {
     gotIt: 'Verstanden',
   },
   notify: {
+    reminder2h: '{{plan}} beginnt um {{time}}',
+    orderClosing: '{{order}} schließt morgen',
+    orderClosingNote: 'Letzte Chance, deine Menge einzutragen.',
+    newMessageGeneric: 'Neue Nachricht',
     weeklyDigest_one: 'Diese Woche: {{count}} Plan in deiner Nähe in {{city}}',
     weeklyDigest_other: 'Diese Woche: {{count}} Pläne in deiner Nähe in {{city}}',
     weeklyDigestOnline_one: 'Diese Woche: {{count}} Online-Plan von zu Hause aus',

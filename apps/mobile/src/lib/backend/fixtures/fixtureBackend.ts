@@ -2024,6 +2024,65 @@ export async function createFixtureBackend(): Promise<Backend> {
       });
     },
 
+    async staffCities() {
+      await call();
+      requireStaff();
+      const all = allCities();
+      const plansAll = plans(new Date(0));
+      return all
+        .map((c) => ({
+          id: c.id,
+          name: c.name,
+          countryCode: c.countryCode,
+          timezone: c.timezone,
+          members: state.profile?.cityId === c.id ? 1 : 0,
+          plans: plansAll.filter((p) => p.cityId === c.id).length,
+          circles: [...fixtureCircles, ...state.circlesCreated].filter((x) => x.cityId === c.id)
+            .length,
+        }))
+        .sort(
+          (a, b) => a.countryCode.localeCompare(b.countryCode) || a.name.localeCompare(b.name),
+        );
+    },
+
+    async staffCityMerge(fromId, intoId, reason, key) {
+      await call();
+      requireStaff();
+      if (reason.trim().length < 3 || fromId === intoId)
+        throw new BackendError('invalid_input');
+      const fingerprint = fingerprintOf({ fromId, intoId });
+      const replayed = replayKey(key, fingerprint);
+      if (replayed) {
+        return JSON.parse(replayed) as { members: number; plans: number; circles: number };
+      }
+      const all = allCities();
+      if (!all.some((c) => c.id === fromId) || !all.some((c) => c.id === intoId)) {
+        throw new BackendError('city_not_found');
+      }
+      // Seed cities stay (the sample data points at them); typed-in ones can go.
+      const movedProfile = state.profile?.cityId === fromId;
+      const moved = {
+        members: movedProfile ? 1 : 0,
+        plans: state.plansCreated.filter((p) => p.cityId === fromId).length,
+        circles: state.circlesCreated.filter((c) => c.cityId === fromId).length,
+      };
+      commit({
+        ...state,
+        profile:
+          movedProfile && state.profile ? { ...state.profile, cityId: intoId } : state.profile,
+        plansCreated: state.plansCreated.map((p) =>
+          p.cityId === fromId ? { ...p, cityId: intoId } : p,
+        ),
+        circlesCreated: state.circlesCreated.map((c) =>
+          c.cityId === fromId ? { ...c, cityId: intoId } : c,
+        ),
+        citiesAdded: state.citiesAdded.filter((c) => c.id !== fromId),
+        audit: [auditRow('staff.city_merge', 'city', reason.trim()), ...state.audit],
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id: JSON.stringify(moved) } },
+      });
+      return moved;
+    },
+
     async staffQueue() {
       await call();
       requireStaff();

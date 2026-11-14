@@ -2,6 +2,8 @@
 // per row), marked sent only when every ticket was accepted, and retried up to five attempts;
 // tokens Expo reports as gone are dropped. Email rows are left for email-send.
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import copy from './copy.json' with { type: 'json' };
+import { renderPush, type Copy } from './render.ts';
 
 const EXPO_URL = 'https://exp.host/--/api/v2/push/send';
 const BATCH = 100;
@@ -15,6 +17,7 @@ type QueueRow = {
   data: Record<string, unknown>;
 };
 type TokenRow = { token: string; user_id: string };
+type SettingsRow = { user_id: string; language: string; lock_screen_text: boolean };
 type Ticket = { status: 'ok' | 'error'; id?: string; details?: { error?: string } };
 
 Deno.serve(async () => {
@@ -36,6 +39,13 @@ Deno.serve(async () => {
   const byUser = new Map<string, string[]>();
   for (const t of (tokens.data ?? []) as TokenRow[])
     byUser.set(t.user_id, [...(byUser.get(t.user_id) ?? []), t.token]);
+  // The member's language and lock-screen choice: the text is rendered per member, at send time.
+  const settings = await supabase
+    .from('user_settings')
+    .select('user_id, language, lock_screen_text')
+    .in('user_id', users);
+  const prefs = new Map<string, SettingsRow>();
+  for (const row of (settings.data ?? []) as SettingsRow[]) prefs.set(row.user_id, row);
 
   const messages: {
     to: string;
@@ -49,11 +59,23 @@ Deno.serve(async () => {
     const to = byUser.get(row.user_id) ?? [];
     // No device: the Inbox row (when there is one) carries the message; nothing to retry.
     if (to.length === 0) done.add(row.id);
+    const pref = prefs.get(row.user_id);
+    const text = renderPush(
+      copy as Copy,
+      pref?.language ?? 'en',
+      row.type,
+      row.data,
+      pref?.lock_screen_text ?? false,
+      {
+        title: row.title,
+        body: row.body,
+      },
+    ) ?? { title: row.title, body: row.body };
     for (const token of to)
       messages.push({
         to: token,
-        title: row.title,
-        body: row.body,
+        title: text.title,
+        body: text.body,
         data: { ...row.data, type: row.type },
         rowId: row.id,
       });

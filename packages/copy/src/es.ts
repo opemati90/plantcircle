@@ -1054,6 +1054,16 @@ export const es: Catalog = {
       auditLead: 'Cada acción del personal y cada vista de contenido privado. Solo lectura.',
       auditEmpty: 'Nada registrado aún',
       auditEmptyText: 'Las decisiones y vistas del personal llegan aquí.',
+      cities: 'Ciudades',
+      citiesLead:
+        'Dos grafías de una ciudad: todo lo del duplicado pasa a la ciudad que se conserva. Queda registrado.',
+      mergeFrom: 'Duplicado a eliminar',
+      mergeInto: 'Ciudad a conservar',
+      cityCounts: '{{members}} miembros · {{plans}} planes · {{circles}} Círculos',
+      mergeReason: 'Motivo (se registra)',
+      mergeAction: 'Fusionar ciudades',
+      mergeDone:
+        'Fusionado: {{members}} miembros, {{plans}} planes y {{circles}} Círculos movidos.',
     },
   },
   account: {
@@ -1151,6 +1161,10 @@ export const es: Catalog = {
     gotIt: 'Entendido',
   },
   notify: {
+    reminder2h: '{{plan}} empieza a las {{time}}',
+    orderClosing: '{{order}} cierra mañana',
+    orderClosingNote: 'Última oportunidad para añadir tu cantidad.',
+    newMessageGeneric: 'Mensaje nuevo',
     weeklyDigest_one: 'Esta semana: {{count}} plan cerca de ti en {{city}}',
     weeklyDigest_other: 'Esta semana: {{count}} planes cerca de ti en {{city}}',
     weeklyDigestOnline_one: 'Esta semana: {{count}} plan online desde casa',

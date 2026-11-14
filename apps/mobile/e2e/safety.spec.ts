@@ -153,3 +153,37 @@ test('staff see the queue in the web console and apply a decision with a reason,
     page.getByText('Advance payments outside the app are not allowed.'),
   ).toBeVisible();
 });
+
+test('staff merge a duplicate city into the one to keep, and it is logged', async ({
+  page,
+}) => {
+  await signInWithEmail(page, '/home');
+  // A typed-in duplicate spelling, then staff.
+  await page.getByRole('button', { name: 'Change city' }).click();
+  await page.getByRole('textbox', { name: 'Search cities' }).fill('Koeln');
+  await page.getByRole('button', { name: /Use “Koeln”/ }).click();
+  await expect(page.getByRole('heading', { name: 'This week in Koeln' })).toBeVisible();
+  await page.evaluate(() => {
+    (window as FixtureWindow).__pcFixtures?.makeStaff();
+  });
+  await page.goto('/console');
+  await page.getByRole('tab', { name: 'Cities' }).click();
+  await page
+    .getByRole('radiogroup', { name: 'Duplicate to remove' })
+    .getByRole('radio', { name: /Koeln/ })
+    .click();
+  await page
+    .getByRole('radiogroup', { name: 'City to keep' })
+    .getByRole('radio', { name: /Cologne/ })
+    .click();
+  await expect(page.getByRole('button', { name: 'Merge cities' })).toBeDisabled();
+  await page.getByRole('textbox', { name: 'Reason (logged)' }).fill('Same city, two spellings');
+  await page.getByRole('button', { name: 'Merge cities' }).click();
+  await expect(page.getByText('Merged: 1 members, 0 Plans, 0 Circles moved.')).toBeVisible();
+  await expect(page.getByRole('radio', { name: /Koeln/ })).toHaveCount(0);
+  await page.getByRole('tab', { name: 'Audit log' }).click();
+  await expect(page.getByText(/staff\.city_merge/)).toBeVisible();
+  // The member now lives in Cologne.
+  await page.goto('/home');
+  await expect(page.getByRole('heading', { name: 'This week in Cologne' })).toBeVisible();
+});

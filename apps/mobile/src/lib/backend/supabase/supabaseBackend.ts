@@ -52,6 +52,7 @@ import {
   type Session,
   type StaffQueueRow,
   hostLevelSchema,
+  staffCitySchema,
   toHostLevel,
 } from '../types';
 
@@ -1095,6 +1096,38 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         memberName: r.member_name,
         createdAt: r.created_at,
       }));
+    },
+
+    async staffCities() {
+      const result = await client.rpc('staff_cities');
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.array(staffCitySchema), result.data).map((r) => ({
+        id: r.id,
+        name: r.name,
+        countryCode: r.country_code,
+        timezone: r.tz,
+        members: r.members,
+        plans: r.plans,
+        circles: r.circles,
+      }));
+    },
+
+    async staffCityMerge(fromId, intoId, reason, key) {
+      const result = await client.rpc('staff_city_merge', {
+        p_from: fromId,
+        p_into: intoId,
+        p_reason: reason,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+      return parse(
+        z.object({
+          members: z.number().int(),
+          plans: z.number().int(),
+          circles: z.number().int(),
+        }),
+        result.data,
+      );
     },
 
     async staffAppealDecide(appealId, uphold, reason, key) {

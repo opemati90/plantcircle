@@ -40,6 +40,7 @@ import type {
   SettingsPatch,
   StaffAction,
   StaffAppeal,
+  StaffCity,
   StaffCase,
   StaffQueueRow,
   Suspension,
@@ -64,6 +65,7 @@ export type BackendErrorCode =
   | 'forbidden'
   | 'invalid_input'
   | 'city_required'
+  | 'city_not_found'
   | 'host_level_required'
   | 'host_level_in_person'
   | 'host_level_capacity'
@@ -256,6 +258,15 @@ export interface Backend {
     idempotencyKey: string,
   ): Promise<void>;
   staffAppeals(): Promise<StaffAppeal[]>;
+  /** Every city with what points at it; staff only. */
+  staffCities(): Promise<StaffCity[]>;
+  /** Merges a duplicate city into another (members, Plans, Circles move); logged. */
+  staffCityMerge(
+    fromId: string,
+    intoId: string,
+    reason: string,
+    idempotencyKey: string,
+  ): Promise<{ members: number; plans: number; circles: number }>;
   staffAppealDecide(
     appealId: string,
     uphold: boolean,

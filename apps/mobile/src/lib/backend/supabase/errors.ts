@@ -18,6 +18,7 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   allergens_required: 'invalid_input',
   invalid_plan: 'invalid_input',
   city_required: 'city_required',
+  city_not_found: 'city_not_found',
   host_level_required: 'host_level_required',
   host_level_in_person: 'host_level_in_person',
   host_level_capacity: 'host_level_capacity',

@@ -138,6 +138,26 @@ export function useStaffAppeals(enabled: boolean) {
   });
 }
 
+export function useStaffCities(enabled: boolean) {
+  const backend = useBackend();
+  return useQuery({ queryKey: ['staffCities'], queryFn: () => backend.staffCities(), enabled });
+}
+
+export function useStaffCityMerge() {
+  const backend = useBackend();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { fromId: string; intoId: string; reason: string; key: string }) =>
+      backend.staffCityMerge(input.fromId, input.intoId, input.reason, input.key),
+    onSuccess: () =>
+      Promise.all(
+        [['staffCities'], ['staffAudit'], ['cities']].map((key) =>
+          queryClient.invalidateQueries({ queryKey: key }),
+        ),
+      ),
+  });
+}
+
 export function useStaffAppealDecide() {
   const backend = useBackend();
   const queryClient = useQueryClient();

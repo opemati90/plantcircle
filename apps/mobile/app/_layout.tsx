@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { PolicyGate } from '../src/features/legal/PolicyGate';
 import { configureForeground } from '../src/features/notifications/push';
 import { PushTapRouter } from '../src/features/notifications/PushTapRouter';
+import { LanguageSync } from '../src/features/account/LanguageSync';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -90,6 +91,7 @@ export default function RootLayout() {
           <SessionSync />
           <PolicyGate />
           <PushTapRouter />
+          <LanguageSync />
           <StatusBar style="auto" />
           {/* Phones use the full width; larger screens keep the phone layout centred. */}
           <View style={styles.backdrop}>

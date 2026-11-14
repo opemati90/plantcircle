@@ -1071,6 +1071,16 @@ export const fr: Catalog = {
         'Chaque action de l’équipe et chaque consultation de contenu privé. Lecture seule.',
       auditEmpty: 'Rien de journalisé pour l’instant',
       auditEmptyText: 'Les décisions et consultations arrivent ici.',
+      cities: 'Villes',
+      citiesLead:
+        'Deux orthographes d’une même ville : tout ce qui pointe vers le doublon passe à la ville conservée. Journalisé.',
+      mergeFrom: 'Doublon à supprimer',
+      mergeInto: 'Ville à conserver',
+      cityCounts: '{{members}} membres · {{plans}} plans · {{circles}} Cercles',
+      mergeReason: 'Motif (journalisé)',
+      mergeAction: 'Fusionner les villes',
+      mergeDone:
+        'Fusionné : {{members}} membres, {{plans}} plans et {{circles}} Cercles déplacés.',
     },
   },
   account: {
@@ -1170,6 +1180,10 @@ export const fr: Catalog = {
     gotIt: 'Compris',
   },
   notify: {
+    reminder2h: '{{plan}} commence à {{time}}',
+    orderClosing: '{{order}} se termine demain',
+    orderClosingNote: 'Dernière chance d’ajouter ta quantité.',
+    newMessageGeneric: 'Nouveau message',
     weeklyDigest_one: 'Cette semaine : {{count}} plan près de toi à {{city}}',
     weeklyDigest_other: 'Cette semaine : {{count}} plans près de toi à {{city}}',
     weeklyDigestOnline_one: 'Cette semaine : {{count}} plan en ligne depuis chez toi',

@@ -84,6 +84,7 @@ begin
     'quiet_end', v_row.quiet_end,
     'lock_screen_text', v_row.lock_screen_text,
     'notif_prompt_dismissed_at', v_row.notif_prompt_dismissed_at,
+    'language', v_row.language,
     'export_requested_at', (select max(created_at) from public.data_requests
                             where user_id = v_uid and kind = 'export' and status = 'requested'));
 end;
@@ -122,6 +123,11 @@ begin
       if jsonb_typeof(p_patch -> v_key) <> 'number' or (p_patch ->> v_key) !~ '^[0-9]+$' then
         raise exception 'invalid_settings' using errcode = 'P0001';
       end if;
+    elsif v_key = 'language' then
+      if jsonb_typeof(p_patch -> v_key) <> 'string'
+         or (p_patch ->> v_key) not in ('en', 'de', 'es', 'pt', 'fr', 'pl', 'it', 'nl') then
+        raise exception 'invalid_settings' using errcode = 'P0001';
+      end if;
     else
       raise exception 'invalid_settings' using errcode = 'P0001';
     end if;
@@ -153,6 +159,7 @@ begin
     quiet_start = coalesce((p_patch ->> 'quiet_start')::smallint, quiet_start),
     quiet_end = coalesce((p_patch ->> 'quiet_end')::smallint, quiet_end),
     lock_screen_text = coalesce((p_patch ->> 'lock_screen_text')::boolean, lock_screen_text),
+    language = coalesce(p_patch ->> 'language', language),
     notif_prompt_dismissed_at = case when (p_patch ->> 'notif_prompt_dismissed')::boolean then now()
                                      else notif_prompt_dismissed_at end,
     updated_at = now()

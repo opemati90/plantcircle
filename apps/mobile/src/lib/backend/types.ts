@@ -902,6 +902,26 @@ export const staffCaseSchema = staffQueueRowSchema.extend({
     .nullable(),
 });
 
+/** A city as staff see it, with what points at it (staff_cities). */
+export interface StaffCity {
+  id: string;
+  name: string;
+  countryCode: string;
+  timezone: string;
+  members: number;
+  plans: number;
+  circles: number;
+}
+export const staffCitySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  country_code: z.string(),
+  tz: z.string(),
+  members: z.number().int(),
+  plans: z.number().int(),
+  circles: z.number().int(),
+});
+
 export interface StaffAppeal {
   id: string;
   caseRef: string | null;
@@ -959,6 +979,8 @@ export interface UserSettings {
   quietStart: number;
   quietEnd: number;
   lockScreenText: boolean;
+  /** The language pushes are written in; the app keeps it equal to its own. */
+  language: string;
   notifPromptDismissedAt: string | null;
   /** When a copy of the data was asked for and not yet sent. */
   exportRequestedAt: string | null;
@@ -971,6 +993,7 @@ export type SettingsPatch = Partial<
     | 'personalisationConsent'
     | 'notifReminders'
     | 'notifWaitlist'
+    | 'language'
     | 'notifDirect'
     | 'notifChats'
     | 'quietHours'
@@ -992,6 +1015,7 @@ export const settingsSchema = z.object({
   quiet_start: z.number().int(),
   quiet_end: z.number().int(),
   lock_screen_text: z.boolean(),
+  language: z.string().default('en'),
   notif_prompt_dismissed_at: z.string().nullable(),
   export_requested_at: z.string().nullable(),
 });
@@ -1008,6 +1032,7 @@ export const toSettings = (row: z.infer<typeof settingsSchema>): UserSettings =>
   quietStart: row.quiet_start,
   quietEnd: row.quiet_end,
   lockScreenText: row.lock_screen_text,
+  language: row.language,
   notifPromptDismissedAt: row.notif_prompt_dismissed_at,
   exportRequestedAt: row.export_requested_at,
 });
@@ -1024,12 +1049,15 @@ export const DEFAULT_SETTINGS: UserSettings = {
   quietStart: 22,
   quietEnd: 8,
   lockScreenText: false,
+  language: 'en',
   notifPromptDismissedAt: null,
   exportRequestedAt: null,
 };
 
 /** The patch as the database takes it (snake case, only the keys given). */
-export function settingsPatchToRow(patch: SettingsPatch): Record<string, boolean | number> {
+export function settingsPatchToRow(
+  patch: SettingsPatch,
+): Record<string, boolean | number | string> {
   const map: Record<keyof SettingsPatch, string> = {
     analyticsConsent: 'analytics_consent',
     personalisationConsent: 'personalisation_consent',
@@ -1041,12 +1069,13 @@ export function settingsPatchToRow(patch: SettingsPatch): Record<string, boolean
     quietStart: 'quiet_start',
     quietEnd: 'quiet_end',
     lockScreenText: 'lock_screen_text',
+    language: 'language',
     notifPromptDismissed: 'notif_prompt_dismissed',
   };
-  const row: Record<string, boolean | number> = {};
+  const row: Record<string, boolean | number | string> = {};
   for (const [k, v] of Object.entries(patch) as [
     keyof SettingsPatch,
-    boolean | number | undefined,
+    boolean | number | string | undefined,
   ][]) {
     if (v !== undefined) row[map[k]] = v;
   }

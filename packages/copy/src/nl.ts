@@ -1062,6 +1062,16 @@ export const nl: Catalog = {
       auditLead: 'Elke teamactie en elke weergave van privé-inhoud. Alleen lezen.',
       auditEmpty: 'Nog niets gelogd',
       auditEmptyText: 'Teambesluiten en weergaven komen hier binnen.',
+      cities: 'Steden',
+      citiesLead:
+        'Twee spellingen van één stad: alles van het duplicaat gaat naar de stad die blijft. Wordt gelogd.',
+      mergeFrom: 'Duplicaat om te verwijderen',
+      mergeInto: 'Stad om te houden',
+      cityCounts: '{{members}} leden · {{plans}} plannen · {{circles}} Cirkels',
+      mergeReason: 'Reden (wordt gelogd)',
+      mergeAction: 'Steden samenvoegen',
+      mergeDone:
+        'Samengevoegd: {{members}} leden, {{plans}} plannen en {{circles}} Cirkels verplaatst.',
     },
   },
   account: {
@@ -1159,6 +1169,10 @@ export const nl: Catalog = {
     gotIt: 'Begrepen',
   },
   notify: {
+    reminder2h: '{{plan}} begint om {{time}}',
+    orderClosing: '{{order}} sluit morgen',
+    orderClosingNote: 'Laatste kans om je hoeveelheid toe te voegen.',
+    newMessageGeneric: 'Nieuw bericht',
     weeklyDigest_one: 'Deze week: {{count}} plan bij jou in de buurt in {{city}}',
     weeklyDigest_other: 'Deze week: {{count}} plannen bij jou in de buurt in {{city}}',
     weeklyDigestOnline_one: 'Deze week: {{count}} online plan vanuit huis',
