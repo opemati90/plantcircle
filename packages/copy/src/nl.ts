@@ -147,6 +147,10 @@ export const nl: Catalog = {
     full: 'Vol',
     join: 'Meedoen',
     youreGoing: 'Je gaat mee',
+    bringFriend: 'Neem een vriend mee',
+    bringFriendMessage: 'Ga met me mee naar {{plan}} op PlantCircle: {{link}}',
+    bringFriendCopied: 'Bericht gekopieerd. Stuur het naar een vriend.',
+    bringFriendFailed: 'Delen lukte hier niet. De link om te sturen:',
     cancelling: 'Annuleren…',
     cancelHint: 'Opent de optie om je plek te annuleren',
     goingWithOthers_one: 'Jij en {{count}} ander gaan mee',
@@ -323,6 +327,7 @@ export const nl: Catalog = {
     },
   },
   learn: {
+    cookTogether: 'Samen koken',
     eyebrow: 'RECEPT',
     searchLabel: 'Recepten zoeken',
     searchPlaceholder: 'Recepten zoeken',
@@ -418,6 +423,10 @@ export const nl: Catalog = {
     connectBackWith: 'Terugverbinden met {{name}}',
   },
   create: {
+    fromRecipeTitle: '{{recipe}} samen koken',
+    fromRecipeDescription:
+      'We koken {{recipe}} naar het recept van {{author}} in {{circle}} en eten daarna samen.',
+    fromRecipeNote: 'Vooraf ingevuld vanuit {{recipe}} van {{author}}. Pas aan wat je wilt.',
     hintGroupOrder: 'Koop in bulk met buren. Niemand betaalt in de app.',
     title: 'Een plan starten',
     stepOf: 'Stap {{step}} van {{total}}',
@@ -1150,6 +1159,13 @@ export const nl: Catalog = {
     gotIt: 'Begrepen',
   },
   notify: {
+    weeklyDigest_one: 'Deze week: {{count}} plan bij jou in de buurt in {{city}}',
+    weeklyDigest_other: 'Deze week: {{count}} plannen bij jou in de buurt in {{city}}',
+    weeklyDigestOnline_one: 'Deze week: {{count}} online plan vanuit huis',
+    weeklyDigestOnline_other: 'Deze week: {{count}} online plannen vanuit huis',
+    weeklyDigestNote_one: 'Plus {{count}} online vanuit huis.',
+    weeklyDigestNote_other: 'Plus {{count}} online vanuit huis.',
+    weeklyDigestNoteHome: 'Online, vanuit je eigen keuken.',
     emptyTitle: 'Nog geen updates',
     emptyText: 'Aanmeldingen, herinneringen, aanbiedingen en besluiten verschijnen hier.',
     markAllRead: 'Alles als gelezen markeren',

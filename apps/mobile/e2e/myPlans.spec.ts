@@ -68,3 +68,15 @@ test('the Hosting and Past tabs each say what they show, and Hosting leads to cr
   await page.getByRole('tab', { name: 'Past' }).click();
   await expect(page.getByRole('heading', { name: 'No past Plans yet' })).toBeVisible();
 });
+
+test('a guest who is going can bring a friend with the Plan’s link', async ({ page }) => {
+  await signInWithEmail(page, '/plan/cooking-night');
+  await page.getByRole('button', { name: 'Join', exact: true }).click();
+  await dismissNotificationPrompt(page);
+  await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.getByRole('button', { name: 'Bring a friend' }).click();
+  await expect(page.getByText('Message copied. Send it to a friend.')).toBeVisible();
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  expect(text).toContain('https://plantcircle.app/p/cooking-night');
+});

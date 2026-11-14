@@ -17,6 +17,21 @@ export function describeNotification(
     id ? { pathname: '/plan/[id]', params: { id } } : null;
   const withId = (id: string, href: Href): Href | null => (id ? href : null);
   switch (n.type) {
+    case 'weekly_digest': {
+      const inCity = typeof p['in_city'] === 'number' ? p['in_city'] : 0;
+      const online = typeof p['online'] === 'number' ? p['online'] : 0;
+      return {
+        title:
+          inCity > 0 && str(p, 'city')
+            ? t('notify.weeklyDigest', { count: inCity, city: str(p, 'city') })
+            : t('notify.weeklyDigestOnline', { count: online }),
+        note:
+          inCity > 0
+            ? t('notify.weeklyDigestNote', { count: online })
+            : t('notify.weeklyDigestNoteHome'),
+        href: '/explore',
+      };
+    }
     case 'rsvp_confirmed':
       return {
         title: t('notify.rsvpConfirmed', { plan: str(p, 'plan') }),

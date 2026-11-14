@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail } from './support';
+import { chooseCity, freezeTime, signInWithEmail } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
@@ -52,5 +52,29 @@ test('a member shares a recipe into a Circle they are in', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Lentil dal' })).toBeVisible();
   await expect(
     page.getByText('Allergens not confirmed. Check every ingredient yourself.'),
+  ).toBeVisible();
+});
+
+test('“Cook this together” starts a Plan from the recipe, prefilled and credited', async ({
+  page,
+}) => {
+  await signInWithEmail(page, '/home');
+  await page.getByRole('button', { name: 'Change city' }).click();
+  await chooseCity(page, 'Berlin');
+  await expect(page.getByRole('heading', { name: 'This week in Berlin' })).toBeVisible();
+  await page.goto('/explore');
+  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
+  await page.getByRole('button', { name: 'Join', exact: true }).click();
+  await expect(page.getByText('You’re a member').last()).toBeVisible();
+  await page.goto('/recipe/efo-riro-smoked-tofu');
+  await page.getByRole('button', { name: 'Cook this together' }).click();
+  await expect(page.getByRole('radio', { name: 'Cooking night' })).toBeChecked();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByRole('textbox', { name: 'Title' })).toHaveValue(
+    'Cook Efo Riro with Smoked Tofu together',
+  );
+  await expect(
+    page.getByText('Prefilled from Efo Riro with Smoked Tofu by Ama O.'),
   ).toBeVisible();
 });

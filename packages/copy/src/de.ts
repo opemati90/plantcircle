@@ -148,6 +148,10 @@ export const de: Catalog = {
     full: 'Voll',
     join: 'Dabei sein',
     youreGoing: 'Du bist dabei',
+    bringFriend: 'Freund*in mitbringen',
+    bringFriendMessage: 'Komm mit zu {{plan}} auf PlantCircle: {{link}}',
+    bringFriendCopied: 'Nachricht kopiert. Schick sie weiter.',
+    bringFriendFailed: 'Teilen ging hier nicht. Der Link zum Weitergeben:',
     cancelling: 'Wird abgesagt …',
     cancelHint: 'Öffnet die Möglichkeit, deinen Platz abzusagen',
     goingWithOthers_one: 'Du + {{count}} dabei',
@@ -326,6 +330,7 @@ export const de: Catalog = {
     },
   },
   learn: {
+    cookTogether: 'Gemeinsam kochen',
     eyebrow: 'REZEPT',
     searchLabel: 'Rezepte suchen',
     searchPlaceholder: 'Rezepte suchen',
@@ -421,6 +426,10 @@ export const de: Catalog = {
     connectBackWith: 'Mit {{name}} zurück verbinden',
   },
   create: {
+    fromRecipeTitle: '{{recipe}} gemeinsam kochen',
+    fromRecipeDescription:
+      'Wir kochen {{recipe}} nach dem Rezept von {{author}} aus {{circle}} und essen dann zusammen.',
+    fromRecipeNote: 'Vorausgefüllt aus {{recipe}} von {{author}}. Ändere, was du willst.',
     hintGroupOrder: 'Gemeinsam in großen Mengen kaufen. Niemand zahlt in der App.',
     title: 'Eine Runde starten',
     stepOf: 'Schritt {{step}} von {{total}}',
@@ -1157,6 +1166,13 @@ export const de: Catalog = {
     gotIt: 'Verstanden',
   },
   notify: {
+    weeklyDigest_one: 'Diese Woche: {{count}} Plan in deiner Nähe in {{city}}',
+    weeklyDigest_other: 'Diese Woche: {{count}} Pläne in deiner Nähe in {{city}}',
+    weeklyDigestOnline_one: 'Diese Woche: {{count}} Online-Plan von zu Hause aus',
+    weeklyDigestOnline_other: 'Diese Woche: {{count}} Online-Pläne von zu Hause aus',
+    weeklyDigestNote_one: 'Dazu {{count}} online von zu Hause aus.',
+    weeklyDigestNote_other: 'Dazu {{count}} online von zu Hause aus.',
+    weeklyDigestNoteHome: 'Online, aus deiner eigenen Küche.',
     emptyTitle: 'Noch keine Updates',
     emptyText: 'Zusagen, Erinnerungen, Angebote und Entscheidungen erscheinen hier.',
     markAllRead: 'Alle als gelesen markieren',

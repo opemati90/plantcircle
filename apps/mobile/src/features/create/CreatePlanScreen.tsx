@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -21,6 +21,7 @@ import { useAuth } from '../auth/useAuth';
 import { newIdempotencyKey, useCities } from '../plans/queries';
 import { HostLevelCard } from '../hosting/HostLevelCard';
 import { useHostLevel } from '../hosting/queries';
+import { useRecipe } from '../learn/queries';
 import { useCreatePlan } from './queries';
 import {
   DAY_COUNT,
@@ -84,7 +85,11 @@ export default function CreatePlanScreen() {
   const cities = useCities();
   const create = useCreatePlan();
   const hostLevel = useHostLevel();
+  // "Cook this together" from a recipe: the draft starts from it (design note §4).
+  const { recipe: recipeId } = useLocalSearchParams<{ recipe?: string }>();
+  const recipe = useRecipe(recipeId ?? '', Boolean(recipeId));
   const [draft, setDraft] = useState<Draft>(EMPTY);
+  const [prefilledFrom, setPrefilledFrom] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
   const [lateStart, setLateStart] = useState(false);
   const [key, setKey] = useState(newIdempotencyKey);
@@ -97,6 +102,32 @@ export default function CreatePlanScreen() {
     setLateStart(false);
     setDraft((current) => ({ ...current, ...patch }));
   };
+  useEffect(() => {
+    const r = recipe.data;
+    const level = hostLevel.data;
+    if (!r || !level || prefilledFrom === r.id) return;
+    setPrefilledFrom(r.id);
+    // The composed title must still fit plan_create's 80 characters (code points).
+    const composed = Array.from(t('create.fromRecipeTitle', { recipe: r.title }));
+    const title =
+      composed.length > 80 ? Array.from(r.title).slice(0, 80).join('') : composed.join('');
+    const minutes = r.minutes ?? 90;
+    const duration: number = DURATION_MINUTES.find((d) => d >= minutes + 30) ?? 240;
+    setDraft((current) => ({
+      ...current,
+      category: 'cooking_night',
+      title,
+      description: t('create.fromRecipeDescription', {
+        recipe: r.title,
+        author: r.authorName ?? t('circles.requests.someone'),
+        circle: r.circleName,
+      }),
+      duration,
+      capacity: Math.max(MIN_CAPACITY, Math.min(level.maxCapacity, r.serves)),
+      allergens:
+        r.allergensConfirmed && r.allergens.length > 0 ? r.allergens : current.allergens,
+    }));
+  }, [recipe.data, hostLevel.data, prefilledFrom, t]);
   const levelMaxCapacity = Math.min(MAX_CAPACITY, hostLevel.data?.maxCapacity ?? MAX_CAPACITY);
   const levelInPerson = hostLevel.data?.inPerson ?? true;
   // A level that cannot host in person or hold the default spots: the draft follows it.
@@ -115,7 +146,7 @@ export default function CreatePlanScreen() {
   const meetingValid = isMeetingUrl(draft.meetingUrl.trim());
   const valid: Record<Step, boolean> = {
     type: draft.category !== null,
-    name: characterCount(draft.title.trim()) >= 3,
+    name: characterCount(draft.title.trim()) >= 3 && characterCount(draft.title.trim()) <= 80,
     when: window !== null && startsSoonEnough(window.startsAt, now),
     where:
       draft.format === 'online'
@@ -349,6 +380,14 @@ export default function CreatePlanScreen() {
             <Text accessibilityRole="header" style={styles.title}>
               {t('create.nameTitle')}
             </Text>
+            {recipe.data ? (
+              <Text style={styles.lead}>
+                {t('create.fromRecipeNote', {
+                  recipe: recipe.data.title,
+                  author: recipe.data.authorName ?? t('circles.requests.someone'),
+                })}
+              </Text>
+            ) : null}
             <Text style={styles.label}>{t('create.titleLabel')}</Text>
             <TextInput
               accessibilityLabel={t('create.titleLabel')}

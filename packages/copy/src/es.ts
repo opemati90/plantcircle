@@ -148,6 +148,10 @@ export const es: Catalog = {
     full: 'Completo',
     join: 'Unirme',
     youreGoing: 'Vas a asistir',
+    bringFriend: 'Trae a un amigo',
+    bringFriendMessage: 'Ven conmigo a {{plan}} en PlantCircle: {{link}}',
+    bringFriendCopied: 'Mensaje copiado. Envíaselo a un amigo.',
+    bringFriendFailed: 'No se pudo compartir aquí. El enlace para enviar:',
     cancelling: 'Cancelando…',
     cancelHint: 'Abre la opción de cancelar tu plaza',
     goingWithOthers_one: 'Tú y {{count}} más asistís',
@@ -320,6 +324,7 @@ export const es: Catalog = {
     },
   },
   learn: {
+    cookTogether: 'Cocinar esto juntos',
     eyebrow: 'RECETA',
     searchLabel: 'Buscar recetas',
     searchPlaceholder: 'Buscar recetas',
@@ -415,6 +420,10 @@ export const es: Catalog = {
     connectBackWith: 'Conectar de vuelta con {{name}}',
   },
   create: {
+    fromRecipeTitle: 'Cocinar {{recipe}} juntos',
+    fromRecipeDescription:
+      'Cocinamos {{recipe}} con la receta de {{author}} en {{circle}} y luego comemos juntos.',
+    fromRecipeNote: 'Rellenado desde {{recipe}} de {{author}}. Cambia lo que quieras.',
     hintGroupOrder: 'Compra al por mayor con tus vecinos. Nadie paga en la app.',
     title: 'Empezar un plan',
     stepOf: 'Paso {{step}} de {{total}}',
@@ -1142,6 +1151,13 @@ export const es: Catalog = {
     gotIt: 'Entendido',
   },
   notify: {
+    weeklyDigest_one: 'Esta semana: {{count}} plan cerca de ti en {{city}}',
+    weeklyDigest_other: 'Esta semana: {{count}} planes cerca de ti en {{city}}',
+    weeklyDigestOnline_one: 'Esta semana: {{count}} plan online desde casa',
+    weeklyDigestOnline_other: 'Esta semana: {{count}} planes online desde casa',
+    weeklyDigestNote_one: 'Y {{count}} online desde casa.',
+    weeklyDigestNote_other: 'Y {{count}} online desde casa.',
+    weeklyDigestNoteHome: 'Online, desde tu propia cocina.',
     emptyTitle: 'Aún no hay novedades',
     emptyText: 'Aquí aparecen asistencias, recordatorios, ofertas y decisiones.',
     markAllRead: 'Marcar todo como leído',

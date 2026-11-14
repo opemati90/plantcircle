@@ -148,6 +148,10 @@ export const it: Catalog = {
     full: 'Completo',
     join: 'Partecipa',
     youreGoing: 'Ci sei',
+    bringFriend: 'Porta un amico',
+    bringFriendMessage: 'Vieni con me a {{plan}} su PlantCircle: {{link}}',
+    bringFriendCopied: 'Messaggio copiato. Mandalo a un amico.',
+    bringFriendFailed: 'Impossibile condividere qui. Il link da inviare:',
     cancelling: 'Annullamento…',
     cancelHint: 'Apre l’opzione per annullare il tuo posto',
     goingWithOthers_one: 'Tu e {{count}} altra persona ci siete',
@@ -320,6 +324,7 @@ export const it: Catalog = {
     },
   },
   learn: {
+    cookTogether: 'Cuciniamolo insieme',
     eyebrow: 'RICETTA',
     searchLabel: 'Cerca ricette',
     searchPlaceholder: 'Cerca ricette',
@@ -415,6 +420,10 @@ export const it: Catalog = {
     connectBackWith: 'Ricambia la connessione con {{name}}',
   },
   create: {
+    fromRecipeTitle: 'Cucinare {{recipe}} insieme',
+    fromRecipeDescription:
+      'Cuciniamo {{recipe}} dalla ricetta di {{author}} in {{circle}}, poi mangiamo insieme.',
+    fromRecipeNote: 'Precompilato da {{recipe}} di {{author}}. Cambia quello che vuoi.',
     hintGroupOrder: 'Compra all’ingrosso con i vicini. Nessuno paga nell’app.',
     title: 'Organizza un incontro',
     stepOf: 'Passo {{step}} di {{total}}',
@@ -1145,6 +1154,13 @@ export const it: Catalog = {
     gotIt: 'Capito',
   },
   notify: {
+    weeklyDigest_one: 'Questa settimana: {{count}} piano vicino a te a {{city}}',
+    weeklyDigest_other: 'Questa settimana: {{count}} piani vicino a te a {{city}}',
+    weeklyDigestOnline_one: 'Questa settimana: {{count}} piano online da casa',
+    weeklyDigestOnline_other: 'Questa settimana: {{count}} piani online da casa',
+    weeklyDigestNote_one: 'Più {{count}} online da casa.',
+    weeklyDigestNote_other: 'Più {{count}} online da casa.',
+    weeklyDigestNoteHome: 'Online, dalla tua cucina.',
     emptyTitle: 'Ancora nessuna novità',
     emptyText: 'Iscrizioni, promemoria, offerte e decisioni compaiono qui.',
     markAllRead: 'Segna tutto come letto',

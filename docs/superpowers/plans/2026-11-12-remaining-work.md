@@ -167,3 +167,13 @@ Open questions:
 
 Done: four tabs. Home shows "Your Plans" (first three upcoming, loading/error/empty states, See all).
 `/my-plans` stays as a detail screen with a back control, so every link to it still works.
+
+## Growth features (14 November 2026)
+
+Done: “Cook this together” on a recipe (Create Plan prefilled and credited, capped to the host’s
+level), “Bring a friend” on a Plan you’re going to (share or copy the web RSVP link, link shown on
+failure), Monday digest (`weekly_digest_enqueue`, Monday 09–11 city time, once per ISO week,
+blocks respected, counts shared per run, off with reminders).
+
+Open: push text is still English for every language (recorded earlier under push copy per
+language); the digest is in the Inbox in the reader’s language.

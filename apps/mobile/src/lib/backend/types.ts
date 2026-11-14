@@ -1164,6 +1164,7 @@ export const profileStatsSchema = z.object({
 
 export const NOTIFICATION_TYPES = [
   'rsvp_confirmed',
+  'weekly_digest',
   'reminder_day_before',
   'reminder_2h',
   'address_unlocked',

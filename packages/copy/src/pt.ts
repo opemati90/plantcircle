@@ -148,6 +148,10 @@ export const pt: Catalog = {
     full: 'Lotado',
     join: 'Participar',
     youreGoing: 'Você vai',
+    bringFriend: 'Traz um amigo',
+    bringFriendMessage: 'Vem comigo a {{plan}} no PlantCircle: {{link}}',
+    bringFriendCopied: 'Mensagem copiada. Envia-a a um amigo.',
+    bringFriendFailed: 'Não foi possível partilhar aqui. O link para enviar:',
     cancelling: 'A cancelar…',
     cancelHint: 'Abre a opção de cancelar a sua vaga',
     goingWithOthers_one: 'Você e mais {{count}} pessoa vão',
@@ -319,6 +323,7 @@ export const pt: Catalog = {
     },
   },
   learn: {
+    cookTogether: 'Cozinhar isto em grupo',
     eyebrow: 'RECEITA',
     searchLabel: 'Pesquisar receitas',
     searchPlaceholder: 'Pesquisar receitas',
@@ -415,6 +420,10 @@ export const pt: Catalog = {
     connectBackWith: 'Conectar de volta com {{name}}',
   },
   create: {
+    fromRecipeTitle: 'Cozinhar {{recipe}} em grupo',
+    fromRecipeDescription:
+      'Cozinhamos {{recipe}} com a receita de {{author}} em {{circle}} e depois comemos juntos.',
+    fromRecipeNote: 'Preenchido a partir de {{recipe}} de {{author}}. Muda o que quiseres.',
     hintGroupOrder: 'Compre a granel com os vizinhos. Ninguém paga no app.',
     title: 'Criar um plano',
     stepOf: 'Passo {{step}} de {{total}}',
@@ -1146,6 +1155,13 @@ export const pt: Catalog = {
     gotIt: 'Entendido',
   },
   notify: {
+    weeklyDigest_one: 'Esta semana: {{count}} plano perto de ti em {{city}}',
+    weeklyDigest_other: 'Esta semana: {{count}} planos perto de ti em {{city}}',
+    weeklyDigestOnline_one: 'Esta semana: {{count}} plano online a partir de casa',
+    weeklyDigestOnline_other: 'Esta semana: {{count}} planos online a partir de casa',
+    weeklyDigestNote_one: 'Mais {{count}} online a partir de casa.',
+    weeklyDigestNote_other: 'Mais {{count}} online a partir de casa.',
+    weeklyDigestNoteHome: 'Online, da tua própria cozinha.',
     emptyTitle: 'Ainda sem novidades',
     emptyText: 'Confirmações, lembretes, ofertas e decisões aparecem aqui.',
     markAllRead: 'Marcar tudo como lido',

@@ -17,12 +17,13 @@ export function useRecipes(search: string) {
   });
 }
 
-export function useRecipe(recipeId: string) {
+export function useRecipe(recipeId: string, enabled = true) {
   const backend = useBackend();
   const { session } = useAuth();
   return useQuery({
     queryKey: ['recipe', recipeId, session?.userId ?? null],
     queryFn: () => backend.getRecipe(recipeId),
+    enabled,
   });
 }
 

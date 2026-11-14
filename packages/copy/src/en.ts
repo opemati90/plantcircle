@@ -143,6 +143,10 @@ export const en = {
     full: 'Full',
     join: 'Join',
     youreGoing: 'You’re going',
+    bringFriend: 'Bring a friend',
+    bringFriendMessage: 'Join me at {{plan}} on PlantCircle: {{link}}',
+    bringFriendCopied: 'Message copied. Send it to a friend.',
+    bringFriendFailed: 'Couldn’t open sharing here. The link to send:',
     cancelling: 'Cancelling…',
     cancelHint: 'Opens the option to cancel your spot',
     goingWithOthers_one: 'You and {{count}} other are going',
@@ -313,6 +317,7 @@ export const en = {
     },
   },
   learn: {
+    cookTogether: 'Cook this together',
     eyebrow: 'RECIPE',
     searchLabel: 'Search recipes',
     searchPlaceholder: 'Search recipes',
@@ -408,6 +413,10 @@ export const en = {
     connectBackWith: 'Connect back with {{name}}',
   },
   create: {
+    fromRecipeTitle: 'Cook {{recipe}} together',
+    fromRecipeDescription:
+      'We cook {{recipe}} from the recipe by {{author}} in {{circle}}, then eat together.',
+    fromRecipeNote: 'Prefilled from {{recipe}} by {{author}}. Change anything.',
     hintGroupOrder: 'Buy in bulk with neighbours. Nobody pays in the app.',
     title: 'Start a Plan',
     stepOf: 'Step {{step}} of {{total}}',
@@ -1127,6 +1136,13 @@ export const en = {
     gotIt: 'Got it',
   },
   notify: {
+    weeklyDigest_one: 'This week: {{count}} Plan near you in {{city}}',
+    weeklyDigest_other: 'This week: {{count}} Plans near you in {{city}}',
+    weeklyDigestOnline_one: 'This week: {{count}} online Plan to join from home',
+    weeklyDigestOnline_other: 'This week: {{count}} online Plans to join from home',
+    weeklyDigestNote_one: 'Plus {{count}} online you can join from home.',
+    weeklyDigestNote_other: 'Plus {{count}} online you can join from home.',
+    weeklyDigestNoteHome: 'Online, from your own kitchen.',
     emptyTitle: 'No updates yet',
     emptyText: 'Joins, reminders, offers and decisions show up here.',
     markAllRead: 'Mark all read',

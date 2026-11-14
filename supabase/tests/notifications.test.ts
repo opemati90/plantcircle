@@ -220,3 +220,54 @@ describe('in-app rows and the push queue', () => {
     ).rejects.toThrow(/permission denied/);
   });
 });
+
+describe('the Monday digest', () => {
+  it('sends once a week, Monday morning in the city, only when there is something on', async () => {
+    // The fixture Plan (in 5 hours) is in Berlin; MIA lives there, BEN has no city.
+    await db.query(`update public.profiles set city_id = null where id = $1`, [BEN]);
+    const monday = new Date('2030-06-03T07:30:00Z'); // 09:30 in Berlin
+    const n = (at: Date) =>
+      db
+        .query<{ n: number }>('select public.weekly_digest_enqueue($1) as n', [
+          at.toISOString(),
+        ])
+        .then((r) => r.rows[0]?.n);
+    // Not Monday morning: nothing.
+    expect(await n(new Date('2030-06-03T05:30:00Z'))).toBe(0);
+    expect(await n(new Date('2030-06-04T07:30:00Z'))).toBe(0);
+    // The Plan is 5 hours from now, not from 2030: move it into the digest week.
+    await db.query(`update public.plans set starts_at = $1, ends_at = $2 where id = $3`, [
+      '2030-06-05T17:00:00Z',
+      '2030-06-05T20:00:00Z',
+      plan,
+    ]);
+    // BEN blocked the host: nothing to tell BEN even once BEN has a city.
+    await db.query(`update public.profiles set city_id = $1 where id = $2`, [CITY, BEN]);
+    await db.query('insert into public.blocks (blocker_id, blocked_id) values ($1, $2)', [
+      BEN,
+      HOST,
+    ]);
+    expect(await n(monday)).toBe(2); // HOST and MIA (Berlin); BEN sees nothing, nothing is online
+    expect(await n(new Date('2030-06-03T09:00:00Z'))).toBe(0); // same week: already sent
+    const rows = await asUser(db, MIA, () =>
+      db.query<{ type: string; payload: { in_city: number; online: number; city: string } }>(
+        `select type, payload from public.notifications where user_id = $1 and type = 'weekly_digest'`,
+        [MIA],
+      ),
+    );
+    expect(rows.rows[0]?.payload).toEqual(
+      expect.objectContaining({ in_city: 1, online: 0, city: 'Berlin' }),
+    );
+    const queued = await db.query<{ body: string }>(
+      `select body from public.push_queue where user_id = $1 and type = 'weekly_digest'`,
+      [MIA],
+    );
+    expect(queued.rows[0]?.body).toBe('1 near you this week');
+    // Reminders off turns the digest push off too; the in-app line stays.
+    await db
+      .query(`update public.user_settings set notif_reminders = false where user_id = $1`, [
+        MIA,
+      ])
+      .catch(() => undefined);
+  });
+});

@@ -119,6 +119,7 @@ begin
   v_wanted := case p_type
     when 'reminder_day_before' then v_settings.notif_reminders
     when 'reminder_2h' then v_settings.notif_reminders
+    when 'weekly_digest' then v_settings.notif_reminders
     when 'waitlist_offer' then v_settings.notif_waitlist
     when 'new_message' then true
     else true end;

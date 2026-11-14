@@ -153,6 +153,14 @@ export default function RecipeScreen() {
               </Text>
             </View>
           </View>
+          {session ? (
+            <Button
+              label={t('learn.cookTogether')}
+              onPress={() => {
+                router.push({ pathname: '/create', params: { recipe: data.id } });
+              }}
+            />
+          ) : null}
           {session && data.authorId !== session.userId ? (
             <View style={styles.actions}>
               <Button

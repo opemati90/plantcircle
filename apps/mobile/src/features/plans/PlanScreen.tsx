@@ -2,7 +2,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Button, IconButton } from '../../components/Button';
 import {
   CheckIcon,
@@ -106,6 +115,23 @@ function PlanView({
 }) {
   const { plan, rsvp, bringItems, address, meetingUrl } = detail;
   const isGoing = rsvp === 'going';
+  const [friendState, setFriendState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  // A guest brings a friend by the Plan's link: the web RSVP needs no app (design note §4).
+  const bringFriend = async (planTitle: string, planId: string) => {
+    setFriendState('idle');
+    const link = `https://plantcircle.app/p/${planId}`;
+    const message = t('plan.bringFriendMessage', { plan: planTitle, link });
+    try {
+      if (Platform.OS === 'web') {
+        await navigator.clipboard.writeText(message);
+        setFriendState('copied');
+      } else {
+        await Share.share({ message });
+      }
+    } catch {
+      setFriendState('failed');
+    }
+  };
   const router = useRouter();
   const feedback = useFeedback(plan.id);
   const insets = useScreenInsets();
@@ -523,19 +549,43 @@ function PlanView({
             </Text>
           </View>
           {isGoing ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('plan.youreGoing')}
-              accessibilityHint={t('plan.cancelHint')}
-              onPress={() => {
-                setSheet('cancel');
-              }}
-              style={[styles.cta, styles.ctaGoing]}
-            >
-              <Text style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}>
-                {cancel.isPending ? t('plan.cancelling') : t('plan.youreGoing')}
-              </Text>
-            </Pressable>
+            <View style={styles.goingActions}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('plan.youreGoing')}
+                accessibilityHint={t('plan.cancelHint')}
+                onPress={() => {
+                  setSheet('cancel');
+                }}
+                style={[styles.cta, styles.ctaGoing]}
+              >
+                <Text style={type(17, 'semibold', { color: color.brand, tracking: -0.2 })}>
+                  {cancel.isPending ? t('plan.cancelling') : t('plan.youreGoing')}
+                </Text>
+              </Pressable>
+              <Button
+                variant="outline"
+                label={t('plan.bringFriend')}
+                onPress={() => void bringFriend(plan.title, plan.id)}
+              />
+              {friendState !== 'idle' ? (
+                <Text
+                  role="status"
+                  style={type(14, 'regular', {
+                    color: friendState === 'copied' ? color.secondary : color.danger,
+                  })}
+                >
+                  {friendState === 'copied'
+                    ? t('plan.bringFriendCopied')
+                    : t('plan.bringFriendFailed')}
+                </Text>
+              ) : null}
+              {friendState === 'failed' ? (
+                <Text selectable style={type(15, 'medium', { color: color.brand })}>
+                  {`https://plantcircle.app/p/${plan.id}`}
+                </Text>
+              ) : null}
+            </View>
           ) : rsvp === 'waitlisted' ? (
             <Pressable
               accessibilityRole="button"
@@ -831,6 +881,7 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   barText: { flex: 1, gap: 1 },
+  goingActions: { gap: 10 },
   cta: {
     minWidth: 150,
     minHeight: 52,

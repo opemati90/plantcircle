@@ -153,6 +153,10 @@ export const fr: Catalog = {
     full: 'Complet',
     join: 'Participer',
     youreGoing: 'Tu y vas',
+    bringFriend: 'Amener un ami',
+    bringFriendMessage: 'Rejoins-moi à {{plan}} sur PlantCircle : {{link}}',
+    bringFriendCopied: 'Message copié. Envoie-le à un ami.',
+    bringFriendFailed: 'Impossible de partager ici. Le lien à envoyer :',
     cancelling: 'Annulation…',
     cancelHint: 'Ouvre l’option pour annuler ta place',
     goingWithOthers_one: 'Toi et {{count}} autre personne venez',
@@ -328,6 +332,7 @@ export const fr: Catalog = {
     },
   },
   learn: {
+    cookTogether: 'Cuisiner ça ensemble',
     eyebrow: 'RECETTE',
     searchLabel: 'Rechercher des recettes',
     searchPlaceholder: 'Rechercher des recettes',
@@ -424,6 +429,10 @@ export const fr: Catalog = {
     connectBackWith: 'Se connecter en retour avec {{name}}',
   },
   create: {
+    fromRecipeTitle: 'Cuisiner {{recipe}} ensemble',
+    fromRecipeDescription:
+      'On cuisine {{recipe}} d’après la recette de {{author}} dans {{circle}}, puis on mange ensemble.',
+    fromRecipeNote: 'Prérempli depuis {{recipe}} de {{author}}. Change ce que tu veux.',
     hintGroupOrder: 'Achetez en gros avec vos voisins. Personne ne paie dans l’appli.',
     title: 'Lancer une sortie',
     stepOf: 'Étape {{step}} sur {{total}}',
@@ -1161,6 +1170,13 @@ export const fr: Catalog = {
     gotIt: 'Compris',
   },
   notify: {
+    weeklyDigest_one: 'Cette semaine : {{count}} plan près de toi à {{city}}',
+    weeklyDigest_other: 'Cette semaine : {{count}} plans près de toi à {{city}}',
+    weeklyDigestOnline_one: 'Cette semaine : {{count}} plan en ligne depuis chez toi',
+    weeklyDigestOnline_other: 'Cette semaine : {{count}} plans en ligne depuis chez toi',
+    weeklyDigestNote_one: 'Plus {{count}} en ligne depuis chez toi.',
+    weeklyDigestNote_other: 'Plus {{count}} en ligne depuis chez toi.',
+    weeklyDigestNoteHome: 'En ligne, depuis ta propre cuisine.',
     emptyTitle: 'Pas encore d’actus',
     emptyText: 'Inscriptions, rappels, offres et décisions apparaissent ici.',
     markAllRead: 'Tout marquer comme lu',
