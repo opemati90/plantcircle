@@ -42,6 +42,7 @@ export const planCardSchema = z.object({
   image_focus: z.string().nullable(),
   host_name: z.string(),
   host_verified: z.boolean(),
+  host_featured: z.boolean(),
   host_plans_count: z.number().int(),
   going_count: z.number().int(),
   attendee_initials: z.array(z.string()),
@@ -76,6 +77,8 @@ export interface Plan {
   imageFocus: string | null;
   hostName: string;
   hostVerified: boolean;
+  /** A level-3 or staff-verified host: a badge, and first in Explore. */
+  hostFeatured: boolean;
   hostPlansCount: number;
   goingCount: number;
   attendeeInitials: string[];
@@ -111,6 +114,7 @@ export function toPlan(row: z.infer<typeof planCardSchema>): Plan {
     imageFocus: row.image_focus,
     hostName: row.host_name,
     hostVerified: row.host_verified,
+    hostFeatured: row.host_featured,
     hostPlansCount: row.host_plans_count,
     goingCount: row.going_count,
     attendeeInitials: row.attendee_initials,

@@ -260,16 +260,19 @@ export default function EditProfileScreen() {
             },
           });
         }}
-        onCreate={(name) => {
-          ensureCity.mutate(name, {
-            onSuccess: (city) => {
-              setCity.mutate(city.id, {
-                onSuccess: () => {
-                  setCityOpen(false);
-                },
-              });
+        onCreate={(name, countryCode, timezone) => {
+          ensureCity.mutate(
+            { name, countryCode, timezone },
+            {
+              onSuccess: (city) => {
+                setCity.mutate(city.id, {
+                  onSuccess: () => {
+                    setCityOpen(false);
+                  },
+                });
+              },
             },
-          });
+          );
         }}
         creating={ensureCity.isPending}
         createFailed={ensureCity.isError}

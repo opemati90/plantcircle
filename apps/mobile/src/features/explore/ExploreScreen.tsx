@@ -133,6 +133,9 @@ function PlansTab({
             label: spotsLeftShort(t, plan),
             tone: plan.hasOpenSpot ? 'positive' : 'neutral',
           }}
+          {...(plan.hostFeatured
+            ? { badge: { label: t('explore.featuredHost'), tone: 'attention' as const } }
+            : {})}
           onPress={() => {
             onOpen(plan);
           }}
@@ -460,13 +463,16 @@ export default function ExploreScreen() {
           setBrowseChoice({ kind: 'country', code: group.countryCode });
           setBrowseOpen(false);
         }}
-        onCreate={(name) => {
-          ensureCity.mutate(name, {
-            onSuccess: (city) => {
-              setBrowseChoice({ kind: 'city', id: city.id });
-              setBrowseOpen(false);
+        onCreate={(name, countryCode, timezone) => {
+          ensureCity.mutate(
+            { name, countryCode, timezone },
+            {
+              onSuccess: (city) => {
+                setBrowseChoice({ kind: 'city', id: city.id });
+                setBrowseOpen(false);
+              },
             },
-          });
+          );
         }}
         creating={ensureCity.isPending}
         createFailed={ensureCity.isError}

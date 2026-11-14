@@ -152,6 +152,9 @@ begin
     nullif(item->>'unit', '')
   from jsonb_array_elements(p_ingredients) with ordinality as t(item, ord);
 
+  -- A recipe can change the author's hosting level (20261112002100_featured_hosts.sql).
+  perform public.host_featured_refresh(v_uid);
+
   insert into public.recipe_steps (recipe_id, position, body)
   select v_id, ord::integer, body
   from jsonb_array_elements_text(p_steps) with ordinality as t(body, ord);

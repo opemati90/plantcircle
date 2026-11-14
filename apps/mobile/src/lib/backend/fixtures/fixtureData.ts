@@ -88,6 +88,7 @@ export function fixturePlans(now: Date): Plan[] {
     currency: 'EUR',
     imageFocus: null,
     hostVerified: false,
+    hostFeatured: false,
     waitlistCount: 0,
     hasOpenSpot: true,
   };
@@ -113,6 +114,7 @@ export function fixturePlans(now: Date): Plan[] {
       imageFocus: '38% center',
       hostName: 'Ama O.',
       hostVerified: true,
+      hostFeatured: true,
       hostPlansCount: 6,
       goingCount: 4,
       attendeeInitials: ['M', 'J', 'S'],

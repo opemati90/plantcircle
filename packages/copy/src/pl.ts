@@ -77,6 +77,12 @@ export const pl: Catalog = {
     hint: 'Dowolne miasto na świecie. Nie ma go jeszcze na liście? Wpisz je, a zostanie dodane.',
     adding: 'Dodawanie: {{name}}…',
     addFailed: 'Nie udało się dodać tego miasta. Spróbuj ponownie.',
+    changeCountry: 'Nie {{country}}? Wybierz kraj',
+    countryTitle: 'Który kraj?',
+    countrySearch: 'Szukaj kraju',
+    changeTimeZone: 'Strefa czasowa: {{zone}} · Zmień',
+    timeZoneTitle: 'W jakiej strefie czasowej leży {{city}}?',
+    timeZoneSearch: 'Szukaj strefy czasowej',
     group: 'Miasto',
     loading: 'Ładowanie miast',
     loadError: 'Nie udało się wczytać listy miast.',
@@ -87,6 +93,8 @@ export const pl: Catalog = {
       'Kontynuując, potwierdzasz, że masz 18 lat lub więcej i akceptujesz zasady społeczności.',
   },
   home: {
+    yourPlans: 'Twoje plany',
+    yourPlansEmpty: 'Na razie nic nie zaplanowano. Dołącz do planu, a pojawi się tutaj.',
     greeting: {
       morning: 'Dzień dobry',
       afternoon: 'Miłego popołudnia',
@@ -842,6 +850,7 @@ export const pl: Catalog = {
     notFound: 'Ten krąg nie jest dostępny.',
   },
   explore: {
+    featuredHost: 'Polecany gospodarz',
     search: 'Szukaj',
     searchPlaceholder: 'Szukaj planów',
     tabs: { circles: 'Kręgi', plans: 'Plany', learn: 'Nauka', people: 'Ludzie' },

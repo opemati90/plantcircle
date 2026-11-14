@@ -286,6 +286,8 @@ export interface Backend {
     from: Date;
     to: Date;
     format?: 'online';
+    /** Explore: featured hosts first, then by start (ordered on the server, before the limit). */
+    order?: 'featured';
   }): Promise<Plan[]>;
   getPlan(planId: string): Promise<PlanDetail>;
   getUpNext(now: Date): Promise<UpNext | null>;

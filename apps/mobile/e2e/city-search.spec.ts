@@ -57,3 +57,28 @@ test('onboarding takes a typed city', async ({ page }) => {
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByRole('heading', { name: 'This week in Kigali' })).toBeVisible();
 });
+
+test('a new city can be filed under another country than the device’s', async ({ page }) => {
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Change city' }).click();
+  await page.getByRole('textbox', { name: 'Search cities' }).fill('Lagos');
+  // Lagos, Nigeria is known; the device says United Kingdom, so Lagos could be added there too.
+  await expect(page.getByRole('radio', { name: 'Lagos' })).toBeVisible();
+  await page.getByRole('button', { name: 'Not United Kingdom? Choose the country' }).click();
+  await page.getByRole('textbox', { name: 'Search countries' }).fill('portu');
+  await page.getByRole('radio', { name: 'Portugal' }).click();
+  // Another country: the time zone is asked too, defaulting to the device's.
+  await page.getByRole('button', { name: /^Time zone: / }).click();
+  await page.getByRole('textbox', { name: 'Search time zones' }).fill('lisbon');
+  await page.getByRole('radio', { name: 'Europe/Lisbon' }).click();
+  await expect(
+    page.getByRole('button', { name: 'Time zone: Europe/Lisbon · Change' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: /Use “Lagos” · Portugal/ }).click();
+  await expect(page.getByRole('heading', { name: 'This week in Lagos' })).toBeVisible();
+  // Two cities called Lagos now, in two countries, both findable.
+  await page.getByRole('button', { name: 'Change city' }).click();
+  await page.getByRole('textbox', { name: 'Search cities' }).fill('Lagos');
+  await expect(page.getByText('PORTUGAL', { exact: true })).toBeVisible();
+  await expect(page.getByText('NIGERIA', { exact: true })).toBeVisible();
+});

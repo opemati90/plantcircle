@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { OfflineIcon, PlusIcon } from '../../components/icons';
 import { EmptyState, InlineState, Skeleton } from '../../components/parts';
 import { color, radius, size, type } from '../../components/theme';
@@ -152,10 +153,17 @@ export default function MyPlansScreen() {
     <ScrollView
       contentContainerStyle={[
         styles.content,
-        { paddingTop: insets.top, paddingBottom: 130 + insets.bottom },
+        { paddingTop: insets.headerTop, paddingBottom: 40 + insets.bottom },
       ]}
       style={styles.screen}
     >
+      <ScreenHeader
+        backLabel={t('common.back')}
+        onBack={() => {
+          if (router.canGoBack()) router.back();
+          else router.replace('/home');
+        }}
+      />
       {isOffline(query) ? <OfflineBanner savedAt={query.dataUpdatedAt} /> : null}
       <View style={styles.header}>
         <Text accessibilityRole="header" style={type(34, 'bold', { tracking: -1.1 })}>

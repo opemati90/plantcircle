@@ -36,6 +36,7 @@ import { categoryLabel, placeLabel, priceLabel, spotsLeftShort } from '../plans/
 import { imageFocus, planImage } from '../plans/planImage';
 import {
   useCities,
+  useMyPlans,
   usePlansThisWeek,
   useEnsureCity,
   useSetCity,
@@ -45,6 +46,7 @@ import {
 } from '../plans/queries';
 import { CityPickerSheet } from './CityPickerSheet';
 import { filterPlans, HOME_FILTERS, type HomeFilter } from './homeFilters';
+import { statusPill } from '../myPlans/myPlanRules';
 
 const SCRIM = {
   colors: [
@@ -229,6 +231,9 @@ export default function HomeScreen() {
   const fromHome = (anywhere.data ?? []).slice(0, 3);
   const upNext = useUpNext();
   const offers = useWaitlistOffers();
+  // What the person joined, waits for or hosts: the first few here, the full list on My Plans.
+  const mine = useMyPlans('upcoming', Boolean(session));
+  const yourPlans = (mine.data ?? []).slice(0, 3);
   const [filter, setFilter] = useState<HomeFilter>('forYou');
   const [cityOpen, setCityOpen] = useState(false);
   const setCity = useSetCity();
@@ -382,6 +387,68 @@ export default function HomeScreen() {
               if (upNext.data) openPlan(upNext.data.plan);
             }}
           />
+        ) : null}
+
+        {session ? (
+          <View style={[styles.row, styles.yourPlans]}>
+            <View style={styles.sectionHeader}>
+              <Text
+                accessibilityRole="header"
+                aria-level={2}
+                style={type(22, 'bold', { tracking: -0.6 })}
+              >
+                {t('home.yourPlans')}
+              </Text>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel={`${t('home.seeAll')}, ${t('tabs.myPlans')}`}
+                hitSlop={12}
+                onPress={() => {
+                  router.push('/my-plans');
+                }}
+              >
+                <Text style={type(15, 'medium', { color: color.secondary })}>
+                  {t('home.seeAll')}
+                </Text>
+              </Pressable>
+            </View>
+            {mine.isPending ? (
+              <Skeleton width="100%" height={88} radius={radius.card} />
+            ) : mine.isError && mine.data === undefined ? (
+              <View style={styles.yourPlansNote}>
+                <Text role="alert" style={type(15, 'regular', { color: color.secondary })}>
+                  {t('errors.serverText')}
+                </Text>
+                <Button
+                  variant="outline"
+                  label={t('common.tryAgain')}
+                  onPress={() => void mine.refetch()}
+                />
+              </View>
+            ) : yourPlans.length === 0 ? (
+              <Text style={type(15, 'regular', { color: color.secondary })}>
+                {t('home.yourPlansEmpty')}
+              </Text>
+            ) : null}
+            {yourPlans.map((item) => (
+              <PlanListItem
+                key={item.plan.id}
+                plan={item.plan}
+                when={`${weekdayShort(item.plan.startsAt, item.plan.timezone)} ${time(item.plan.startsAt, item.plan.timezone)} · ${placeLabel(t, item.plan)}`}
+                pill={statusPill(t, item, false)}
+                onPress={() => {
+                  if (item.rsvp === 'offered') {
+                    router.push({
+                      pathname: '/plan/[id]/waitlist-offer',
+                      params: { id: item.plan.id },
+                    });
+                  } else {
+                    openPlan(item.plan);
+                  }
+                }}
+              />
+            ))}
+          </View>
         ) : null}
 
         <View
@@ -552,16 +619,19 @@ export default function HomeScreen() {
             },
           });
         }}
-        onCreate={(name) => {
-          ensureCity.mutate(name, {
-            onSuccess: (city) => {
-              setCity.mutate(city.id, {
-                onSuccess: () => {
-                  setCityOpen(false);
-                },
-              });
+        onCreate={(name, countryCode, timezone) => {
+          ensureCity.mutate(
+            { name, countryCode, timezone },
+            {
+              onSuccess: (city) => {
+                setCity.mutate(city.id, {
+                  onSuccess: () => {
+                    setCityOpen(false);
+                  },
+                });
+              },
             },
-          });
+          );
         }}
         creating={ensureCity.isPending}
         createFailed={ensureCity.isError}
@@ -713,6 +783,8 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
   rail: { paddingHorizontal: 20, gap: 14 },
+  yourPlans: { gap: 12 },
+  yourPlansNote: { gap: 10 },
   card: { width: 240, gap: 10 },
   cardImage: {
     height: 160,

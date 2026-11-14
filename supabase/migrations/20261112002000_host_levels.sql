@@ -71,6 +71,8 @@ begin
   delete from public.follows
   where (follower_id = new.blocker_id and followed_id = new.blocked_id)
      or (follower_id = new.blocked_id and followed_id = new.blocker_id);
+  perform public.host_featured_refresh(new.blocker_id);
+  perform public.host_featured_refresh(new.blocked_id);
   return new;
 end;
 $$;
@@ -97,6 +99,7 @@ begin
   if not p_on then
     -- Taking a follow back needs no access to the other person: it is the caller's own row.
     delete from public.follows where follower_id = v_uid and followed_id = p_user_id;
+    perform public.host_featured_refresh(p_user_id);
     return jsonb_build_object('following', false);
   end if;
   if p_user_id = v_uid
@@ -109,6 +112,7 @@ begin
   end if;
   insert into public.follows (follower_id, followed_id) values (v_uid, p_user_id)
   on conflict do nothing;
+  perform public.host_featured_refresh(p_user_id);
   return jsonb_build_object('following', true);
 end;
 $$;
@@ -152,6 +156,8 @@ begin
   if not p_on then
     -- Taking a vote back needs no access to the recipe any more: it is the caller's own row.
     delete from public.recipe_votes where recipe_id = p_recipe_id and user_id = v_uid;
+    perform public.host_featured_refresh(
+      (select r.author_id from public.recipes r where r.id = p_recipe_id));
     return jsonb_build_object('voted', false,
       'votes', (select count(*) from public.recipe_votes v where v.recipe_id = p_recipe_id));
   end if;
@@ -166,6 +172,7 @@ begin
   end if;
   insert into public.recipe_votes (recipe_id, user_id) values (p_recipe_id, v_uid)
   on conflict do nothing;
+  perform public.host_featured_refresh(v_author);
   return jsonb_build_object(
     'voted', true,
     'votes', (select count(*) from public.recipe_votes v where v.recipe_id = p_recipe_id));
@@ -240,17 +247,8 @@ begin
   if p_user_id is null then
     raise exception 'not_authenticated' using errcode = '28000';
   end if;
-  select count(*) into v_recipes from public.recipes r where r.author_id = p_user_id;
-  select count(*) into v_hosted from public.plans p
-  where p.host_id = p_user_id and p.status in ('published', 'changed', 'completed') and p.ends_at < now()
-    and exists (select 1 from public.plan_feedback f where f.plan_id = p.id);
-  select count(*) into v_followers from public.follows f
-  where f.followed_id = p_user_id and public.contributor_counts(f.follower_id);
-  select coalesce(sum(least(n, 5)), 0) into v_upvotes from (
-    select count(*) as n from public.recipe_votes v
-    join public.recipes r on r.id = v.recipe_id
-    where r.author_id = p_user_id and public.contributor_counts(v.user_id)
-    group by v.user_id) per_voter;
+  select c.recipes, c.hosted, c.followers, c.upvotes
+    into v_recipes, v_hosted, v_followers, v_upvotes from public.host_counts(p_user_id) c;
 
   -- A host staff verified (is_verified_host) has the top level whatever the counts.
   if exists (select 1 from public.profiles p where p.id = p_user_id and p.is_verified_host) then

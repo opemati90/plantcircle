@@ -74,6 +74,12 @@ export const en = {
     hint: 'Any city in the world. Not on the list yet? Type it and it’s added.',
     adding: 'Adding {{name}}…',
     addFailed: 'Couldn’t add that city. Try again.',
+    changeCountry: 'Not {{country}}? Choose the country',
+    countryTitle: 'Which country?',
+    countrySearch: 'Search countries',
+    changeTimeZone: 'Time zone: {{zone}} · Change',
+    timeZoneTitle: 'Which time zone is {{city}} in?',
+    timeZoneSearch: 'Search time zones',
     group: 'City',
     loading: 'Loading cities',
     loadError: 'Couldn’t load the list of cities.',
@@ -82,6 +88,8 @@ export const en = {
     legal: 'By continuing you confirm you’re 18+ and agree to the community rules.',
   },
   home: {
+    yourPlans: 'Your Plans',
+    yourPlansEmpty: 'Nothing coming up yet. Join a Plan and it shows here.',
     greeting: {
       morning: 'Good morning',
       afternoon: 'Good afternoon',
@@ -796,6 +804,7 @@ export const en = {
     notFound: 'This Circle is not available.',
   },
   explore: {
+    featuredHost: 'Featured host',
     search: 'Search',
     searchPlaceholder: 'Search Plans',
     tabs: { circles: 'Circles', plans: 'Plans', learn: 'Learn', people: 'People' },

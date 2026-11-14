@@ -76,6 +76,12 @@ export const fr: Catalog = {
     hint: 'N’importe quelle ville du monde. Pas encore dans la liste ? Tape-la et elle est ajoutée.',
     adding: 'Ajout de {{name}}…',
     addFailed: 'Impossible d’ajouter cette ville. Réessaie.',
+    changeCountry: 'Pas {{country}} ? Choisis le pays',
+    countryTitle: 'Quel pays ?',
+    countrySearch: 'Rechercher un pays',
+    changeTimeZone: 'Fuseau horaire : {{zone}} · Changer',
+    timeZoneTitle: 'Dans quel fuseau horaire se trouve {{city}} ?',
+    timeZoneSearch: 'Rechercher un fuseau horaire',
     group: 'Ville',
     loading: 'Chargement des villes',
     loadError: 'Impossible de charger la liste des villes.',
@@ -86,6 +92,8 @@ export const fr: Catalog = {
       'En continuant, tu confirmes avoir 18 ans ou plus et accepter les règles de la communauté.',
   },
   home: {
+    yourPlans: 'Tes plans',
+    yourPlansEmpty: 'Rien de prévu pour l’instant. Rejoins un plan et il apparaîtra ici.',
     greeting: {
       morning: 'Bonjour',
       afternoon: 'Bon après-midi',
@@ -819,6 +827,7 @@ export const fr: Catalog = {
     notFound: 'Ce cercle n’est pas disponible.',
   },
   explore: {
+    featuredHost: 'Hôte à la une',
     search: 'Rechercher',
     searchPlaceholder: 'Rechercher des plans',
     tabs: { circles: 'Cercles', plans: 'Plans', learn: 'Apprendre', people: 'Personnes' },

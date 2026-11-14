@@ -49,6 +49,7 @@ const plan: Plan = {
   imageFocus: null,
   hostName: 'Ama O.',
   hostVerified: true,
+  hostFeatured: true,
   hostPlansCount: 6,
   goingCount: 4,
   attendeeInitials: ['M', 'J', 'S'],

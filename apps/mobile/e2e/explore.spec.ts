@@ -42,3 +42,14 @@ test('every Explore tab opens its own content', async ({ page }) => {
     'true',
   );
 });
+
+test('a featured host’s Plan comes first in Explore and carries the badge', async ({
+  page,
+}) => {
+  await page.goto('/explore');
+  const first = page
+    .getByRole('link', { name: /Cooking Night|Potluck|Workshop|Feijoada/ })
+    .first();
+  await expect(first).toContainText('West African Cooking Night');
+  await expect(first).toContainText('Featured host');
+});

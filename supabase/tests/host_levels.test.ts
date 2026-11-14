@@ -124,6 +124,13 @@ describe('hosting is earned', () => {
     await expect(order(AUTHOR)).rejects.toThrow(/host_level_required/);
     const made = await plan(AUTHOR, 'online', 6);
     expect(made.rows[0]?.r.id).toMatch(/^[0-9a-f-]{36}$/);
+    const card = await asUser(db, null, () =>
+      db.query<{ host_featured: boolean }>(
+        'select host_featured from public.plan_cards where id = $1',
+        [made.rows[0]?.r.id],
+      ),
+    );
+    expect(card.rows[0]?.host_featured).toBe(false);
   });
 
   it('reaches level 2 with three recipes, a hosted Plan that got feedback and ten followers', async () => {
@@ -177,6 +184,52 @@ describe('hosting is earned', () => {
     expect(await level(AUTHOR)).toEqual(
       expect.objectContaining({ level: 3, max_capacity: 30, next: null }),
     );
+    // Featured: the badge Explore shows, on every Plan of a level-3 or verified host.
+    const cards = await asUser(db, null, () =>
+      db.query<{ host_featured: boolean }>(
+        'select host_featured from public.plan_cards where id = $1',
+        [planId],
+      ),
+    );
+    expect(cards.rows[0]?.host_featured).toBe(true);
+    // The stored flag follows the counts: refreshed on writes and by the cron.
+    await db.query('update public.profiles set is_verified_host = false where id = $1', [
+      AUTHOR,
+    ]);
+    expect(
+      (
+        await db.query<{ f: boolean }>(
+          'select featured_host as f from public.profiles where id = $1',
+          [AUTHOR],
+        )
+      ).rows[0]?.f,
+    ).toBe(false);
+    await db.query('update public.profiles set featured_host = true where id = $1', [AUTHOR]);
+    expect(
+      (
+        await asUser(db, null, () =>
+          db.query<{ host_featured: boolean }>(
+            'select host_featured from public.plan_cards where id = $1',
+            [planId],
+          ),
+        )
+      ).rows[0]?.host_featured,
+    ).toBe(true);
+    expect(
+      (await db.query<{ n: number }>('select public.host_featured_refresh_all() as n')).rows[0]
+        ?.n,
+    ).toBeGreaterThan(0);
+    expect(
+      (
+        await db.query<{ f: boolean }>(
+          'select featured_host as f from public.profiles where id = $1',
+          [AUTHOR],
+        )
+      ).rows[0]?.f,
+    ).toBe(false);
+    await expect(
+      asUser(db, null, () => db.query('select public.host_is_featured($1)', [AUTHOR])),
+    ).rejects.toThrow(/permission denied/);
   });
 
   it('follows need a visible, unblocked other person; a block ends them; standing and tenure count', async () => {

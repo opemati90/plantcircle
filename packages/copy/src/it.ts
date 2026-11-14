@@ -76,6 +76,12 @@ export const it: Catalog = {
     hint: 'Qualsiasi città del mondo. Non è ancora in elenco? Scrivila e viene aggiunta.',
     adding: 'Aggiunta di {{name}}…',
     addFailed: 'Non è stato possibile aggiungere la città. Riprova.',
+    changeCountry: 'Non è {{country}}? Scegli il paese',
+    countryTitle: 'Quale paese?',
+    countrySearch: 'Cerca paesi',
+    changeTimeZone: 'Fuso orario: {{zone}} · Cambia',
+    timeZoneTitle: 'In quale fuso orario si trova {{city}}?',
+    timeZoneSearch: 'Cerca fusi orari',
     group: 'Città',
     loading: 'Caricamento città',
     loadError: 'Impossibile caricare l’elenco delle città.',
@@ -86,6 +92,8 @@ export const it: Catalog = {
       'Continuando confermi di avere 18 anni o più e di accettare le regole della community.',
   },
   home: {
+    yourPlans: 'I tuoi piani',
+    yourPlansEmpty: 'Niente in programma per ora. Unisciti a un piano e comparirà qui.',
     greeting: {
       morning: 'Buongiorno',
       afternoon: 'Buon pomeriggio',
@@ -807,6 +815,7 @@ export const it: Catalog = {
     notFound: 'Questo circolo non è disponibile.',
   },
   explore: {
+    featuredHost: 'Host in evidenza',
     search: 'Cerca',
     searchPlaceholder: 'Cerca piani',
     tabs: { circles: 'Circoli', plans: 'Piani', learn: 'Impara', people: 'Persone' },

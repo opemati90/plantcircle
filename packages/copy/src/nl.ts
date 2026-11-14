@@ -76,6 +76,12 @@ export const nl: Catalog = {
     hint: 'Elke stad ter wereld. Staat hij er nog niet bij? Typ hem en hij wordt toegevoegd.',
     adding: '{{name}} toevoegen…',
     addFailed: 'Kon die stad niet toevoegen. Probeer het opnieuw.',
+    changeCountry: 'Niet {{country}}? Kies het land',
+    countryTitle: 'Welk land?',
+    countrySearch: 'Landen zoeken',
+    changeTimeZone: 'Tijdzone: {{zone}} · Wijzigen',
+    timeZoneTitle: 'In welke tijdzone ligt {{city}}?',
+    timeZoneSearch: 'Tijdzones zoeken',
     group: 'Stad',
     loading: 'Steden laden',
     loadError: 'De lijst met steden kon niet worden geladen.',
@@ -86,6 +92,8 @@ export const nl: Catalog = {
       'Door verder te gaan bevestig je dat je 18 jaar of ouder bent en de communityregels accepteert.',
   },
   home: {
+    yourPlans: 'Jouw plannen',
+    yourPlansEmpty: 'Nog niets gepland. Doe mee aan een plan en het staat hier.',
     greeting: {
       morning: 'Goedemorgen',
       afternoon: 'Goedemiddag',
@@ -811,6 +819,7 @@ export const nl: Catalog = {
     notFound: 'Deze kring is niet beschikbaar.',
   },
   explore: {
+    featuredHost: 'Uitgelichte host',
     search: 'Zoeken',
     searchPlaceholder: 'Plannen zoeken',
     tabs: { circles: 'Kringen', plans: 'Plannen', learn: 'Leren', people: 'Mensen' },

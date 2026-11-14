@@ -22,11 +22,14 @@ export function PlanListItem({
   plan,
   when,
   pill,
+  badge,
   onPress,
 }: {
   plan: Plan;
   when: string;
   pill?: StatusPill;
+  /** A second chip, e.g. a featured host. */
+  badge?: StatusPill;
   onPress: () => void;
 }) {
   return (
@@ -39,13 +42,20 @@ export function PlanListItem({
         </View>
         <ChevronRightIcon size={16} strokeWidth={2.4} color={color.borderControl} />
       </View>
-      {pill ? (
+      {pill || badge ? (
         <View style={styles.pills}>
-          <View style={[styles.pill, { backgroundColor: TONE[pill.tone].background }]}>
-            <Text style={type(14, 'semibold', { color: TONE[pill.tone].text })}>
-              {pill.label}
-            </Text>
-          </View>
+          {[pill, badge]
+            .filter((chip): chip is StatusPill => chip !== undefined)
+            .map((chip) => (
+              <View
+                key={chip.label}
+                style={[styles.pill, { backgroundColor: TONE[chip.tone].background }]}
+              >
+                <Text style={type(14, 'semibold', { color: TONE[chip.tone].text })}>
+                  {chip.label}
+                </Text>
+              </View>
+            ))}
         </View>
       ) : null}
     </Pressable>

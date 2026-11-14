@@ -3,7 +3,6 @@ import { randomUUID } from 'expo-crypto';
 import { useBackend } from '../../lib/backend/BackendProvider';
 import type { CircleInput, City, MyPlansScope } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
-import { deviceRegionCode, deviceTimeZone } from '../../lib/device';
 import { getOnboarding, saveOnboardingStrict } from '../onboarding/onboardingStore';
 
 const WEEK_MS = 7 * 86_400_000;
@@ -68,6 +67,7 @@ export function useExplorePlans(cityIds: string[] | null, enabled = true) {
         cityIds,
         from,
         to: new Date(from.getTime() + MONTH_MS),
+        order: 'featured',
       });
     },
   });
@@ -145,12 +145,8 @@ export function useEnsureCity() {
   const backend = useBackend();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (name: string) =>
-      backend.ensureCity({
-        name,
-        countryCode: deviceRegionCode(),
-        timezone: deviceTimeZone(),
-      }),
+    mutationFn: (input: { name: string; countryCode: string; timezone: string }) =>
+      backend.ensureCity(input),
     onSuccess: (city) => {
       queryClient.setQueryData<City[]>(['cities'], (cities) =>
         cities && !cities.some((c) => c.id === city.id) ? [...cities, city] : cities,

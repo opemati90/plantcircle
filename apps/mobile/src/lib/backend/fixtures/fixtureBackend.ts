@@ -1022,6 +1022,7 @@ export async function createFixtureBackend(): Promise<Backend> {
         imageFocus: null,
         hostName: myName(),
         hostVerified: false,
+        hostFeatured: hostLevel().level >= 3,
         hostPlansCount: 1,
         goingCount: 0,
         attendeeInitials: [],
@@ -1539,6 +1540,7 @@ export async function createFixtureBackend(): Promise<Backend> {
         imageFocus: null,
         hostName: myName(),
         hostVerified: false,
+        hostFeatured: hostLevel().level >= 3,
         hostPlansCount: 1,
         goingCount: 0,
         attendeeInitials: [],
@@ -2295,7 +2297,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       return city;
     },
 
-    async listUpcomingPlans({ cityIds, from, to, format }) {
+    async listUpcomingPlans({ cityIds, from, to, format, order }) {
       await call('listPlans');
       return plans(from)
         .filter(
@@ -2304,7 +2306,11 @@ export async function createFixtureBackend(): Promise<Backend> {
             new Date(plan.startsAt) < to &&
             (!format || plan.format === format),
         )
-        .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+        .sort(
+          (a, b) =>
+            (order === 'featured' ? Number(b.hostFeatured) - Number(a.hostFeatured) : 0) ||
+            a.startsAt.localeCompare(b.startsAt),
+        );
     },
 
     async getPlan(planId) {

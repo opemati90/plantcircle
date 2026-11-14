@@ -3,21 +3,20 @@ import { usePathname, useRouter, type Href } from 'expo-router';
 import type { ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { CalendarIcon, ChatIcon, CompassIcon, HomeIcon, UserIcon } from './icons';
+import { ChatIcon, CompassIcon, HomeIcon, UserIcon } from './icons';
 import { color, extra, radius, shadow, size, type } from './theme';
 import { useScreenInsets } from './useScreenInsets';
 
 interface Tab {
   href: Href;
   /** Key under `tabs.` in the copy catalogue. */
-  key: 'home' | 'explore' | 'myPlans' | 'inbox' | 'profile';
+  key: 'home' | 'explore' | 'inbox' | 'profile';
   Icon: ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
 }
 
 const TABS: Tab[] = [
   { href: '/home', key: 'home', Icon: HomeIcon },
   { href: '/explore', key: 'explore', Icon: CompassIcon },
-  { href: '/my-plans', key: 'myPlans', Icon: CalendarIcon },
   { href: '/inbox', key: 'inbox', Icon: ChatIcon },
   { href: '/profile', key: 'profile', Icon: UserIcon },
 ];

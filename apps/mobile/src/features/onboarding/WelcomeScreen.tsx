@@ -261,12 +261,15 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
           onSelect={(city) => {
             setCityId(city.id);
           }}
-          onCreate={(name) => {
-            ensureCity.mutate(name, {
-              onSuccess: (city) => {
-                setCityId(city.id);
+          onCreate={(name, countryCode, timezone) => {
+            ensureCity.mutate(
+              { name, countryCode, timezone },
+              {
+                onSuccess: (city) => {
+                  setCityId(city.id);
+                },
               },
-            });
+            );
           }}
           creating={ensureCity.isPending}
           createFailed={ensureCity.isError}

@@ -14,7 +14,8 @@ import { BottomSheet } from '../../components/parts';
 import { color, extra, radius, size, type } from '../../components/theme';
 import { catalogs } from '@plantcircle/copy';
 import type { City } from '../../lib/backend/types';
-import { deviceRegionCode } from '../../lib/device';
+import { COUNTRY_CODES } from '../../lib/countries';
+import { deviceRegionCode, deviceTimeZone } from '../../lib/device';
 import { currentLanguage } from '../../lib/i18n';
 import {
   countryNameResolver,
@@ -38,8 +39,8 @@ export interface CityChooserProps {
   /** Explore only: choosing a country shows the Plans of all its cities. */
   selectedCountryCode?: string | null;
   onSelectCountry?: (group: CityGroup) => void;
-  /** A typed name no known city has: add it (the device's country and time zone), then select. */
-  onCreate: (name: string) => void;
+  /** A typed name no known city has: add it in that country (device time zone), then select. */
+  onCreate: (name: string, countryCode: string, timezone: string) => void;
   creating: boolean;
   createFailed: boolean;
   /** Reset the search each time this turns true (a sheet opening). */
@@ -70,8 +71,21 @@ export function CityChooser({
 }: CityChooserProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
+  // The country a new city is filed under: the device's, unless the person says otherwise.
+  const [region, setRegion] = useState(deviceRegionCode);
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [countryQuery, setCountryQuery] = useState('');
+  // The time zone of a new city: the device's at home; asked when the country is another one.
+  const [zone, setZone] = useState(deviceTimeZone);
+  const [zoneOpen, setZoneOpen] = useState(false);
+  const [zoneQuery, setZoneQuery] = useState('');
+  const abroad = region !== deviceRegionCode();
   useEffect(() => {
-    if (resetKey) setQuery('');
+    if (resetKey) {
+      setQuery('');
+      setRegion(deviceRegionCode());
+      setZone(deviceTimeZone());
+    }
   }, [resetKey]);
   const language = currentLanguage();
   const countryName = countryNameResolver(language, catalogs[language].countries);
@@ -80,8 +94,7 @@ export function CityChooser({
   const shown = typed ? filterCities(cities, typed, countryName) : [];
   const groups = groupCitiesByCountry(shown, language, catalogs[language].countries);
   const current = selectedId ? (cities.find((city) => city.id === selectedId) ?? null) : null;
-  // A new city goes under the device's country: only a namesake there counts as known.
-  const region = deviceRegionCode();
+  // A new city goes under the chosen country: only a namesake there counts as known.
   const canCreate =
     typed.length > 0 &&
     !cities.some((city) => city.countryCode === region && sameCityName(city.name, typed));
@@ -131,7 +144,7 @@ export function CityChooser({
         clearButtonMode="while-editing"
         returnKeyType="done"
         onSubmitEditing={() => {
-          if (canCreate && !locked) onCreate(typed);
+          if (canCreate && !locked) onCreate(typed, region, zone);
         }}
         style={[styles.search, type(17)]}
       />
@@ -195,11 +208,41 @@ export function CityChooser({
                 : t('city.use', { query: typed, country: countryName(region) }),
               false,
               () => {
-                onCreate(typed);
+                onCreate(typed, region, zone);
               },
               'button',
             )
           : null}
+        {typed && !loadError ? (
+          <Pressable
+            accessibilityRole="button"
+            disabled={locked}
+            onPress={() => {
+              setCountryQuery('');
+              setCountryOpen(true);
+            }}
+            style={styles.countryLink}
+          >
+            <Text style={type(15, 'semibold', { color: color.brand })}>
+              {t('city.changeCountry', { country: countryName(region) })}
+            </Text>
+          </Pressable>
+        ) : null}
+        {typed && abroad && !loadError ? (
+          <Pressable
+            accessibilityRole="button"
+            disabled={locked}
+            onPress={() => {
+              setZoneQuery('');
+              setZoneOpen(true);
+            }}
+            style={styles.countryLink}
+          >
+            <Text style={type(15, 'semibold', { color: color.brand })}>
+              {t('city.changeTimeZone', { zone: zone.replace(/_/g, ' ') })}
+            </Text>
+          </Pressable>
+        ) : null}
         {!typed ? (
           <Text style={type(14, 'regular', { color: color.secondary, leading: 1.5 })}>
             {t('city.hint')}
@@ -223,8 +266,108 @@ export function CityChooser({
           </View>
         ) : null}
       </ScrollView>
+      <BottomSheet
+        open={countryOpen}
+        onClose={() => {
+          setCountryOpen(false);
+        }}
+        title={t('city.countryTitle')}
+      >
+        <TextInput
+          accessibilityLabel={t('city.countrySearch')}
+          placeholder={t('city.countrySearch')}
+          placeholderTextColor={color.secondary}
+          value={countryQuery}
+          onChangeText={setCountryQuery}
+          autoCorrect={false}
+          autoFocus
+          clearButtonMode="while-editing"
+          style={[styles.search, type(17)]}
+        />
+        <ScrollView
+          accessibilityRole="radiogroup"
+          accessibilityLabel={t('city.countryTitle')}
+          keyboardShouldPersistTaps="handled"
+          style={styles.scroll}
+          contentContainerStyle={styles.list}
+        >
+          {countryOptions(countryQuery, region, countryName).map((code) =>
+            row(`country-${code}`, countryName(code), code === region, () => {
+              setRegion(code);
+              setCountryOpen(false);
+            }),
+          )}
+        </ScrollView>
+      </BottomSheet>
+      <BottomSheet
+        open={zoneOpen}
+        onClose={() => {
+          setZoneOpen(false);
+        }}
+        title={t('city.timeZoneTitle', { city: typed })}
+      >
+        <TextInput
+          accessibilityLabel={t('city.timeZoneSearch')}
+          placeholder={t('city.timeZoneSearch')}
+          placeholderTextColor={color.secondary}
+          value={zoneQuery}
+          onChangeText={setZoneQuery}
+          autoCorrect={false}
+          autoFocus
+          clearButtonMode="while-editing"
+          style={[styles.search, type(17)]}
+        />
+        <ScrollView
+          accessibilityRole="radiogroup"
+          accessibilityLabel={t('city.timeZoneTitle', { city: typed })}
+          keyboardShouldPersistTaps="handled"
+          style={styles.scroll}
+          contentContainerStyle={styles.list}
+        >
+          {zoneOptions(zoneQuery, zone).map((z) =>
+            row(`zone-${z}`, z.replace(/_/g, ' '), z === zone, () => {
+              setZone(z);
+              setZoneOpen(false);
+            }),
+          )}
+        </ScrollView>
+      </BottomSheet>
     </View>
   );
+}
+
+/** Countries matching the search by name, the chosen one first when nothing is typed. */
+function countryOptions(
+  query: string,
+  selected: string,
+  countryName: (code: string) => string,
+): string[] {
+  const words = query
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  const matches = COUNTRY_CODES.filter((code) => {
+    const name = countryName(code).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+    return words.every((w) => name.includes(w) || code.toLowerCase() === w);
+  }).sort((a, b) => countryName(a).localeCompare(countryName(b)));
+  if (words.length > 0) return matches;
+  return [selected, ...matches.filter((c) => c !== selected)];
+}
+
+/** IANA zones the platform knows, by search; the chosen one first when nothing is typed. */
+function zoneOptions(query: string, selected: string): string[] {
+  const all: string[] =
+    typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : [];
+  const zones = all.includes(selected) ? all : [selected, ...all];
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = zones.filter((z) => {
+    const name = z.toLowerCase().replace(/_/g, ' ');
+    return words.every((w) => name.includes(w));
+  });
+  if (words.length > 0) return matches;
+  return [selected, ...matches.filter((z) => z !== selected)];
 }
 
 /** The chooser in a sheet. Choosing saves the home city (or the browse choice) and closes it. */
@@ -287,6 +430,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface,
   },
   rowLabel: { flexShrink: 1 },
+  countryLink: { minHeight: size.touchMin, justifyContent: 'center', paddingHorizontal: 4 },
   rowSelected: { borderColor: color.brand, backgroundColor: color.brandTint },
   dot: {
     width: 20,
