@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ChevronRightIcon } from '../../components/icons';
 import { Button } from '../../components/Button';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { InlineState, Skeleton } from '../../components/parts';
@@ -67,12 +68,30 @@ export default function RequestsScreen() {
         ) : (
           requests.data.map((request) => (
             <View key={request.id} style={styles.card}>
-              <Text
-                maxFontSizeMultiplier={2.0}
-                style={type(17, 'semibold', { tracking: -0.3 })}
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel={t('person.seeProfileOf', { name: request.fromName })}
+                onPress={() => {
+                  router.push({ pathname: '/person/[id]', params: { id: request.fromId } });
+                }}
+                style={styles.who}
               >
-                {request.fromName}
-              </Text>
+                <View style={styles.grow}>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(17, 'semibold', { tracking: -0.3 })}
+                  >
+                    {request.fromName}
+                  </Text>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(14, 'semibold', { color: color.brand })}
+                  >
+                    {t('person.seeProfile')}
+                  </Text>
+                </View>
+                <ChevronRightIcon size={16} strokeWidth={2.4} color={color.secondary} />
+              </Pressable>
               <Text maxFontSizeMultiplier={2.0} style={type(15, 'regular', { leading: 1.5 })}>
                 {request.firstMessage}
               </Text>
@@ -143,5 +162,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: extra.cardBorder,
   },
-  actions: { flexDirection: 'row', gap: 10, paddingTop: 4 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingTop: 4 },
+  who: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
+  grow: { flex: 1, gap: 2 },
 });

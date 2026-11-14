@@ -365,6 +365,38 @@ export interface Person {
   connection: PersonConnection;
 }
 
+/**
+ * What you see about someone before connecting or answering their message request: who they are
+ * in the community, never where they live exactly or how to reach them.
+ */
+export interface PersonProfile extends Person {
+  /** The first of the month they joined. */
+  memberSince: string;
+  verified: boolean;
+  level: number;
+  recipes: number;
+  hosted: number;
+  upvotes: number;
+  plansTogether: number;
+  /** Their latest recipes the viewer may see, newest first. */
+  recentRecipes: { id: string; title: string; votes: number }[];
+}
+
+export const personProfileSchema = z.object({
+  user_id: z.string(),
+  display_name: z.string(),
+  city: z.string().nullable(),
+  member_since: z.string(),
+  circle_names: z.array(z.string()),
+  connection: z.enum(PERSON_CONNECTIONS),
+  verified: z.boolean(),
+  level: z.number().int(),
+  recipes: z.number().int(),
+  hosted: z.number().int(),
+  upvotes: z.number().int(),
+  plans_together: z.number().int(),
+});
+
 export const toPerson = (row: z.infer<typeof personRowSchema>): Person => ({
   userId: row.user_id,
   displayName: row.display_name,

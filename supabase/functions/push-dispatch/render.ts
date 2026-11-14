@@ -125,7 +125,10 @@ export function renderPush(
     case 'plan_cancelled':
       return {
         title: t('planCancelled', { plan: str(p, 'plan') }),
-        body: t('planCancelledNote'),
+        // The host's own words when they gave a reason (docs/12), else the plain note.
+        body: str(p, 'reason')
+          ? t('planCancelledReason', { host: str(p, 'host'), reason: str(p, 'reason') })
+          : t('planCancelledNote'),
       };
     case 'plan_on_hold':
       return { title: t('planOnHold', { plan: str(p, 'plan') }), body: t('planOnHoldNote') };

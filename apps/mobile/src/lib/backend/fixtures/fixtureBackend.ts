@@ -14,6 +14,7 @@ import type {
   GroupOrder,
   GuestState,
   HostSummary,
+  PersonProfile,
   PlanStatus,
   MyPlan,
   OrderItem,
@@ -202,6 +203,40 @@ interface FixtureHooks {
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
 }
 const hooks = globalThis as FixtureHooks;
+
+/** What the sample members have done, for their profiles. */
+const fixturePersonStats: Record<
+  string,
+  Omit<PersonProfile, keyof Person | 'recentRecipes'>
+> = {
+  'fixture-mia-k': {
+    memberSince: '2026-03-01T00:00:00Z',
+    verified: false,
+    level: 2,
+    recipes: 4,
+    hosted: 3,
+    upvotes: 61,
+    plansTogether: 1,
+  },
+  'fixture-jonas-k': {
+    memberSince: '2026-06-01T00:00:00Z',
+    verified: true,
+    level: 3,
+    recipes: 9,
+    hosted: 12,
+    upvotes: 240,
+    plansTogether: 0,
+  },
+  default: {
+    memberSince: '2026-10-01T00:00:00Z',
+    verified: false,
+    level: 0,
+    recipes: 0,
+    hosted: 0,
+    upvotes: 0,
+    plansTogether: 0,
+  },
+};
 
 const EMPTY: State = {
   session: null,
@@ -2402,6 +2437,41 @@ export async function createFixtureBackend(): Promise<Backend> {
       await call();
       requireSession();
       return visiblePeople();
+    },
+
+    async getPerson(userId) {
+      await call();
+      requireSession();
+      requireNotBlocked(userId);
+      // Visible people in your Circles, or someone asking you for something.
+      const visible = visiblePeople().find((p) => p.userId === userId);
+      const asking = state.directIncoming.find(
+        (r) => r.fromId === userId && r.status === 'pending',
+      );
+      const base: Person | null =
+        visible ??
+        (asking
+          ? {
+              userId,
+              displayName: asking.fromName,
+              city: 'Berlin',
+              circleNames: ['Neukölln Plant Kitchen'],
+              connection: 'none',
+            }
+          : null);
+      if (!base) throw new BackendError('person_not_found');
+      const sample = fixturePersonStats[userId] ?? fixturePersonStats['default'];
+      const theirs = [...fixtureRecipes, ...state.recipesCreated]
+        .filter((r) => r.authorId === userId)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      return {
+        ...base,
+        ...sample,
+        recipes: Math.max(sample?.recipes ?? 0, theirs.length),
+        recentRecipes: theirs
+          .slice(0, 3)
+          .map((r) => ({ id: r.id, title: r.title, votes: decorate(r).votes })),
+      } as PersonProfile;
     },
 
     async connectWithPerson(userId, key) {

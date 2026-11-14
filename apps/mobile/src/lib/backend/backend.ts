@@ -50,6 +50,7 @@ import type {
   WebRsvpInput,
   WebRsvpResult,
   PlanFormat,
+  PersonProfile,
   PlanPatch,
   PlanStatus,
 } from './types';
@@ -164,6 +165,8 @@ export interface Backend {
 
   /** Visible members who share a Circle with the viewer. */
   listPeople(): Promise<Person[]>;
+  /** Someone in a shared Circle, before you connect or answer their request. */
+  getPerson(userId: string): Promise<PersonProfile>;
   /** Asks to connect. The result is "connected" when the other person had already asked. */
   connectWithPerson(userId: string, idempotencyKey: string): Promise<'requested' | 'connected'>;
   /** The member's own choice to be seen in People. Off by default. */

@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
-import { AlertIcon, ChatIcon, ChevronRightIcon, OfflineIcon } from '../../components/icons';
+import { ChatIcon, ChevronRightIcon, OfflineIcon } from '../../components/icons';
 import { EmptyState, InlineState, Skeleton } from '../../components/parts';
 import { color, extra, radius, type } from '../../components/theme';
 import { errorCode } from '../../lib/backend/backend';
@@ -98,90 +98,85 @@ export function PeopleTab() {
         <InlineState title={t('people.empty.title')} text={t('people.empty.text')} />
       ) : (
         people.data.map((person) => (
-          <View key={person.userId} style={styles.row}>
-            <View
-              aria-hidden
-              style={[styles.avatar, { backgroundColor: extra.tints[1].background }]}
-            >
-              <Text
-                allowFontScaling={false}
-                style={type(17, 'bold', { color: extra.tints[1].text })}
-              >
-                {person.displayName.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-            <View style={styles.text}>
-              <Text
-                maxFontSizeMultiplier={2.0}
-                style={type(16, 'semibold', { tracking: -0.3 })}
-              >
-                {person.displayName}
-              </Text>
-              <Text
-                maxFontSizeMultiplier={2.0}
-                numberOfLines={1}
-                style={type(14, 'regular', { color: color.secondary })}
-              >
-                {[person.circleNames[0], person.city].filter(Boolean).join(' · ')}
-              </Text>
-            </View>
+          <View key={person.userId} style={styles.card}>
             <Pressable
               accessibilityRole="link"
-              accessibilityLabel={t('safety.reportName', { name: person.displayName })}
+              accessibilityLabel={t('person.seeProfileOf', { name: person.displayName })}
               onPress={() => {
-                router.push({
-                  pathname: '/report',
-                  params: {
-                    type: 'person',
-                    id: person.userId,
-                    name: person.displayName,
-                    userId: person.userId,
-                  },
-                });
+                router.push({ pathname: '/person/[id]', params: { id: person.userId } });
               }}
-              style={styles.iconAction}
+              style={styles.row}
             >
-              <AlertIcon size={18} strokeWidth={1.9} color={color.secondary} />
+              <View
+                aria-hidden
+                style={[styles.avatar, { backgroundColor: extra.tints[1].background }]}
+              >
+                <Text
+                  allowFontScaling={false}
+                  style={type(17, 'bold', { color: extra.tints[1].text })}
+                >
+                  {person.displayName.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+              <View style={styles.text}>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(16, 'semibold', { tracking: -0.3 })}
+                >
+                  {person.displayName}
+                </Text>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(14, 'regular', { color: color.secondary, leading: 1.4 })}
+                >
+                  {[person.circleNames[0], person.city].filter(Boolean).join(' · ')}
+                </Text>
+              </View>
+              <ChevronRightIcon size={16} strokeWidth={2.4} color={color.secondary} />
             </Pressable>
-            {person.connection === 'none' ? (
-              <Button
-                variant="outline"
-                label={t('people.connect')}
-                accessibilityLabel={t('people.connectWith', { name: person.displayName })}
-                disabled={connect.isPending}
-                onPress={() => {
-                  act(person);
-                }}
-              />
-            ) : person.connection === 'requested_by_them' ? (
-              <Button
-                label={t('people.connectBack')}
-                accessibilityLabel={t('people.connectBackWith', { name: person.displayName })}
-                disabled={connect.isPending}
-                onPress={() => {
-                  act(person);
-                }}
-              />
-            ) : person.connection === 'connected' ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`${t('direct.messageButton')} ${person.displayName}`}
-                onPress={() => {
-                  router.push({ pathname: '/chat/direct/[id]', params: { id: person.userId } });
-                }}
-                style={styles.iconAction}
-              >
-                <ChatIcon size={20} strokeWidth={1.9} color={color.ink} />
-              </Pressable>
-            ) : (
-              <Text
-                maxFontSizeMultiplier={2.0}
-                role="status"
-                style={type(14, 'semibold', { color: color.secondary })}
-              >
-                {t('people.requested')}
-              </Text>
-            )}
+            <View style={styles.cardActions}>
+              {person.connection === 'none' ? (
+                <Button
+                  variant="outline"
+                  label={t('people.connect')}
+                  accessibilityLabel={t('people.connectWith', { name: person.displayName })}
+                  disabled={connect.isPending}
+                  onPress={() => {
+                    act(person);
+                  }}
+                />
+              ) : person.connection === 'requested_by_them' ? (
+                <Button
+                  label={t('people.connectBack')}
+                  accessibilityLabel={t('people.connectBackWith', { name: person.displayName })}
+                  disabled={connect.isPending}
+                  onPress={() => {
+                    act(person);
+                  }}
+                />
+              ) : person.connection === 'connected' ? (
+                <Button
+                  variant="outline"
+                  label={t('direct.messageButton')}
+                  accessibilityLabel={`${t('direct.messageButton')} ${person.displayName}`}
+                  icon={<ChatIcon size={18} strokeWidth={1.9} color={color.ink} />}
+                  onPress={() => {
+                    router.push({
+                      pathname: '/chat/direct/[id]',
+                      params: { id: person.userId },
+                    });
+                  }}
+                />
+              ) : (
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  role="status"
+                  style={type(14, 'semibold', { color: color.secondary })}
+                >
+                  {t('people.requested')}
+                </Text>
+              )}
+            </View>
           </View>
         ))
       )}
@@ -216,7 +211,15 @@ const styles = StyleSheet.create({
     backgroundColor: color.fill,
   },
   grow: { flex: 1 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56 },
+  card: {
+    gap: 12,
+    padding: 14,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: extra.cardBorder,
+  },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 48 },
+  cardActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatar: {
     width: 44,
     height: 44,
@@ -225,12 +228,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: { flex: 1, minWidth: 0, gap: 2 },
-  iconAction: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: color.fill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 });

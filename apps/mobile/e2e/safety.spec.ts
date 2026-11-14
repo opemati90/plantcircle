@@ -45,7 +45,9 @@ test('reporting a person can also block them; blocked people are listed under Pr
 
   await page.goto('/explore');
   await page.getByRole('tab', { name: 'People', exact: true }).click();
-  await page.getByRole('link', { name: 'Report Mia K.' }).click();
+  // Report lives on the person's profile, opened from their row.
+  await page.getByRole('link', { name: 'See Mia K.’s profile' }).click();
+  await page.getByRole('button', { name: 'Report Mia K.' }).click();
   await page.getByRole('radio', { name: 'Stalking or unwanted contact' }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
   await page

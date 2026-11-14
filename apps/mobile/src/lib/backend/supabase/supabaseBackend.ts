@@ -22,6 +22,7 @@ import {
   orderCardSchema,
   orderItemCardSchema,
   toInboxThread,
+  personProfileSchema,
   personRowSchema,
   toDirectRequest,
   toChatMessage,
@@ -502,6 +503,35 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       const result = await client.rpc('people_in_my_circles');
       if (result.error) throw toBackendError(result.error);
       return parse(z.array(personRowSchema), result.data).map(toPerson);
+    },
+
+    async getPerson(userId) {
+      const [result, recipes] = await Promise.all([
+        client.rpc('person_profile', { p_user_id: userId }),
+        client
+          .from('recipe_cards')
+          .select('id, title, votes')
+          .eq('author_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(3),
+      ]);
+      if (result.error) throw toBackendError(result.error);
+      if (recipes.error) throw toBackendError(recipes.error);
+      const row = parse(personProfileSchema, result.data);
+      return {
+        ...toPerson(row),
+        memberSince: row.member_since,
+        verified: row.verified,
+        level: row.level,
+        recipes: row.recipes,
+        hosted: row.hosted,
+        upvotes: row.upvotes,
+        plansTogether: row.plans_together,
+        recentRecipes: parse(
+          z.array(z.object({ id: z.string(), title: z.string(), votes: z.number().int() })),
+          recipes.data,
+        ),
+      };
     },
 
     async connectWithPerson(userId, key) {

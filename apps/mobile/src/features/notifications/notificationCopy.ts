@@ -74,7 +74,10 @@ export function describeNotification(
     case 'plan_cancelled':
       return {
         title: t('notify.planCancelled', { plan: str(p, 'plan') }),
-        note: t('notify.planCancelledNote'),
+        // The host's own words when they gave a reason (docs/12), else the plain note.
+        note: str(p, 'reason')
+          ? t('notify.planCancelledReason', { host: str(p, 'host'), reason: str(p, 'reason') })
+          : t('notify.planCancelledNote'),
         href: planHref(str(p, 'plan_id')),
       };
     case 'plan_on_hold':

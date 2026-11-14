@@ -425,6 +425,31 @@ export const de: Catalog = {
     lupin: 'Lupinen',
     molluscs: 'Weichtiere',
   },
+  person: {
+    joined: 'Dabei seit {{date}}',
+    verified: 'Verifizierter Host',
+    statRecipes: 'Geteilte Rezepte',
+    statHosted: 'Ausgerichtete Pläne',
+    statUpvotes: 'Upvotes',
+    levelLine: '{{name}} · Level {{level}}',
+    sharedCircles: 'Gemeinsame Circles',
+    together_one: 'Ihr wart bei {{count}} Plan zusammen.',
+    together_other: 'Ihr wart bei {{count}} Plänen zusammen.',
+    togetherNone: 'Ihr wart noch bei keinem Plan zusammen.',
+    recipesTitle: 'Neueste Rezepte',
+    votes_one: '{{count}} Upvote',
+    votes_other: '{{count}} Upvotes',
+    seeProfile: 'Profil ansehen',
+    seeProfileOf: 'Profil von {{name}} ansehen',
+    privacy:
+      'Du siehst nur, was dir bei der Entscheidung hilft. Genauer Ort, Ernährung und Kontaktdaten werden nie gezeigt.',
+    wantsToMessage: 'Möchte dir schreiben',
+    block: 'Blockieren',
+    blockName: '{{name}} blockieren',
+    notFoundTitle: 'Dieses Profil ist nicht verfügbar',
+    notFoundText:
+      'Die Person hat sich vielleicht verborgen, oder ihr teilt keinen Circle mehr.',
+  },
   people: {
     lead: 'Nur Menschen, die sich sichtbar gemacht haben und mit dir in einem Circle sind.',
     empty: {

@@ -18,13 +18,27 @@ export function usePeople(enabled: boolean) {
   });
 }
 
+export function usePerson(userId: string) {
+  const backend = useBackend();
+  const { session } = useAuth();
+  return useQuery({
+    queryKey: ['person', userId, session?.userId ?? null],
+    queryFn: () => backend.getPerson(userId),
+    enabled: Boolean(session),
+    staleTime: 0,
+  });
+}
+
 export function useConnectWithPerson() {
   const backend = useBackend();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: { userId: string; key: string }) =>
       backend.connectWithPerson(input.userId, input.key),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['people'] }),
+    onSuccess: () =>
+      Promise.all(
+        ['people', 'person'].map((key) => queryClient.invalidateQueries({ queryKey: [key] })),
+      ),
   });
 }
 
