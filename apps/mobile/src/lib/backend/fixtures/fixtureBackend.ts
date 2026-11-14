@@ -101,7 +101,7 @@ interface State {
   /** Plans the host cancelled in this session, with the reason guests see. */
   plansCancelled: Record<string, string>;
   /** Plans whose time or place the host changed; the viewer (as a guest) still has to answer. */
-  plansChanged: Record<string, { needsReconfirm: boolean }>;
+  plansChanged: Record<string, { needsReconfirm: boolean; changedAt: string }>;
   /** New times for sample Plans (test hook), since the sample data itself is read-only. */
   plansMoved: Record<string, { startsAt: string; endsAt: string }>;
   /** Bring items the host added or changed in this session (the sample items are read-only). */
@@ -383,7 +383,10 @@ export async function createFixtureBackend(): Promise<Backend> {
           ...state.plansMoved,
           [planId]: { startsAt: moved.startsAt, endsAt: moved.endsAt },
         },
-        plansChanged: { ...state.plansChanged, [planId]: { needsReconfirm: true } },
+        plansChanged: {
+          ...state.plansChanged,
+          [planId]: { needsReconfirm: true, changedAt: new Date().toISOString() },
+        },
         notifications: notifyMe('plan_changed', {
           plan_id: planId,
           plan: plan.title,
@@ -649,6 +652,14 @@ export async function createFixtureBackend(): Promise<Backend> {
     if (state.plansEnded.includes(planId) || Date.now() >= new Date(plan.endsAt).getTime()) {
       throw new BackendError('invalid_input');
     }
+  }
+
+  /** A change still waiting for answers: settled after 48 hours, as plans_changed_due. */
+  function changedOpen(planId: string): boolean {
+    const change = state.plansChanged[planId];
+    return Boolean(
+      change?.needsReconfirm && Date.now() - Date.parse(change.changedAt) < 48 * 3_600_000,
+    );
   }
 
   /** The same window as the database: from two hours before the start to two after the end. */
@@ -1308,7 +1319,10 @@ export async function createFixtureBackend(): Promise<Backend> {
             ? { ...state.plansSecrets, [planId]: { ...secret, address } }
             : state.plansSecrets,
         plansChanged: moved
-          ? { ...state.plansChanged, [planId]: { needsReconfirm: true } }
+          ? {
+              ...state.plansChanged,
+              [planId]: { needsReconfirm: true, changedAt: new Date().toISOString() },
+            }
           : state.plansChanged,
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: status } },
       });
@@ -2445,9 +2459,14 @@ export async function createFixtureBackend(): Promise<Backend> {
       requireNotBlocked(userId);
       // Visible people in your Circles, or someone asking you for something.
       const visible = visiblePeople().find((p) => p.userId === userId);
-      const asking = state.directIncoming.find(
-        (r) => r.fromId === userId && r.status === 'pending',
-      );
+      // Fixture requests come from the Neukölln Plant Kitchen: the viewer must share it.
+      const sharesKitchen = [
+        ...state.circlesJoined,
+        ...state.circlesCreated.map((c) => c.id),
+      ].includes('neukolln-plant-kitchen');
+      const asking = sharesKitchen
+        ? state.directIncoming.find((r) => r.fromId === userId && r.status === 'pending')
+        : undefined;
       const base: Person | null =
         visible ??
         (asking
@@ -2461,9 +2480,7 @@ export async function createFixtureBackend(): Promise<Backend> {
           : null);
       if (!base) throw new BackendError('person_not_found');
       const sample = fixturePersonStats[userId] ?? fixturePersonStats['default'];
-      const theirs = [...fixtureRecipes, ...state.recipesCreated]
-        .filter((r) => r.authorId === userId)
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      const theirs = visibleRecipes().filter((r) => r.authorId === userId);
       return {
         ...base,
         ...sample,
@@ -2631,7 +2648,7 @@ export async function createFixtureBackend(): Promise<Backend> {
         ? 'cancelled'
         : state.plansEnded.includes(planId)
           ? 'completed'
-          : state.plansChanged[planId]?.needsReconfirm
+          : changedOpen(planId)
             ? 'changed'
             : 'published';
       return {
@@ -2714,6 +2731,10 @@ export async function createFixtureBackend(): Promise<Backend> {
         goingPlanIds: state.goingPlanIds.filter((id) => id !== planId),
         claimedItemIds: state.claimedItemIds.filter((id) => !planItemIds.includes(id)),
         waitlist: withoutEntry(planId),
+        // Leaving answers the change: nothing is owed if they join again.
+        plansChanged: Object.fromEntries(
+          Object.entries(state.plansChanged).filter(([id]) => id !== planId),
+        ),
       });
     },
 
@@ -2721,6 +2742,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       await call('joinWaitlist');
       requireActive();
       findPlan(planId);
+      if (planId in state.plansCancelled) throw new BackendError('plan_ended');
       if (replayed(key) || planId in state.waitlist || state.goingPlanIds.includes(planId))
         return;
       commit({ ...state, waitlist: { ...state.waitlist, [planId]: { expiresAt: null } } });
@@ -2729,6 +2751,7 @@ export async function createFixtureBackend(): Promise<Backend> {
     async confirmWaitlistOffer(planId, key) {
       await call('confirmOffer');
       requireActive();
+      if (planId in state.plansCancelled) throw new BackendError('plan_ended');
       if (state.goingPlanIds.includes(planId)) return 'going';
       const entry = state.waitlist[planId];
       if (!entry) throw new BackendError('no_offer');

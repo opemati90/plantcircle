@@ -108,7 +108,13 @@ export default function ManageScreen() {
   // A Plan that is on hold or cancelled is not running, whatever its times say.
   const live = summary.data.live;
   // Time, place and cancelling are open until the Plan starts.
-  const editable = live && !ended && now.getTime() < Date.parse(detail.startsAt);
+  const beforeStart = now.getTime() < Date.parse(detail.startsAt);
+  const editable = live && !ended && beforeStart;
+  // A held Plan can still be cancelled by its host; only cancelled and ended ones cannot.
+  const cancellable =
+    !ended &&
+    beforeStart &&
+    (status === 'published' || status === 'changed' || status === 'on_hold');
   const open = live && checkinOpen(window, ended, now);
   const endable = live && canEnd(detail.startsAt, ended, now);
   // Bring items change only while the Plan can still take guests: live, not ended, before its end.
@@ -302,7 +308,7 @@ export default function ManageScreen() {
 
         <BringSection planId={id} items={plan.data.bringItems} editable={itemsEditable} />
 
-        {editable ? (
+        {editable || cancellable ? (
           <View style={styles.edit}>
             {changed === '1' ? (
               <Text
@@ -313,20 +319,24 @@ export default function ManageScreen() {
                 {status === 'changed' ? t('host.changed') : t('host.changedQuiet')}
               </Text>
             ) : null}
-            <Button
-              variant="outline"
-              label={t('host.changeButton')}
-              onPress={() => {
-                router.push({ pathname: '/plan/[id]/change', params: { id } });
-              }}
-            />
-            <Button
-              variant="ghost"
-              label={t('host.cancelButton')}
-              onPress={() => {
-                setConfirmCancel(true);
-              }}
-            />
+            {editable ? (
+              <Button
+                variant="outline"
+                label={t('host.changeButton')}
+                onPress={() => {
+                  router.push({ pathname: '/plan/[id]/change', params: { id } });
+                }}
+              />
+            ) : null}
+            {cancellable ? (
+              <Button
+                variant="ghost"
+                label={t('host.cancelButton')}
+                onPress={() => {
+                  setConfirmCancel(true);
+                }}
+              />
+            ) : null}
           </View>
         ) : null}
 

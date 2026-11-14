@@ -100,3 +100,16 @@ describe('person_profile', () => {
     ).rejects.toThrow(/permission denied/);
   });
 });
+
+describe('person_profile: hidden people', () => {
+  it('a hidden person you are already connected with stays hidden', async () => {
+    await asUser(db, HIDDEN, () =>
+      db.query('select public.person_connect($1, $2)', [ME, key()]).catch(() => undefined),
+    );
+    await db.query(
+      'insert into public.connections (requester_id, addressee_id) values ($1, $2), ($2, $1) on conflict do nothing',
+      [HIDDEN, ME],
+    );
+    await expect(profile(ME, HIDDEN)).rejects.toThrow(/person_not_found/);
+  });
+});

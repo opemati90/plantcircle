@@ -11,6 +11,7 @@ import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
 import type { PersonProfile } from '../../lib/backend/types';
 import { currentLanguage } from '../../lib/i18n';
+import { useAuth } from '../auth/useAuth';
 import { useDirectRequests, useRespondDirect } from '../chat/queries';
 import { newIdempotencyKey } from '../plans/queries';
 import { useBlockUser } from '../safety/queries';
@@ -26,6 +27,7 @@ export default function PersonScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const person = usePerson(id);
+  const { session } = useAuth();
 
   const back = (
     <ScreenHeader
@@ -37,6 +39,25 @@ export default function PersonScreen() {
     />
   );
 
+  if (session === null) {
+    return (
+      <View style={styles.screen}>
+        {back}
+        <EmptyState
+          title={t('people.signedOut.title')}
+          text={t('people.signedOut.text')}
+          actions={
+            <Button
+              label={t('home.signIn')}
+              onPress={() => {
+                router.push({ pathname: '/sign-up', params: { next: `/person/${id}` } });
+              }}
+            />
+          }
+        />
+      </View>
+    );
+  }
   if (person.isPending) {
     return (
       <View
@@ -121,7 +142,7 @@ function PersonView({ person, back }: { person: PersonProfile; back: React.React
           </View>
           <View style={styles.identityText}>
             <Text
-              maxFontSizeMultiplier={1.4}
+              maxFontSizeMultiplier={2.0}
               accessibilityRole="header"
               style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
             >
@@ -161,7 +182,7 @@ function PersonView({ person, back }: { person: PersonProfile; back: React.React
         </Text>
 
         <Text
-          maxFontSizeMultiplier={1.6}
+          maxFontSizeMultiplier={2.0}
           accessibilityRole="header"
           aria-level={2}
           style={styles.section}
@@ -181,7 +202,7 @@ function PersonView({ person, back }: { person: PersonProfile; back: React.React
         {person.recentRecipes.length > 0 ? (
           <>
             <Text
-              maxFontSizeMultiplier={1.6}
+              maxFontSizeMultiplier={2.0}
               accessibilityRole="header"
               aria-level={2}
               style={styles.section}
@@ -378,7 +399,7 @@ function PersonView({ person, back }: { person: PersonProfile; back: React.React
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <View style={styles.stat}>
-      <Text maxFontSizeMultiplier={1.6} style={type(22, 'bold', { tracking: -0.5 })}>
+      <Text maxFontSizeMultiplier={2.0} style={type(22, 'bold', { tracking: -0.5 })}>
         {new Intl.NumberFormat(currentLanguage()).format(value)}
       </Text>
       <Text

@@ -49,8 +49,9 @@ begin
 
   v_out := exists (select 1 from public.connections where requester_id = v_uid and addressee_id = p_user_id);
   v_in := exists (select 1 from public.connections where requester_id = p_user_id and addressee_id = v_uid);
+  -- A hidden person is shown only while they are asking you for something.
   if not v_person.people_visible
-     and not v_in
+     and not (v_in and not v_out)
      and not exists (
        select 1 from public.message_requests r
        where r.from_id = p_user_id and r.to_id = v_uid and r.status = 'pending') then

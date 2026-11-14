@@ -87,8 +87,9 @@ begin
      and (char_length(v_area) not between 1 and 60 or char_length(v_address) not between 1 and 200) then
     raise exception 'invalid_plan' using errcode = 'P0001';
   end if;
+  -- Real seats only: offers near the start are broadcast to several people at once.
   select count(*) into v_going from public.rsvps
-  where plan_id = p_plan_id and state in ('going', 'checked_in', 'offered');
+  where plan_id = p_plan_id and state in ('going', 'checked_in');
   if p_capacity < v_going then
     raise exception 'capacity_below_going' using errcode = 'P0001';
   end if;
@@ -114,8 +115,9 @@ begin
   if v_plan.format = 'in_person' then
     update public.plan_private
     set address = v_address,
-        -- A later start keeps the address hidden until the day before it, as at creation.
-        reveal_at = case when reveal_at > now() then least(reveal_at, p_starts_at - interval '1 day') else reveal_at end
+        -- An address not yet released stays hidden until the day before the new start.
+        reveal_at = case when reveal_at > now()
+                         then greatest(now(), p_starts_at - interval '1 day') else reveal_at end
     where plan_id = p_plan_id;
   end if;
 
@@ -279,7 +281,7 @@ declare
   v_plan public.plans%rowtype;
   v_reason text := public.text_trim(p_reason);
   v_replay jsonb;
-  v_fingerprint text := 'plan_cancel:' || p_plan_id::text;
+  v_fingerprint text := 'plan_cancel:' || p_plan_id::text || ':' || coalesce(public.text_trim(p_reason), '');
 begin
   if v_uid is null then
     raise exception 'not_authenticated' using errcode = '28000';
@@ -313,7 +315,8 @@ begin
   using public.contribution_slots s
   where cc.slot_id = s.id and s.plan_id = p_plan_id;
   update public.rsvps
-  set state = 'cancelled', offer_expires_at = null, needs_reconfirm = false, updated_at = now()
+  set state = 'cancelled', offer_expires_at = null, needs_reconfirm = false,
+      checked_in_at = null, checked_in_by = null, updated_at = now()
   where plan_id = p_plan_id and state in ('going', 'checked_in', 'waitlisted', 'offered');
 
   return public.idempotent_store(
@@ -340,8 +343,10 @@ declare
   v_host text;
   v_payload jsonb;
 begin
+  -- Each status change, and each new time-or-place revision of a changed Plan (changed_at).
   if new.status not in ('changed', 'cancelled', 'on_hold')
-     or (new.status = old.status and not (new.status = 'changed' and new.starts_at <> old.starts_at)) then
+     or (new.status = old.status
+         and not (new.status = 'changed' and new.changed_at is distinct from old.changed_at)) then
     return new;
   end if;
   v_type := case new.status when 'changed' then 'plan_changed' when 'cancelled' then 'plan_cancelled' else 'plan_on_hold' end;
@@ -462,3 +467,72 @@ join public.profiles h on h.id = p.host_id
 join public.cities c on c.id = p.city_id
 where p.status <> 'draft'
   and not public.hidden_by_block(p.host_id);
+
+drop trigger plans_notify on public.plans;
+create trigger plans_notify after update of status, starts_at, changed_at on public.plans
+  for each row execute function public.plans_notify();
+
+-- A Plan released from hold while guests still owe an answer goes back to `changed`, with a
+-- fresh 48 hours, so the normal re-confirm and settlement path applies.
+create function public.plans_release_to_changed()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if old.status = 'on_hold' and new.status = 'published' and exists (
+       select 1 from public.rsvps r
+       where r.plan_id = new.id and r.needs_reconfirm and r.state in ('going', 'checked_in')) then
+    new.status := 'changed';
+    new.changed_at := now();
+  end if;
+  return new;
+end;
+$$;
+create trigger plans_release_to_changed before update of status on public.plans
+  for each row execute function public.plans_release_to_changed();
+
+-- rsvp_cancel, marked as leaving. A checked-in guest may also leave when a change asks them to
+-- re-confirm ("Can't make it"); their check-in is cleared.
+create or replace function public.rsvp_cancel(p_plan_id uuid, p_idempotency_key uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_replay jsonb;
+begin
+  if v_uid is null then
+    raise exception 'not_authenticated' using errcode = '28000';
+  end if;
+  if not exists (select 1 from public.profiles where id = v_uid) then
+    raise exception 'profile_required' using errcode = 'P0001';
+  end if;
+
+  -- Leaving is a safety action: a paused member may always leave (see refuse_when_suspended).
+  perform set_config('pc.safety_action', 'leave', true);
+  perform 1 from public.plans where id = p_plan_id for update;
+  v_replay := public.idempotent_replay(p_idempotency_key, 'rsvp_cancel:' || p_plan_id::text);
+  if v_replay is not null then
+    return v_replay;
+  end if;
+
+  update public.rsvps
+  set state = 'cancelled', offer_expires_at = null, checked_in_at = null, checked_in_by = null,
+      updated_at = now()
+  where plan_id = p_plan_id and user_id = v_uid
+    and (state in ('going', 'waitlisted', 'offered') or (state = 'checked_in' and needs_reconfirm));
+
+  delete from public.contribution_claims cc
+  using public.contribution_slots s
+  where cc.slot_id = s.id and s.plan_id = p_plan_id and cc.user_id = v_uid;
+
+  perform public.promote_waitlist(p_plan_id);
+
+  return public.idempotent_store(
+    p_idempotency_key, 'rsvp_cancel:' || p_plan_id::text, jsonb_build_object('status', 'cancelled'));
+end;
+$$;

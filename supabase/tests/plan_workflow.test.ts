@@ -253,3 +253,89 @@ describe('plan_cancel', () => {
     ).rejects.toThrow(/invalid_plan/);
   });
 });
+
+describe('audit regressions', () => {
+  const checkIn = async (user: string) => {
+    await db.query(
+      `update public.plans set starts_at = now() + interval '90 minutes', ends_at = now() + interval '4 hours' where id = $1`,
+      [PLAN],
+    );
+    await db.query(
+      `update public.rsvps set state = 'checked_in', checked_in_at = now(), checked_in_by = $2 where plan_id = $1 and user_id = $3`,
+      [PLAN, HOST, user],
+    );
+  };
+
+  it('a host can cancel a Plan with checked-in guests', async () => {
+    await join(GUEST);
+    await checkIn(GUEST);
+    await asUser(db, HOST, () =>
+      db.query('select public.plan_cancel($1, $2, $3)', [PLAN, 'Power cut', key()]),
+    );
+    expect(await plan()).toMatchObject({ status: 'cancelled' });
+    expect((await rsvps())[0]).toMatchObject({ state: 'cancelled' });
+  });
+
+  it('a checked-in guest can say they cannot make a changed time', async () => {
+    await join(GUEST);
+    await db.query(
+      `update public.rsvps set state = 'checked_in', checked_in_at = now(), needs_reconfirm = true where plan_id = $1`,
+      [PLAN],
+    );
+    await db.query(
+      `update public.plans set status = 'changed', changed_at = now() where id = $1`,
+      [PLAN],
+    );
+    await asUser(db, GUEST, () => db.query('select public.rsvp_cancel($1, $2)', [PLAN, key()]));
+    expect((await rsvps())[0]).toMatchObject({ state: 'cancelled', needs_reconfirm: false });
+    expect(await plan()).toMatchObject({ status: 'published' });
+  });
+
+  it('every new time-or-place revision tells guests again', async () => {
+    await join(GUEST);
+    const later = new Date(start.getTime() + DAY);
+    await update(HOST, { starts: later, ends: new Date(later.getTime() + 3 * 3_600_000) });
+    await update(HOST, {
+      starts: later,
+      ends: new Date(later.getTime() + 3 * 3_600_000),
+      address: 'Sonnenallee 5',
+    });
+    const changes = (await inbox(GUEST)).filter((x) => x.type === 'plan_changed');
+    expect(changes).toHaveLength(2);
+  });
+
+  it('postponing keeps an unreleased address hidden until the day before the new start', async () => {
+    await db.query(`update public.plan_private set reveal_at = $2 where plan_id = $1`, [
+      PLAN,
+      new Date(start.getTime() - DAY).toISOString(),
+    ]);
+    const later = new Date(start.getTime() + 8 * DAY);
+    await update(HOST, { starts: later, ends: new Date(later.getTime() + 3 * 3_600_000) });
+    const reveal = await db.query<{ reveal_at: Date }>(
+      'select reveal_at from public.plan_private where plan_id = $1',
+      [PLAN],
+    );
+    expect(new Date(reveal.rows[0]?.reveal_at ?? 0).getTime()).toBe(later.getTime() - DAY);
+  });
+
+  it('a held Plan with unanswered changes returns to changed when released', async () => {
+    await join(GUEST);
+    const later = new Date(start.getTime() + DAY);
+    await update(HOST, { starts: later, ends: new Date(later.getTime() + 3 * 3_600_000) });
+    await db.query(`update public.plans set status = 'on_hold' where id = $1`, [PLAN]);
+    await db.query(`update public.plans set status = 'published' where id = $1`, [PLAN]);
+    expect(await plan()).toMatchObject({ status: 'changed' });
+  });
+
+  it('a changed reason under the same key is refused, not silently replayed', async () => {
+    const k = key();
+    await asUser(db, HOST, () =>
+      db.query('select public.plan_cancel($1, $2, $3)', [PLAN, 'Ill', k]),
+    );
+    await expect(
+      asUser(db, HOST, () =>
+        db.query('select public.plan_cancel($1, $2, $3)', [PLAN, 'Other', k]),
+      ),
+    ).rejects.toThrow(/idempotency_key_reused/);
+  });
+});

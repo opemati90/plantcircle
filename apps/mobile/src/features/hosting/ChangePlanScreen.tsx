@@ -135,7 +135,7 @@ function ChangeForm({
         contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
       >
         <Text
-          maxFontSizeMultiplier={1.4}
+          maxFontSizeMultiplier={2.0}
           accessibilityRole="header"
           style={type(32, 'bold', { tracking: -1, leading: 1.06 })}
         >

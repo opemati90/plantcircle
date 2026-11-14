@@ -126,8 +126,9 @@ function PlanView({
   const cancelled = status === 'cancelled';
   const onHold = status === 'on_hold';
   const asksReconfirm = status === 'changed' && detail.needsReconfirm;
-  // Nothing to join on a cancelled or held Plan; the host manages theirs instead.
-  const closed = cancelled || onHold || isHost;
+  // Nothing to join on a cancelled or held Plan; the host manages theirs instead. Someone
+  // already going or in line on a held Plan keeps their own bar, so they can still leave.
+  const closed = cancelled || isHost || (onHold && rsvp === 'none');
   // With large type the price and the buttons no longer fit side by side: the bar stacks.
   const { fontScale } = useWindowDimensions();
   const stacked = fontScale >= 1.3;
