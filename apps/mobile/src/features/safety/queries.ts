@@ -5,7 +5,12 @@ import {
   type InfiniteData,
 } from '@tanstack/react-query';
 import { useBackend } from '../../lib/backend/BackendProvider';
-import type { CookPage, ReportInput, StaffAction } from '../../lib/backend/types';
+import type {
+  CookCommentPage,
+  CookPage,
+  ReportInput,
+  StaffAction,
+} from '../../lib/backend/types';
 import { forgetCookPhotos } from '../../lib/photoCache';
 import { useAuth } from '../auth/useAuth';
 
@@ -30,6 +35,7 @@ const AFTER_BLOCK = [
   ['recipe'],
   ['cooks'],
   ['cook'],
+  ['cookComments'],
   ['myCooks'],
   ['circle'],
 ];
@@ -66,6 +72,21 @@ export function useBlockUser() {
           : data,
       );
       queryClient.removeQueries({ queryKey: ['cook'] });
+      // Their comments too, from every post's cached thread.
+      await queryClient.cancelQueries({ queryKey: ['cookComments'] });
+      queryClient.setQueriesData<InfiniteData<CookCommentPage>>(
+        { queryKey: ['cookComments'] },
+        (data) =>
+          data
+            ? {
+                ...data,
+                pages: data.pages.map((p) => ({
+                  ...p,
+                  items: p.items.filter((c) => c.authorId !== input.userId),
+                })),
+              }
+            : data,
+      );
       await forgetCookPhotos();
       await Promise.all(
         AFTER_BLOCK.map((key) => queryClient.invalidateQueries({ queryKey: key })),

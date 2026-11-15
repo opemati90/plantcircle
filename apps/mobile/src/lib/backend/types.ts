@@ -827,7 +827,14 @@ export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
 });
 
 // Cooked it (docs/superpowers/specs/2026-11-15-cooked-it-design.md): a photo of something a
-// member cooked, shared with one of their Circles.
+// member cooked, shared with one of their Circles. Circle conversations
+// (2026-11-16-circle-conversations-design.md) add text kinds and comments.
+
+/** What a post is: what you cooked (with a photo), or a tip, a question, a find nearby. */
+export const COOK_KINDS = ['cooked', 'tip', 'question', 'find'] as const;
+export type CookKind = (typeof COOK_KINDS)[number];
+/** The longest text for each kind. */
+export const captionLimit = (kind: CookKind) => (kind === 'cooked' ? 140 : 500);
 
 /** A photo to show: a URL (signed, short-lived) or, in the fixtures, a bundled image. */
 export type CookImage = { uri: string; cacheKey: string } | number;
@@ -842,15 +849,22 @@ export interface Cook {
   /** Only when the viewer can see the recipe. */
   recipeTitle: string | null;
   caption: string;
-  photo: CookImage;
-  thumb: CookImage;
+  kind: CookKind;
+  /** Null for a text post without a photo. */
+  photo: CookImage | null;
+  thumb: CookImage | null;
   photoAlt: string | null;
-  width: number;
-  height: number;
+  width: number | null;
+  height: number | null;
   createdAt: string;
   reactions: number;
   reacted: boolean;
   mine: boolean;
+  comments: number;
+  /** A host of the Circle removed it: only its author still sees it, marked. */
+  hostRemoved: boolean;
+  /** The viewer is a host of the Circle who may remove it. */
+  canRemove: boolean;
   /** Monday of the challenge week this post entered, or null. */
   challengeWeek: string | null;
   /** That week's custom theme; null with a week means the week's default theme. */
@@ -918,10 +932,12 @@ export interface PreparedPhoto {
 
 export interface CookInput {
   circleId: string;
+  kind: CookKind;
   recipeId: string | null;
   caption: string;
   photoAlt: string | null;
-  photoPath: string;
+  /** Required for a Cooked post. */
+  photoPath: string | null;
   /** An entry in the Circle's challenge for this week (its Monday, as shown), or null. */
   challengeWeek: string | null;
 }
@@ -935,15 +951,19 @@ export const cookCardSchema = z.object({
   recipe_id: z.string().nullable(),
   recipe_title: z.string().nullable(),
   caption: z.string(),
-  photo_path: z.string(),
+  photo_path: z.string().nullable(),
   photo_alt: z.string().nullable(),
-  width: z.number().int(),
-  height: z.number().int(),
+  width: z.number().int().nullable(),
+  height: z.number().int().nullable(),
   created_at: z.string(),
   reactions: z.number().int(),
   reacted: z.boolean(),
   challenge_week: z.string().nullable(),
   challenge_theme: z.string().nullable(),
+  kind: z.enum(COOK_KINDS).default('cooked'),
+  host_removed: z.boolean().default(false),
+  comments: z.number().int().default(0),
+  can_remove: z.boolean().default(false),
 });
 
 export const myCookSchema = z.object({
@@ -951,12 +971,45 @@ export const myCookSchema = z.object({
   circle_id: z.string(),
   circle_name: z.string(),
   caption: z.string(),
-  photo_path: z.string(),
+  photo_path: z.string().nullable(),
   photo_alt: z.string().nullable(),
-  width: z.number().int(),
-  height: z.number().int(),
+  width: z.number().int().nullable(),
+  height: z.number().int().nullable(),
   created_at: z.string(),
   reactions: z.number().int(),
+  kind: z.enum(COOK_KINDS).default('cooked'),
+  host_removed: z.boolean().default(false),
+});
+
+/** A comment on a post, oldest first. */
+export interface CookComment {
+  id: string;
+  cookId: string;
+  authorId: string;
+  authorName: string;
+  body: string;
+  createdAt: string;
+  mine: boolean;
+  /** A host removed it: only its author still sees it, marked. */
+  hostRemoved: boolean;
+  canRemove: boolean;
+}
+
+/** A page of comments: oldest first within it, the newest page first; `earlier` loads more. */
+export interface CookCommentPage {
+  items: CookComment[];
+  earlier: CookCursor | null;
+}
+
+export const cookCommentSchema = z.object({
+  id: z.string(),
+  cook_id: z.string(),
+  author_id: z.string(),
+  author_name: z.string(),
+  body: z.string(),
+  created_at: z.string(),
+  host_removed: z.boolean(),
+  can_remove: z.boolean(),
 });
 
 /** A reported post as staff see it: the caption and the photo, whether or not it is removed. */
@@ -965,13 +1018,16 @@ export interface StaffCook {
   photo: CookImage | null;
   photoAlt: string | null;
   removed: boolean;
+  /** A reported comment (no photo) rather than a post. */
+  comment: boolean;
 }
 
 export const staffCookSchema = z.object({
   caption: z.string(),
-  photo_path: z.string(),
+  photo_path: z.string().nullable(),
   photo_alt: z.string().nullable(),
   removed: z.boolean(),
+  comment: z.boolean().default(false),
 });
 
 /** The thumbnail sits next to the photo: `<id>.jpg` and `<id>.thumb.jpg`. */
@@ -988,6 +1044,7 @@ export const REPORT_TARGETS = [
   'order',
   'app',
   'cook',
+  'cook_comment',
 ] as const;
 export type ReportTarget = (typeof REPORT_TARGETS)[number];
 export const REPORT_CATEGORIES = [
@@ -1199,6 +1256,8 @@ export interface UserSettings {
   notifWaitlist: boolean;
   notifDirect: boolean;
   notifChats: boolean;
+  /** Comments on the member's own posts (in-app and push). */
+  notifComments: boolean;
   quietHours: boolean;
   quietStart: number;
   quietEnd: number;
@@ -1220,6 +1279,7 @@ export type SettingsPatch = Partial<
     | 'language'
     | 'notifDirect'
     | 'notifChats'
+    | 'notifComments'
     | 'quietHours'
     | 'quietStart'
     | 'quietEnd'
@@ -1235,6 +1295,8 @@ export const settingsSchema = z.object({
   notif_waitlist: z.boolean(),
   notif_direct: z.boolean(),
   notif_chats: z.boolean(),
+  // Before 20261112003700 the server did not have it.
+  notif_comments: z.boolean().default(true),
   quiet_hours: z.boolean(),
   quiet_start: z.number().int(),
   quiet_end: z.number().int(),
@@ -1252,6 +1314,7 @@ export const toSettings = (row: z.infer<typeof settingsSchema>): UserSettings =>
   notifWaitlist: row.notif_waitlist,
   notifDirect: row.notif_direct,
   notifChats: row.notif_chats,
+  notifComments: row.notif_comments,
   quietHours: row.quiet_hours,
   quietStart: row.quiet_start,
   quietEnd: row.quiet_end,
@@ -1269,6 +1332,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   notifWaitlist: true,
   notifDirect: true,
   notifChats: true,
+  notifComments: true,
   quietHours: true,
   quietStart: 22,
   quietEnd: 8,
@@ -1289,6 +1353,7 @@ export function settingsPatchToRow(
     notifWaitlist: 'notif_waitlist',
     notifDirect: 'notif_direct',
     notifChats: 'notif_chats',
+    notifComments: 'notif_comments',
     quietHours: 'quiet_hours',
     quietStart: 'quiet_start',
     quietEnd: 'quiet_end',

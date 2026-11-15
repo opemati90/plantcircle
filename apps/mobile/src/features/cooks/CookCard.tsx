@@ -11,7 +11,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { Button, IconButton } from '../../components/Button';
-import { ChevronRightIcon, LeafIcon, MoreIcon } from '../../components/icons';
+import { ChatIcon, ChevronRightIcon, LeafIcon, MoreIcon } from '../../components/icons';
 import { BottomSheet } from '../../components/parts';
 import { Photo } from '../../components/Photo';
 import { color, extra, radius, shadow, size, type } from '../../components/theme';
@@ -22,7 +22,7 @@ import { postedAgo } from './postedAgo';
 import { newIdempotencyKey } from '../plans/queries';
 import { useBlockUser } from '../safety/queries';
 import { themeLabel } from './challengeThemes';
-import { useCookReaction, useDeleteCook } from './queries';
+import { useCookReaction, useDeleteCook, useRemoveCook } from './queries';
 
 /** Initial on a soft tint, the same three tints the rest of the app uses for people. */
 export function Initial({ name, size: side = 36 }: { name: string; size?: number }) {
@@ -48,6 +48,35 @@ export function Initial({ name, size: side = 36 }: { name: string; size?: number
 
 export const photoLabel = (t: TFunction, cook: Cook) =>
   cook.photoAlt ?? t('cooks.photoOf', { caption: cook.caption });
+
+/** The small label over a tip, a question or a find (a Cooked post needs none). */
+export function KindLabel({ cook }: { cook: Cook }) {
+  const { t } = useTranslation();
+  if (cook.kind === 'cooked') return null;
+  return (
+    <Text
+      maxFontSizeMultiplier={2.0}
+      style={[type(12, 'bold', { color: color.brand, tracking: 1 }), styles.upper]}
+    >
+      {t(`cooks.kinds.${cook.kind}`)}
+    </Text>
+  );
+}
+
+/** Shown to the author only, on a post or comment a host removed. */
+export function RemovedNotice() {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.removed} role="note">
+      <Text maxFontSizeMultiplier={2.0} style={type(14, 'semibold', { color: color.danger })}>
+        {t('cooks.removedByHost')}
+      </Text>
+      <Text maxFontSizeMultiplier={2.0} style={type(13, 'regular', { color: color.secondary })}>
+        {t('cooks.removedByHostNote')}
+      </Text>
+    </View>
+  );
+}
 
 /** "Yum": a toggle with its count, a small spring when it turns on (none under Reduce Motion). */
 export function YumButton({ cook }: { cook: Cook }) {
@@ -119,7 +148,10 @@ export function YumButton({ cook }: { cook: Cook }) {
   );
 }
 
-/** One post in a feed: who, the photo, the recipe and caption, then Yum and Ask how. */
+/**
+ * One post in a feed: who, the photo (a tip, question or find may have none), the caption, then
+ * Yum, the comments and (for what someone cooked) Ask how.
+ */
 export function CookCard({
   cook,
   now,
@@ -167,14 +199,34 @@ export function CookCard({
         </IconButton>
       </View>
 
-      <Pressable
-        accessibilityRole="link"
-        accessibilityLabel={`${photoLabel(t, cook)}. ${t('cooks.openPost')}`}
-        onPress={open}
-        style={({ pressed }) => [styles.photo, pressed && styles.pressedPhoto]}
-      >
-        <Photo source={cook.photo} alt={photoLabel(t, cook)} />
-      </Pressable>
+      {cook.hostRemoved ? <RemovedNotice /> : null}
+
+      {cook.photo ? (
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel={`${photoLabel(t, cook)}. ${t('cooks.openPost')}`}
+          onPress={open}
+          style={({ pressed }) => [styles.photo, pressed && styles.pressedPhoto]}
+        >
+          <Photo source={cook.photo} alt={photoLabel(t, cook)} />
+        </Pressable>
+      ) : (
+        // A text post: its words are the card, and the card opens the post.
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel={`${t(`cooks.kinds.${cook.kind}`)}: ${cook.caption}. ${t('cooks.openPost')}`}
+          onPress={open}
+          style={({ pressed }) => [styles.textCard, pressed && styles.pressedPhoto]}
+        >
+          <KindLabel cook={cook} />
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(19, 'semibold', { tracking: -0.3, leading: 1.35 })}
+          >
+            {cook.caption}
+          </Text>
+        </Pressable>
+      )}
 
       <View style={styles.body}>
         {cook.challengeWeek ? (
@@ -187,9 +239,14 @@ export function CookCard({
             })}
           </Text>
         ) : null}
-        <Text maxFontSizeMultiplier={2.0} style={type(17, 'regular', { leading: 1.4 })}>
-          {cook.caption}
-        </Text>
+        {cook.photo ? (
+          <>
+            <KindLabel cook={cook} />
+            <Text maxFontSizeMultiplier={2.0} style={type(17, 'regular', { leading: 1.4 })}>
+              {cook.caption}
+            </Text>
+          </>
+        ) : null}
         {/* Recipes are off at launch (their routes lead home), so no link to one. */}
         {features.recipes && cook.recipeTitle && cook.recipeId ? (
           <Pressable
@@ -210,29 +267,46 @@ export function CookCard({
             <ChevronRightIcon size={14} strokeWidth={2.4} color={color.brand} />
           </Pressable>
         ) : null}
-        <View style={styles.actions}>
-          <YumButton cook={cook} />
-          {cook.mine ? null : (
+        {cook.hostRemoved ? null : (
+          <View style={styles.actions}>
+            <YumButton cook={cook} />
             <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('cooks.askHowName', { name: cook.authorName })}
-              onPress={() => {
-                router.push({
-                  pathname: '/chat/direct/[id]',
-                  params: {
-                    id: cook.authorId,
-                    draft: t('cooks.askHowDraft', { caption: cook.caption }),
-                  },
-                });
-              }}
+              accessibilityRole="link"
+              accessibilityLabel={
+                cook.comments > 0
+                  ? t('cooks.comments', { count: cook.comments })
+                  : t('cooks.commentLabel')
+              }
+              onPress={open}
               style={({ pressed }) => [styles.pill, pressed && styles.pressed]}
             >
+              <ChatIcon size={17} strokeWidth={2} />
               <Text maxFontSizeMultiplier={2.0} style={type(14, 'semibold')}>
-                {t('cooks.askHow')}
+                {cook.comments > 0 ? String(cook.comments) : t('cooks.commentsTitle')}
               </Text>
             </Pressable>
-          )}
-        </View>
+            {cook.mine || cook.kind !== 'cooked' ? null : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('cooks.askHowName', { name: cook.authorName })}
+                onPress={() => {
+                  router.push({
+                    pathname: '/chat/direct/[id]',
+                    params: {
+                      id: cook.authorId,
+                      draft: t('cooks.askHowDraft', { caption: cook.caption }),
+                    },
+                  });
+                }}
+                style={({ pressed }) => [styles.pill, pressed && styles.pressed]}
+              >
+                <Text maxFontSizeMultiplier={2.0} style={type(14, 'semibold')}>
+                  {t('cooks.askHow')}
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        )}
       </View>
 
       <CookOptions
@@ -305,29 +379,34 @@ export function CookOptions({
   const { t } = useTranslation();
   const router = useRouter();
   const remove = useDeleteCook();
+  const hostRemove = useRemoveCook();
   const block = useBlockUser();
   const [blockKey] = useState(newIdempotencyKey);
   // One key for this delete, kept across retries, so a lost answer is replayed, not refused.
   const [deleteKey] = useState(newIdempotencyKey);
-  const [confirm, setConfirm] = useState<'block' | 'delete' | null>(null);
+  const [confirm, setConfirm] = useState<'block' | 'delete' | 'remove' | null>(null);
   const close = () => {
     setConfirm(null);
     onClose();
   };
-  const failed = remove.isError || block.isError;
+  const failed = remove.isError || block.isError || hostRemove.isError;
 
   const title =
     confirm === 'delete'
       ? t('cooks.deleteTitle')
-      : confirm === 'block'
-        ? t('person.blockName', { name: cook.authorName })
-        : t('cooks.optionsTitle');
+      : confirm === 'remove'
+        ? t('cooks.removePostTitle')
+        : confirm === 'block'
+          ? t('person.blockName', { name: cook.authorName })
+          : t('cooks.optionsTitle');
   const lead =
     confirm === 'delete'
       ? t('cooks.deleteLead')
-      : confirm === 'block'
-        ? t('safety.alsoBlockNote')
-        : undefined;
+      : confirm === 'remove'
+        ? t('cooks.removePostText')
+        : confirm === 'block'
+          ? t('safety.alsoBlockNote')
+          : undefined;
 
   return (
     <BottomSheet open={open} onClose={close} title={title} {...(lead ? { lead } : {})}>
@@ -345,6 +424,19 @@ export function CookOptions({
                 },
               },
             );
+          }}
+        />
+      ) : confirm === 'remove' ? (
+        <Button
+          label={t('cooks.remove')}
+          loading={hostRemove.isPending}
+          onPress={() => {
+            hostRemove.mutate(cook.id, {
+              onSuccess: () => {
+                close();
+                onDeleted?.();
+              },
+            });
           }}
         />
       ) : confirm === 'block' ? (
@@ -373,6 +465,15 @@ export function CookOptions({
         />
       ) : (
         <View style={styles.sheetActions}>
+          {cook.canRemove ? (
+            <Button
+              variant="outline"
+              label={t('cooks.removePost')}
+              onPress={() => {
+                setConfirm('remove');
+              }}
+            />
+          ) : null}
           <Button
             variant="outline"
             label={t('safety.report.cook')}
@@ -404,7 +505,7 @@ export function CookOptions({
           role="alert"
           style={type(15, 'regular', { color: color.danger })}
         >
-          {errorCode(remove.error ?? block.error) === 'network'
+          {errorCode(remove.error ?? block.error ?? hostRemove.error) === 'network'
             ? t('errors.offlineText')
             : t('cooks.errorAction')}
         </Text>
@@ -426,6 +527,18 @@ const styles = StyleSheet.create({
     backgroundColor: color.fill,
   },
   pressedPhoto: { opacity: 0.94 },
+  textCard: {
+    gap: 10,
+    padding: 20,
+    borderRadius: radius.card,
+    backgroundColor: color.fill,
+  },
+  removed: {
+    gap: 2,
+    padding: 14,
+    borderRadius: radius.control,
+    backgroundColor: color.fill,
+  },
   body: { gap: 10, paddingHorizontal: 2 },
   upper: { textTransform: 'uppercase' },
   recipe: {

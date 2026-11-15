@@ -1,6 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Button } from '../../components/Button';
 import { CheckIcon } from '../../components/icons';
 import { EmptyState, Skeleton } from '../../components/parts';
@@ -10,9 +17,13 @@ import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
 import { useNow } from '../../lib/useNow';
 import { CookCard } from './CookCard';
+import { CommentBar, CookComments } from './CookComments';
 import { useCook } from './queries';
 
-/** One post on its own: opened from a feed, Home, a notification, or right after sharing. */
+/**
+ * One post on its own, with its comments: opened from a feed, Home, a notification, or right
+ * after sharing.
+ */
 export default function CookScreen() {
   const { id, shared } = useLocalSearchParams<{ id: string; shared?: string }>();
   const { t } = useTranslation();
@@ -66,11 +77,20 @@ export default function CookScreen() {
     );
   }
 
+  // A post a host removed takes no new comments (its author still sees it, marked).
+  const canComment = !cook.data.hostRemoved;
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={styles.screen}
+    >
       {header}
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: (canComment ? 24 : 40) + (canComment ? 0 : insets.bottom) },
+        ]}
       >
         {shared === '1' ? (
           <View role="status" style={styles.shared}>
@@ -84,6 +104,7 @@ export default function CookScreen() {
           </View>
         ) : null}
         <CookCard cook={cook.data} now={now} onGone={goBack} />
+        <CookComments cook={cook.data} now={now} />
         <Button
           variant="outline"
           label={t('cooks.moreFromCircle', { circle: cook.data.circleName })}
@@ -95,7 +116,8 @@ export default function CookScreen() {
           }}
         />
       </ScrollView>
-    </View>
+      {canComment ? <CommentBar cook={cook.data} bottom={insets.bottom} /> : null}
+    </KeyboardAvoidingView>
   );
 }
 

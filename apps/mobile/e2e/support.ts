@@ -18,6 +18,7 @@ export interface FixtureWindow {
     freeSpot: (planId: string, offerMs?: number) => void;
     suspend: () => void;
     makeStaff: () => void;
+    makeModerator: (circleId: string) => void;
     publishTerms: () => void;
     setHostStats: (
       stats: Partial<{

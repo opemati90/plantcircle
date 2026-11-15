@@ -2,13 +2,20 @@ import { appStorage } from '../../storage';
 import { hostLevelFrom } from '../../../features/hosting/levels';
 import { imageByPath } from '../../../features/plans/planImage';
 import { BackendError, type Backend } from '../backend';
-import { DEFAULT_SETTINGS, isRecipeAllergen, PROFILE_GOALS } from '../types';
+import {
+  captionLimit,
+  COOK_KINDS,
+  DEFAULT_SETTINGS,
+  isRecipeAllergen,
+  PROFILE_GOALS,
+} from '../types';
 import type {
   AppNotification,
   AuditRow,
   Circle,
   City,
   Cook,
+  CookComment,
   CookImage,
   HostLevel,
   HostStats,
@@ -37,6 +44,7 @@ import type {
 import {
   fixtureAddresses,
   fixtureCircles,
+  fixtureCookComments,
   fixtureCooks,
   type FixtureCook,
   fixtureRecipes,
@@ -183,6 +191,25 @@ interface State {
   cooksDeleted: string[];
   cookReactions: string[];
   cookPostTimes: string[];
+  /** Comments made here, and sample comments deleted. */
+  cookComments: {
+    id: string;
+    cookId: string;
+    authorId: string;
+    authorName: string;
+    body: string;
+    createdAt: string;
+  }[];
+  cookCommentsDeleted: string[];
+  cookCommentTimes: string[];
+  /** Posts and comments a host removed. */
+  cooksHostRemoved: string[];
+  cookCommentsHostRemoved: string[];
+  /** Posts and comments a staff decision removed. */
+  cooksStaffRemoved: string[];
+  cookCommentsStaffRemoved: string[];
+  /** Circles where a test made the viewer a moderator. */
+  circlesModerated: string[];
 }
 
 type Operation =
@@ -218,6 +245,8 @@ interface FixtureHooks {
     suspend: () => void;
     /** Test hook: the viewer becomes staff, so the web console opens. */
     makeStaff: () => void;
+    /** Test hook: the viewer becomes a moderator of a Circle they are in. */
+    makeModerator: (circleId: string) => void;
     /** Test hook: a new Terms version takes effect now, so the update gate shows. */
     publishTerms: () => void;
     /** Test hook: what the viewer has earned towards hosting (recipes shared here add to it). */
@@ -325,6 +354,14 @@ const EMPTY: State = {
   cooksDeleted: [],
   cookReactions: [],
   cookPostTimes: [],
+  cookComments: [],
+  cookCommentsDeleted: [],
+  cookCommentTimes: [],
+  cooksHostRemoved: [],
+  cookCommentsHostRemoved: [],
+  cooksStaffRemoved: [],
+  cookCommentsStaffRemoved: [],
+  circlesModerated: [],
 };
 
 function removeOne(list: string[], value: string): string[] {
@@ -391,6 +428,10 @@ export async function createFixtureBackend(): Promise<Backend> {
         ...state,
         profile: state.profile ? { ...state.profile, role: 'staff' } : state.profile,
       });
+    },
+    makeModerator: (circleId) => {
+      if (state.circlesModerated.includes(circleId)) return;
+      commit({ ...state, circlesModerated: [...state.circlesModerated, circleId] });
     },
     publishTerms: () => {
       if (state.policiesPending.some((p) => p.version === '2026-12')) return;
@@ -624,7 +665,8 @@ export async function createFixtureBackend(): Promise<Backend> {
     state.challengeThemes.find((c) => c.circleId === circleId && c.weekStart === week)?.theme ??
     null;
 
-  function cookImage(path: string, thumb: boolean): CookImage {
+  function cookImage(path: string | null, thumb: boolean): CookImage | null {
+    if (path === null) return null;
     const made = cookPhotos.get(path);
     if (made) return { uri: thumb ? made.thumbUri : made.uri, cacheKey: path };
     const found = imageByPath(path);
@@ -636,8 +678,69 @@ export async function createFixtureBackend(): Promise<Backend> {
     return imageByPath('/images/potluck-spread.jpg') as number;
   }
 
+  /** The viewer's role in a Circle, as circle_members holds it. */
+  function roleIn(circleId: string): 'owner' | 'moderator' | 'member' | null {
+    if (state.circlesCreated.some((c) => c.id === circleId)) return 'owner';
+    if (state.circlesModerated.includes(circleId)) return 'moderator';
+    return myCircleIds().includes(circleId) ? 'member' : null;
+  }
+
+  /**
+   * Whether the viewer may remove content by `authorId` (circle_can_remove): an owner anyone's but
+   * their own; a moderator only members'. Sample members are plain members.
+   */
+  function canRemoveIn(circleId: string, authorId: string): boolean {
+    const me = state.session?.userId;
+    const role = roleIn(circleId);
+    if (role === 'owner') return authorId !== me;
+    if (role === 'moderator') return authorId !== me;
+    return false;
+  }
+
+  /** Every comment that still exists, oldest first. */
+  function allComments(): State['cookComments'] {
+    const samples = fixtureCookComments
+      .filter((c) => !state.cookCommentsDeleted.includes(c.id))
+      .map(({ hoursAgo, ...c }) => ({
+        ...c,
+        createdAt: new Date(loadedAt - hoursAgo * 3_600_000).toISOString(),
+      }));
+    return [...samples, ...state.cookComments].sort(
+      (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id),
+    );
+  }
+
+  /** The comments the viewer sees on a post (cook_comment_cards), oldest first. */
+  function commentsOn(cookId: string): CookComment[] {
+    const me = state.session?.userId ?? 'fixture-you';
+    const circleId = allCooks().find((c) => c.id === cookId)?.circleId ?? '';
+    return allComments()
+      .filter(
+        (c) =>
+          c.cookId === cookId &&
+          !state.blocked.includes(c.authorId) &&
+          !state.cookCommentsStaffRemoved.includes(c.id) &&
+          (!state.cookCommentsHostRemoved.includes(c.id) || c.authorId === me),
+      )
+      .map((c) => {
+        const hostRemoved = state.cookCommentsHostRemoved.includes(c.id);
+        return {
+          id: c.id,
+          cookId: c.cookId,
+          authorId: c.authorId,
+          authorName: c.authorId === me ? myName() : c.authorName,
+          body: c.body,
+          createdAt: c.createdAt,
+          mine: c.authorId === me,
+          hostRemoved,
+          canRemove: !hostRemoved && canRemoveIn(circleId, c.authorId),
+        };
+      });
+  }
+
   function toCook(row: State['cooksCreated'][number]): Cook {
     const me = state.session?.userId ?? 'fixture-you';
+    const hostRemoved = state.cooksHostRemoved.includes(row.id);
     const recipe = row.recipeId
       ? visibleRecipes().find((r) => r.id === row.recipeId)
       : undefined;
@@ -654,6 +757,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       recipeId: row.recipeId,
       recipeTitle: recipe?.title ?? null,
       caption: row.caption,
+      kind: row.kind ?? 'cooked',
       photo: cookImage(row.image, false),
       thumb: cookImage(row.image, true),
       photoAlt: row.photoAlt,
@@ -663,6 +767,9 @@ export async function createFixtureBackend(): Promise<Backend> {
       reactions: row.reactions + (reacted ? 1 : 0),
       reacted,
       mine: row.authorId === me,
+      comments: commentsOn(row.id).filter((c) => !c.hostRemoved).length,
+      hostRemoved,
+      canRemove: !hostRemoved && canRemoveIn(row.circleId, row.authorId),
       challengeWeek:
         row.challengeWeek ??
         (row.forChallenge ? circleWeek(row.circleId, row.createdAt) : null),
@@ -679,7 +786,14 @@ export async function createFixtureBackend(): Promise<Backend> {
   /** What cook_cards shows the viewer: their active Circles, nobody they blocked. */
   const visibleCooks = () =>
     allCooks()
-      .filter((c) => myCircleIds().includes(c.circleId) && !state.blocked.includes(c.authorId))
+      .filter(
+        (c) =>
+          myCircleIds().includes(c.circleId) &&
+          !state.blocked.includes(c.authorId) &&
+          !state.cooksStaffRemoved.includes(c.id) &&
+          // A post a host removed shows to its author only.
+          (!state.cooksHostRemoved.includes(c.id) || c.authorId === state.session?.userId),
+      )
       .map(toCook);
 
   const normalizeWords = (text: string): string[] =>
@@ -884,7 +998,15 @@ export async function createFixtureBackend(): Promise<Backend> {
     hostLevelFrom({
       ...state.hostStats,
       recipes: state.hostStats.recipes + state.recipesCreated.length,
-      posts: state.hostStats.posts + state.cooksCreated.length,
+      // What the viewer cooked and is still up, as cook_post_count counts it.
+      posts:
+        state.hostStats.posts +
+        state.cooksCreated.filter(
+          (c) =>
+            (c.kind ?? 'cooked') === 'cooked' &&
+            !state.cooksHostRemoved.includes(c.id) &&
+            !state.cooksStaffRemoved.includes(c.id),
+        ).length,
     });
 
   /** Property order must not change a request's identity, so keys are sorted before comparing. */
@@ -1203,10 +1325,14 @@ export async function createFixtureBackend(): Promise<Backend> {
       return recipe.id;
     },
 
-    async listCooks({ circleId, cursor, limit }) {
+    async listCooks({ circleId, cursor, limit, onlyCooked }) {
       await call();
       requireSession();
-      const all = visibleCooks().filter((c) => !circleId || c.circleId === circleId);
+      const all = visibleCooks().filter(
+        (c) =>
+          (!circleId || c.circleId === circleId) &&
+          (!onlyCooked || (c.kind === 'cooked' && !c.hostRemoved)),
+      );
       const after = cursor
         ? all.filter(
             (c) =>
@@ -1234,7 +1360,8 @@ export async function createFixtureBackend(): Promise<Backend> {
       await call();
       const me = requireSession().userId;
       const all = allCooks()
-        .filter((c) => c.authorId === me)
+        // A post staff removed is gone from your list too, as my_cooks shows it.
+        .filter((c) => c.authorId === me && !state.cooksStaffRemoved.includes(c.id))
         .map(toCook)
         .filter(
           (c) =>
@@ -1271,12 +1398,22 @@ export async function createFixtureBackend(): Promise<Backend> {
       if (replayedId) return replayedId;
       if (!myCircleIds().includes(input.circleId)) throw new BackendError('not_found');
       const caption = input.caption.trim();
-      if (caption.length < 1 || caption.length > 140 || (input.photoAlt?.length ?? 0) > 200) {
+      const kind = input.kind;
+      if (
+        !COOK_KINDS.includes(kind) ||
+        caption.length < 1 ||
+        caption.length > captionLimit(kind) ||
+        (input.photoAlt?.length ?? 0) > 200 ||
+        (kind === 'cooked' && input.photoPath === null) ||
+        (input.photoPath === null && input.photoAlt) ||
+        (kind !== 'cooked' && (input.recipeId !== null || input.challengeWeek !== null))
+      ) {
         throw new BackendError('invalid_input');
       }
+      const photoPath = input.photoPath;
       if (
-        !cookPhotos.has(input.photoPath) ||
-        allCooks().some((c) => c.image === input.photoPath)
+        photoPath !== null &&
+        (!cookPhotos.has(photoPath) || allCooks().some((c) => c.image === photoPath))
       ) {
         throw new BackendError('invalid_input');
       }
@@ -1297,11 +1434,12 @@ export async function createFixtureBackend(): Promise<Backend> {
             authorId: requireSession().userId,
             authorName: myName(),
             recipeId: input.recipeId,
+            kind,
             caption,
-            image: input.photoPath,
+            image: photoPath,
             photoAlt: input.photoAlt?.trim() || null,
-            width: 1200,
-            height: 1500,
+            width: photoPath ? 1200 : null,
+            height: photoPath ? 1500 : null,
             createdAt: now,
             reactions: 0,
             forChallenge: input.challengeWeek !== null,
@@ -1325,7 +1463,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       if (state.idempotent[key]?.fingerprint === `cook_delete:${cookId}`) return;
       const cook = allCooks().find((c) => c.id === cookId && c.authorId === me);
       if (!cook) throw new BackendError('not_found');
-      cookPhotos.delete(cook.image);
+      if (cook.image) cookPhotos.delete(cook.image);
       commit({
         ...state,
         cooksCreated: state.cooksCreated.filter((c) => c.id !== cookId),
@@ -1335,6 +1473,110 @@ export async function createFixtureBackend(): Promise<Backend> {
           ...state.idempotent,
           [key]: { fingerprint: `cook_delete:${cookId}`, id: cookId },
         },
+      });
+    },
+
+    async listCookComments(cookId, before) {
+      await call();
+      requireSession();
+      if (!visibleCooks().some((c) => c.id === cookId)) throw new BackendError('not_found');
+      const all = commentsOn(cookId).filter(
+        (c) =>
+          !before ||
+          c.createdAt < before.createdAt ||
+          (c.createdAt === before.createdAt && c.id < before.id),
+      );
+      const items = all.slice(-50);
+      const oldest = items[0];
+      return {
+        items,
+        earlier:
+          all.length > 50 && oldest ? { createdAt: oldest.createdAt, id: oldest.id } : null,
+      };
+    },
+
+    async addCookComment(cookId, body, key) {
+      await call();
+      requireActive();
+      const fingerprint = `cook_comment_add:${cookId}:${body.trim()}`;
+      const replayedId = replayKey(key, fingerprint);
+      if (replayedId) return replayedId;
+      const post = visibleCooks().find((c) => c.id === cookId && !c.hostRemoved);
+      if (!post) throw new BackendError('not_found');
+      const text = body.trim();
+      if (text.length < 1 || text.length > 500) throw new BackendError('invalid_input');
+      const dayAgo = Date.now() - 86_400_000;
+      const today = state.cookCommentTimes.filter((t) => Date.parse(t) > dayAgo);
+      if (today.length >= 60) throw new BackendError('rate_limited');
+      const now = new Date().toISOString();
+      const id = `comment-${Date.now()}-${key.slice(0, 8)}`;
+      commit({
+        ...state,
+        cookComments: [
+          ...state.cookComments,
+          {
+            id,
+            cookId,
+            authorId: requireSession().userId,
+            authorName: myName(),
+            body: text,
+            createdAt: now,
+          },
+        ],
+        cookCommentTimes: [...today, now],
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id } },
+      });
+      return id;
+    },
+
+    async deleteCookComment(commentId, key) {
+      await call();
+      const me = requireSession().userId;
+      if (state.idempotent[key]?.fingerprint === `cook_comment_delete:${commentId}`) return;
+      const found = allComments().find((c) => c.id === commentId && c.authorId === me);
+      if (!found) throw new BackendError('not_found');
+      commit({
+        ...state,
+        cookComments: state.cookComments.filter((c) => c.id !== commentId),
+        cookCommentsDeleted: [...state.cookCommentsDeleted, commentId],
+        idempotent: {
+          ...state.idempotent,
+          [key]: { fingerprint: `cook_comment_delete:${commentId}`, id: commentId },
+        },
+      });
+    },
+
+    async removeCookAsHost(cookId) {
+      await call();
+      requireActive();
+      // The post itself (a removed one no longer shows in the feed), as circle_post_remove reads it.
+      const post = allCooks().find((c) => c.id === cookId);
+      if (
+        !post ||
+        state.cooksStaffRemoved.includes(cookId) ||
+        !myCircleIds().includes(post.circleId) ||
+        state.blocked.includes(post.authorId)
+      ) {
+        throw new BackendError('not_found');
+      }
+      if (!canRemoveIn(post.circleId, post.authorId)) throw new BackendError('forbidden');
+      if (state.cooksHostRemoved.includes(cookId)) return;
+      commit({ ...state, cooksHostRemoved: [...state.cooksHostRemoved, cookId] });
+    },
+
+    async removeCookCommentAsHost(commentId) {
+      await call();
+      requireActive();
+      const found = allComments().find((c) => c.id === commentId);
+      const post = found ? visibleCooks().find((c) => c.id === found.cookId) : undefined;
+      if (!found || !post || state.blocked.includes(found.authorId)) {
+        throw new BackendError('not_found');
+      }
+      if (!canRemoveIn(post.circleId, found.authorId)) throw new BackendError('forbidden');
+      if (state.cookCommentsHostRemoved.includes(commentId)) return;
+      commit({
+        ...state,
+        cookCommentsHostRemoved: [...state.cookCommentsHostRemoved, commentId],
       });
     },
 
@@ -1362,7 +1604,12 @@ export async function createFixtureBackend(): Promise<Backend> {
       if (!myCircleIds().includes(circleId)) throw new BackendError('not_found');
       const week = circleWeek(circleId);
       const entries = visibleCooks().filter(
-        (c) => c.circleId === circleId && c.challengeWeek === week,
+        (c): c is Cook & { thumb: CookImage } =>
+          c.circleId === circleId &&
+          c.challengeWeek === week &&
+          c.kind === 'cooked' &&
+          !c.hostRemoved &&
+          c.thumb !== null,
       );
       const created = state.circlesCreated.some((c) => c.id === circleId);
       return {
@@ -1408,7 +1655,12 @@ export async function createFixtureBackend(): Promise<Backend> {
       const weeks = [
         ...new Set(
           allCooks()
-            .filter((c) => c.authorId === me)
+            .filter(
+              (c) =>
+                c.authorId === me &&
+                (c.kind ?? 'cooked') === 'cooked' &&
+                !state.cooksHostRemoved.includes(c.id),
+            )
             .map((c) => weekStart(c.createdAt)),
         ),
       ].sort();
@@ -2578,7 +2830,11 @@ export async function createFixtureBackend(): Promise<Backend> {
               input.targetId)
             : input.targetType === 'cook'
               ? (allCooks().find((c) => c.id === input.targetId)?.caption ?? input.targetId)
-              : input.targetId;
+              : input.targetType === 'cook_comment'
+                ? (allComments()
+                    .find((c) => c.id === input.targetId)
+                    ?.body.slice(0, 140) ?? input.targetId)
+                : input.targetId;
       const hours = severity === 'urgent' ? 1 : severity === 'high' ? 24 : 72;
       commit({
         ...state,
@@ -2731,13 +2987,25 @@ export async function createFixtureBackend(): Promise<Backend> {
       await call();
       requireStaff();
       const found = state.reports.find((r) => r.id === reportId);
+      if (found?.targetType === 'cook_comment') {
+        const comment = allComments().find((c) => c.id === found.targetId);
+        if (!comment) throw new BackendError('not_found');
+        return {
+          caption: comment.body,
+          photo: null,
+          photoAlt: null,
+          removed: state.cookCommentsStaffRemoved.includes(comment.id),
+          comment: true,
+        };
+      }
       const cook = found ? allCooks().find((c) => c.id === found.targetId) : undefined;
       if (!found || found.targetType !== 'cook' || !cook) throw new BackendError('not_found');
       return {
         caption: cook.caption,
         photo: cookImage(cook.image, false),
         photoAlt: cook.photoAlt,
-        removed: false,
+        removed: state.cooksStaffRemoved.includes(cook.id),
+        comment: false,
       };
     },
 
@@ -2814,6 +3082,15 @@ export async function createFixtureBackend(): Promise<Backend> {
             : r,
         ),
         suspension,
+        // Removing content hides a reported post or comment, as the database triggers do.
+        cooksStaffRemoved:
+          input.action === 'remove_content' && found.targetType === 'cook'
+            ? [...state.cooksStaffRemoved, found.targetId]
+            : state.cooksStaffRemoved,
+        cookCommentsStaffRemoved:
+          input.action === 'remove_content' && found.targetType === 'cook_comment'
+            ? [...state.cookCommentsStaffRemoved, found.targetId]
+            : state.cookCommentsStaffRemoved,
         audit: [auditRow(`staff.${input.action}`, 'report', reason), ...state.audit],
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: actionId } },
       });

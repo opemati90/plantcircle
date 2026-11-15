@@ -94,6 +94,14 @@ export const UserIcon = stroke(
     <Path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
   </>,
 );
+/** Share: an arrow out of a tray. */
+export const ShareIcon = stroke(
+  <>
+    <Path d="M12 15V3" />
+    <Path d="m8 7 4-4 4 4" />
+    <Path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
+  </>,
+);
 export const CheckIcon = stroke(<Path d="m5 12 5 5 9-10" />);
 export const CloseIcon = stroke(<Path d="M18 6 6 18M6 6l12 12" />);
 export const MailIcon = stroke(

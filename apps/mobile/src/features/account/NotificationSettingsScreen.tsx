@@ -55,6 +55,11 @@ export default function NotificationSettingsScreen() {
       rows: [
         { key: 'notifDirect', title: t('account.directTitle'), note: t('account.directNote') },
         { key: 'notifChats', title: t('account.chatsTitle'), note: t('account.chatsNote') },
+        {
+          key: 'notifComments',
+          title: t('account.commentsTitle'),
+          note: t('account.commentsNote'),
+        },
       ],
     },
     {

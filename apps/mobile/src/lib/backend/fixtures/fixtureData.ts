@@ -1,5 +1,5 @@
 import { zonedTimeToUtc } from '../../dates';
-import type { Circle, City, Person, Plan, RecipeDetail } from '../types';
+import type { Circle, City, CookKind, Person, Plan, RecipeDetail } from '../types';
 
 // DEVELOPMENT FIXTURES ONLY (see ../index.ts). Sample data matching the prototype.
 
@@ -107,7 +107,7 @@ export function fixturePlans(now: Date): Plan[] {
       capacity: 8,
       description:
         'Learn jollof rice and efo riro with smoked tofu, then sit down and share dinner ' +
-        'together. No experience needed — the main ingredients are provided.',
+        'together. No experience needed: the main ingredients are provided.',
       allergens: 'Peanuts and soy',
       imagePath: '/images/cooking-together.jpg',
       imageAlt: 'A shared table with bowls of food, wine and wild flowers',
@@ -384,12 +384,17 @@ export interface FixtureCook {
   authorId: string;
   authorName: string;
   recipeId: string | null;
+  /** Cooked when not given. */
+  kind?: CookKind;
   caption: string;
-  /** A bundled photo's path (planImage.ts) or, for a post made in this session, a data URI. */
-  image: string;
+  /**
+   * A bundled photo's path (planImage.ts), a photo uploaded in this session, or null for a text
+   * post without one.
+   */
+  image: string | null;
   photoAlt: string | null;
-  width: number;
-  height: number;
+  width: number | null;
+  height: number | null;
   hoursAgo: number;
   reactions: number;
   /** An entry in its Circle's challenge for the week it was posted in. */
@@ -439,5 +444,66 @@ export const fixtureCooks: FixtureCook[] = [
     height: 1500,
     hoursAgo: 30,
     reactions: 12,
+  },
+  {
+    id: 'cook-ola-tip',
+    circleId: 'neukolln-plant-kitchen',
+    authorId: 'fixture-ola-b',
+    authorName: 'Ola B.',
+    recipeId: null,
+    kind: 'tip',
+    caption:
+      'Toast whole spices in a dry pan for a minute before they go in. It changes everything.',
+    image: null,
+    photoAlt: null,
+    width: null,
+    height: null,
+    hoursAgo: 40,
+    reactions: 5,
+  },
+  {
+    id: 'cook-mia-find',
+    circleId: 'neukolln-plant-kitchen',
+    authorId: 'fixture-mia-k',
+    authorName: 'Mia K.',
+    recipeId: null,
+    kind: 'find',
+    caption:
+      'Fresh tofu every Thursday at the Asia market on Karl-Marx-Straße, near the U-Bahn.',
+    image: null,
+    photoAlt: null,
+    width: null,
+    height: null,
+    hoursAgo: 52,
+    reactions: 2,
+  },
+];
+
+/** Sample comments, hours after the app loaded counted back, oldest first per post. */
+export interface FixtureCookComment {
+  id: string;
+  cookId: string;
+  authorId: string;
+  authorName: string;
+  body: string;
+  hoursAgo: number;
+}
+
+export const fixtureCookComments: FixtureCookComment[] = [
+  {
+    id: 'comment-ola-efo',
+    cookId: 'cook-mia-efo',
+    authorId: 'fixture-ola-b',
+    authorName: 'Ola B.',
+    body: 'That looks amazing. Saving the idea for Sunday.',
+    hoursAgo: 1.5,
+  },
+  {
+    id: 'comment-jonas-tip',
+    cookId: 'cook-ola-tip',
+    authorId: 'fixture-jonas-k',
+    authorName: 'Jonas K.',
+    body: 'Tried it with cumin last night. You were right.',
+    hoursAgo: 30,
   },
 ];

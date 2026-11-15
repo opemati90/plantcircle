@@ -77,7 +77,13 @@
       "sampleReminder": "Tomorrow 17:00 · West African Cooking Night",
       "challengeWeek": "This week in {{circle}}: {{theme}}",
       "challengeWeekNote": "Cook it at home and share a photo with your Circle.",
-      "challengeWeekGeneric": "Your Circle has a new theme this week."
+      "challengeWeekGeneric": "Your Circle has a new theme this week.",
+      "cookComment": "{{name}} commented on your post",
+      "cookCommentNote": "In {{circle}}",
+      "cookCommentGeneric": "New comment on your post",
+      "postRemoved": "A host removed your post",
+      "commentRemoved": "A host removed your comment",
+      "removedNote": "In {{circle}}. It no longer shows there."
     },
     "themes": {
       "lentils": "Lentils",
@@ -173,7 +179,13 @@
       "sampleReminder": "Morgen 17:00 · Westafrikanischer Kochabend",
       "challengeWeek": "Diese Woche in {{circle}}: {{theme}}",
       "challengeWeekNote": "Koch es zu Hause und teile ein Foto mit deinem Circle.",
-      "challengeWeekGeneric": "Dein Circle hat diese Woche ein neues Thema."
+      "challengeWeekGeneric": "Dein Circle hat diese Woche ein neues Thema.",
+      "cookComment": "{{name}} hat deinen Beitrag kommentiert",
+      "cookCommentNote": "In {{circle}}",
+      "cookCommentGeneric": "Neuer Kommentar zu deinem Beitrag",
+      "postRemoved": "Ein Host hat deinen Beitrag entfernt",
+      "commentRemoved": "Ein Host hat deinen Kommentar entfernt",
+      "removedNote": "In {{circle}}. Dort ist er nicht mehr zu sehen."
     },
     "themes": {
       "lentils": "Linsen",
@@ -269,7 +281,13 @@
       "sampleReminder": "Mañana 17:00 · Noche de cocina de África occidental",
       "challengeWeek": "Esta semana en {{circle}}: {{theme}}",
       "challengeWeekNote": "Cocínalo en casa y comparte una foto con tu Circle.",
-      "challengeWeekGeneric": "Tu Circle tiene un tema nuevo esta semana."
+      "challengeWeekGeneric": "Tu Circle tiene un tema nuevo esta semana.",
+      "cookComment": "{{name}} ha comentado tu publicación",
+      "cookCommentNote": "En {{circle}}",
+      "cookCommentGeneric": "Nuevo comentario en tu publicación",
+      "postRemoved": "Un anfitrión ha retirado tu publicación",
+      "commentRemoved": "Un anfitrión ha retirado tu comentario",
+      "removedNote": "En {{circle}}. Ya no se muestra allí."
     },
     "themes": {
       "lentils": "Lentejas",
@@ -365,7 +383,13 @@
       "sampleReminder": "Amanhã 17:00 · Noite de Cozinha da África Ocidental",
       "challengeWeek": "Esta semana em {{circle}}: {{theme}}",
       "challengeWeekNote": "Cozinha-o em casa e partilha uma foto com o teu Circle.",
-      "challengeWeekGeneric": "O teu Circle tem um tema novo esta semana."
+      "challengeWeekGeneric": "O teu Circle tem um tema novo esta semana.",
+      "cookComment": "{{name}} comentou a tua publicação",
+      "cookCommentNote": "Em {{circle}}",
+      "cookCommentGeneric": "Novo comentário na tua publicação",
+      "postRemoved": "Um anfitrião retirou a tua publicação",
+      "commentRemoved": "Um anfitrião retirou o teu comentário",
+      "removedNote": "Em {{circle}}. Já não aparece lá."
     },
     "themes": {
       "lentils": "Lentilhas",
@@ -461,7 +485,13 @@
       "sampleReminder": "Demain 17:00 · Soirée cuisine ouest-africaine",
       "challengeWeek": "Cette semaine dans {{circle}} : {{theme}}",
       "challengeWeekNote": "Cuisine-le chez toi et partage une photo avec ton Circle.",
-      "challengeWeekGeneric": "Ton Circle a un nouveau thème cette semaine."
+      "challengeWeekGeneric": "Ton Circle a un nouveau thème cette semaine.",
+      "cookComment": "{{name}} a commenté ta publication",
+      "cookCommentNote": "Dans {{circle}}",
+      "cookCommentGeneric": "Nouveau commentaire sur ta publication",
+      "postRemoved": "Un hôte a retiré ta publication",
+      "commentRemoved": "Un hôte a retiré ton commentaire",
+      "removedNote": "Dans {{circle}}. Elle n’y apparaît plus."
     },
     "themes": {
       "lentils": "Lentilles",
@@ -563,7 +593,13 @@
       "sampleReminder": "Jutro 17:00 · Wieczór gotowania potraw z Afryki Zachodniej",
       "challengeWeek": "W tym tygodniu w {{circle}}: {{theme}}",
       "challengeWeekNote": "Ugotuj to w domu i udostępnij zdjęcie swojemu Circle.",
-      "challengeWeekGeneric": "Twój Circle ma w tym tygodniu nowy temat."
+      "challengeWeekGeneric": "Twój Circle ma w tym tygodniu nowy temat.",
+      "cookComment": "{{name}} komentuje Twój wpis",
+      "cookCommentNote": "W {{circle}}",
+      "cookCommentGeneric": "Nowy komentarz do Twojego wpisu",
+      "postRemoved": "Gospodarz zdjął Twój wpis",
+      "commentRemoved": "Gospodarz zdjął Twój komentarz",
+      "removedNote": "W {{circle}}. Nie jest już tam widoczny."
     },
     "themes": {
       "lentils": "Soczewica",
@@ -659,7 +695,13 @@
       "sampleReminder": "Domani 17:00 · West African Cooking Night",
       "challengeWeek": "Questa settimana in {{circle}}: {{theme}}",
       "challengeWeekNote": "Cucinalo a casa e condividi una foto con il tuo Circle.",
-      "challengeWeekGeneric": "Il tuo Circle ha un nuovo tema questa settimana."
+      "challengeWeekGeneric": "Il tuo Circle ha un nuovo tema questa settimana.",
+      "cookComment": "{{name}} ha commentato il tuo post",
+      "cookCommentNote": "In {{circle}}",
+      "cookCommentGeneric": "Nuovo commento al tuo post",
+      "postRemoved": "Un host ha rimosso il tuo post",
+      "commentRemoved": "Un host ha rimosso il tuo commento",
+      "removedNote": "In {{circle}}. Lì non si vede più."
     },
     "themes": {
       "lentils": "Lenticchie",
@@ -755,7 +797,13 @@
       "sampleReminder": "Morgen 17:00 · West African Cooking Night",
       "challengeWeek": "Deze week in {{circle}}: {{theme}}",
       "challengeWeekNote": "Kook het thuis en deel een foto met je Circle.",
-      "challengeWeekGeneric": "Je Circle heeft deze week een nieuw thema."
+      "challengeWeekGeneric": "Je Circle heeft deze week een nieuw thema.",
+      "cookComment": "{{name}} reageerde op je bericht",
+      "cookCommentNote": "In {{circle}}",
+      "cookCommentGeneric": "Nieuwe reactie op je bericht",
+      "postRemoved": "Een host heeft je bericht weggehaald",
+      "commentRemoved": "Een host heeft je reactie weggehaald",
+      "removedNote": "In {{circle}}. Het is daar niet meer te zien."
     },
     "themes": {
       "lentils": "Linzen",

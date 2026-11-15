@@ -68,7 +68,11 @@ export default function ConsoleScreen() {
   }, [mergeFrom, mergeInto, mergeReason]);
   const decide = useStaffDecide();
   const view = useStaffViewMessages();
-  const post = useStaffCook(selected, current.data?.targetType === 'cook');
+  // A reported post or comment: its words (and a post's photo), read through staff_cook.
+  const post = useStaffCook(
+    selected,
+    current.data?.targetType === 'cook' || current.data?.targetType === 'cook_comment',
+  );
   const appealDecide = useStaffAppealDecide();
   const [action, setAction] = useState<StaffAction | null>(null);
   const [reason, setReason] = useState('');
@@ -392,7 +396,8 @@ export default function ConsoleScreen() {
                     )}
                   </View>
 
-                  {current.data.targetType === 'cook' ? (
+                  {current.data.targetType === 'cook' ||
+                  current.data.targetType === 'cook_comment' ? (
                     <View style={styles.block}>
                       <Text
                         maxFontSizeMultiplier={2.0}
@@ -419,14 +424,14 @@ export default function ConsoleScreen() {
                         </View>
                       ) : (
                         <>
-                          <View style={styles.postPhoto}>
-                            {post.data.photo ? (
+                          {post.data.photo ? (
+                            <View style={styles.postPhoto}>
                               <Photo
                                 source={post.data.photo}
                                 alt={post.data.photoAlt ?? post.data.caption}
                               />
-                            ) : null}
-                          </View>
+                            </View>
+                          ) : null}
                           <Text maxFontSizeMultiplier={2.0} style={type(16, 'regular')}>
                             {post.data.caption}
                           </Text>

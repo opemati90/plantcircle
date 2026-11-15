@@ -6,7 +6,13 @@ import {
   type InfiniteData,
 } from '@tanstack/react-query';
 import { useBackend } from '../../lib/backend/BackendProvider';
-import type { Cook, CookPage, PreparedPhoto } from '../../lib/backend/types';
+import type {
+  Cook,
+  CookCommentPage,
+  CookKind,
+  CookPage,
+  PreparedPhoto,
+} from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 import { track } from '../../lib/analytics';
 
@@ -14,13 +20,17 @@ import { track } from '../../lib/analytics';
 const PAGE = 20;
 const FRESH_MS = 4 * 60_000;
 
-/** Posts in your Circles (or one Circle), newest first, a page at a time. */
-export function useCooks(circleId: string | null, enabled = true) {
+/**
+ * Posts in your Circles (or one Circle), newest first, a page at a time. `onlyCooked` keeps the
+ * photos of what members cooked (Home and its feed), filtered by the server before paging.
+ */
+export function useCooks(circleId: string | null, enabled = true, onlyCooked = false) {
   const backend = useBackend();
   const { session } = useAuth();
   return useInfiniteQuery({
-    queryKey: ['cooks', session?.userId ?? null, circleId],
-    queryFn: ({ pageParam }) => backend.listCooks({ circleId, cursor: pageParam, limit: PAGE }),
+    queryKey: ['cooks', session?.userId ?? null, circleId, onlyCooked ? 'cooked' : 'all'],
+    queryFn: ({ pageParam }) =>
+      backend.listCooks({ circleId, cursor: pageParam, limit: PAGE, onlyCooked }),
     initialPageParam: null as CookPage['next'],
     getNextPageParam: (last) => last.next,
     enabled: enabled && Boolean(session),
@@ -37,6 +47,8 @@ export function useCook(cookId: string) {
     queryFn: () => backend.getCook(cookId),
     enabled: Boolean(session),
     staleTime: FRESH_MS,
+    // Opened from a notice (a removal, a comment), the post is always checked again.
+    refetchOnMount: 'always',
   });
 }
 
@@ -84,13 +96,14 @@ export function useCookReaction() {
   });
 }
 
-/** Uploads the photo (once per photo, kept for a retry) and shares the post. */
+/** Uploads the photo, if any (once per photo, kept for a retry), and shares the post. */
 export function useShareCook() {
   const backend = useBackend();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
-      photo: PreparedPhoto;
+      kind: CookKind;
+      photo: PreparedPhoto | null;
       uploadedPath: string | null;
       onUploaded: (path: string) => void;
       circleId: string;
@@ -101,13 +114,14 @@ export function useShareCook() {
       key: string;
     }) => {
       let path = input.uploadedPath;
-      if (!path) {
+      if (!path && input.photo) {
         path = (await backend.uploadCookPhoto(input.photo)).path;
         input.onUploaded(path);
       }
       const id = await backend.createCook(
         {
           circleId: input.circleId,
+          kind: input.kind,
           recipeId: input.recipeId,
           caption: input.caption,
           photoAlt: input.photoAlt,
@@ -209,6 +223,94 @@ export function useDeleteCook() {
       queryClient.removeQueries({ queryKey: ['cook', cookId] });
       return Promise.all(
         ['cooks', 'myCooks', 'challenge', 'cookStreak', 'hostLevel'].map((name) =>
+          queryClient.invalidateQueries({ queryKey: [name] }),
+        ),
+      );
+    },
+  });
+}
+
+/** Everything that shows a post's comments or its count. */
+function refreshAfterComment(
+  queryClient: ReturnType<typeof useQueryClient>,
+  cookId: string,
+): Promise<unknown> {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: ['cookComments', cookId] }),
+    queryClient.invalidateQueries({ queryKey: ['cook', cookId] }),
+    queryClient.invalidateQueries({ queryKey: ['cooks'] }),
+  ]);
+}
+
+/**
+ * A post's comments, the newest page first; each page is oldest first, and the next page is the
+ * one before it ("Show earlier comments").
+ */
+export function useCookComments(cookId: string) {
+  const backend = useBackend();
+  const { session } = useAuth();
+  return useInfiniteQuery({
+    queryKey: ['cookComments', cookId, session?.userId ?? null],
+    queryFn: ({ pageParam }) => backend.listCookComments(cookId, pageParam),
+    initialPageParam: null as CookCommentPage['earlier'],
+    getNextPageParam: (last) => last.earlier,
+    enabled: Boolean(session),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+}
+
+export function useAddCookComment(cookId: string) {
+  const backend = useBackend();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { body: string; key: string }) =>
+      backend.addCookComment(cookId, input.body, input.key),
+    onSuccess: () => refreshAfterComment(queryClient, cookId),
+  });
+}
+
+export function useDeleteCookComment(cookId: string) {
+  const backend = useBackend();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { commentId: string; key: string }) =>
+      backend.deleteCookComment(input.commentId, input.key),
+    onSuccess: () => refreshAfterComment(queryClient, cookId),
+  });
+}
+
+/** A host removes a comment on a post in their Circle. */
+export function useRemoveCookComment(cookId: string) {
+  const backend = useBackend();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (commentId: string) => backend.removeCookCommentAsHost(commentId),
+    onSuccess: () => refreshAfterComment(queryClient, cookId),
+  });
+}
+
+/** A host removes a post in their Circle: it leaves every list. */
+export function useRemoveCook() {
+  const backend = useBackend();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (cookId: string) => backend.removeCookAsHost(cookId),
+    onSuccess: (_result, cookId) => {
+      queryClient.setQueriesData<InfiniteData<CookPage>>({ queryKey: ['cooks'] }, (data) =>
+        data
+          ? {
+              ...data,
+              pages: data.pages.map((p) => ({
+                ...p,
+                items: p.items.filter((c) => c.id !== cookId),
+              })),
+            }
+          : data,
+      );
+      queryClient.removeQueries({ queryKey: ['cook', cookId] });
+      return Promise.all(
+        ['cooks', 'challenge'].map((name) =>
           queryClient.invalidateQueries({ queryKey: [name] }),
         ),
       );

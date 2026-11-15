@@ -155,7 +155,7 @@ test('the Circle’s Posts tab is its feed for members, and a teaser for everyon
   ).toBeVisible();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('Efo riro for six, with extra smoked tofu')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Share what you cooked' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New post' })).toBeVisible();
   await shot(page, 'circle-posts');
 });
 

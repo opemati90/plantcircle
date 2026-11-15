@@ -77,7 +77,18 @@ export default function MyCooksScreen() {
           posts.map((cook) => (
             <View key={cook.id} style={styles.row}>
               <View style={styles.thumb}>
-                <Photo source={cook.thumb} />
+                {cook.thumb ? (
+                  <Photo source={cook.thumb} />
+                ) : (
+                  // A tip, question or find without a photo: its kind instead.
+                  <Text
+                    maxFontSizeMultiplier={1.4}
+                    numberOfLines={2}
+                    style={[type(11, 'bold', { color: color.brand }), styles.kind]}
+                  >
+                    {t(`cooks.kinds.${cook.kind}`)}
+                  </Text>
+                )}
               </View>
               <View style={styles.text}>
                 <Text
@@ -93,6 +104,14 @@ export default function MyCooksScreen() {
                 >
                   {`${cook.circleName} · ${postedAgo(t, cook.createdAt, now)}`}
                 </Text>
+                {cook.hostRemoved ? (
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(13, 'semibold', { color: color.danger })}
+                  >
+                    {t('cooks.removedByHost')}
+                  </Text>
+                ) : null}
                 {cook.reactions > 0 ? (
                   <View style={styles.yum}>
                     <LeafIcon size={14} color={color.brand} filled />
@@ -153,10 +172,13 @@ const styles = StyleSheet.create({
   thumb: {
     width: 64,
     aspectRatio: 4 / 5,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: radius.control,
     overflow: 'hidden',
     backgroundColor: color.fill,
   },
+  kind: { textAlign: 'center', textTransform: 'uppercase', paddingHorizontal: 4 },
   text: { flex: 1, minWidth: 0, gap: 3 },
   yum: { flexDirection: 'row', alignItems: 'center', gap: 5 },
 });

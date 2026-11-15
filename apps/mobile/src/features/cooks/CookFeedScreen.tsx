@@ -18,7 +18,7 @@ export default function CookFeedScreen() {
   const router = useRouter();
   const insets = useScreenInsets();
   const now = useNow(60_000);
-  const cooks = useCooks(null);
+  const cooks = useCooks(null, true, true);
   const goBack = () => {
     if (router.canGoBack()) router.back();
     else router.replace('/home');

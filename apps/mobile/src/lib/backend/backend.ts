@@ -11,6 +11,7 @@ import type {
   ConversationSettings,
   CircleChallenge,
   Cook,
+  CookCommentPage,
   CookStreak,
   CookCursor,
   CookInput,
@@ -196,6 +197,8 @@ export interface Backend {
     circleId: string | null;
     cursor: CookCursor | null;
     limit: number;
+    /** Only what members cooked (Home's photo rail), filtered before paging. */
+    onlyCooked?: boolean;
   }): Promise<CookPage>;
   getCook(cookId: string): Promise<Cook>;
   /** Your own posts, wherever they are (Circles you left too), so you can delete them. */
@@ -209,6 +212,15 @@ export interface Backend {
     cookId: string,
     on: boolean,
   ): Promise<{ reacted: boolean; reactions: number }>;
+  /** A post's comments: the newest page, or the page before `before`; oldest first within it. */
+  listCookComments(cookId: string, before: CookCursor | null): Promise<CookCommentPage>;
+  /** Returns the new comment's id; a retry with the same key replays. */
+  addCookComment(cookId: string, body: string, idempotencyKey: string): Promise<string>;
+  /** The author's delete of their own comment. */
+  deleteCookComment(commentId: string, idempotencyKey: string): Promise<void>;
+  /** A host of the Circle removes a post or a comment; doing it twice changes nothing. */
+  removeCookAsHost(cookId: string): Promise<void>;
+  removeCookCommentAsHost(commentId: string): Promise<void>;
   /**
    * Links this device's analytics id to the account before anything is sent, so a "no" or an
    * account deletion on any device can delete the data from all of them.

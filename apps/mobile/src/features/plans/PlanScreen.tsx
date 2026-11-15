@@ -1,4 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +20,7 @@ import {
   ChevronLeftIcon,
   MapTile,
   OfflineIcon,
+  ShareIcon,
   VerifiedIcon,
 } from '../../components/icons';
 import {
@@ -159,6 +161,26 @@ function PlanView({
   const { join, cancel, claim, unclaim, joinWaitlist, reconfirm } = useRsvpMutations(plan.id);
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // Past the photo, a solid bar takes over from the floating buttons, so they never sit on text.
+  const [solid, setSolid] = useState(false);
+  const sharePlan = async () => {
+    const message = t('plan.shareMessage', { plan: plan.title, link: planLink(plan.id) });
+    try {
+      if (Platform.OS === 'web') {
+        await navigator.clipboard.writeText(message);
+        setNotice(t('plan.linkCopied'));
+      } else {
+        await Share.share({ message });
+      }
+    } catch {
+      // The link can still be copied by hand when the clipboard is not available.
+      if (Platform.OS === 'web') setNotice(t('plan.shareFailed', { link: planLink(plan.id) }));
+    }
+  };
+  const leave = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/home');
+  };
   const params = useLocalSearchParams<{ join?: string }>();
   const wantsJoin = params.join === '1';
   // No spot can be taken directly, so the way in is the waitlist.
@@ -267,6 +289,11 @@ function PlanView({
       {/* Focusable on web so the page can be scrolled with the keyboard. */}
       <ScrollView
         contentContainerStyle={{ paddingBottom: 170 + insets.bottom }}
+        scrollEventThrottle={32}
+        onScroll={(event) => {
+          const past = event.nativeEvent.contentOffset.y > HERO_HEIGHT - insets.headerTop - 72;
+          if (past !== solid) setSolid(past);
+        }}
         {...(Platform.OS === 'web' ? { tabIndex: 0 as const } : {})}
       >
         <View style={styles.hero}>
@@ -588,17 +615,55 @@ function PlanView({
         </View>
       </ScrollView>
 
-      <IconButton
-        variant="glass"
-        label={t('common.back')}
-        onPress={() => {
-          if (router.canGoBack()) router.back();
-          else router.replace('/home');
-        }}
-        style={[styles.back, { top: insets.headerTop }]}
-      >
-        <ChevronLeftIcon strokeWidth={2.2} color="#FFFFFF" />
-      </IconButton>
+      {/* Hidden while the solid bar shows, so nothing sits under it for a screen reader. */}
+      {solid ? null : (
+        <>
+          <IconButton
+            variant="glass"
+            label={t('common.back')}
+            onPress={leave}
+            style={[styles.back, { top: insets.headerTop }]}
+          >
+            <ChevronLeftIcon strokeWidth={2.2} color="#FFFFFF" />
+          </IconButton>
+          {cancelled ? null : (
+            <IconButton
+              variant="glass"
+              label={t('plan.sharePlan')}
+              onPress={() => void sharePlan()}
+              style={[styles.share, { top: insets.headerTop }]}
+            >
+              <ShareIcon size={19} strokeWidth={2.1} color="#FFFFFF" />
+            </IconButton>
+          )}
+        </>
+      )}
+      {solid ? (
+        <Animated.View
+          entering={FadeIn.duration(140)}
+          exiting={FadeOut.duration(120)}
+          style={[styles.headerBar, { paddingTop: insets.headerTop - 6 }]}
+        >
+          <IconButton label={t('common.back')} onPress={leave}>
+            <ChevronLeftIcon strokeWidth={2.2} />
+          </IconButton>
+          <Text
+            maxFontSizeMultiplier={1.4}
+            numberOfLines={1}
+            accessibilityRole="header"
+            style={[type(17, 'semibold', { tracking: -0.3 }), styles.headerTitle]}
+          >
+            {plan.title}
+          </Text>
+          {cancelled ? (
+            <View style={styles.headerSpacer} />
+          ) : (
+            <IconButton label={t('plan.sharePlan')} onPress={() => void sharePlan()}>
+              <ShareIcon size={19} strokeWidth={2.1} />
+            </IconButton>
+          )}
+        </Animated.View>
+      ) : null}
 
       {offline ? (
         <View style={[styles.offlineBar, { top: insets.headerTop + 56 }]}>
@@ -1009,6 +1074,9 @@ const CLUSTER_POSITIONS = [
   { top: 26, left: 10 },
 ] as const;
 
+/** The photo at the top of a Plan. */
+const HERO_HEIGHT = 420;
+
 const styles = StyleSheet.create({
   offlineBar: {
     position: 'absolute',
@@ -1019,10 +1087,27 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   screen: { flex: 1, backgroundColor: color.surface },
-  hero: { height: 420, backgroundColor: color.ink },
+  hero: { height: HERO_HEIGHT, backgroundColor: color.ink },
   heroText: { position: 'absolute', left: 24, right: 24, bottom: 30, gap: 10 },
   upper: { textTransform: 'uppercase' },
   back: { position: 'absolute', left: 16 },
+  share: { position: 'absolute', right: 16 },
+  headerBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    backgroundColor: color.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: extra.cardBorder,
+  },
+  headerTitle: { flex: 1, minWidth: 0, textAlign: 'center' },
+  headerSpacer: { width: 44 },
   body: { paddingTop: 28, paddingHorizontal: 24 },
   facts: { gap: 20, marginBottom: 32 },
   fact: { flexDirection: 'row', alignItems: 'center', gap: 16 },

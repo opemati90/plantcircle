@@ -18,7 +18,12 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { errorCode } from '../../lib/backend/backend';
-import type { PreparedPhoto } from '../../lib/backend/types';
+import {
+  captionLimit,
+  COOK_KINDS,
+  type CookKind,
+  type PreparedPhoto,
+} from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 import { useRecipes } from '../learn/queries';
 import { newIdempotencyKey, useMyCircles } from '../plans/queries';
@@ -28,18 +33,22 @@ import { features } from '../../lib/features';
 import { themeLabel } from './challengeThemes';
 import { useCircleChallenge, useShareCook } from './queries';
 
-const CAPTION_MAX = 140;
 const ALT_MAX = 200;
 
+const isKind = (value: string | undefined): value is CookKind =>
+  (COOK_KINDS as readonly string[]).includes(value ?? '');
+
 /**
- * Share what you cooked: the Circle it goes to first (so nobody posts to the wrong place), then
- * the photo, one line, an optional recipe and an optional photo description.
+ * Share with your Circle: the Circle it goes to first (so nobody posts to the wrong place), what
+ * kind of post it is, then (for what you cooked) the photo, one line, an optional recipe and an
+ * optional photo description. Tips, questions and finds take more words and an optional photo.
  */
 export default function ComposerScreen() {
   const params = useLocalSearchParams<{
     circle?: string;
     recipe?: string;
     challenge?: string;
+    kind?: string;
   }>();
   const { t } = useTranslation();
   const router = useRouter();
@@ -59,6 +68,16 @@ export default function ComposerScreen() {
     chosenCircle ?? fromParam ?? (memberOf.length === 1 ? (memberOf[0]?.id ?? null) : null);
   const circle = memberOf.find((c) => c.id === circleId) ?? null;
 
+  // The challenge and a recipe are for what you cooked, so they start a Cooked post.
+  const [kind, setKind] = useState<CookKind>(
+    params.challenge === '1' || params.recipe
+      ? 'cooked'
+      : isKind(params.kind)
+        ? params.kind
+        : 'cooked',
+  );
+  const cooked = kind === 'cooked';
+  const limit = captionLimit(kind);
   const [photo, setPhoto] = useState<PreparedPhoto | null>(null);
   const [uploadedPath, setUploadedPath] = useState<string | null>(null);
   const [picking, setPicking] = useState<PickSource | null>(null);
@@ -80,12 +99,13 @@ export default function ComposerScreen() {
     }
   }, [challenge.data, circleId, draftWeek]);
   const challengeWeek =
-    entering && draftWeek && draftWeek.circleId === circleId ? draftWeek.week : null;
+    cooked && entering && draftWeek && draftWeek.circleId === circleId ? draftWeek.week : null;
 
   // A changed post is a new one, so the key follows the content; a retry keeps it. The upload
   // finishing is not a change: the same key covers the upload and the share that follows.
   const payload = JSON.stringify({
     circleId,
+    kind,
     caption,
     alt,
     recipeId,
@@ -142,19 +162,21 @@ export default function ComposerScreen() {
   const linkable = (recipes.data ?? []).filter((r) => r.circleId === circleId);
   const linked = (recipes.data ?? []).find((r) => r.id === recipeId) ?? null;
   const trimmed = caption.trim();
-  const ready = Boolean(circleId && photo && trimmed.length > 0);
+  const over = caption.length - limit;
+  const ready = Boolean(circleId && (photo || !cooked) && trimmed.length > 0 && over <= 0);
 
   const send = () => {
-    if (!circleId || !photo || !trimmed) return;
+    if (!ready || !circleId) return;
     share.mutate(
       {
+        kind,
         photo,
         uploadedPath,
         onUploaded: setUploadedPath,
         circleId,
-        recipeId: linked && linked.circleId === circleId ? linked.id : null,
+        recipeId: cooked && linked && linked.circleId === circleId ? linked.id : null,
         caption: trimmed,
-        photoAlt: alt.trim() || null,
+        photoAlt: photo ? alt.trim() || null : null,
         challengeWeek,
         key,
       },
@@ -167,6 +189,22 @@ export default function ComposerScreen() {
   };
 
   const shareError = share.isError ? errorCode(share.error) : null;
+  const captionLabel =
+    kind === 'tip'
+      ? t('cooks.captionTip')
+      : kind === 'question'
+        ? t('cooks.captionQuestion')
+        : kind === 'find'
+          ? t('cooks.captionFind')
+          : t('cooks.captionLabel');
+  const captionPlaceholder =
+    kind === 'tip'
+      ? t('cooks.placeholderTip')
+      : kind === 'question'
+        ? t('cooks.placeholderQuestion')
+        : kind === 'find'
+          ? t('cooks.placeholderFind')
+          : t('cooks.captionPlaceholder');
 
   return (
     <View style={styles.screen}>
@@ -180,7 +218,7 @@ export default function ComposerScreen() {
           accessibilityRole="header"
           style={type(30, 'bold', { tracking: -0.9, leading: 1.1 })}
         >
-          {t('cooks.composeTitle')}
+          {cooked ? t('cooks.composeTitle') : t('cooks.composeTitleOther')}
         </Text>
 
         {/* Where it goes, before anything else. */}
@@ -264,6 +302,41 @@ export default function ComposerScreen() {
 
         {memberOf.length > 0 ? (
           <>
+            <View style={styles.field}>
+              <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+                {t('cooks.kindLabel')}
+              </Text>
+              <View
+                accessibilityRole="radiogroup"
+                accessibilityLabel={t('cooks.kindLabel')}
+                style={styles.kinds}
+              >
+                {COOK_KINDS.map((option) => {
+                  const selected = option === kind;
+                  return (
+                    <Pressable
+                      key={option}
+                      accessibilityRole="radio"
+                      aria-checked={selected}
+                      onPress={() => {
+                        setKind(option);
+                      }}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                    >
+                      <Text
+                        maxFontSizeMultiplier={2.0}
+                        style={type(15, selected ? 'semibold' : 'medium', {
+                          color: selected ? color.surface : color.ink,
+                        })}
+                      >
+                        {t(`cooks.kinds.${option}`)}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+
             {photo ? (
               <View style={styles.photo}>
                 <Photo
@@ -271,6 +344,20 @@ export default function ComposerScreen() {
                   alt={alt.trim() || t('cooks.yourPhoto')}
                 />
                 <View style={styles.photoActions}>
+                  {!cooked ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={t('cooks.removePhoto')}
+                      onPress={() => {
+                        setPhoto(null);
+                        setUploadedPath(null);
+                        setAlt('');
+                      }}
+                      style={styles.glass}
+                    >
+                      <CloseIcon size={16} strokeWidth={2.2} color="#FFFFFF" />
+                    </Pressable>
+                  ) : null}
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={t('cooks.changePhoto')}
@@ -287,6 +374,18 @@ export default function ComposerScreen() {
                   </Pressable>
                 </View>
               </View>
+            ) : !cooked ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => void choose('library')}
+                disabled={picking !== null}
+                style={styles.row}
+              >
+                <ImageIcon size={18} color={color.secondary} />
+                <Text maxFontSizeMultiplier={2.0} style={[type(16, 'medium'), styles.grow]}>
+                  {t('cooks.addPhotoOptional')}
+                </Text>
+              </Pressable>
             ) : (
               <View style={styles.empty}>
                 <View style={styles.emptyText}>
@@ -342,30 +441,39 @@ export default function ComposerScreen() {
 
             <View style={styles.field}>
               <Text maxFontSizeMultiplier={2.0} style={styles.label}>
-                {t('cooks.captionLabel')}
+                {captionLabel}
               </Text>
               <TextInput
                 maxFontSizeMultiplier={2.0}
-                accessibilityLabel={t('cooks.captionLabel')}
-                placeholder={t('cooks.captionPlaceholder')}
+                accessibilityLabel={captionLabel}
+                placeholder={captionPlaceholder}
                 placeholderTextColor={color.controlOff}
                 value={caption}
                 onChangeText={setCaption}
-                maxLength={CAPTION_MAX}
+                // Up to the longest any kind takes; a Cooked post shows what is too much.
+                maxLength={captionLimit('tip')}
                 multiline
-                style={[styles.input, type(17)]}
+                style={[styles.input, type(17), !cooked && styles.inputTall]}
               />
-              {caption.length > CAPTION_MAX - 20 ? (
+              {over > 0 ? (
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  role="alert"
+                  style={type(13, 'semibold', { color: color.danger })}
+                >
+                  {t('cooks.tooLong', { count: over })}
+                </Text>
+              ) : caption.length > limit - 20 ? (
                 <Text
                   maxFontSizeMultiplier={2.0}
                   style={type(13, 'regular', { color: color.secondary })}
                 >
-                  {t('cooks.charactersLeft', { count: CAPTION_MAX - caption.length })}
+                  {t('cooks.charactersLeft', { count: limit - caption.length })}
                 </Text>
               ) : null}
             </View>
 
-            {challenge.data ? (
+            {cooked && challenge.data ? (
               <Toggle
                 label={t('cooks.forChallenge', {
                   theme: themeLabel(t, challenge.data.theme, challenge.data.weekStart),
@@ -376,7 +484,7 @@ export default function ComposerScreen() {
               />
             ) : null}
 
-            {features.recipes ? (
+            {cooked && features.recipes ? (
               <>
                 <View style={styles.field}>
                   <Text maxFontSizeMultiplier={2.0} style={styles.label}>
@@ -431,7 +539,7 @@ export default function ComposerScreen() {
               </>
             ) : null}
 
-            {describing ? (
+            {!photo ? null : describing ? (
               <View style={styles.field}>
                 <Text maxFontSizeMultiplier={2.0} style={styles.label}>
                   {t('cooks.altLabel')}
@@ -516,7 +624,13 @@ export default function ComposerScreen() {
                 maxFontSizeMultiplier={2.0}
                 style={[type(13, 'regular', { color: color.secondary }), styles.center]}
               >
-                {photo ? t('cooks.needCaption') : t('cooks.needPhoto')}
+                {cooked && !photo
+                  ? t('cooks.needPhoto')
+                  : over > 0
+                    ? t('cooks.tooLong', { count: over })
+                    : cooked
+                      ? t('cooks.needCaption')
+                      : t('cooks.needText')}
               </Text>
             ) : null}
           </>
@@ -594,7 +708,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: color.fill,
   },
-  photoActions: { position: 'absolute', right: 12, bottom: 12 },
+  photoActions: { position: 'absolute', right: 12, bottom: 12, flexDirection: 'row', gap: 8 },
+  kinds: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  inputTall: { minHeight: 120 },
   glass: {
     flexDirection: 'row',
     alignItems: 'center',

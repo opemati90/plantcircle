@@ -144,6 +144,25 @@ export function describeNotification(
         note: t(`notify.reportStatus.${str(p, 'status') || 'open'}`),
         href: null,
       };
+    case 'cook_comment':
+      return {
+        title: t('notify.cookComment', { name: str(p, 'name') }),
+        note: t('notify.cookCommentNote', { circle: str(p, 'circle') }),
+        href: withId(str(p, 'cook_id'), {
+          pathname: '/cook/[id]',
+          params: { id: str(p, 'cook_id') },
+        }),
+      };
+    case 'circle_post_removed':
+      return {
+        title:
+          str(p, 'what') === 'comment' ? t('notify.commentRemoved') : t('notify.postRemoved'),
+        note: t('notify.removedNote', { circle: str(p, 'circle') }),
+        href: withId(str(p, 'cook_id'), {
+          pathname: '/cook/[id]',
+          params: { id: str(p, 'cook_id') },
+        }),
+      };
     case 'moderation_notice':
       return {
         title: t('notify.moderationNotice'),

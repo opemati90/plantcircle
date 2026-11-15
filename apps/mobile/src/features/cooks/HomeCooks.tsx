@@ -26,7 +26,7 @@ export function HomeCooks() {
   const { t } = useTranslation();
   const router = useRouter();
   const { fontScale } = useWindowDimensions();
-  const cooks = useCooks(null);
+  const cooks = useCooks(null, true, true);
   const items = (cooks.data?.pages[0]?.items ?? []).slice(0, RAIL);
   const share = () => {
     router.push('/cook/new');

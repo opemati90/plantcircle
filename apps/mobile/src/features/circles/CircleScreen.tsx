@@ -563,9 +563,10 @@ function PostsTab({ circleId, member }: { circleId: string; member: boolean }) {
       {member ? (
         <>
           <ChallengeCard circleId={circleId} />
+          {/* What you cooked, a tip, a question or a find: the composer asks which. */}
           <Button
             variant="outline"
-            label={t('cooks.shareYours')}
+            label={t('cooks.newPost')}
             icon={<PlusIcon size={18} strokeWidth={2.4} />}
             onPress={() => {
               router.push({ pathname: '/cook/new', params: { circle: circleId } });

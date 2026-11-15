@@ -177,6 +177,18 @@ export function renderPush(
         title: t('reportUpdate', { ref: str(p, 'case_ref') }),
         body: t(`reportStatus.${str(p, 'status') || 'open'}`),
       };
+    case 'cook_comment':
+      // Who commented and where can be private: off the lock screen unless the member asked.
+      if (!lockScreenText) return { title: pack.appName, body: t('cookCommentGeneric') };
+      return {
+        title: t('cookComment', { name: str(p, 'name') }),
+        body: t('cookCommentNote', { circle: str(p, 'circle') }),
+      };
+    case 'circle_post_removed':
+      return {
+        title: str(p, 'what') === 'comment' ? t('commentRemoved') : t('postRemoved'),
+        body: t('removedNote', { circle: str(p, 'circle') }),
+      };
     case 'moderation_notice': {
       const action = str(p, 'action');
       const known = ['warn', 'freeze_messages', 'remove_content', 'suspend', 'ban'].includes(

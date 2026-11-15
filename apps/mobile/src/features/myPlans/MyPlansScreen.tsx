@@ -123,6 +123,14 @@ export default function MyPlansScreen() {
         <InlineState
           title={t('myPlans.upcomingEmpty.title')}
           text={t('myPlans.upcomingEmpty.text')}
+          action={
+            <Button
+              label={t('myPlans.findPlans')}
+              onPress={() => {
+                router.push({ pathname: '/explore', params: { tab: 'plans' } });
+              }}
+            />
+          }
         />
       );
     }
