@@ -1,9 +1,12 @@
-// Every 15 minutes: expires waitlist offers (the next in line is offered and told), settles
-// group orders past their cutoff, and writes the reminders, address unlocks and closing notices
-// that are due. All of that is notifications_enqueue_due().
+// Runs notifications_enqueue_due_and_cleanup() on demand. The 15-minute schedule runs the same
+// function inside the database (pg_cron, migration 20261112003000), so this endpoint is only for
+// a manual run, and only with the service-role key.
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { refuseUnlessScheduler } from '../_shared/workerAuth.ts';
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  const refused = refuseUnlessScheduler(req);
+  if (refused) return refused;
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,

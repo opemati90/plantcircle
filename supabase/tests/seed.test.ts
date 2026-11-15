@@ -13,7 +13,9 @@ beforeEach(async () => {
 
 describe('seed.sql', () => {
   it('loads the prototype content, twice without error, and the read models show it', async () => {
-    const seed = readFileSync(join(__dirname, '..', 'seed.sql'), 'utf8');
+    const seed = ['seed.sql', 'seed.demo.sql']
+      .map((file) => readFileSync(join(__dirname, '..', file), 'utf8'))
+      .join('\n');
     await db.exec(seed);
     await db.exec(seed);
 
@@ -64,5 +66,19 @@ describe('seed.sql', () => {
       ),
     );
     expect(mine.rows.map((r) => r.status)).toEqual(['checked_in', 'going', 'going']);
+  });
+});
+
+describe('seed.sql (cities)', () => {
+  it('loads over a city a member already added with different capitals', async () => {
+    await db.query(
+      `insert into public.cities (name, country_code, tz) values ('berlin', 'DE', 'Europe/Berlin')`,
+    );
+    const seed = readFileSync(join(__dirname, '..', 'seed.sql'), 'utf8');
+    await db.exec(seed);
+    const berlin = await db.query<{ n: number }>(
+      `select count(*)::int as n from public.cities where lower(name) = 'berlin' and country_code = 'DE'`,
+    );
+    expect(berlin.rows[0]?.n).toBe(1);
   });
 });

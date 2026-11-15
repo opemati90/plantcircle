@@ -5,15 +5,19 @@ test('the app runs against the real project: no fixture banner, onboarding, city
 }) => {
   const failures: string[] = [];
   page.on('response', (r) => {
-    if (r.url().includes('supabase.co') && r.status() >= 500) failures.push(`${r.status()} ${r.url()}`);
+    if (r.url().includes('supabase.co') && r.status() >= 500)
+      failures.push(`${r.status()} ${r.url()}`);
   });
   await page.goto('/');
   await expect(page.getByText('Find your people.')).toBeVisible();
   await expect(page.getByText(/Dev fixtures/)).toHaveCount(0);
   await page.getByRole('button', { name: 'Get started' }).click();
-  await page.getByRole('checkbox', { name: 'Cook and learn together' }).click().catch(async () => {
-    await page.getByText('Cook and learn together').click();
-  });
+  await page
+    .getByRole('checkbox', { name: 'Cook and learn together' })
+    .click()
+    .catch(async () => {
+      await page.getByText('Cook and learn together').click();
+    });
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('textbox', { name: 'Search cities' }).fill('Berlin');
   await page.getByRole('button', { name: /Choose the country/ }).click();

@@ -4,6 +4,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import copy from './copy.json' with { type: 'json' };
 import { renderPush, type Copy } from './render.ts';
+import { refuseUnlessScheduler } from '../_shared/workerAuth.ts';
 
 const EXPO_URL = 'https://exp.host/--/api/v2/push/send';
 const BATCH = 100;
@@ -20,7 +21,9 @@ type TokenRow = { token: string; user_id: string };
 type SettingsRow = { user_id: string; language: string; lock_screen_text: boolean };
 type Ticket = { status: 'ok' | 'error'; id?: string; details?: { error?: string } };
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  const refused = refuseUnlessScheduler(req);
+  if (refused) return refused;
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -44,6 +47,8 @@ Deno.serve(async () => {
     .from('user_settings')
     .select('user_id, language, lock_screen_text')
     .in('user_id', users);
+  // Without settings the language and lock-screen choice are unknown: retry rather than guess.
+  if (settings.error) return new Response(settings.error.message, { status: 500 });
   const prefs = new Map<string, SettingsRow>();
   for (const row of (settings.data ?? []) as SettingsRow[]) prefs.set(row.user_id, row);
 
@@ -105,8 +110,13 @@ Deno.serve(async () => {
         chunk.forEach((m) => failedRows.add(m.rowId));
         continue;
       }
-      const json = (await res.json()) as { data?: Ticket[] };
-      (json.data ?? []).forEach((ticket, index) => {
+      const json = (await res.json()) as { data?: unknown };
+      // One ticket per message, or the whole chunk is retried: a malformed reply proves nothing.
+      if (!Array.isArray(json.data) || json.data.length !== chunk.length) {
+        chunk.forEach((m) => failedRows.add(m.rowId));
+        continue;
+      }
+      (json.data as Ticket[]).forEach((ticket, index) => {
         const message = chunk[index]!;
         if (ticket.status === 'ok') {
           sent += 1;
@@ -122,12 +132,21 @@ Deno.serve(async () => {
   }
   for (const m of messages) if (!failedRows.has(m.rowId)) done.add(m.rowId);
 
-  if (dead.length > 0) await supabase.from('push_tokens').delete().in('token', dead);
-  if (done.size > 0)
-    await supabase
+  // Mark what was delivered first: a failed token cleanup must not cause the same push twice.
+  let failure: string | null = null;
+  if (done.size > 0) {
+    // If this fails the claim lapses and the rows are sent again: delivery is at-least-once.
+    const marked = await supabase
       .from('push_queue')
       .update({ sent_at: new Date().toISOString() })
       .in('id', [...done]);
+    if (marked.error) failure = marked.error.message;
+  }
+  if (dead.length > 0) {
+    const removed = await supabase.from('push_tokens').delete().in('token', dead);
+    if (removed.error) failure = failure ?? removed.error.message;
+  }
+  if (failure) return new Response(failure, { status: 500 });
   // Failed rows keep their claim for five minutes, then the next run retries them (five attempts).
   return new Response(
     `sent ${sent} messages; ${done.size} rows done, ${failedRows.size} to retry; dropped ${dead.length} tokens`,

@@ -37,10 +37,24 @@ run against a real Supabase project. That is the first thing to do once the proj
    Done: all 31 migrations applied, the three edge functions deployed, public URL and anon key in
    `apps/mobile/.env.staging` (git-ignored; `pnpm start:staging` and `pnpm smoke:staging` load
    it). The staging smoke test passes: onboarding, typed city, Home, Explore.
-   Still open: seed (starter cities, optional demo people), the 6-digit code in the sign-in email
-   template, auth redirect URLs, cron schedules for `push-dispatch` (1 min) and
-   `cron-reminders` (15 min), `APP_WEB_URL` for `web-rsvp`, EAS env variables, Pro plan before
-   real users.
+   Also done (2026-11-15, audited by Codex): service-role grants, reminders scheduled inside the
+   database every 15 minutes, push-dispatch scheduled every minute, both workers refuse anything
+   but a POST with the service-role key (verified live: anon 403, GET 405, no key 401), seed
+   split into `seed.sql` (cities) and `seed.demo.sql` (local only, never on this project).
+   Owner steps left, in the dashboard:
+   - Vault: add `plantcircle_project_url` = `https://qxzbjkpggoekagvinazn.supabase.co` and
+     `plantcircle_service_role_key` = the service_role key. Push stays off until both exist.
+   - Integrations → Cron: confirm `plantcircle-reminders` and `plantcircle-push-dispatch` exist.
+   - Authentication → Email Templates: Magic Link and Confirm signup contain `{{ .Token }}` and
+     keep `{{ .ConfirmationURL }}` (the web RSVP email uses the link). Email OTP length 6,
+     expiry 600 s.
+   - Authentication → SMTP: your email provider (built-in email only reaches team members,
+     two an hour).
+   - Authentication → URL Configuration: Site URL = the web origin; redirect URLs
+     `plantcircle://auth/callback` and `https://<web host>/p/*`. Then set the function secret
+     `APP_WEB_URL`.
+   - Optional: run `seed.sql` for the starter cities (members can also type any city).
+   - Pro plan before real users.
 2. **Email provider** (for example Postmark or Resend, EU): API key and a verified sending
    domain. Waitlist offers, changes, cancellations and moderation notices queue email rows that
    nothing sends yet.
