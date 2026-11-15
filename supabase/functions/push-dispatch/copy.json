@@ -74,7 +74,24 @@
       "notNow": "Not now",
       "sampleNow": "now",
       "sampleOffer": "A spot opened at Vegan Ramen Workshop — confirm within 2 hours",
-      "sampleReminder": "Tomorrow 17:00 · West African Cooking Night"
+      "sampleReminder": "Tomorrow 17:00 · West African Cooking Night",
+      "challengeWeek": "This week in {{circle}}: {{theme}}",
+      "challengeWeekNote": "Cook it at home and share a photo with your Circle.",
+      "challengeWeekGeneric": "Your Circle has a new theme this week."
+    },
+    "themes": {
+      "lentils": "Lentils",
+      "greens": "Greens",
+      "onePot": "One pot",
+      "streetFood": "Street food",
+      "breakfast": "Breakfast",
+      "spice": "Something spicy",
+      "budget": "Budget plates",
+      "leftovers": "Leftovers made new",
+      "soup": "Soup",
+      "baking": "Baking",
+      "grains": "Whole grains",
+      "roots": "Root vegetables"
     },
     "appName": "PlantCircle"
   },
@@ -153,7 +170,24 @@
       "notNow": "Jetzt nicht",
       "sampleNow": "jetzt",
       "sampleOffer": "Ein Platz ist frei beim Workshop für vegane Ramen – bestätige innerhalb von 2 Stunden",
-      "sampleReminder": "Morgen 17:00 · Westafrikanischer Kochabend"
+      "sampleReminder": "Morgen 17:00 · Westafrikanischer Kochabend",
+      "challengeWeek": "Diese Woche in {{circle}}: {{theme}}",
+      "challengeWeekNote": "Koch es zu Hause und teile ein Foto mit deinem Circle.",
+      "challengeWeekGeneric": "Dein Circle hat diese Woche ein neues Thema."
+    },
+    "themes": {
+      "lentils": "Linsen",
+      "greens": "Grünes",
+      "onePot": "Ein Topf",
+      "streetFood": "Streetfood",
+      "breakfast": "Frühstück",
+      "spice": "Etwas Scharfes",
+      "budget": "Günstige Teller",
+      "leftovers": "Reste neu gedacht",
+      "soup": "Suppe",
+      "baking": "Backen",
+      "grains": "Vollkorn",
+      "roots": "Wurzelgemüse"
     },
     "appName": "PlantCircle"
   },
@@ -232,7 +266,24 @@
       "notNow": "Ahora no",
       "sampleNow": "ahora",
       "sampleOffer": "Se liberó una plaza en el taller de ramen vegano: confirma antes de que pasen 2 horas",
-      "sampleReminder": "Mañana 17:00 · Noche de cocina de África occidental"
+      "sampleReminder": "Mañana 17:00 · Noche de cocina de África occidental",
+      "challengeWeek": "Esta semana en {{circle}}: {{theme}}",
+      "challengeWeekNote": "Cocínalo en casa y comparte una foto con tu Circle.",
+      "challengeWeekGeneric": "Tu Circle tiene un tema nuevo esta semana."
+    },
+    "themes": {
+      "lentils": "Lentejas",
+      "greens": "Verduras de hoja",
+      "onePot": "Todo en una olla",
+      "streetFood": "Comida callejera",
+      "breakfast": "Desayuno",
+      "spice": "Algo picante",
+      "budget": "Platos económicos",
+      "leftovers": "Sobras reinventadas",
+      "soup": "Sopa",
+      "baking": "Horneado",
+      "grains": "Cereales integrales",
+      "roots": "Raíces y tubérculos"
     },
     "appName": "PlantCircle"
   },
@@ -311,7 +362,24 @@
       "notNow": "Agora não",
       "sampleNow": "agora",
       "sampleOffer": "Abriu uma vaga na Oficina de Ramen Vegano — confirme dentro de 2 horas",
-      "sampleReminder": "Amanhã 17:00 · Noite de Cozinha da África Ocidental"
+      "sampleReminder": "Amanhã 17:00 · Noite de Cozinha da África Ocidental",
+      "challengeWeek": "Esta semana em {{circle}}: {{theme}}",
+      "challengeWeekNote": "Cozinha-o em casa e partilha uma foto com o teu Circle.",
+      "challengeWeekGeneric": "O teu Circle tem um tema novo esta semana."
+    },
+    "themes": {
+      "lentils": "Lentilhas",
+      "greens": "Verdes",
+      "onePot": "Tudo numa panela",
+      "streetFood": "Comida de rua",
+      "breakfast": "Pequeno-almoço",
+      "spice": "Algo picante",
+      "budget": "Pratos económicos",
+      "leftovers": "Restos reinventados",
+      "soup": "Sopa",
+      "baking": "Forno",
+      "grains": "Cereais integrais",
+      "roots": "Raízes"
     },
     "appName": "PlantCircle"
   },
@@ -390,7 +458,24 @@
       "notNow": "Pas maintenant",
       "sampleNow": "maintenant",
       "sampleOffer": "Une place s’est libérée à l’atelier de ramen végan — confirme dans les 2 heures",
-      "sampleReminder": "Demain 17:00 · Soirée cuisine ouest-africaine"
+      "sampleReminder": "Demain 17:00 · Soirée cuisine ouest-africaine",
+      "challengeWeek": "Cette semaine dans {{circle}} : {{theme}}",
+      "challengeWeekNote": "Cuisine-le chez toi et partage une photo avec ton Circle.",
+      "challengeWeekGeneric": "Ton Circle a un nouveau thème cette semaine."
+    },
+    "themes": {
+      "lentils": "Lentilles",
+      "greens": "Légumes verts",
+      "onePot": "Tout en une casserole",
+      "streetFood": "Street food",
+      "breakfast": "Petit-déjeuner",
+      "spice": "Quelque chose d’épicé",
+      "budget": "Assiettes à petit prix",
+      "leftovers": "Restes réinventés",
+      "soup": "Soupe",
+      "baking": "Pâtisserie",
+      "grains": "Céréales complètes",
+      "roots": "Légumes racines"
     },
     "appName": "PlantCircle"
   },
@@ -475,7 +560,24 @@
       "notNow": "Nie teraz",
       "sampleNow": "teraz",
       "sampleOffer": "Zwolniło się miejsce na warsztatach wegańskiego ramenu — potwierdź w ciągu 2 godzin",
-      "sampleReminder": "Jutro 17:00 · Wieczór gotowania potraw z Afryki Zachodniej"
+      "sampleReminder": "Jutro 17:00 · Wieczór gotowania potraw z Afryki Zachodniej",
+      "challengeWeek": "W tym tygodniu w {{circle}}: {{theme}}",
+      "challengeWeekNote": "Ugotuj to w domu i udostępnij zdjęcie swojemu Circle.",
+      "challengeWeekGeneric": "Twój Circle ma w tym tygodniu nowy temat."
+    },
+    "themes": {
+      "lentils": "Soczewica",
+      "greens": "Zielone warzywa",
+      "onePot": "Jeden garnek",
+      "streetFood": "Street food",
+      "breakfast": "Śniadanie",
+      "spice": "Coś ostrego",
+      "budget": "Tanie talerze",
+      "leftovers": "Resztki na nowo",
+      "soup": "Zupa",
+      "baking": "Pieczenie",
+      "grains": "Pełne ziarna",
+      "roots": "Warzywa korzeniowe"
     },
     "appName": "PlantCircle"
   },
@@ -554,7 +656,24 @@
       "notNow": "Non ora",
       "sampleNow": "adesso",
       "sampleOffer": "Si è liberato un posto al Vegan Ramen Workshop — conferma entro 2 ore",
-      "sampleReminder": "Domani 17:00 · West African Cooking Night"
+      "sampleReminder": "Domani 17:00 · West African Cooking Night",
+      "challengeWeek": "Questa settimana in {{circle}}: {{theme}}",
+      "challengeWeekNote": "Cucinalo a casa e condividi una foto con il tuo Circle.",
+      "challengeWeekGeneric": "Il tuo Circle ha un nuovo tema questa settimana."
+    },
+    "themes": {
+      "lentils": "Lenticchie",
+      "greens": "Verdure a foglia",
+      "onePot": "Tutto in una pentola",
+      "streetFood": "Street food",
+      "breakfast": "Colazione",
+      "spice": "Qualcosa di piccante",
+      "budget": "Piatti economici",
+      "leftovers": "Avanzi reinventati",
+      "soup": "Zuppa",
+      "baking": "Forno",
+      "grains": "Cereali integrali",
+      "roots": "Ortaggi a radice"
     },
     "appName": "PlantCircle"
   },
@@ -633,7 +752,24 @@
       "notNow": "Niet nu",
       "sampleNow": "nu",
       "sampleOffer": "Er kwam een plek vrij bij Vegan Ramen Workshop — bevestig binnen 2 uur",
-      "sampleReminder": "Morgen 17:00 · West African Cooking Night"
+      "sampleReminder": "Morgen 17:00 · West African Cooking Night",
+      "challengeWeek": "Deze week in {{circle}}: {{theme}}",
+      "challengeWeekNote": "Kook het thuis en deel een foto met je Circle.",
+      "challengeWeekGeneric": "Je Circle heeft deze week een nieuw thema."
+    },
+    "themes": {
+      "lentils": "Linzen",
+      "greens": "Groene groenten",
+      "onePot": "Eenpansgerecht",
+      "streetFood": "Streetfood",
+      "breakfast": "Ontbijt",
+      "spice": "Iets pittigs",
+      "budget": "Voordelige borden",
+      "leftovers": "Restjes opnieuw",
+      "soup": "Soep",
+      "baking": "Bakken",
+      "grains": "Volkoren granen",
+      "roots": "Wortelgroenten"
     },
     "appName": "PlantCircle"
   }

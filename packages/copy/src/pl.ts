@@ -946,6 +946,20 @@ export const pl: Catalog = {
     rateLimited: 'Możesz założyć 3 kręgi dziennie. Spróbuj jutro.',
     needCity: 'Najpierw wybierz miasto domowe, żeby osoby z okolicy znalazły ten krąg.',
     notFound: 'Ten krąg nie jest dostępny.',
+    invite: 'Zaproś ludzi',
+    inviteMessage:
+      'Dołącz do mnie w {{circle}} w PlantCircle. W tym tygodniu gotujemy {{theme}}: {{link}}',
+    inviteFailed: 'Nie udało się otworzyć. Skopiuj link: {{link}}',
+    inviteEyebrow: 'Masz zaproszenie',
+    inviteTheme: 'W tym tygodniu: {{theme}}',
+    inviteJoin: 'Dołącz do tego Circle',
+    inviteAsk: 'Poproś o dołączenie',
+    inviteLook: 'Najpierw się rozejrzyj',
+    inviteGone: 'Ten Circle nie przyjmuje zaproszeń',
+    inviteGoneText: 'Może być prywatny lub zamknięty. Możesz znaleźć inne Circles w pobliżu.',
+    inviteLead:
+      'Co tydzień ten Circle gotuje w domu jeden temat i udostępnia zdjęcie. Dołącz, kiedy zechcesz.',
+    inviteOpen: 'Otwórz Circle',
   },
   explore: {
     featuredHost: 'Polecany gospodarz',
@@ -1213,7 +1227,7 @@ export const pl: Catalog = {
     neededNote: 'Konto, zapisy, kontrole bezpieczeństwa',
     alwaysOn: 'Zawsze włączone',
     analyticsTitle: 'Pomóż ulepszać PlantCircle',
-    analyticsNote: 'Anonimowe statystyki użycia',
+    analyticsNote: 'Statystyki użytkowania, bez imienia i e-maila',
     personalTitle: 'Osobiste sugestie',
     personalNote: 'Plany dobrane do Twoich zainteresowań',
     readPrivacy: 'Przeczytaj politykę prywatności',
@@ -1221,7 +1235,7 @@ export const pl: Catalog = {
     saveChoices: 'Zapisz wybory',
     groupPlans: 'Plany',
     remindersTitle: 'Przypomnienia',
-    remindersNote: 'Dzień wcześniej i 2 godziny przed',
+    remindersNote: 'Dzień wcześniej, 2 godziny wcześniej i poniedziałkowa wiadomość',
     waitlistTitle: 'Oferty z listy oczekujących',
     waitlistNote: 'Zalecane, wygasają',
     changesTitle: 'Zmiany i odwołania',
@@ -1383,6 +1397,9 @@ export const pl: Catalog = {
     sampleOffer:
       'Zwolniło się miejsce na warsztatach wegańskiego ramenu — potwierdź w ciągu 2 godzin',
     sampleReminder: 'Jutro 17:00 · Wieczór gotowania potraw z Afryki Zachodniej',
+    challengeWeek: 'W tym tygodniu w {{circle}}: {{theme}}',
+    challengeWeekNote: 'Ugotuj to w domu i udostępnij zdjęcie swojemu Circle.',
+    challengeWeekGeneric: 'Twój Circle ma w tym tygodniu nowy temat.',
   },
   offline: {
     banner: 'Jesteś offline',
@@ -1555,7 +1572,7 @@ export const pl: Catalog = {
     challengeChange: 'Zmień temat tygodnia',
     challengeSheetTitle: 'Temat tygodnia',
     challengeSheetLead:
-      'Cały Circle widzi go do niedzieli. Wpisy zachowują temat, pod którym zostały udostępnione.',
+      'Cały Circle widzi go do niedzieli, podobnie jak każdy z linkiem zaproszenia do Circle. Wpisy zachowują temat, pod którym zostały udostępnione.',
     challengeThemeLabel: 'Temat',
     challengeIdeas: 'Pomysły',
     challengeSave: 'Zapisz temat',

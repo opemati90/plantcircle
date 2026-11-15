@@ -4,7 +4,10 @@
 // a jest test there keeps the two in step. Plain TypeScript: no Deno or Node globals.
 
 type Messages = Record<string, unknown>;
-export type Copy = Record<string, { notify: Messages; appName: string }>;
+export type Copy = Record<
+  string,
+  { notify: Messages; appName: string; themes?: Record<string, string> }
+>;
 type Payload = Record<string, unknown>;
 
 const str = (p: Payload, key: string): string =>
@@ -79,6 +82,21 @@ export function renderPush(
     case 'weekly_digest': {
       const inCity = num(p, 'in_city');
       const online = num(p, 'online');
+      // A member of a Circle hears the week's challenge first, then the Plans line.
+      if (str(p, 'circle')) {
+        // The Circle and its theme can be private: off the lock screen unless the member asked.
+        if (!lockScreenText) return { title: pack.appName, body: t('challengeWeekGeneric') };
+        const theme = str(p, 'theme') || pack.themes?.[str(p, 'theme_key')] || '';
+        return {
+          title: t('challengeWeek', { circle: str(p, 'circle'), theme }),
+          body:
+            inCity > 0 && str(p, 'city')
+              ? t('weeklyDigest', { count: inCity, city: str(p, 'city') })
+              : online > 0
+                ? t('weeklyDigestOnline', { count: online })
+                : t('challengeWeekNote'),
+        };
+      }
       return {
         title:
           inCity > 0 && str(p, 'city')

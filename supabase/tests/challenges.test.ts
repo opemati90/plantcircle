@@ -223,3 +223,129 @@ describe('saving a theme and sharing across app versions', () => {
     expect(entries[0]).toMatchObject({ caption: 'Red lentil dal', author_name: 'Lena' });
   });
 });
+
+describe('the Monday notice', () => {
+  // Monday 3 June 2030, 09:30 in Auckland.
+  const monday = '2030-06-02T21:30:00Z';
+  const digest = (at: string) =>
+    db
+      .query<{ n: number }>('select public.weekly_digest_enqueue($1) as n', [at])
+      .then((r) => r.rows[0]!.n);
+
+  it('leads with the Circle’s theme for members, even with no Plans; others get nothing', async () => {
+    await db.query('update public.profiles set city_id = $1 where id in ($2, $3)', [
+      CITY,
+      LENA,
+      MIA,
+    ]);
+    expect(await digest(monday)).toBe(1); // Lena: a Circle. Mia: no Circle, no Plans.
+    const row = await db.query<{ payload: Record<string, string> }>(
+      `select payload from public.notifications where user_id = $1 and type = 'weekly_digest'`,
+      [LENA],
+    );
+    expect(row.rows[0]?.payload).toMatchObject({
+      circle: 'Ponsonby Plants',
+      circle_id: KITCHEN,
+      theme: '',
+      theme_key: 'onePot',
+    });
+    const queued = await db.query<{ title: string; body: string }>(
+      `select title, body from public.push_queue where user_id = $1 and type = 'weekly_digest'`,
+      [LENA],
+    );
+    expect(queued.rows[0]).toEqual({
+      title: 'This week in Ponsonby Plants',
+      body: 'Cook it at home and share a photo with your Circle.',
+    });
+    expect(await digest('2030-06-02T22:30:00Z')).toBe(0); // same week: sent once
+  });
+
+  it('carries a custom theme as written', async () => {
+    await db.query('update public.profiles set city_id = $1 where id = $2', [CITY, LENA]);
+    await db.query(
+      `insert into public.circle_challenges (circle_id, week_start, theme) values ($1, '2030-06-03', 'Lentils')`,
+      [KITCHEN],
+    );
+    await digest(monday);
+    const row = await db.query<{ payload: Record<string, string> }>(
+      `select payload from public.notifications where user_id = $1 and type = 'weekly_digest'`,
+      [LENA],
+    );
+    expect(row.rows[0]?.payload).toMatchObject({ theme: 'Lentils', theme_key: '' });
+  });
+});
+
+describe('the invite page', () => {
+  it('shows this week’s theme to anyone for a Circle anyone can see, never for invite-only ones', async () => {
+    await setTheme(AMA, 'Lentils');
+    const seen = await asUser(db, null, () =>
+      db.query<{ r: { theme: string; week_start: string } }>(
+        'select public.circle_week_public($1) as r',
+        [KITCHEN],
+      ),
+    );
+    expect(seen.rows[0]?.r.theme).toBe('Lentils');
+    await db.query(`update public.circles set access = 'invite' where id = $1`, [KITCHEN]);
+    await expect(
+      asUser(db, null, () => db.query('select public.circle_week_public($1)', [KITCHEN])),
+    ).rejects.toThrow(/circle_not_found/);
+  });
+});
+
+describe('the Monday notice respects choices and clocks', () => {
+  it('sends nothing, not even the Inbox line, with reminders off', async () => {
+    await db.query('update public.profiles set city_id = $1 where id = $2', [CITY, LENA]);
+    await db.query(
+      `insert into public.user_settings (user_id, notif_reminders) values ($1, false)`,
+      [LENA],
+    );
+    expect(
+      (
+        await db.query<{ n: number }>(
+          "select public.weekly_digest_enqueue('2030-06-02T21:30:00Z') as n",
+        )
+      ).rows[0]?.n,
+    ).toBe(0);
+  });
+
+  it('waits when the Circle is still on last week where it is, rather than announcing a theme its page does not show yet', async () => {
+    // A New York Circle; Lena lives in Auckland. Her Monday 09:30 is Sunday in New York.
+    await db.query(
+      `insert into public.cities (id, name, country_code, tz) values ('30000000-0000-4000-8000-0000000000e1', 'New York', 'US', 'America/New_York')`,
+    );
+    await db.query(
+      `update public.circles set city_id = '30000000-0000-4000-8000-0000000000e1' where id = $1`,
+      [KITCHEN],
+    );
+    await db.query('update public.profiles set city_id = $1 where id = $2', [CITY, LENA]);
+    expect(
+      (
+        await db.query<{ n: number }>(
+          "select public.weekly_digest_enqueue('2030-06-02T21:30:00Z') as n",
+        )
+      ).rows[0]?.n,
+    ).toBe(0);
+    // The week mark was not kept, so a later run that week can still send.
+    const marks = await db.query('select 1 from public.notification_marks where user_id = $1', [
+      LENA,
+    ]);
+    expect(marks.rows).toEqual([]);
+  });
+});
+
+describe('analytics deletion requests', () => {
+  it('records a member’s request once, refuses visitors and junk, and keeps the table private', async () => {
+    const ask = (user: string | null, id: string) =>
+      asUser(db, user, () => db.query('select public.analytics_forget($1)', [id]));
+    await ask(LENA, 'a1b2c3d4-0000-4000-8000-000000000001');
+    await ask(LENA, 'a1b2c3d4-0000-4000-8000-000000000001');
+    expect((await db.query('select 1 from public.analytics_deletions')).rows).toHaveLength(1);
+    await expect(ask(null, 'a1b2c3d4-0000-4000-8000-000000000002')).rejects.toThrow(
+      /permission denied|not_authenticated/,
+    );
+    await expect(ask(LENA, 'x')).rejects.toThrow(/invalid_input/);
+    await expect(
+      asUser(db, LENA, () => db.query('select * from public.analytics_deletions')),
+    ).rejects.toThrow(/permission denied/);
+  });
+});

@@ -13,6 +13,8 @@ const hours = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
 
 beforeEach(async () => {
   db = await createDatabase();
+  // Group orders are switched off at launch (20261112003500); these tests cover them switched on.
+  await db.query('update public.host_levels set group_orders = true where level >= 2');
   await db.query(
     `insert into public.cities (id, name, country_code, tz) values ($1, 'Berlin', 'DE', 'Europe/Berlin')`,
     [CITY],

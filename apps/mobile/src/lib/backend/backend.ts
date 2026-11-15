@@ -208,6 +208,10 @@ export interface Backend {
     cookId: string,
     on: boolean,
   ): Promise<{ reacted: boolean; reactions: number }>;
+  /** Asks for this analytics id and its events to be deleted at PostHog (withdrawal, deletion). */
+  requestAnalyticsDeletion(distinctId: string): Promise<void>;
+  /** This week's theme for a Circle anyone can see, for its invite page (no account needed). */
+  getCircleWeekPublic(circleId: string): Promise<{ weekStart: string; theme: string | null }>;
   /** This week's challenge in a Circle the viewer is in. */
   getCircleChallenge(circleId: string): Promise<CircleChallenge>;
   /**

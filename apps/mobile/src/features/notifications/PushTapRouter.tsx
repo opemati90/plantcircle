@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { describeNotification } from './notificationCopy';
 import { onPushOpened } from './push';
+import { track } from '../../lib/analytics';
 
 /** A tapped push opens what it is about, the same way the Inbox row does. */
 export function PushTapRouter() {
@@ -22,6 +23,7 @@ export function PushTapRouter() {
         readAt: null,
         createdAt: '',
       });
+      if (type) track('notification_opened', { type });
       if (href) router.push(href);
     });
   }, [router, t]);

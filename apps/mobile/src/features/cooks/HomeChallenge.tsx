@@ -1,4 +1,6 @@
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { track } from '../../lib/analytics';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
@@ -23,6 +25,10 @@ export function HomeChallenge() {
   // Signed out: the invitation, which is also what the app is about.
   const circle = session ? (circles.data?.[0] ?? null) : null;
   const challenge = useCircleChallenge(circle?.id ?? null, circle !== null);
+  const seen = Boolean(challenge.data);
+  useEffect(() => {
+    if (seen) track('challenge_viewed', { surface: 'home' });
+  }, [seen]);
 
   if ((session && circles.isPending) || (circle && challenge.isPending)) {
     return (

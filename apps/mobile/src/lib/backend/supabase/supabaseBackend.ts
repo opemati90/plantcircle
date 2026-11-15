@@ -789,6 +789,21 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       );
     },
 
+    async requestAnalyticsDeletion(distinctId) {
+      const { error } = await client.rpc('analytics_forget', { p_distinct_id: distinctId });
+      if (error) throw toBackendError(error);
+    },
+
+    async getCircleWeekPublic(circleId) {
+      const result = await client.rpc('circle_week_public', { p_circle_id: circleId });
+      if (result.error) throw toBackendError(result.error);
+      const row = parse(
+        z.object({ week_start: z.string(), theme: z.string().nullable() }),
+        result.data,
+      );
+      return { weekStart: row.week_start, theme: row.theme };
+    },
+
     async getCircleChallenge(circleId) {
       const result = await client.rpc('circle_challenge', { p_circle_id: circleId });
       if (result.error) throw toBackendError(result.error);

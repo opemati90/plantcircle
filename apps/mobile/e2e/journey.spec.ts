@@ -148,3 +148,10 @@ test('signing out returns Home to the anonymous state', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
 });
+
+test('the sign-in return page, opened outside a sign-in popup, leads home', async ({
+  page,
+}) => {
+  await page.goto('/auth/callback?code=stale');
+  await expect(page).toHaveURL(/\/home/);
+});

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBackend } from '../../lib/backend/BackendProvider';
 import type { SettingsPatch, UserSettings } from '../../lib/backend/types';
+import { analyticsIdOf, forgetAnalytics, setAnalyticsConsent } from '../../lib/analytics';
 import { useAuth } from '../auth/useAuth';
 import { clearOfflineCache } from '../../lib/offlineCache';
 import { unregisterPush } from '../notifications/push';
@@ -23,6 +24,12 @@ export function useUpdateSettings() {
   const { session } = useAuth();
   return useMutation({
     mutationFn: (patch: SettingsPatch) => backend.updateSettings(patch),
+    // Saying no to analytics stops it before the server even answers.
+    onMutate: (patch) => {
+      if (patch.analyticsConsent === false) {
+        void setAnalyticsConsent(session?.userId ?? null, false);
+      }
+    },
     onSuccess: (next) => {
       // The server answered with the whole row, so show it now rather than wait for a refetch.
       queryClient.setQueryData<UserSettings>(['settings', session?.userId ?? null], next);
@@ -42,11 +49,17 @@ export function useRequestDataExport() {
 export function useDeleteAccount() {
   const backend = useBackend();
   const queryClient = useQueryClient();
+  const { session } = useAuth();
   return useMutation({
     mutationFn: async (key: string) => {
+      // The analytics id is recorded for deletion first: if that cannot be saved, nothing is
+      // deleted yet and the member can try again, rather than the request being lost.
+      const analyticsId = session ? await analyticsIdOf(session.userId) : null;
+      if (analyticsId) await backend.requestAnalyticsDeletion(analyticsId);
       await unregisterPush(backend);
       await backend.deleteAccount(key);
       await clearOfflineCache();
+      if (session) await forgetAnalytics(session.userId);
     },
     onSuccess: () => {
       queryClient.clear();

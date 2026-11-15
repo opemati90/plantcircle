@@ -20,6 +20,25 @@ export function describeNotification(
     case 'weekly_digest': {
       const inCity = typeof p['in_city'] === 'number' ? p['in_city'] : 0;
       const online = typeof p['online'] === 'number' ? p['online'] : 0;
+      // A member of a Circle hears the week's challenge first, then the Plans line.
+      if (str(p, 'circle')) {
+        const theme =
+          str(p, 'theme') ||
+          (str(p, 'theme_key') ? t(`cooks.themes.${str(p, 'theme_key')}`) : '');
+        return {
+          title: t('notify.challengeWeek', { circle: str(p, 'circle'), theme }),
+          note:
+            inCity > 0 && str(p, 'city')
+              ? t('notify.weeklyDigest', { count: inCity, city: str(p, 'city') })
+              : online > 0
+                ? t('notify.weeklyDigestOnline', { count: online })
+                : t('notify.challengeWeekNote'),
+          href: withId(str(p, 'circle_id'), {
+            pathname: '/circle/[id]',
+            params: { id: str(p, 'circle_id'), tab: 'posts' },
+          }),
+        };
+      }
       return {
         title:
           inCity > 0 && str(p, 'city')

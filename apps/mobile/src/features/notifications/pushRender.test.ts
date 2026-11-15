@@ -6,12 +6,39 @@ import { describeNotification } from './notificationCopy';
 
 /** push-dispatch renders the same title as the Inbox, in every language, for every shared type. */
 const copy = Object.fromEntries(
-  Object.entries(catalogs).map(([l, c]) => [l, { notify: c.notify, appName: 'PlantCircle' }]),
+  Object.entries(catalogs).map(([l, c]) => [
+    l,
+    { notify: c.notify, themes: c.cooks.themes, appName: 'PlantCircle' },
+  ]),
 ) as Copy;
 
 const cases: { type: string; payload: Record<string, unknown> }[] = [
   { type: 'weekly_digest', payload: { in_city: 3, online: 2, city: 'Berlin' } },
   { type: 'weekly_digest', payload: { in_city: 0, online: 1, city: '' } },
+  {
+    type: 'weekly_digest',
+    payload: {
+      in_city: 0,
+      online: 0,
+      city: '',
+      circle: 'Kitchen',
+      circle_id: 'c',
+      theme: '',
+      theme_key: 'soup',
+    },
+  },
+  {
+    type: 'weekly_digest',
+    payload: {
+      in_city: 2,
+      online: 0,
+      city: 'Berlin',
+      circle: 'Kitchen',
+      circle_id: 'c',
+      theme: 'Lentils',
+      theme_key: '',
+    },
+  },
   { type: 'rsvp_confirmed', payload: { plan: 'Lentil night', plan_id: 'x' } },
   {
     type: 'reminder_day_before',
@@ -56,6 +83,19 @@ describe.each(Object.keys(catalogs))('push text in %s', (language) => {
     expect(push).not.toBeNull();
     expect(push?.title).toBe(inbox.title);
     expect(push?.body).toBe(inbox.note);
+  });
+  it('keeps the Circle and its theme off the lock screen unless asked', () => {
+    const quiet = renderPush(
+      copy,
+      language,
+      'weekly_digest',
+      { circle: 'Kitchen', theme: 'Lentils', in_city: 0, online: 0, city: '' },
+      false,
+      { title: 'x', body: 'y' },
+    );
+    expect(quiet?.title).toBe('PlantCircle');
+    expect(quiet?.body).not.toContain('Kitchen');
+    expect(quiet?.body).not.toContain('Lentils');
   });
   it('keeps a message off the lock screen unless asked, and knows the push-only types', () => {
     const quiet = renderPush(copy, language, 'new_message', {}, false, {

@@ -895,6 +895,21 @@ export const pt: Catalog = {
     needCity:
       'Escolha primeiro a sua cidade, para que as pessoas perto encontrem este círculo.',
     notFound: 'Este círculo não está disponível.',
+    invite: 'Convidar pessoas',
+    inviteMessage:
+      'Junta-te a mim em {{circle}} no PlantCircle. Esta semana cozinhamos {{theme}}: {{link}}',
+    inviteFailed: 'Não abriu. Copia antes o link: {{link}}',
+    inviteEyebrow: 'Foste convidado',
+    inviteTheme: 'Esta semana: {{theme}}',
+    inviteJoin: 'Entrar neste Circle',
+    inviteAsk: 'Pedir para entrar',
+    inviteLook: 'Ver primeiro',
+    inviteGone: 'Este Circle não aceita convites',
+    inviteGoneText:
+      'Pode ser privado ou estar fechado. Podes encontrar outros Circles perto de ti.',
+    inviteLead:
+      'Todas as semanas este Circle cozinha um tema em casa e partilha uma foto. Entra quando quiseres.',
+    inviteOpen: 'Abrir o Circle',
   },
   explore: {
     featuredHost: 'Anfitrião em destaque',
@@ -1159,7 +1174,7 @@ export const pt: Catalog = {
     neededNote: 'Conta, confirmações, verificações de segurança',
     alwaysOn: 'Sempre ligado',
     analyticsTitle: 'Ajudar a melhorar a PlantCircle',
-    analyticsNote: 'Estatísticas de utilização anónimas',
+    analyticsNote: 'Estatísticas de utilização, sem o teu nome nem o teu email',
     personalTitle: 'Sugestões pessoais',
     personalNote: 'Planos escolhidos pelos teus interesses',
     readPrivacy: 'Ler a política de privacidade',
@@ -1167,7 +1182,7 @@ export const pt: Catalog = {
     saveChoices: 'Guardar escolhas',
     groupPlans: 'Planos',
     remindersTitle: 'Lembretes',
-    remindersNote: 'No dia anterior e 2 horas antes',
+    remindersNote: 'No dia anterior, 2 horas antes e a mensagem de segunda-feira',
     waitlistTitle: 'Ofertas da lista de espera',
     waitlistNote: 'Recomendado, expiram',
     changesTitle: 'Alterações e cancelamentos',
@@ -1319,6 +1334,9 @@ export const pt: Catalog = {
     sampleNow: 'agora',
     sampleOffer: 'Abriu uma vaga na Oficina de Ramen Vegano — confirme dentro de 2 horas',
     sampleReminder: 'Amanhã 17:00 · Noite de Cozinha da África Ocidental',
+    challengeWeek: 'Esta semana em {{circle}}: {{theme}}',
+    challengeWeekNote: 'Cozinha-o em casa e partilha uma foto com o teu Circle.',
+    challengeWeekGeneric: 'O teu Circle tem um tema novo esta semana.',
   },
   offline: {
     banner: 'Estás offline',
@@ -1482,7 +1500,7 @@ export const pt: Catalog = {
     challengeChange: 'Mudar o tema da semana',
     challengeSheetTitle: 'Tema da semana',
     challengeSheetLead:
-      'Todo o Circle o vê até domingo. As publicações mantêm o tema com que foram partilhadas.',
+      'Todo o Circle o vê até domingo, tal como qualquer pessoa com o link de convite do Circle. As publicações mantêm o tema com que foram partilhadas.',
     challengeThemeLabel: 'Tema',
     challengeIdeas: 'Ideias',
     challengeSave: 'Guardar tema',

@@ -12,6 +12,7 @@ import { useAuth } from '../auth/useAuth';
 import { features } from '../../lib/features';
 import { forgetCookPhotos } from '../../lib/photoCache';
 import { getOnboarding, saveOnboardingStrict } from '../onboarding/onboardingStore';
+import { track } from '../../lib/analytics';
 
 const WEEK_MS = 7 * 86_400_000;
 
@@ -236,13 +237,16 @@ export function useJoinCircle(circleId: string) {
   return useMutation({
     mutationFn: (input: { answer: string | null; key: string }) =>
       backend.joinCircle(circleId, input.answer, input.key),
-    onSuccess: () =>
-      Promise.all(
+    onSuccess: (result) => {
+      // A membership, not a request: an approval later is the Circle's decision, not a join here.
+      if (result === 'member') track('circle_joined', { access: 'open' });
+      return Promise.all(
         // Membership decides which recipes and pickers a person sees, so those refresh too.
         ['circles', 'circle', 'my-circles', 'recipes', 'cooks'].map((key) =>
           queryClient.invalidateQueries({ queryKey: [key] }),
         ),
-      ),
+      );
+    },
   });
 }
 
@@ -316,6 +320,9 @@ export function useRsvpMutations(planId: string) {
   return {
     join: useMutation({
       mutationFn: (key: string) => backend.joinPlan(planId, key),
+      onSuccess: () => {
+        track('rsvp_joined', { state: 'going' });
+      },
       ...options,
     }),
     cancel: useMutation({
@@ -324,6 +331,9 @@ export function useRsvpMutations(planId: string) {
     }),
     joinWaitlist: useMutation({
       mutationFn: (key: string) => backend.joinWaitlist(planId, key),
+      onSuccess: () => {
+        track('rsvp_joined', { state: 'waitlisted' });
+      },
       ...options,
     }),
     confirmOffer: useMutation({

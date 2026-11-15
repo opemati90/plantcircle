@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { track } from '../../lib/analytics';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '../../components/Button';
@@ -24,6 +25,10 @@ export function ChallengeCard({ circleId }: { circleId: string }) {
   const router = useRouter();
   const challenge = useCircleChallenge(circleId);
   const [editing, setEditing] = useState(false);
+  const seen = Boolean(challenge.data);
+  useEffect(() => {
+    if (seen) track('challenge_viewed', { surface: 'circle' });
+  }, [seen]);
 
   if (challenge.isPending) return <Skeleton width="100%" height={220} radius={radius.card} />;
   if (challenge.isError) return null;

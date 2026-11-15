@@ -12,7 +12,7 @@ const FILE = join(__dirname, '../../../../../supabase/functions/push-dispatch/co
 const expected = Object.fromEntries(
   Object.entries(catalogs).map(([language, catalog]) => [
     language,
-    { notify: catalog.notify, appName: 'PlantCircle' },
+    { notify: catalog.notify, themes: catalog.cooks.themes, appName: 'PlantCircle' },
   ]),
 );
 

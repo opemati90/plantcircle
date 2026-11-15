@@ -905,6 +905,21 @@ export const fr: Catalog = {
     rateLimited: 'Tu peux créer 3 cercles par jour. Réessaie demain.',
     needCity: 'Choisis d’abord ta ville, pour que les personnes proches trouvent ce cercle.',
     notFound: 'Ce cercle n’est pas disponible.',
+    invite: 'Inviter des gens',
+    inviteMessage:
+      'Rejoins-moi dans {{circle}} sur PlantCircle. Cette semaine, on cuisine {{theme}} : {{link}}',
+    inviteFailed: 'Ça ne s’est pas ouvert. Copie plutôt le lien : {{link}}',
+    inviteEyebrow: 'Tu es invité(e)',
+    inviteTheme: 'Cette semaine : {{theme}}',
+    inviteJoin: 'Rejoindre ce Circle',
+    inviteAsk: 'Demander à rejoindre',
+    inviteLook: 'Jeter un œil d’abord',
+    inviteGone: 'Ce Circle n’accepte pas d’invitations',
+    inviteGoneText:
+      'Il est peut-être privé ou fermé. Tu peux trouver d’autres Circles près de chez toi.',
+    inviteLead:
+      'Chaque semaine, ce Circle cuisine un thème chez soi et partage une photo. Rejoins-le quand tu veux.',
+    inviteOpen: 'Ouvrir le Circle',
   },
   explore: {
     featuredHost: 'Hôte à la une',
@@ -1171,7 +1186,7 @@ export const fr: Catalog = {
     neededNote: 'Compte, inscriptions, contrôles de sécurité',
     alwaysOn: 'Toujours actif',
     analyticsTitle: 'Aider à améliorer PlantCircle',
-    analyticsNote: 'Statistiques d’usage anonymes',
+    analyticsNote: 'Statistiques d’usage, sans ton nom ni ton e-mail',
     personalTitle: 'Suggestions personnelles',
     personalNote: 'Des Plans choisis selon tes centres d’intérêt',
     readPrivacy: 'Lire la politique de confidentialité',
@@ -1179,7 +1194,7 @@ export const fr: Catalog = {
     saveChoices: 'Enregistrer mes choix',
     groupPlans: 'Plans',
     remindersTitle: 'Rappels',
-    remindersNote: 'La veille et 2 heures avant',
+    remindersNote: 'La veille, 2 heures avant et le message du lundi',
     waitlistTitle: 'Offres de liste d’attente',
     waitlistNote: 'Recommandé, elles expirent',
     changesTitle: 'Changements et annulations',
@@ -1334,6 +1349,9 @@ export const fr: Catalog = {
     sampleOffer:
       'Une place s’est libérée à l’atelier de ramen végan — confirme dans les 2 heures',
     sampleReminder: 'Demain 17:00 · Soirée cuisine ouest-africaine',
+    challengeWeek: 'Cette semaine dans {{circle}} : {{theme}}',
+    challengeWeekNote: 'Cuisine-le chez toi et partage une photo avec ton Circle.',
+    challengeWeekGeneric: 'Ton Circle a un nouveau thème cette semaine.',
   },
   offline: {
     banner: 'Tu es hors ligne',
@@ -1498,7 +1516,7 @@ export const fr: Catalog = {
     challengeChange: 'Changer le thème de la semaine',
     challengeSheetTitle: 'Thème de la semaine',
     challengeSheetLead:
-      'Tout le Circle le voit jusqu’à dimanche. Les publications gardent le thème sous lequel elles ont été partagées.',
+      'Tout le Circle le voit jusqu’à dimanche, ainsi que toute personne qui a le lien d’invitation du Circle. Les publications gardent le thème sous lequel elles ont été partagées.',
     challengeThemeLabel: 'Thème',
     challengeIdeas: 'Idées',
     challengeSave: 'Enregistrer le thème',

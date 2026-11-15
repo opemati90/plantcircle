@@ -18,7 +18,22 @@ type QueueRow = {
   data: Record<string, unknown>;
 };
 type TokenRow = { token: string; user_id: string };
-type SettingsRow = { user_id: string; language: string; lock_screen_text: boolean };
+type SettingsRow = {
+  user_id: string;
+  language: string;
+  lock_screen_text: boolean;
+  notif_reminders: boolean;
+};
+
+/** ISO week of a date, as the database writes it ('IYYY-IW'). */
+function isoWeek(at: Date): string {
+  const d = new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const year = d.getUTCFullYear();
+  const week = Math.ceil(((d.getTime() - Date.UTC(year, 0, 1)) / 86_400_000 + 1) / 7);
+  return `${String(year)}-${String(week).padStart(2, '0')}`;
+}
 type Ticket = { status: 'ok' | 'error'; id?: string; details?: { error?: string } };
 
 Deno.serve(async (req) => {
@@ -45,12 +60,35 @@ Deno.serve(async (req) => {
   // The member's language and lock-screen choice: the text is rendered per member, at send time.
   const settings = await supabase
     .from('user_settings')
-    .select('user_id, language, lock_screen_text')
+    .select('user_id, language, lock_screen_text, notif_reminders')
     .in('user_id', users);
   // Without settings the language and lock-screen choice are unknown: retry rather than guess.
   if (settings.error) return new Response(settings.error.message, { status: 500 });
   const prefs = new Map<string, SettingsRow>();
   for (const row of (settings.data ?? []) as SettingsRow[]) prefs.set(row.user_id, row);
+
+  // A weekly notice is checked again now: reminders still on, still a member of that Circle (and
+  // it still active), and still the same week. Otherwise it is dropped, not sent late.
+  const digestCircles = [
+    ...new Set(
+      rows
+        .filter((r) => r.type === 'weekly_digest' && typeof r.data['circle_id'] === 'string')
+        .map((r) => r.data['circle_id'] as string),
+    ),
+  ];
+  const stillMember = new Set<string>();
+  if (digestCircles.length > 0) {
+    const members = await supabase
+      .from('circle_members')
+      .select('user_id, circle_id, circles!inner(status)')
+      .in('circle_id', digestCircles)
+      .in('user_id', users)
+      .eq('circles.status', 'active');
+    if (members.error) return new Response(members.error.message, { status: 500 });
+    for (const m of (members.data ?? []) as { user_id: string; circle_id: string }[])
+      stillMember.add(`${m.user_id}:${m.circle_id}`);
+  }
+  const thisWeek = isoWeek(new Date());
 
   const messages: {
     to: string;
@@ -67,6 +105,17 @@ Deno.serve(async (req) => {
     if (row.type === 'waitlist_offer' && !Number.isNaN(expiresAt) && expiresAt <= Date.now()) {
       done.add(row.id);
       continue;
+    }
+    if (row.type === 'weekly_digest') {
+      const circleId = typeof row.data['circle_id'] === 'string' ? row.data['circle_id'] : '';
+      const stale =
+        prefs.get(row.user_id)?.notif_reminders === false ||
+        (typeof row.data['week'] === 'string' && row.data['week'] !== thisWeek) ||
+        (circleId !== '' && !stillMember.has(`${row.user_id}:${circleId}`));
+      if (stale) {
+        done.add(row.id);
+        continue;
+      }
     }
     const to = byUser.get(row.user_id) ?? [];
     // No device: the Inbox row (when there is one) carries the message; nothing to retry.

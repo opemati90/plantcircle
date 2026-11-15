@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { Button, IconButton } from '../../components/Button';
 import { ChevronLeftIcon, PlusIcon } from '../../components/icons';
 import { BottomSheet, EmptyState, InlineState, Skeleton } from '../../components/parts';
@@ -19,7 +19,10 @@ import { useRecipes } from '../learn/queries';
 import { ChallengeCard } from '../cooks/ChallengeCard';
 import { CookCard } from '../cooks/CookCard';
 import { features } from '../../lib/features';
-import { useCooks } from '../cooks/queries';
+import { useCircleWeekPublic, useCooks } from '../cooks/queries';
+import { themeLabel } from '../cooks/challengeThemes';
+import { track } from '../../lib/analytics';
+import { circleInviteLink } from '../../lib/webLinks';
 import { useNow } from '../../lib/useNow';
 import { PlanListItem } from '../plans/PlanListItem';
 import { welcomePhoto } from '../plans/planImage';
@@ -70,6 +73,8 @@ export default function CircleScreen() {
   const [signingUp, setSigningUp] = useState(false);
   const [key, setKey] = useState(newIdempotencyKey);
   const [decisionKeys, setDecisionKeys] = useState<Record<string, string>>({});
+  const [inviteFailed, setInviteFailed] = useState(false);
+  const challengeTheme = useCircleWeekPublic(id);
 
   const goBack = () => {
     if (router.canGoBack()) router.back();
@@ -127,6 +132,23 @@ export default function CircleScreen() {
   const member = data.viewerRole !== null;
   const tab: Tab = chosenTab ?? (member ? 'posts' : 'plans');
   const needsAccount = !session;
+
+  // Members invite with a link to the Circle's invite page (works without the app or an account).
+  const invite = async () => {
+    setInviteFailed(false);
+    const link = circleInviteLink(data.id);
+    const theme = challengeTheme.data
+      ? themeLabel(t, challengeTheme.data.theme, challengeTheme.data.weekStart)
+      : '';
+    const message = t('circles.inviteMessage', { circle: data.name, theme, link });
+    try {
+      if (Platform.OS === 'web') await navigator.clipboard.writeText(message);
+      else await Share.share({ message });
+      track('circle_invite_shared', {});
+    } catch {
+      setInviteFailed(true);
+    }
+  };
 
   const joinNow = () => {
     if (needsAccount) {
@@ -282,6 +304,23 @@ export default function CircleScreen() {
                 />
               ) : null}
             </View>
+          ) : null}
+          {member && data.access !== 'invite' ? (
+            <Button
+              variant="outline"
+              label={t('circles.invite')}
+              onPress={() => void invite()}
+            />
+          ) : null}
+          {inviteFailed ? (
+            <Text
+              maxFontSizeMultiplier={2.0}
+              role="alert"
+              selectable
+              style={type(15, 'regular', { color: color.danger })}
+            >
+              {t('circles.inviteFailed', { link: circleInviteLink(data.id) })}
+            </Text>
           ) : null}
           {leave.isError ? (
             <Text role="alert" style={type(15, 'regular', { color: color.danger })}>

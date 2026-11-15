@@ -243,3 +243,36 @@ test('an owner changes this week’s theme; members see it', async ({ page }) =>
   await page.getByRole('button', { name: 'Use the suggested theme' }).click();
   await expect(page.getByRole('heading', { name: 'Leftovers made new' })).toBeVisible();
 });
+
+test('a member copies an invite; the link opens a page that works without an account', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await signInWithEmail(page, '/home');
+  await joinKitchen(page);
+  await page.getByRole('button', { name: 'Invite people' }).click();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toContain('Neukölln Plant Kitchen');
+  expect(copied).toContain('https://plantcircle.app/c/neukolln-plant-kitchen');
+  expect(copied).toContain('Leftovers made new');
+});
+
+test('the invite page: Join for an open Circle, Ask to join for one that needs approval', async ({
+  page,
+}) => {
+  await page.goto('/c/neukolln-plant-kitchen');
+  await expect(page.getByText('You’re invited')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Neukölln Plant Kitchen' })).toBeVisible();
+  await expect(page.getByText('This week: Leftovers made new')).toBeVisible();
+  await shot(page, 'invite');
+  await page.getByRole('button', { name: 'Join this Circle' }).click();
+  await expect(page).toHaveURL(/sign-up\?next=%2Fcircle%2Fneukolln-plant-kitchen/);
+
+  await page.goto('/c/budget-plant-cooking');
+  await expect(page.getByRole('button', { name: 'Ask to join' })).toBeVisible();
+  await page.goto('/c/nothing-here');
+  await expect(
+    page.getByRole('heading', { name: 'This Circle isn’t open to invites' }),
+  ).toBeVisible();
+});

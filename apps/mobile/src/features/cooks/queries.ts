@@ -8,6 +8,7 @@ import {
 import { useBackend } from '../../lib/backend/BackendProvider';
 import type { Cook, CookPage, PreparedPhoto } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
+import { track } from '../../lib/analytics';
 
 /** Feed pages. Signed photo URLs last 10 minutes, so a page is refreshed well before then. */
 const PAGE = 20;
@@ -69,6 +70,7 @@ export function useCookReaction() {
         queryClient.cancelQueries({ queryKey: ['cook', input.cookId] }),
       ]),
     onSuccess: (result, input) => {
+      if (input.on) track('cook_reacted', {});
       const patch = patchCook(input.cookId, result);
       queryClient.setQueriesData<InfiniteData<CookPage>>({ queryKey: ['cooks'] }, (data) =>
         data
@@ -103,7 +105,7 @@ export function useShareCook() {
         path = (await backend.uploadCookPhoto(input.photo)).path;
         input.onUploaded(path);
       }
-      return backend.createCook(
+      const id = await backend.createCook(
         {
           circleId: input.circleId,
           recipeId: input.recipeId,
@@ -114,6 +116,8 @@ export function useShareCook() {
         },
         input.key,
       );
+      track('cook_shared', { challenge: input.challengeWeek !== null });
+      return id;
     },
     onSuccess: () =>
       Promise.all(
@@ -121,6 +125,16 @@ export function useShareCook() {
           queryClient.invalidateQueries({ queryKey: [name] }),
         ),
       ),
+  });
+}
+
+/** This week's theme for a Circle's invite page, signed in or not. */
+export function useCircleWeekPublic(circleId: string) {
+  const backend = useBackend();
+  return useQuery({
+    queryKey: ['circleWeekPublic', circleId],
+    queryFn: () => backend.getCircleWeekPublic(circleId),
+    staleTime: FRESH_MS,
   });
 }
 
@@ -145,6 +159,7 @@ export function useSetCircleChallenge(circleId: string) {
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ['challenge', circleId] }),
+        queryClient.invalidateQueries({ queryKey: ['circleWeekPublic', circleId] }),
         queryClient.invalidateQueries({ queryKey: ['cooks'] }),
       ]),
   });

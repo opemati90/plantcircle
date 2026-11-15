@@ -44,6 +44,7 @@ import { OfflineBanner } from '../../components/OfflineBanner';
 import { isOffline } from '../../lib/offlineCache';
 import { useAuth } from '../auth/useAuth';
 import { features } from '../../lib/features';
+import { planLink } from '../../lib/webLinks';
 import {
   addressNote,
   placeLabel,
@@ -137,7 +138,7 @@ function PlanView({
   // A guest brings a friend by the Plan's link: the web RSVP needs no app (design note §4).
   const bringFriend = async (planTitle: string, planId: string) => {
     setFriendState('idle');
-    const link = `https://plantcircle.app/p/${planId}`;
+    const link = planLink(planId);
     const message = t('plan.bringFriendMessage', { plan: planTitle, link });
     try {
       if (Platform.OS === 'web') {
@@ -784,7 +785,7 @@ function PlanView({
                   selectable
                   style={type(15, 'medium', { color: color.brand })}
                 >
-                  {`https://plantcircle.app/p/${plan.id}`}
+                  {planLink(plan.id)}
                 </Text>
               ) : null}
             </View>

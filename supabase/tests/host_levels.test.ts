@@ -161,6 +161,8 @@ describe('hosting is earned', () => {
     expect(await level(AUTHOR)).toEqual(
       expect.objectContaining({ level: 2, max_capacity: 12, in_person: true, next: null }),
     );
+    // Group orders are off at launch, for every level.
+    await expect(order(AUTHOR)).rejects.toThrow(/host_level_required/);
     const inPerson = await plan(AUTHOR, 'in_person', 12);
     expect(inPerson.rows[0]?.r.id).toBeTruthy();
     await expect(plan(AUTHOR, 'in_person', 13)).rejects.toThrow(/host_level_capacity/);

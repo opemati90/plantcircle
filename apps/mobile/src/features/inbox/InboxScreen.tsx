@@ -22,6 +22,7 @@ import {
   useNotifications,
 } from '../notifications/queries';
 import { useInbox } from './queries';
+import { track } from '../../lib/analytics';
 
 type Filter = 'all' | InboxKind | 'updates';
 const FILTERS: Filter[] = ['all', 'updates', 'plan', 'circle', 'direct'];
@@ -54,6 +55,7 @@ export default function InboxScreen() {
 
   const openNotification = (n: AppNotification) => {
     const { href } = describeNotification(t, n);
+    track('notification_opened', { type: n.type });
     if (!n.readAt) markRead.mutate(n.id);
     if (href) router.push(href);
   };

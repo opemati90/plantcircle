@@ -1316,6 +1316,21 @@ export async function createFixtureBackend(): Promise<Backend> {
       });
     },
 
+    async requestAnalyticsDeletion() {
+      await call();
+      requireSession();
+    },
+
+    async getCircleWeekPublic(circleId) {
+      await call();
+      const circle = [...fixtureCircles, ...state.circlesCreated].find(
+        (c) => c.id === circleId,
+      );
+      if (!circle || circle.access === 'invite') throw new BackendError('not_found');
+      const week = circleWeek(circleId);
+      return { weekStart: week, theme: themeOf(circleId, week) };
+    },
+
     async getCircleChallenge(circleId) {
       await call();
       requireSession();

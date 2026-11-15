@@ -25,9 +25,9 @@ Inbox, Profile); a weekly challenge per Circle; Cooked it posts; the table (a co
 Hidden at launch but kept in code and tests (`apps/mobile/src/lib/features.ts`): group orders,
 recipes as a section, People and connecting, the bring list, hosting levels in the interface.
 Hosting: 3 posts open online Plans, a 2-week-old account opens in-person ones.
-Known and accepted: the group order RPCs and their push notifications still exist on the
-server; nothing in the launch app can create an order, so they stay silent. Switching group
-orders back on needs no database change.
+Group orders are refused by the server too at launch (`host_levels.group_orders` is false for
+every level), so no order or order notice can exist. Switching them back on:
+`update public.host_levels set group_orders = true where level >= 2`, and the app switch.
 
 ## What the MVP does
 
@@ -82,7 +82,16 @@ orders back on needs no database change.
 3. **Expo account and store accounts.** EAS project id, Apple Developer team, Google Play
    console, APNs key and FCM credentials for push.
 4. **Sentry DSN and PostHog (EU) project key**, if crash reporting and analytics ship in v1.
-   Analytics must stay behind the consent choice that already exists.
+   Analytics is built and stays off until `EXPO_PUBLIC_POSTHOG_KEY` is set; it only ever sends
+   for signed-in members who said yes in Privacy choices. In the PostHog **EU** project: turn on
+   "Discard client IP data", turn off GeoIP enrichment, set data retention (12 months suggested),
+   and list PostHog as a processor in the privacy notice. For deletions (account deletion and
+   withdrawn consent delete that member's analytics data), set the function secrets
+   `POSTHOG_PERSONAL_API_KEY` (personal key with person write access) and `POSTHOG_PROJECT_ID`;
+   until then requests wait in `analytics_deletions` and are processed hourly once set. Events and their only properties are in
+   `apps/mobile/src/lib/analytics.ts`.
+   Also set `EXPO_PUBLIC_WEB_URL` once the web app has its host (Plan links and Circle invite
+   links `/c/{id}` use it; default `https://plantcircle.app`).
 5. **Photos.** The images in `apps/mobile/assets/images` are cropped stand-ins from an
    inspiration screenshot and are not licensed. Replace them before any public build.
 6. **Legal texts.** Terms, privacy notice, community rules and imprint are placeholders.

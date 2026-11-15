@@ -894,6 +894,21 @@ export const es: Catalog = {
     needCity:
       'Elige primero tu ciudad de residencia para que la gente cercana encuentre este círculo.',
     notFound: 'Este círculo no está disponible.',
+    invite: 'Invitar a gente',
+    inviteMessage:
+      'Únete a {{circle}} en PlantCircle. Esta semana cocinamos {{theme}}: {{link}}',
+    inviteFailed: 'No se ha abierto. Copia el enlace: {{link}}',
+    inviteEyebrow: 'Tienes una invitación',
+    inviteTheme: 'Esta semana: {{theme}}',
+    inviteJoin: 'Unirme a este Circle',
+    inviteAsk: 'Pedir unirme',
+    inviteLook: 'Echar un vistazo primero',
+    inviteGone: 'Este Circle no acepta invitaciones',
+    inviteGoneText:
+      'Puede que sea privado o esté cerrado. Puedes encontrar otros Circles cerca de ti.',
+    inviteLead:
+      'Cada semana este Circle cocina un tema en casa y comparte una foto. Únete cuando quieras.',
+    inviteOpen: 'Abrir el Circle',
   },
   explore: {
     featuredHost: 'Anfitrión destacado',
@@ -1155,7 +1170,7 @@ export const es: Catalog = {
     neededNote: 'Cuenta, asistencias, comprobaciones de seguridad',
     alwaysOn: 'Siempre activo',
     analyticsTitle: 'Ayudar a mejorar PlantCircle',
-    analyticsNote: 'Estadísticas de uso anónimas',
+    analyticsNote: 'Estadísticas de uso, sin tu nombre ni tu correo',
     personalTitle: 'Sugerencias personales',
     personalNote: 'Planes elegidos según tus intereses',
     readPrivacy: 'Leer la política de privacidad',
@@ -1163,7 +1178,7 @@ export const es: Catalog = {
     saveChoices: 'Guardar opciones',
     groupPlans: 'Planes',
     remindersTitle: 'Recordatorios',
-    remindersNote: 'El día antes y 2 horas antes',
+    remindersNote: 'El día antes, 2 horas antes y el aviso del lunes',
     waitlistTitle: 'Ofertas de lista de espera',
     waitlistNote: 'Recomendado, caducan',
     changesTitle: 'Cambios y cancelaciones',
@@ -1316,6 +1331,9 @@ export const es: Catalog = {
     sampleOffer:
       'Se liberó una plaza en el taller de ramen vegano: confirma antes de que pasen 2 horas',
     sampleReminder: 'Mañana 17:00 · Noche de cocina de África occidental',
+    challengeWeek: 'Esta semana en {{circle}}: {{theme}}',
+    challengeWeekNote: 'Cocínalo en casa y comparte una foto con tu Circle.',
+    challengeWeekGeneric: 'Tu Circle tiene un tema nuevo esta semana.',
   },
   offline: {
     banner: 'Sin conexión',
@@ -1476,7 +1494,7 @@ export const es: Catalog = {
     challengeChange: 'Cambiar el tema de esta semana',
     challengeSheetTitle: 'Tema de esta semana',
     challengeSheetLead:
-      'Todo el Circle lo ve hasta el domingo. Las publicaciones conservan el tema con el que se compartieron.',
+      'Todo el Circle lo ve hasta el domingo, y también cualquiera con el enlace de invitación del Circle. Las publicaciones conservan el tema con el que se compartieron.',
     challengeThemeLabel: 'Tema',
     challengeIdeas: 'Ideas',
     challengeSave: 'Guardar tema',
