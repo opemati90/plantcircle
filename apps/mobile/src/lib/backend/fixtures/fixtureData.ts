@@ -110,7 +110,7 @@ export function fixturePlans(now: Date): Plan[] {
         'together. No experience needed — the main ingredients are provided.',
       allergens: 'Peanuts and soy',
       imagePath: '/images/cooking-together.jpg',
-      imageAlt: 'Three women laughing while cooking vegetables together',
+      imageAlt: 'A shared table with bowls of food, wine and wild flowers',
       imageFocus: '38% center',
       hostName: 'Ama O.',
       hostVerified: true,

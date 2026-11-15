@@ -55,7 +55,7 @@ export const pt: Catalog = {
   },
   welcome: {
     title: 'Encontre a sua gente.',
-    lead: 'Cozinhe, coma e compre comida em conjunto com pessoas perto de você que seguem uma alimentação à base de vegetais.',
+    lead: 'Um clube de cozinha semanal com pessoas perto de ti que comem sobretudo vegetal. Cozinha um tema, partilha uma foto, encontrem-se.',
     getStarted: 'Começar',
     haveAccount: 'Já tenho conta',
   },

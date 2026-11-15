@@ -56,7 +56,7 @@ export const pl: Catalog = {
   },
   welcome: {
     title: 'Znajdź swoich ludzi.',
-    lead: 'Gotuj, jedz i kupuj jedzenie razem z ludźmi na diecie roślinnej w pobliżu.',
+    lead: 'Cotygodniowy klub kulinarny z ludźmi z okolicy, którzy jedzą głównie roślinnie. Ugotuj temat, pokaż zdjęcie, spotkajcie się.',
     getStarted: 'Zaczynajmy',
     haveAccount: 'Mam już konto',
   },

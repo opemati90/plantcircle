@@ -55,7 +55,7 @@ export const es: Catalog = {
   },
   welcome: {
     title: 'Encuentra a tu gente.',
-    lead: 'Cocina, come y compra comida en grupo con personas que comen sobre todo vegetal, cerca de ti.',
+    lead: 'Un club de cocina semanal con gente cerca de ti que come sobre todo vegetal. Cocina un tema, comparte una foto y quedad.',
     getStarted: 'Empezar',
     haveAccount: 'Ya tengo una cuenta',
   },

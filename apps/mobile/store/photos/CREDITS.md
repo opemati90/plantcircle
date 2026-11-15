@@ -13,3 +13,7 @@ the source can be checked.
 | `sheet-pan.jpg`      | The post shared in the shots     | https://pd.w.org/2022/02/3466206d62e0bdbd7.97605538-1709x2048.jpg                                                                                                            |
 
 Real photos from your own first cooking nights will sell better; swap them in here when you have them.
+
+The welcome, Circle and invite photo is now part of the app itself
+(`apps/mobile/assets/images/cooking-together.jpg`): “Vintage wine dinner for two”, CC0, from
+https://commons.wikimedia.org/wiki/File:Vintage_wine_dinner_for_two_(Unsplash).jpg

@@ -93,9 +93,11 @@ every level), so no order or order notice can exist. Switching them back on:
    and their only properties are in `apps/mobile/src/lib/analytics.ts`.
    Also set `EXPO_PUBLIC_WEB_URL` once the web app has its host (Plan links and Circle invite
    links `/c/{id}` use it; default `https://plantcircle.app`).
-5. **Photos.** The images in `apps/mobile/assets/images` are cropped stand-ins from an
-   inspiration screenshot and are not licensed. Replace them before any public build. CC0
-   food photos are in `apps/mobile/store/photos/` (used for the store screenshots).
+5. **Photos.** The welcome, Circle and invite photo (`cooking-together.jpg`) is now a CC0 photo
+   (source in `apps/mobile/store/photos/CREDITS.md`). `potluck-spread.jpg` and `pantry-jars.jpg`
+   are still unlicensed stand-ins, but they only show in development samples and on recipes
+   (off at launch); replace them before recipes are switched on. Your own photos from real
+   cooking nights would be better than any stock photo.
 6. **Legal texts.** Terms, privacy notice, community rules and imprint are placeholders.
 7. **Translations.** Seven non-English locales are machine-quality and need a native-speaker
    pass. German first for a Berlin launch.

@@ -55,7 +55,7 @@ export const it: Catalog = {
   },
   welcome: {
     title: 'Trova la tua gente.',
-    lead: 'Cucina, mangia e fai la spesa insieme a persone vicine a te che seguono una dieta prevalentemente vegetale.',
+    lead: 'Un club di cucina settimanale con persone vicino a te che mangiano soprattutto vegetale. Cucina un tema, condividi una foto, incontratevi.',
     getStarted: 'Inizia',
     haveAccount: 'Ho già un account',
   },

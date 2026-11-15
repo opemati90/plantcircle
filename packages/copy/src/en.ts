@@ -53,7 +53,7 @@ export const en = {
   },
   welcome: {
     title: 'Find your people.',
-    lead: 'Cook, eat and buy food together with plant-based people near you.',
+    lead: 'A weekly cook club with plant-based people near you. Cook one theme, share a photo, meet up.',
     getStarted: 'Get started',
     haveAccount: 'I already have an account',
   },

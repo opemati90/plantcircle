@@ -11,7 +11,9 @@ test('a member edits their name, home city and interests from Profile', async ({
   await expect(page.getByRole('heading', { name: 'Edit profile' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Save' })).toBeDisabled();
   await page.getByRole('textbox', { name: 'Your name' }).fill('Lena Ko');
-  await page.getByRole('checkbox', { name: 'Buy food together' }).click();
+  // Buying food together waits for group orders, so it is not offered at launch.
+  await expect(page.getByRole('checkbox', { name: 'Buy food together' })).toHaveCount(0);
+  await page.getByRole('checkbox', { name: 'Join online from anywhere' }).click();
   await page.getByRole('button', { name: /^Home city/ }).click();
   await chooseCity(page, 'Hamburg');
   await expect(page.getByRole('button', { name: /^Home city: Hamburg/ })).toBeVisible();

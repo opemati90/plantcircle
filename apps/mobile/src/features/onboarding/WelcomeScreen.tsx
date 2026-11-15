@@ -15,7 +15,7 @@ import { currentLanguage, setLanguage } from '../../lib/i18n';
 import { useAuth } from '../auth/useAuth';
 import { welcomePhoto } from '../plans/planImage';
 import { useCities, useEnsureCity } from '../plans/queries';
-import { GOALS, getOnboarding, saveOnboarding, type Goal } from './onboardingStore';
+import { OFFERED_GOALS, getOnboarding, saveOnboarding, type Goal } from './onboardingStore';
 
 function Progress({ step }: { step: 1 | 2 }) {
   const { t } = useTranslation();
@@ -224,7 +224,7 @@ export function OnboardingScreen({ step }: { step: 'welcome' | 'goals' | 'city' 
           {t('goals.lead')}
         </Text>
         <View style={styles.options}>
-          {GOALS.map((goal) => {
+          {OFFERED_GOALS.map((goal) => {
             const selected = goals.includes(goal);
             return (
               <OptionRow

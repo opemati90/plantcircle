@@ -1,10 +1,15 @@
 import { PROFILE_GOALS } from '../../lib/backend/types';
+import { features } from '../../lib/features';
 import { z } from 'zod';
 import { appStorage } from '../../lib/storage';
 
 /** Stable ids are stored; labels are `goals.<id>` in the copy catalogue. */
 export const GOALS = PROFILE_GOALS;
 export type Goal = (typeof GOALS)[number];
+/** The goals offered: buying food together waits for group orders (src/lib/features.ts). */
+export const OFFERED_GOALS: readonly Goal[] = GOALS.filter(
+  (goal) => goal !== 'buy' || features.groupOrders,
+);
 
 const schema = z.object({
   goals: z.array(z.enum(GOALS)),

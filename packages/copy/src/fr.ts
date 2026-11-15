@@ -55,7 +55,7 @@ export const fr: Catalog = {
   },
   welcome: {
     title: 'Trouve ta bande.',
-    lead: 'Cuisine, mange et achète ensemble avec des personnes véganes et végétariennes près de chez toi.',
+    lead: 'Un club de cuisine chaque semaine avec des gens près de chez toi qui mangent surtout végétal. Cuisine un thème, partage une photo, retrouvez-vous.',
     getStarted: 'Commencer',
     haveAccount: 'J’ai déjà un compte',
   },

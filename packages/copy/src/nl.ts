@@ -55,7 +55,7 @@ export const nl: Catalog = {
   },
   welcome: {
     title: 'Vind je mensen.',
-    lead: 'Koken, eten en samen boodschappen doen met mensen die vooral plantaardig eten, in de buurt.',
+    lead: 'Een wekelijkse kookclub met mensen bij jou in de buurt die vooral plantaardig eten. Kook een thema, deel een foto, spreek af.',
     getStarted: 'Aan de slag',
     haveAccount: 'Ik heb al een account',
   },

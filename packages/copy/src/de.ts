@@ -56,7 +56,7 @@ export const de: Catalog = {
   },
   welcome: {
     title: 'Finde deine Leute.',
-    lead: 'Gemeinsam kochen, essen und einkaufen – mit Menschen in deiner Nähe, die gern pflanzlich essen.',
+    lead: 'Ein wöchentlicher Kochclub mit Menschen in deiner Nähe, die gern pflanzlich essen. Ein Thema kochen, ein Foto teilen, zusammenkommen.',
     getStarted: 'Los geht’s',
     haveAccount: 'Ich habe schon ein Konto',
   },

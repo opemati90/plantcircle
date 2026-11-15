@@ -13,7 +13,7 @@ import { useBackend } from '../../lib/backend/BackendProvider';
 import type { Profile } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
 import { CityPickerSheet } from '../home/CityPickerSheet';
-import { GOALS } from '../onboarding/onboardingStore';
+import { GOALS, OFFERED_GOALS } from '../onboarding/onboardingStore';
 import { useCities, useEnsureCity, useSetCity } from '../plans/queries';
 
 const NAME_MAX = 40;
@@ -180,7 +180,7 @@ export default function EditProfileScreen() {
           {t('goals.lead')}
         </Text>
         <View accessibilityRole="list" style={styles.goals}>
-          {GOALS.map((goal) => {
+          {OFFERED_GOALS.map((goal) => {
             const on = goals.includes(goal);
             return (
               <Pressable

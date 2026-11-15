@@ -17,8 +17,6 @@ import { copyOf, DEVICE_LOCALE, SAMPLE, STORE_LANGUAGES } from './locales';
 const PHOTOS = join(__dirname, 'photos');
 const PHOTO_HOST = 'https://store-photos.plantcircle.test/';
 const photo = (file: string) => `${PHOTO_HOST}${file}`;
-/** The welcome and Circle photo is bundled with the app; the network answer is swapped. */
-const SWAPS: [RegExp, string][] = [[/cooking-together/, 'bruschetta.jpg']];
 const PHOTO = join(PHOTOS, 'sheet-pan.jpg');
 const CIRCLE = 'Neukölln Plant Kitchen';
 
@@ -86,11 +84,6 @@ for (const language of LANGUAGES) {
       await page.addInitScript((overrides) => {
         (globalThis as { __pcFixtureOverrides?: unknown }).__pcFixtureOverrides = overrides;
       }, overridesFor(language));
-      for (const [pattern, file] of SWAPS) {
-        await page.route(pattern, (route) =>
-          route.fulfill({ path: join(PHOTOS, file), contentType: 'image/jpeg' }),
-        );
-      }
       // The "Dev fixtures" badge is for developers, not the store.
       await page.addInitScript(() => {
         const hide = () => {
