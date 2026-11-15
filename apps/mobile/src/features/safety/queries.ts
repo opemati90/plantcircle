@@ -51,7 +51,9 @@ export function useBlockUser() {
     mutationFn: (input: { userId: string; key: string }) =>
       backend.blockUser(input.userId, input.key),
     onSuccess: async (_result, input) => {
-      // Their posts leave every list now, and no photo of theirs is kept on this phone.
+      // Their posts leave every list now, and no photo of theirs is kept on this phone. A feed
+      // request already on its way is cancelled first, so it cannot put them back.
+      await queryClient.cancelQueries({ queryKey: ['cooks'] });
       queryClient.setQueriesData<InfiniteData<CookPage>>({ queryKey: ['cooks'] }, (data) =>
         data
           ? {

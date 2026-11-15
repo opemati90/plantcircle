@@ -418,6 +418,14 @@ describe('uploads and photo access', () => {
     await expect(reserve(AMA, 31)).rejects.toThrow(/rate_limited/);
   });
 
+  it('refuses to mark stored an upload that is gone, so the function removes the files', async () => {
+    await expect(
+      db.query('select public.cook_upload_stored($1)', [
+        `${AMA}/e0000000-0000-4000-8000-000000000077.jpg`,
+      ]),
+    ).rejects.toThrow(/invalid_input/);
+  });
+
   it('queues a reservation that was never stored after a day', async () => {
     await reserve(AMA, 1);
     await db.query(`update public.cook_uploads set created_at = now() - interval '25 hours'`);

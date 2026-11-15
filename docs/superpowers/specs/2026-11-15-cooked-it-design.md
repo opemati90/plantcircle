@@ -162,8 +162,8 @@ Codex challenged the first draft. What changed, and why:
 5. **Staff removal hides, it does not delete.** The post and photo stay for 90 days as evidence
    for an appeal, visible only to staff, then go. The author's own delete is immediate.
 6. **The feed shows posts only from active members** of active Circles, never across a block.
-   A recipe can be linked only when it is public or in the same Circle, and its title shows only
-   to people who can see it.
+   A recipe can be linked only when it is shared in the same Circle, so everyone who sees the
+   post can open it (the app cannot make recipes public, so nothing is lost).
 7. **"Your posts" on your profile** lists every post of yours, including Circles you left, so you
    can always delete them.
 8. **Home keeps Plans first.** The Cooked section sits under the featured Plan, as compact cards
