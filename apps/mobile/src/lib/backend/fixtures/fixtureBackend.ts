@@ -1316,6 +1316,11 @@ export async function createFixtureBackend(): Promise<Backend> {
       });
     },
 
+    async registerAnalyticsId() {
+      await call();
+      requireSession();
+    },
+
     async requestAnalyticsDeletion() {
       await call();
       requireSession();

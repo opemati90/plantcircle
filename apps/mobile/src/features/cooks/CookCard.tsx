@@ -16,6 +16,7 @@ import { BottomSheet } from '../../components/parts';
 import { Photo } from '../../components/Photo';
 import { color, extra, radius, shadow, size, type } from '../../components/theme';
 import { errorCode } from '../../lib/backend/backend';
+import { features } from '../../lib/features';
 import type { Cook } from '../../lib/backend/types';
 import { postedAgo } from './postedAgo';
 import { newIdempotencyKey } from '../plans/queries';
@@ -189,7 +190,8 @@ export function CookCard({
         <Text maxFontSizeMultiplier={2.0} style={type(17, 'regular', { leading: 1.4 })}>
           {cook.caption}
         </Text>
-        {cook.recipeTitle && cook.recipeId ? (
+        {/* Recipes are off at launch (their routes lead home), so no link to one. */}
+        {features.recipes && cook.recipeTitle && cook.recipeId ? (
           <Pressable
             accessibilityRole="link"
             accessibilityLabel={t('cooks.fromRecipe', { title: cook.recipeTitle })}

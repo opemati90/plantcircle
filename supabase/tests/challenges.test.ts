@@ -349,3 +349,99 @@ describe('analytics deletion requests', () => {
     ).rejects.toThrow(/permission denied/);
   });
 });
+
+describe('analytics ids across devices', () => {
+  const PHONE = 'b1b2c3d4-0000-4000-8000-000000000001';
+  const TABLET = 'b1b2c3d4-0000-4000-8000-000000000002';
+  const register = (user: string | null, id: string) =>
+    asUser(db, user, () => db.query('select public.analytics_register($1)', [id]));
+  const consent = (user: string, on: boolean) =>
+    asUser(db, user, () =>
+      db.query('select public.settings_update($1::jsonb)', [
+        JSON.stringify({ analytics_consent: on }),
+      ]),
+    );
+  const queued = async () =>
+    (
+      await db.query<{ distinct_id: string }>(
+        'select distinct_id from public.analytics_deletions order by distinct_id',
+      )
+    ).rows.map((r) => r.distinct_id);
+
+  beforeEach(async () => {
+    await consent(LENA, true);
+    await consent(MIA, true);
+  });
+
+  it('registers a device once, refuses visitors, junk and another member’s id', async () => {
+    await register(LENA, PHONE);
+    await register(LENA, PHONE);
+    expect((await db.query('select 1 from public.analytics_ids')).rows).toHaveLength(1);
+    await expect(register(null, TABLET)).rejects.toThrow(/permission denied|not_authenticated/);
+    await expect(register(LENA, 'x')).rejects.toThrow(/invalid_input/);
+    await expect(register(MIA, PHONE)).rejects.toThrow(/id_retired/);
+    await expect(
+      asUser(db, LENA, () => db.query('select * from public.analytics_ids')),
+    ).rejects.toThrow(/permission denied/);
+  });
+
+  it('registers only while the member has said yes', async () => {
+    await consent(LENA, false);
+    await expect(register(LENA, PHONE)).rejects.toThrow(/not_allowed/);
+  });
+
+  it('a "no" on one device queues every device of the account, not other members’', async () => {
+    await register(LENA, PHONE);
+    await register(LENA, TABLET);
+    await register(MIA, 'c1b2c3d4-0000-4000-8000-000000000003');
+    await asUser(db, LENA, () => db.query('select public.analytics_forget($1)', [PHONE]));
+    expect(await queued()).toEqual([PHONE, TABLET]);
+    expect((await db.query('select 1 from public.analytics_ids')).rows).toHaveLength(1);
+    // Mia's id is hers alone to delete, and a queued id is never registered again.
+    await expect(
+      asUser(db, LENA, () =>
+        db.query('select public.analytics_forget($1)', [
+          'c1b2c3d4-0000-4000-8000-000000000003',
+        ]),
+      ),
+    ).rejects.toThrow(/invalid_input/);
+    await expect(register(LENA, PHONE)).rejects.toThrow(/id_retired/);
+  });
+
+  it('asking again for an id already queued is a free retry', async () => {
+    for (let i = 0; i < 25; i += 1) {
+      await asUser(db, LENA, () => db.query('select public.analytics_forget($1)', [PHONE]));
+    }
+    expect(await queued()).toEqual([PHONE]);
+  });
+
+  it('deleting the account queues its ids even when the app never asked', async () => {
+    await register(LENA, PHONE);
+    await register(LENA, TABLET);
+    await asUser(db, LENA, () =>
+      db.query('select public.account_delete($1)', ['d1b2c3d4-0000-4000-8000-000000000009']),
+    );
+    expect(await queued()).toEqual([PHONE, TABLET]);
+  });
+
+  it('a "no" saved from a device without an id still queues every device', async () => {
+    await register(LENA, PHONE);
+    await register(LENA, TABLET);
+    await consent(LENA, false);
+    expect(await queued()).toEqual([PHONE, TABLET]);
+    // A late registration after the "no" is refused rather than left unqueued.
+    await expect(register(LENA, 'b1b2c3d4-0000-4000-8000-000000000004')).rejects.toThrow(
+      /not_allowed/,
+    );
+  });
+
+  it('a processed request is unlinked from the account', async () => {
+    await register(LENA, PHONE);
+    await asUser(db, LENA, () => db.query('select public.analytics_forget($1)', [PHONE]));
+    await db.query('update public.analytics_deletions set done_at = now()');
+    const row = await db.query<{ user_id: string | null }>(
+      'select user_id from public.analytics_deletions',
+    );
+    expect(row.rows).toEqual([{ user_id: null }]);
+  });
+});

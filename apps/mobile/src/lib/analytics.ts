@@ -63,6 +63,20 @@ const state: {
   waiting: [],
 };
 
+/** Thrown by `register` when the server has retired this id (deleted from another device). */
+export class AnalyticsIdRetired extends Error {}
+
+/** True once analytics is on for the signed-in member (consent confirmed, id registered). */
+export function analyticsOn(): boolean {
+  return state.enabled;
+}
+
+async function newId(userId: string): Promise<string> {
+  const id = randomUUID();
+  await appStorage.set(keyOf(userId), id).catch(() => undefined);
+  return id;
+}
+
 function projectKey(): string | null {
   const raw: unknown = process.env.EXPO_PUBLIC_POSTHOG_KEY;
   return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
@@ -79,15 +93,30 @@ function stop(): void {
 /**
  * Called by the consent bridge whenever the session or the choice changes. `userId` null or
  * `consent` false switches everything off and forgets what is waiting. A different account never
- * inherits anything queued for the last one.
+ * inherits anything queued for the last one. `register` links the id to the account on the server
+ * first (so it can be deleted from any device); nothing is sent until that succeeds.
  */
 export async function setAnalyticsConsent(
   userId: string | null,
   consent: boolean,
+  register: (distinctId: string) => Promise<void>,
 ): Promise<void> {
   const allowed = Boolean(userId) && consent && projectKey() !== null;
   const previous = state.userId;
-  if (state.enabled && allowed && previous === userId) return;
+  if (state.enabled && allowed && previous === userId && userId && state.distinctId) {
+    // Already on: confirm the id is still linked. Another device may have said no (retiring it)
+    // and yes again since; then this device starts over with a fresh id.
+    const running = state.generation;
+    try {
+      await register(state.distinctId);
+      return;
+    } catch (error) {
+      if (!(error instanceof AnalyticsIdRetired) || running !== state.generation) return;
+      await appStorage.remove(keyOf(userId)).catch(() => undefined);
+      // A "no" (or another account) arrived meanwhile: it wins.
+      if (running !== state.generation) return;
+    }
+  }
   state.generation += 1;
   const generation = state.generation;
   stop();
@@ -98,12 +127,24 @@ export async function setAnalyticsConsent(
     // deletion at PostHog (forgetAnalytics).
     return;
   }
-  let id = await appStorage.get(keyOf(userId ?? '')).catch(() => null);
-  if (!id) {
-    id = randomUUID();
-    await appStorage.set(keyOf(userId ?? ''), id).catch(() => undefined);
-  }
+  const owner = userId ?? '';
+  let id = (await appStorage.get(keyOf(owner)).catch(() => null)) ?? (await newId(owner));
   // Anything changed while the id was read (a "no", another account): this start-up is void.
+  if (generation !== state.generation) return;
+  try {
+    await register(id);
+  } catch (error) {
+    // Deleted from another device while this one was away: a fresh id, registered once more.
+    // Any other failure leaves analytics off until the next call (the next settings refresh).
+    if (!(error instanceof AnalyticsIdRetired) || generation !== state.generation) return;
+    id = await newId(owner);
+    if (generation !== state.generation) return;
+    try {
+      await register(id);
+    } catch {
+      return;
+    }
+  }
   if (generation !== state.generation) return;
   state.distinctId = id;
   state.enabled = true;

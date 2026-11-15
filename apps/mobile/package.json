@@ -14,7 +14,9 @@
     "typecheck": "tsc --noEmit",
     "web:smoke": "playwright test --project=journeys --trace off",
     "web:visual": "playwright test --project=visual --trace off",
-    "smoke:staging": "set -a && . ./.env.staging && set +a && playwright test -c playwright.staging.config.ts"
+    "smoke:staging": "set -a && . ./.env.staging && set +a && playwright test -c playwright.staging.config.ts",
+    "store:capture": "playwright test -c playwright.store.config.ts capture --trace off",
+    "store:compose": "playwright test -c playwright.store.config.ts compose --trace off"
   },
   "dependencies": {
     "@formatjs/intl-getcanonicallocales": "3.3.1",

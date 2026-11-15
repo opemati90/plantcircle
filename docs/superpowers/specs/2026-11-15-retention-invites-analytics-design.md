@@ -40,6 +40,11 @@ now leads with the challenge for members of a Circle:
 - Common properties: platform, app version, language, signed in. Never: diet, captions, message
   text, addresses, emails, photos, Circle or Plan names. The person is a random id kept on the
   device, not the account id.
+- Deletion covers every device: each device registers its id with the server before sending
+  anything (`analytics_register`; analytics stays off if that fails). A "no" from any device, or
+  an account deletion, queues all of the account's ids (`analytics_deletions`), and the hourly
+  `analytics-forget` worker deletes them and their events at PostHog. Processed requests are
+  unlinked from the account (migration 20261112003600).
 - Sent with PostHog's HTTP capture endpoint (no native SDK, no rebuild), batched, best effort.
 - The questions it answers: do joiners post in their first week, do posters come back the next
   week, do invites bring people who join.

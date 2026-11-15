@@ -27,7 +27,8 @@ export function useUpdateSettings() {
     // Saying no to analytics stops it before the server even answers.
     onMutate: (patch) => {
       if (patch.analyticsConsent === false) {
-        void setAnalyticsConsent(session?.userId ?? null, false);
+        // A "no" registers nothing.
+        void setAnalyticsConsent(session?.userId ?? null, false, () => Promise.resolve());
       }
     },
     onSuccess: (next) => {

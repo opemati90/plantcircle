@@ -24,7 +24,7 @@ Green on white 8.2:1, white on green 8.2:1 (WCAG AAA).
 | `app/ios/` | `AppIcon-1024.png` + `Contents.json` |
 | `app/android/res/` | Mipmaps mdpi–xxxhdpi (legacy, round, adaptive layers incl. monochrome) + adaptive XML |
 | `web/` | `favicon.svg/.ico/16/32/48`, `apple-touch-icon.png`, `icon-192/512`, maskable icon, `site.webmanifest`, `og-image.png` (1200×630), Safari pinned tab |
-| `store/` | App Store icon 1024, Google Play icon 512, Play feature graphic 1024×500 |
+| `store/` | Full store kit: screenshots (App Store 6.9" and 6.5", Google Play phone), icons, Play feature graphic, promo banner, listing copy (`STORE-LISTING.md`) |
 
 Only the favicon and notification icon use a slightly heavier line (2.2–2.4 instead of 2) so the sprout stays legible at 16–24 px.
 

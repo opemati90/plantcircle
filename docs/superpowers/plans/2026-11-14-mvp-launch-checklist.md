@@ -88,12 +88,14 @@ every level), so no order or order notice can exist. Switching them back on:
    and list PostHog as a processor in the privacy notice. For deletions (account deletion and
    withdrawn consent delete that member's analytics data), set the function secrets
    `POSTHOG_PERSONAL_API_KEY` (personal key with person write access) and `POSTHOG_PROJECT_ID`;
-   until then requests wait in `analytics_deletions` and are processed hourly once set. Events and their only properties are in
-   `apps/mobile/src/lib/analytics.ts`.
+   until then requests wait in `analytics_deletions` and are processed hourly once set. Deletion
+   covers every device of the account (each registers its id before sending anything). Events
+   and their only properties are in `apps/mobile/src/lib/analytics.ts`.
    Also set `EXPO_PUBLIC_WEB_URL` once the web app has its host (Plan links and Circle invite
    links `/c/{id}` use it; default `https://plantcircle.app`).
 5. **Photos.** The images in `apps/mobile/assets/images` are cropped stand-ins from an
-   inspiration screenshot and are not licensed. Replace them before any public build.
+   inspiration screenshot and are not licensed. Replace them before any public build. CC0
+   food photos are in `apps/mobile/store/photos/` (used for the store screenshots).
 6. **Legal texts.** Terms, privacy notice, community rules and imprint are placeholders.
 7. **Translations.** Seven non-English locales are machine-quality and need a native-speaker
    pass. German first for a Berlin launch.

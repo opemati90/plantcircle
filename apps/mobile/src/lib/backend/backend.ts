@@ -85,6 +85,7 @@ export type BackendErrorCode =
   | 'own_recipe'
   | 'own_post'
   | 'challenge_ended'
+  | 'id_retired'
   | 'checkin_closed'
   | 'plan_not_started'
   | 'plan_started'
@@ -208,7 +209,15 @@ export interface Backend {
     cookId: string,
     on: boolean,
   ): Promise<{ reacted: boolean; reactions: number }>;
-  /** Asks for this analytics id and its events to be deleted at PostHog (withdrawal, deletion). */
+  /**
+   * Links this device's analytics id to the account before anything is sent, so a "no" or an
+   * account deletion on any device can delete the data from all of them.
+   */
+  registerAnalyticsId(distinctId: string): Promise<void>;
+  /**
+   * Asks for this analytics id, every other registered id of the account, and their events to be
+   * deleted at PostHog (withdrawal, deletion).
+   */
   requestAnalyticsDeletion(distinctId: string): Promise<void>;
   /** This week's theme for a Circle anyone can see, for its invite page (no account needed). */
   getCircleWeekPublic(circleId: string): Promise<{ weekStart: string; theme: string | null }>;

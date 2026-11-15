@@ -789,6 +789,11 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       );
     },
 
+    async registerAnalyticsId(distinctId) {
+      const { error } = await client.rpc('analytics_register', { p_distinct_id: distinctId });
+      if (error) throw toBackendError(error);
+    },
+
     async requestAnalyticsDeletion(distinctId) {
       const { error } = await client.rpc('analytics_forget', { p_distinct_id: distinctId });
       if (error) throw toBackendError(error);

@@ -67,9 +67,15 @@ test('Yum toggles with its count, and Ask how opens a chat with an editable draf
   );
   await page.getByRole('button', { name: 'Yum, 8 yums' }).click();
   await expect(page.getByRole('button', { name: 'Yum, 7 yums' })).toBeVisible();
-  await page.getByRole('link', { name: 'Recipe: Efo Riro with Smoked Tofu' }).click();
-  await expect(page.getByRole('heading', { name: 'Efo Riro with Smoked Tofu' })).toBeVisible();
-  await page.goBack();
+  // Recipes are off at launch, so a post links to none, and a recipe link leads home.
+  await expect(
+    page.getByRole('link', { name: 'Recipe: Efo Riro with Smoked Tofu' }),
+  ).toHaveCount(0);
+  await page.goto('/recipe/efo-riro-smoked-tofu');
+  await expect(page).toHaveURL(/\/home/);
+  await page.goto('/recipe/new');
+  await expect(page).toHaveURL(/\/home/);
+  await page.goto('/cooks');
   await page.getByRole('button', { name: 'Ask Mia K. how they made it' }).click();
   await expect(page).toHaveURL(/chat\/direct\/fixture-mia-k/);
   await expect(page.getByRole('textbox').last()).toHaveValue(
@@ -166,6 +172,10 @@ test('with recipes switched on, a recipe offers “I cooked this”, which start
   await expect(
     page.getByRole('button', { name: 'Remove Efo Riro with Smoked Tofu' }),
   ).toBeVisible();
+  // A post made from a recipe links back to it.
+  await page.goto('/cooks');
+  await page.getByRole('link', { name: 'Recipe: Efo Riro with Smoked Tofu' }).click();
+  await expect(page.getByRole('heading', { name: 'Efo Riro with Smoked Tofu' })).toBeVisible();
 });
 
 test('a reported post reaches staff with its photo and caption', async ({ page }) => {

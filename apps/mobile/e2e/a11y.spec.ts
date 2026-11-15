@@ -4,6 +4,7 @@ import {
   chooseCity,
   dismissNotificationPrompt,
   freezeTime,
+  enableAllFeatures,
   signInWithEmail,
   type FixtureWindow,
 } from './support';
@@ -122,13 +123,23 @@ test('create Plan, a recipe, a joined Plan and the city sheet have no detectable
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();
-  await page.goto('/recipe/efo-riro-smoked-tofu');
-  await expect(page.getByRole('heading', { name: 'Efo Riro with Smoked Tofu' })).toBeVisible();
-  await expectNoViolations(page);
-
   await page.goto('/plan/cooking-night');
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await dismissNotificationPrompt(page);
   await expect(page.getByRole('button', { name: 'You’re going' })).toBeVisible();
+  await expectNoViolations(page);
+});
+
+test('a recipe has no detectable violations (recipes switched on)', async ({ page }) => {
+  await enableAllFeatures(page);
+  await signInWithEmail(page, '/home');
+  // The recipe belongs to a Circle, so its members see it.
+  await page.goto('/explore');
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
+  await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
+  await page.getByRole('button', { name: 'Join', exact: true }).click();
+  await expect(page.getByText('You’re a member').last()).toBeVisible();
+  await page.goto('/recipe/efo-riro-smoked-tofu');
+  await expect(page.getByRole('heading', { name: 'Efo Riro with Smoked Tofu' })).toBeVisible();
   await expectNoViolations(page);
 });

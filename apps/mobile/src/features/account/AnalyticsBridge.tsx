@@ -2,17 +2,22 @@ import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { useBackend } from '../../lib/backend/BackendProvider';
 import {
+  AnalyticsIdRetired,
   analyticsIdOf,
+  analyticsOn,
   forgetAnalytics,
   setAnalyticsConsent,
   track,
 } from '../../lib/analytics';
+import { errorCode } from '../../lib/backend/backend';
 import { appStorage } from '../../lib/storage';
 import { useAuth } from '../auth/useAuth';
 import { useSettings } from './queries';
 
 /** One app_opened a day per account: the return-visit signal. */
 async function noteOpened(userId: string): Promise<void> {
+  // Not counted (or marked) unless analytics is really on.
+  if (!analyticsOn()) return;
   const today = new Date().toISOString().slice(0, 10);
   const key = `pc.analytics.opened.${userId}`;
   const last = await appStorage.get(key).catch(() => null);
@@ -31,21 +36,29 @@ export function AnalyticsBridge() {
   const { session } = useAuth();
   const settings = useSettings();
   const userId = session?.userId ?? null;
+  const backend = useBackend();
   const fresh = settings.isFetchedAfterMount && !settings.isError && !settings.isRefetchError;
   const consent = fresh && settings.data?.analyticsConsent === true;
   // A "no" the server confirmed, here or on another device.
   const withdrawn = fresh && settings.data?.analyticsConsent === false;
-  const backend = useBackend();
 
   useEffect(() => {
     let live = true;
-    void setAnalyticsConsent(userId, consent).then(() => {
+    const register = async (id: string) => {
+      try {
+        await backend.registerAnalyticsId(id);
+      } catch (error) {
+        throw errorCode(error) === 'id_retired' ? new AnalyticsIdRetired() : error;
+      }
+    };
+    void setAnalyticsConsent(userId, consent, register).then(() => {
       if (live && userId && consent) void noteOpened(userId);
     });
     return () => {
       live = false;
     };
-  }, [userId, consent]);
+    // Each confirmed refresh tries again after a failed registration (a no-op once on).
+  }, [backend, userId, consent, settings.dataUpdatedAt]);
 
   // After a "no": the data sent under this account's id is deleted at PostHog. The id is
   // recorded with the server first and only then forgotten here; a failure tries again later.
