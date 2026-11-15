@@ -37,6 +37,14 @@ Deno.serve(async (req) => {
   if (paths.length === 0 || paths.length > MAX_PATHS)
     return json({ error: 'invalid_input' }, 400);
 
+  const service = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  );
+  // A signed-in member only: the public key is a valid token too, but names nobody.
+  const user = await service.auth.getUser(header.slice(7));
+  if (!user.data.user) return json({ error: 'not_authenticated' }, 401);
+
   // Asked as the member: the database decides what this person may see.
   const asMember = createClient(
     Deno.env.get('SUPABASE_URL')!,
@@ -57,10 +65,6 @@ Deno.serve(async (req) => {
   );
   if (readable.length === 0) return json({ urls: {} });
 
-  const service = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-  );
   const signed = await service.storage
     .from('cook-photos')
     .createSignedUrls(readable, LIFETIME_SECONDS);
