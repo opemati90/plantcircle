@@ -1,0 +1,59 @@
+# Cooked it on a simulator: join a Circle, see its posts on Home and in the feed, say Yum, open
+# the composer. Fixture backend (email code 000000); Metro on :8081.
+#   maestro test apps/mobile/e2e/maestro/cooked-it.yaml
+appId: app.plantcircle.mobile
+---
+- launchApp:
+    clearState: true
+- tapOn: 'Get started'
+- tapOn: 'Continue'
+- tapOn: 'Type your city'
+- inputText: 'berli'
+- tapOn:
+    id: 'city-berlin'
+- scrollUntilVisible:
+    element: 'Continue'
+    direction: DOWN
+- tapOn: 'Continue'
+- assertVisible: 'This week in Berlin'
+- openLink: plantcircle://circle/neukolln-plant-kitchen
+- tapOn: 'Join'
+- tapOn: 'Use email instead'
+- tapOn:
+    text: 'I’m 18 or older'
+    optional: true
+- tapOn: 'Email'
+- inputText: 'lena@example.com'
+- tapOn: 'Continue with email'
+- assertVisible: 'Check your email'
+- inputText: '000000'
+- tapOn: 'Verify'
+- tapOn:
+    text: 'Only needed'
+    optional: true
+- tapOn:
+    text: 'Not now'
+    optional: true
+- tapOn:
+    text: 'Join'
+    optional: true
+- assertVisible: '.*member.*'
+- openLink: plantcircle://home
+- scrollUntilVisible:
+    element: '.*Efo riro for six.*'
+    direction: DOWN
+- scroll
+- takeScreenshot: cooked-home
+- openLink: plantcircle://cooks
+- assertVisible: 'Cooked in your Circles'
+- takeScreenshot: cooked-feed
+- scrollUntilVisible:
+    element: 'Ask Mia K. how they made it'
+    direction: DOWN
+- tapOn: 'Yum, 7 yums'
+- assertVisible: 'Yum, 8 yums'
+- takeScreenshot: cooked-yum
+- openLink: plantcircle://cook/new
+- assertVisible: 'Share what you cooked'
+- assertVisible: 'Sharing with Neukölln Plant Kitchen'
+- takeScreenshot: cooked-composer

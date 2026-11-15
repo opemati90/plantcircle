@@ -1,6 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { useBackend } from '../../lib/backend/BackendProvider';
-import type { ReportInput, StaffAction } from '../../lib/backend/types';
+import type { CookPage, ReportInput, StaffAction } from '../../lib/backend/types';
+import { forgetCookPhotos } from '../../lib/photoCache';
 import { useAuth } from '../auth/useAuth';
 
 /**
@@ -22,6 +28,9 @@ const AFTER_BLOCK = [
   ['order'],
   ['recipes'],
   ['recipe'],
+  ['cooks'],
+  ['cook'],
+  ['myCooks'],
   ['circle'],
 ];
 
@@ -41,8 +50,25 @@ export function useBlockUser() {
   return useMutation({
     mutationFn: (input: { userId: string; key: string }) =>
       backend.blockUser(input.userId, input.key),
-    onSuccess: () =>
-      Promise.all(AFTER_BLOCK.map((key) => queryClient.invalidateQueries({ queryKey: key }))),
+    onSuccess: async (_result, input) => {
+      // Their posts leave every list now, and no photo of theirs is kept on this phone.
+      queryClient.setQueriesData<InfiniteData<CookPage>>({ queryKey: ['cooks'] }, (data) =>
+        data
+          ? {
+              ...data,
+              pages: data.pages.map((p) => ({
+                ...p,
+                items: p.items.filter((c) => c.authorId !== input.userId),
+              })),
+            }
+          : data,
+      );
+      queryClient.removeQueries({ queryKey: ['cook'] });
+      await forgetCookPhotos();
+      await Promise.all(
+        AFTER_BLOCK.map((key) => queryClient.invalidateQueries({ queryKey: key })),
+      );
+    },
   });
 }
 
@@ -111,6 +137,16 @@ export function useStaffCase(reportId: string | null) {
     queryKey: ['staffCase', reportId],
     queryFn: () => backend.staffCase(reportId ?? ''),
     enabled: reportId !== null,
+  });
+}
+
+/** A reported post's photo and caption; only asked for cases about a post. */
+export function useStaffCook(reportId: string | null, enabled: boolean) {
+  const backend = useBackend();
+  return useQuery({
+    queryKey: ['staffCook', reportId],
+    queryFn: () => backend.staffCook(reportId ?? ''),
+    enabled: enabled && reportId !== null,
   });
 }
 

@@ -157,12 +157,21 @@ export default function RecipeScreen() {
             </View>
           </View>
           {session ? (
-            <Button
-              label={t('learn.cookTogether')}
-              onPress={() => {
-                router.push({ pathname: '/create', params: { recipe: data.id } });
-              }}
-            />
+            <View style={styles.primary}>
+              <Button
+                label={t('learn.cookTogether')}
+                onPress={() => {
+                  router.push({ pathname: '/create', params: { recipe: data.id } });
+                }}
+              />
+              <Button
+                variant="outline"
+                label={t('cooks.iCookedThis')}
+                onPress={() => {
+                  router.push({ pathname: '/cook/new', params: { recipe: data.id } });
+                }}
+              />
+            </View>
           ) : null}
           {session && data.authorId !== session.userId ? (
             <View style={styles.actions}>
@@ -328,6 +337,7 @@ const styles = StyleSheet.create({
   heroText: { position: 'absolute', left: 24, right: 24, bottom: 30, gap: 10 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  primary: { gap: 10 },
   chip: {
     minHeight: 32,
     paddingHorizontal: 12,

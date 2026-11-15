@@ -173,3 +173,53 @@ export function MapTile() {
     </View>
   );
 }
+
+export const MoreIcon = stroke(
+  <>
+    <Circle cx="5" cy="12" r="1.2" />
+    <Circle cx="12" cy="12" r="1.2" />
+    <Circle cx="19" cy="12" r="1.2" />
+  </>,
+);
+export const CameraIcon = stroke(
+  <>
+    <Path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.7l1.4-2h4.8l1.4 2h1.7A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z" />
+    <Circle cx="12" cy="12.5" r="3.4" />
+  </>,
+);
+export const ImageIcon = stroke(
+  <>
+    <Path d="M5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-13A1.5 1.5 0 0 1 5.5 4z" />
+    <Circle cx="9" cy="9" r="1.6" />
+    <Path d="m20 15-4.5-4.5L6 20" />
+  </>,
+);
+
+/** "Yum": a leaf, outlined, or filled once the member has said it. */
+export function LeafIcon({
+  size = 20,
+  filled = false,
+  color: tint = color.ink,
+}: {
+  size?: number;
+  filled?: boolean;
+  color?: string;
+}) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <Path
+        d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"
+        fill={filled ? tint : 'none'}
+        stroke={tint}
+        strokeWidth={1.9}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M5 19l7-7"
+        stroke={filled ? color.surface : tint}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}

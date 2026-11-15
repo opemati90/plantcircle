@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Button } from '../../components/Button';
 import { EmptyState, InlineState, Skeleton } from '../../components/parts';
+import { Photo } from '../../components/Photo';
 import { color, extra, radius, size, type } from '../../components/theme';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { STAFF_ACTIONS, type StaffAction } from '../../lib/backend/types';
@@ -25,6 +26,7 @@ import {
   useStaffCase,
   useStaffCities,
   useStaffCityMerge,
+  useStaffCook,
   useStaffDecide,
   useStaffQueue,
   useStaffViewMessages,
@@ -66,6 +68,7 @@ export default function ConsoleScreen() {
   }, [mergeFrom, mergeInto, mergeReason]);
   const decide = useStaffDecide();
   const view = useStaffViewMessages();
+  const post = useStaffCook(selected, current.data?.targetType === 'cook');
   const appealDecide = useStaffAppealDecide();
   const [action, setAction] = useState<StaffAction | null>(null);
   const [reason, setReason] = useState('');
@@ -388,6 +391,57 @@ export default function ConsoleScreen() {
                       ))
                     )}
                   </View>
+
+                  {current.data.targetType === 'cook' ? (
+                    <View style={styles.block}>
+                      <Text
+                        maxFontSizeMultiplier={2.0}
+                        style={type(13, 'semibold', { color: color.secondary, tracking: 0.4 })}
+                      >
+                        {t('safety.console.post').toUpperCase()}
+                      </Text>
+                      {post.isPending ? (
+                        <Skeleton width={240} height={300} radius={radius.card} />
+                      ) : post.isError ? (
+                        <View style={styles.block}>
+                          <Text
+                            maxFontSizeMultiplier={2.0}
+                            role="alert"
+                            style={type(14, 'regular', { color: color.danger })}
+                          >
+                            {t('safety.error')}
+                          </Text>
+                          <Button
+                            variant="outline"
+                            label={t('common.retry')}
+                            onPress={() => void post.refetch()}
+                          />
+                        </View>
+                      ) : (
+                        <>
+                          <View style={styles.postPhoto}>
+                            {post.data.photo ? (
+                              <Photo
+                                source={post.data.photo}
+                                alt={post.data.photoAlt ?? post.data.caption}
+                              />
+                            ) : null}
+                          </View>
+                          <Text maxFontSizeMultiplier={2.0} style={type(16, 'regular')}>
+                            {post.data.caption}
+                          </Text>
+                          {post.data.removed ? (
+                            <Text
+                              maxFontSizeMultiplier={2.0}
+                              style={type(13, 'semibold', { color: color.secondary })}
+                            >
+                              {t('safety.console.postRemoved')}
+                            </Text>
+                          ) : null}
+                        </>
+                      )}
+                    </View>
+                  ) : null}
 
                   {current.data.targetType === 'message' ? (
                     <View style={styles.block}>
@@ -854,6 +908,13 @@ export default function ConsoleScreen() {
 }
 
 const styles = StyleSheet.create({
+  postPhoto: {
+    width: 240,
+    aspectRatio: 4 / 5,
+    borderRadius: radius.card,
+    overflow: 'hidden',
+    backgroundColor: color.fill,
+  },
   screen: { flex: 1, backgroundColor: color.surface },
   pad: { paddingHorizontal: 24, gap: 20 },
   head: { gap: 14 },

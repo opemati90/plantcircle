@@ -376,3 +376,65 @@ export const fixturePeople: { person: Person; circleId: string }[] = [
     },
   },
 ];
+
+/** Sample "Cooked it" posts. Times are hours before the app loaded, so the feed always looks fresh. */
+export interface FixtureCook {
+  id: string;
+  circleId: string;
+  authorId: string;
+  authorName: string;
+  recipeId: string | null;
+  caption: string;
+  /** A bundled photo's path (planImage.ts) or, for a post made in this session, a data URI. */
+  image: string;
+  photoAlt: string | null;
+  width: number;
+  height: number;
+  hoursAgo: number;
+  reactions: number;
+}
+
+export const fixtureCooks: FixtureCook[] = [
+  {
+    id: 'cook-mia-efo',
+    circleId: 'neukolln-plant-kitchen',
+    authorId: 'fixture-mia-k',
+    authorName: 'Mia K.',
+    recipeId: 'efo-riro-smoked-tofu',
+    caption: 'Efo riro for six, with extra smoked tofu',
+    image: '/images/potluck-spread.jpg',
+    photoAlt: 'A table of shared dishes with greens and rice',
+    width: 1200,
+    height: 1500,
+    hoursAgo: 2,
+    reactions: 7,
+  },
+  {
+    id: 'cook-ola-pantry',
+    circleId: 'neukolln-plant-kitchen',
+    authorId: 'fixture-ola-b',
+    authorName: 'Ola B.',
+    recipeId: null,
+    caption: 'Sunday batch: three jars of chickpea stew for the week',
+    image: '/images/pantry-jars.jpg',
+    photoAlt: null,
+    width: 1200,
+    height: 1500,
+    hoursAgo: 20,
+    reactions: 3,
+  },
+  {
+    id: 'cook-jonas-together',
+    circleId: 'budget-plant-cooking',
+    authorId: 'fixture-jonas-k',
+    authorName: 'Jonas K.',
+    recipeId: null,
+    caption: 'Dal for twelve under €15',
+    image: '/images/cooking-together.jpg',
+    photoAlt: null,
+    width: 1200,
+    height: 1500,
+    hoursAgo: 30,
+    reactions: 12,
+  },
+];

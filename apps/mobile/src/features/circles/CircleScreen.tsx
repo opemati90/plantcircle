@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, IconButton } from '../../components/Button';
-import { ChevronLeftIcon } from '../../components/icons';
+import { ChevronLeftIcon, PlusIcon } from '../../components/icons';
 import { BottomSheet, EmptyState, InlineState, Skeleton } from '../../components/parts';
 import { Photo } from '../../components/Photo';
 import { color, extra, radius, type } from '../../components/theme';
@@ -16,6 +16,9 @@ import { shortWhen } from '../../lib/dates';
 import { ProviderButtons } from '../auth/ProviderButtons';
 import { useAuth } from '../auth/useAuth';
 import { useRecipes } from '../learn/queries';
+import { CookCard } from '../cooks/CookCard';
+import { useCooks } from '../cooks/queries';
+import { useNow } from '../../lib/useNow';
 import { PlanListItem } from '../plans/PlanListItem';
 import { welcomePhoto } from '../plans/planImage';
 import {
@@ -45,7 +48,7 @@ const TAB_KEY: Record<Tab, 'tabPlans' | 'tabPosts' | 'tabAbout'> = {
  * photo until covers exist.
  */
 export default function CircleScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, tab: startTab } = useLocalSearchParams<{ id: string; tab?: string }>();
   const { t } = useTranslation();
   const insets = useScreenInsets();
   const router = useRouter();
@@ -58,7 +61,7 @@ export default function CircleScreen() {
     circle.data?.viewerRole === 'owner' || circle.data?.viewerRole === 'moderator';
   const requests = useCircleRequests(id, canModerate);
   const respond = useRespondToCircleRequest();
-  const [tab, setTab] = useState<Tab>('plans');
+  const [tab, setTab] = useState<Tab>(TABS.find((name) => name === startTab) ?? 'plans');
   const [signingUp, setSigningUp] = useState(false);
   const [key, setKey] = useState(newIdempotencyKey);
   const [decisionKeys, setDecisionKeys] = useState<Record<string, string>>({});
@@ -317,7 +320,7 @@ export default function CircleScreen() {
           </View>
 
           {tab === 'plans' ? <PlansTab circle={data} /> : null}
-          {tab === 'posts' ? <PostsTab circleId={data.id} /> : null}
+          {tab === 'posts' ? <PostsTab circleId={data.id} member={member} /> : null}
           {tab === 'about' ? (
             <View style={styles.about}>
               <Text
@@ -497,69 +500,142 @@ function PlansTab({ circle }: { circle: Circle }) {
   );
 }
 
-/** Recipes shared into this Circle, visible to its members as the Learn tab shows them. */
-function PostsTab({ circleId }: { circleId: string }) {
+/**
+ * The Circle's feed: what members cooked (members only), then the recipes shared here, as the
+ * Learn tab shows them.
+ */
+function PostsTab({ circleId, member }: { circleId: string; member: boolean }) {
   const { t } = useTranslation();
   const router = useRouter();
+  const now = useNow(60_000);
+  const cooks = useCooks(circleId, member);
   const recipes = useRecipes('');
-  if (recipes.isPending) return <Skeleton width="100%" height={72} radius={radius.card} />;
-  if (recipes.isError) {
-    return (
-      <InlineState
-        title={t('errors.serverTitle')}
-        text={t('errors.serverText')}
-        action={
-          <Button
-            variant="outline"
-            label={t('common.retry')}
-            onPress={() => void recipes.refetch()}
-          />
-        }
-      />
-    );
-  }
-  const shown = recipes.data.filter((r) => r.circleId === circleId);
-  if (shown.length === 0) {
-    return (
-      <Text maxFontSizeMultiplier={2.0} style={type(15, 'regular', { color: color.secondary })}>
-        {t('circles.postsEmpty')}
-      </Text>
-    );
-  }
+  const items = cooks.data?.pages.flatMap((page) => page.items) ?? [];
+  const shownRecipes = (recipes.data ?? []).filter((r) => r.circleId === circleId);
+
   return (
-    <View style={styles.list}>
-      {shown.map((recipe) => (
-        <Pressable
-          key={recipe.id}
-          accessibilityRole="link"
-          onPress={() => {
-            router.push({ pathname: '/recipe/[id]', params: { id: recipe.id } });
-          }}
-          style={styles.post}
-        >
-          <Text
-            maxFontSizeMultiplier={2.0}
-            style={type(13, 'regular', { color: color.secondary })}
-          >
-            {t('learn.byline', {
-              name: recipe.authorName ?? t('circles.requests.someone'),
-              circle: recipe.circleName,
-            })}
-          </Text>
-          <Text maxFontSizeMultiplier={2.0} style={type(16, 'semibold', { tracking: -0.3 })}>
-            {recipe.title}
-          </Text>
-          {recipe.intro ? (
+    <View style={styles.feed}>
+      {member ? (
+        <>
+          <Button
+            label={t('cooks.shareYours')}
+            icon={<PlusIcon size={18} strokeWidth={2.4} color={color.surface} />}
+            onPress={() => {
+              router.push({ pathname: '/cook/new', params: { circle: circleId } });
+            }}
+          />
+          {cooks.isPending ? (
+            <Skeleton width="100%" height={420} radius={radius.card} />
+          ) : cooks.isError ? (
+            <InlineState
+              title={t('errors.serverTitle')}
+              text={t('errors.serverText')}
+              action={
+                <Button
+                  variant="outline"
+                  label={t('common.retry')}
+                  onPress={() => void cooks.refetch()}
+                />
+              }
+            />
+          ) : items.length === 0 ? (
             <Text
               maxFontSizeMultiplier={2.0}
-              numberOfLines={2}
-              style={type(14, 'regular', { color: color.secondary })}
+              style={type(15, 'regular', { color: color.secondary, leading: 1.45 })}
             >
-              {recipe.intro}
+              {t('cooks.circleEmpty')}
             </Text>
+          ) : (
+            items.map((cook) => (
+              <CookCard key={cook.id} cook={cook} now={now} showCircle={false} />
+            ))
+          )}
+          {cooks.hasNextPage ? (
+            <Button
+              variant="outline"
+              label={t('cooks.showMore')}
+              loading={cooks.isFetchingNextPage}
+              onPress={() => void cooks.fetchNextPage()}
+            />
           ) : null}
-        </Pressable>
-      ))}
+        </>
+      ) : (
+        <Text
+          maxFontSizeMultiplier={2.0}
+          style={type(15, 'regular', { color: color.secondary, leading: 1.45 })}
+        >
+          {t('cooks.membersOnly')}
+        </Text>
+      )}
+
+      <View style={styles.list}>
+        <Text
+          maxFontSizeMultiplier={1.6}
+          accessibilityRole="header"
+          aria-level={3}
+          style={type(20, 'bold', { tracking: -0.4 })}
+        >
+          {t('cooks.recipesHere')}
+        </Text>
+        {recipes.isPending ? (
+          <Skeleton width="100%" height={72} radius={radius.card} />
+        ) : recipes.isError ? (
+          <InlineState
+            title={t('errors.serverTitle')}
+            text={t('errors.serverText')}
+            action={
+              <Button
+                variant="outline"
+                label={t('common.retry')}
+                onPress={() => void recipes.refetch()}
+              />
+            }
+          />
+        ) : shownRecipes.length === 0 ? (
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={type(15, 'regular', { color: color.secondary })}
+          >
+            {t('circles.postsEmpty')}
+          </Text>
+        ) : (
+          shownRecipes.map((recipe) => (
+            <Pressable
+              key={recipe.id}
+              accessibilityRole="link"
+              onPress={() => {
+                router.push({ pathname: '/recipe/[id]', params: { id: recipe.id } });
+              }}
+              style={styles.post}
+            >
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(13, 'regular', { color: color.secondary })}
+              >
+                {t('learn.byline', {
+                  name: recipe.authorName ?? t('circles.requests.someone'),
+                  circle: recipe.circleName,
+                })}
+              </Text>
+              <Text
+                maxFontSizeMultiplier={2.0}
+                style={type(16, 'semibold', { tracking: -0.3 })}
+              >
+                {recipe.title}
+              </Text>
+              {recipe.intro ? (
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  numberOfLines={2}
+                  style={type(14, 'regular', { color: color.secondary })}
+                >
+                  {recipe.intro}
+                </Text>
+              ) : null}
+            </Pressable>
+          ))
+        )}
+      </View>
     </View>
   );
 }
@@ -599,6 +675,7 @@ const styles = StyleSheet.create({
   },
   tabSelected: { borderBottomColor: color.ink },
   list: { gap: 12 },
+  feed: { gap: 28 },
   post: { gap: 3, paddingVertical: 6 },
   about: { gap: 12 },
   requests: { gap: 12, paddingTop: 8 },

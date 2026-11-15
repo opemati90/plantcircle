@@ -26,6 +26,7 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   host_level_in_person: 'host_level_in_person',
   host_level_capacity: 'host_level_capacity',
   own_recipe: 'own_recipe',
+  own_post: 'own_post',
   not_host: 'forbidden',
   checkin_closed: 'checkin_closed',
   plan_not_started: 'plan_not_started',
@@ -67,6 +68,8 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   appeal_not_found: 'not_found',
   appeal_closed: 'invalid_input',
   same_reviewer: 'forbidden',
+  not_found: 'not_found',
+  invalid_input: 'invalid_input',
 };
 
 export interface ErrorLike {

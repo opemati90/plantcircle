@@ -59,6 +59,9 @@ export default function ProfileScreen() {
     { label: t('profile.accessibility'), href: '/profile/accessibility', icon: 'user' },
   ];
   const hostLevel = useHostLevel();
+  const activity: Row[] = [
+    { label: t('cooks.mineTitle'), href: '/profile/posts', icon: 'sprout' },
+  ];
   const about: Row[] = [
     { label: t('profile.terms'), href: '/legal/terms' },
     { label: t('profile.accountData'), href: '/profile/account' },
@@ -163,6 +166,13 @@ export default function ProfileScreen() {
         </View>
       ) : null}
 
+      <Group
+        title={t('profile.activity')}
+        rows={activity}
+        onOpen={(href) => {
+          router.push(href);
+        }}
+      />
       <Group
         title={t('profile.settings')}
         rows={settings}

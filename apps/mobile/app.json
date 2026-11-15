@@ -37,6 +37,14 @@
         }
       ],
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "PlantCircle uses your photos when you choose one to share with your Circle.",
+          "cameraPermission": "PlantCircle uses the camera when you take a photo of what you cooked.",
+          "microphonePermission": false
+        }
+      ],
+      [
         "expo-notifications",
         {
           "icon": "./assets/images/notification-icon.png",

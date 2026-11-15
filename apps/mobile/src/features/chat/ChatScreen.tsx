@@ -36,7 +36,16 @@ import {
  * A chat: a Plan's, a Circle's, or a direct one with a person. Members read and post; anyone else is
  * refused by the server. Until a direct request is accepted there is no chat, only the request.
  */
-export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refId: string }) {
+export function Chat({
+  kind,
+  refId,
+  draft,
+}: {
+  kind: 'plan' | 'circle' | 'direct';
+  refId: string;
+  /** Text to start the message with, which the member can still change ("Ask how"). */
+  draft?: string | undefined;
+}) {
   const { t } = useTranslation();
   const insets = useScreenInsets();
   const router = useRouter();
@@ -45,7 +54,7 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
   const conversationId = conversation.data;
   const messages = useMessages(conversationId);
   const send = useSendMessage(conversationId);
-  const [text, setText] = useState('');
+  const [text, setText] = useState(draft ?? '');
   const [optionsOpen, setOptionsOpen] = useState(false);
   const block = useBlockUser();
   const [blockKey] = useState(newIdempotencyKey);
@@ -125,6 +134,7 @@ export function Chat({ kind, refId }: { kind: 'plan' | 'circle' | 'direct'; refI
             void conversation.refetch();
           }}
           back={back}
+          draft={draft}
         />
       );
     }
@@ -523,15 +533,17 @@ function DirectRequest({
   userId,
   onAccepted,
   back,
+  draft,
 }: {
   userId: string;
   onAccepted: () => void;
   back: ReactNode;
+  draft?: string | undefined;
 }) {
   const { t } = useTranslation();
   const insets = useScreenInsets();
   const request = useRequestDirect(userId);
-  const [text, setText] = useState('');
+  const [text, setText] = useState(draft ?? '');
   // The request's id follows its text, so a retry of the same text is the same request.
   const [clientId, setClientId] = useState(newIdempotencyKey);
   useEffect(() => {
@@ -630,8 +642,8 @@ export function CircleChat() {
 
 /** The direct chat with a person, opened from People or from a request. */
 export function DirectChat() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  return <Chat kind="direct" refId={id} />;
+  const { id, draft } = useLocalSearchParams<{ id: string; draft?: string }>();
+  return <Chat kind="direct" refId={id} draft={draft} />;
 }
 
 const styles = StyleSheet.create({

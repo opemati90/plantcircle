@@ -30,6 +30,11 @@ run against a real Supabase project. That is the first thing to do once the proj
 - Safety: report and block everywhere, blocks hide content both ways, staff console, appeals,
   suspended hosts' Plans held; audit log.
 - Notifications in app and push in 8 languages, quiet hours, weekly digest.
+- Cooked it (2026-11-15, `docs/superpowers/specs/2026-11-15-cooked-it-design.md`): members share
+  a photo of what they cooked with one Circle; Home shows the latest from your Circles, each
+  Circle's Posts tab is its feed, Yum, Ask how (editable direct message), report, block, delete,
+  Your posts. Photos are stripped of metadata on the server (`cook-upload`), private, signed for
+  10 minutes, and removed by `cook-photo-cleanup`.
 
 ## Needs the owner before launch
 
@@ -41,6 +46,10 @@ run against a real Supabase project. That is the first thing to do once the proj
    database every 15 minutes, push-dispatch scheduled every minute, both workers refuse anything
    but a POST with the service-role key (verified live: anon 403, GET 405, no key 401), seed
    split into `seed.sql` (cities) and `seed.demo.sql` (local only, never on this project).
+   Cooked it needs, after `supabase db push` and deploying `cook-upload`, `cook-photo-urls`
+   and `cook-photo-cleanup`: nothing more from the owner. The migration creates the private
+   `cook-photos` bucket, its read policy and the 10-minute cleanup job (same Vault secrets as
+   push).
    Owner steps left, in the dashboard:
    - Vault: add `plantcircle_project_url` = `https://qxzbjkpggoekagvinazn.supabase.co` and
      `plantcircle_service_role_key` = the service_role key. Push stays off until both exist.
@@ -76,7 +85,7 @@ run against a real Supabase project. That is the first thing to do once the proj
 | 1 | First run against the real Supabase project; fix what breaks | Yes | Needs owner item 1 |
 | 2 | `email-send` edge function | Yes | Needs owner item 2 |
 | 3 | Sentry + consent-gated PostHog with the 23 core events | Owner's call | Needs owner item 4; native rebuild |
-| 4 | Physical-device pass: VoiceOver, TalkBack, 200% text, low-end Android cold start | Yes | Simulator checks done; devices not |
+| 4 | Physical-device pass: VoiceOver, TalkBack, 200% text, low-end Android cold start | Yes | Simulator checks done; devices not. At the largest iOS text size the sign-up screen's Email field could not be reached by Maestro (found 2026-11-15, not yet investigated) |
 | 5 | Universal links for `plantcircle.app/p/{id}` | Recommended | Needs the domain |
 | 6 | Realtime for chat instead of 5–15 s polling | No | Polling works |
 | 7 | Plan drafts, Circle-scoped Plans, invites, moderator removal | No | v1.1 candidates |

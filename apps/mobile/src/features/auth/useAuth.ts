@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { BackendError } from '../../lib/backend/backend';
 import { useBackend } from '../../lib/backend/BackendProvider';
 import { clearOfflineCache } from '../../lib/offlineCache';
+import { forgetCookPhotos } from '../../lib/photoCache';
 import { setSavedPlansAvailable } from '../../lib/savedPlans';
 import { unregisterPush } from '../notifications/push';
 import type { Backend } from '../../lib/backend/backend';
@@ -93,6 +94,7 @@ export function useSessionSync(): void {
         if (previous !== undefined && previous?.userId !== session?.userId) {
           queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'session' });
           void clearOfflineCache();
+          void forgetCookPhotos();
         }
       }),
     [backend, queryClient],
@@ -108,6 +110,7 @@ export function useSignOut() {
       await unregisterPush(backend);
       await backend.signOut();
       await clearOfflineCache();
+      await forgetCookPhotos();
     },
     onSuccess: () => {
       queryClient.clear();

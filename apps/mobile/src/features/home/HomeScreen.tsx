@@ -39,6 +39,7 @@ import {
 import { CityPickerSheet } from './CityPickerSheet';
 import { filterPlans, HOME_FILTERS, type HomeFilter } from './homeFilters';
 import { statusPill } from '../myPlans/myPlanRules';
+import { HomeCooks } from '../cooks/HomeCooks';
 
 const SCRIM = {
   colors: [
@@ -573,6 +574,8 @@ export default function HomeScreen() {
             {plans.data.length === 0 ? t('home.emptyWeek') : t('home.emptyFilter')}
           </Text>
         )}
+
+        {session ? <HomeCooks /> : null}
 
         {rest.length > 0 ? (
           <>

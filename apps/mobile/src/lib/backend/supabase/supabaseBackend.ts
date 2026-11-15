@@ -11,6 +11,11 @@ import {
   bringItemCardSchema,
   cityRowSchema,
   circleCardSchema,
+  cookCardSchema,
+  myCookSchema,
+  staffCookSchema,
+  thumbPathOf,
+  type Cook,
   circleRequestSchema,
   toCircle,
   toCircleRequest,
@@ -142,6 +147,7 @@ const WEB_RSVP_ERRORS: Record<string, BackendErrorCode> = {
   invalid_email: 'invalid_input',
   invalid_name: 'invalid_input',
   invalid_input: 'invalid_input',
+  not_authenticated: 'not_authenticated',
   age_required: 'age_required',
   rate_limited: 'rate_limited',
   not_found: 'not_found',
@@ -257,6 +263,61 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
     const { data } = await client.auth.getSession();
     if (!data.session) throw new BackendError('not_authenticated');
     return data.session.user.id;
+  }
+
+  /**
+   * Signed links for photos, from cook-photo-urls: it signs only what this member may see, for 10
+   * minutes. Members cannot sign these files themselves.
+   */
+  async function photoUrls(paths: string[]): Promise<Map<string, string>> {
+    const urls = new Map<string, string>();
+    for (let start = 0; start < paths.length; start += 100) {
+      const data = await invokeFunction(client, 'cook-photo-urls', {
+        paths: paths.slice(start, start + 100),
+      });
+      const parsed = parse(z.object({ urls: z.record(z.string(), z.string()) }), data);
+      for (const [path, url] of Object.entries(parsed.urls)) urls.set(path, url);
+    }
+    return urls;
+  }
+
+  /** Each post with its photo and thumbnail signed; a post without both is left out. */
+  async function withPhotos(
+    rows: z.infer<typeof cookCardSchema>[],
+    userId: string,
+  ): Promise<Cook[]> {
+    if (rows.length === 0) return [];
+    const urls = await photoUrls(
+      rows.flatMap((row) => [row.photo_path, thumbPathOf(row.photo_path)]),
+    );
+    return rows.flatMap((row) => {
+      const photo = urls.get(row.photo_path);
+      const thumbPath = thumbPathOf(row.photo_path);
+      const thumb = urls.get(thumbPath);
+      if (!photo || !thumb) return [];
+      return [
+        {
+          id: row.id,
+          circleId: row.circle_id,
+          circleName: row.circle_name,
+          authorId: row.author_id,
+          authorName: row.author_name,
+          recipeId: row.recipe_id,
+          recipeTitle: row.recipe_title,
+          caption: row.caption,
+          // The cache key is the path, so a fresh signature does not download the photo again.
+          photo: { uri: photo, cacheKey: row.photo_path },
+          thumb: { uri: thumb, cacheKey: thumbPath },
+          photoAlt: row.photo_alt,
+          width: row.width,
+          height: row.height,
+          createdAt: row.created_at,
+          reactions: row.reactions,
+          reacted: row.reacted,
+          mine: row.author_id === userId,
+        },
+      ];
+    });
   }
 
   async function rpc(name: string, args: Record<string, string | boolean>): Promise<void> {
@@ -611,6 +672,114 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       });
       if (result.error) throw toBackendError(result.error);
       return parse(z.object({ id: z.string() }), result.data).id;
+    },
+
+    async listCooks({ circleId, cursor, limit }) {
+      let query = client.from('cook_cards').select('*');
+      if (circleId) query = query.eq('circle_id', circleId);
+      if (cursor) {
+        // Keyset paging: strictly older than the last post shown, ties broken by id.
+        query = query.or(
+          `created_at.lt."${cursor.createdAt}",and(created_at.eq."${cursor.createdAt}",id.lt.${cursor.id})`,
+        );
+      }
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .limit(limit + 1);
+      if (error) throw toBackendError(error);
+      const rows = parse(z.array(cookCardSchema), data);
+      const page = rows.slice(0, limit);
+      const items = await withPhotos(page, await requireUserId());
+      const last = page[page.length - 1];
+      return {
+        items,
+        next: rows.length > limit && last ? { createdAt: last.created_at, id: last.id } : null,
+      };
+    },
+
+    async getCook(cookId) {
+      const card: { data: unknown; error: ErrorLike | null } = await client
+        .from('cook_cards')
+        .select('*')
+        .eq('id', cookId)
+        .maybeSingle();
+      if (card.error) throw toBackendError(card.error);
+      if (!card.data) throw new BackendError('not_found');
+      const [cook] = await withPhotos(
+        [parse(cookCardSchema, card.data)],
+        await requireUserId(),
+      );
+      if (!cook) throw new BackendError('not_found');
+      return cook;
+    },
+
+    async listMyCooks({ cursor, limit }) {
+      const userId = await requireUserId();
+      let query = client.from('my_cooks').select('*');
+      if (cursor) {
+        query = query.or(
+          `created_at.lt."${cursor.createdAt}",and(created_at.eq."${cursor.createdAt}",id.lt.${cursor.id})`,
+        );
+      }
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .limit(limit + 1);
+      if (error) throw toBackendError(error);
+      const all = parse(z.array(myCookSchema), data);
+      const page = all.slice(0, limit);
+      const last = page[page.length - 1];
+      const rows = page.map((row) => ({
+        ...row,
+        author_id: userId,
+        author_name: '',
+        recipe_id: null,
+        recipe_title: null,
+        reacted: false,
+      }));
+      return {
+        items: await withPhotos(rows, userId),
+        next: all.length > limit && last ? { createdAt: last.created_at, id: last.id } : null,
+      };
+    },
+
+    async uploadCookPhoto(photo) {
+      const data = await invokeFunction(client, 'cook-upload', {
+        photo: photo.base64,
+        thumb: photo.thumbBase64,
+      });
+      return { path: parse(z.object({ path: z.string() }), data).path };
+    },
+
+    async createCook(input, key) {
+      const result = await client.rpc('cook_create', {
+        p_circle_id: input.circleId,
+        p_recipe_id: input.recipeId,
+        p_caption: input.caption,
+        p_photo_path: input.photoPath,
+        p_photo_alt: input.photoAlt,
+        p_idempotency_key: key,
+      });
+      if (result.error) throw toBackendError(result.error);
+      return parse(z.object({ id: z.string() }), result.data).id;
+    },
+
+    async deleteCook(cookId, key) {
+      const { error } = await client.rpc('cook_delete', {
+        p_cook_id: cookId,
+        p_idempotency_key: key,
+      });
+      if (error) throw toBackendError(error);
+    },
+
+    async setCookReaction(cookId, on) {
+      const result = await client.rpc('cook_react', { p_cook_id: cookId, p_on: on });
+      if (result.error) throw toBackendError(result.error);
+      return parse(
+        z.object({ reacted: z.boolean(), reactions: z.number().int() }),
+        result.data,
+      );
     },
 
     async createPlan(input, key) {
@@ -1104,6 +1273,20 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
       const result = await client.rpc('staff_queue');
       if (result.error) throw toBackendError(result.error);
       return parse(z.array(staffQueueRowSchema), result.data).map(toQueueRow);
+    },
+
+    async staffCook(reportId) {
+      const result = await client.rpc('staff_cook', { p_report_id: reportId });
+      if (result.error) throw toBackendError(result.error);
+      const row = parse(staffCookSchema, result.data);
+      const urls = await photoUrls([row.photo_path]);
+      const url = urls.get(row.photo_path);
+      return {
+        caption: row.caption,
+        photo: url ? { uri: url, cacheKey: row.photo_path } : null,
+        photoAlt: row.photo_alt,
+        removed: row.removed,
+      };
     },
 
     async staffCase(reportId) {

@@ -1,5 +1,6 @@
 import { appStorage } from '../../storage';
 import { hostLevelFrom } from '../../../features/hosting/levels';
+import { imageByPath } from '../../../features/plans/planImage';
 import { BackendError, type Backend } from '../backend';
 import { DEFAULT_SETTINGS, isRecipeAllergen, PROFILE_GOALS } from '../types';
 import type {
@@ -7,6 +8,8 @@ import type {
   AuditRow,
   Circle,
   City,
+  Cook,
+  CookImage,
   HostLevel,
   HostStats,
   CircleRequest,
@@ -34,6 +37,8 @@ import type {
 import {
   fixtureAddresses,
   fixtureCircles,
+  fixtureCooks,
+  type FixtureCook,
   fixtureRecipes,
   fixtureMeetingUrls,
   fixtureBringItems,
@@ -166,6 +171,12 @@ interface State {
   feedbackMine: Record<string, { rating: number; comment: string | null }>;
   /** Keyed creations, so a retry replays the same result as the database does. */
   idempotent: Record<string, { fingerprint: string; id: string }>;
+  /** Cooked it: posts made here (their photos live in memory only), sample posts deleted,
+   * posts the viewer said Yum to, and when the viewer posted (10 a day). */
+  cooksCreated: (Omit<FixtureCook, 'hoursAgo'> & { createdAt: string })[];
+  cooksDeleted: string[];
+  cookReactions: string[];
+  cookPostTimes: string[];
 }
 
 type Operation =
@@ -292,6 +303,10 @@ const EMPTY: State = {
   conversationSettings: {},
   feedbackMine: {},
   idempotent: {},
+  cooksCreated: [],
+  cooksDeleted: [],
+  cookReactions: [],
+  cookPostTimes: [],
 };
 
 function removeOne(list: string[], value: string): string[] {
@@ -530,6 +545,70 @@ export async function createFixtureBackend(): Promise<Backend> {
   }
 
   const myName = () => state.profile?.displayName ?? 'You';
+
+  /** Photos of posts made in this session, by path. Kept out of storage (too big to persist). */
+  const cookPhotos = new Map<string, { uri: string; thumbUri: string }>();
+  const loadedAt = Date.now();
+
+  const myCircleIds = () => [...state.circlesJoined, ...state.circlesCreated.map((c) => c.id)];
+
+  /** Every post that still exists, newest first, as cook_cards rows before the viewer's rules. */
+  function allCooks(): (Omit<FixtureCook, 'hoursAgo'> & { createdAt: string })[] {
+    const samples = fixtureCooks
+      .filter((c) => !state.cooksDeleted.includes(c.id))
+      .map(({ hoursAgo, ...c }) => ({
+        ...c,
+        createdAt: new Date(loadedAt - hoursAgo * 3_600_000).toISOString(),
+      }));
+    return [...state.cooksCreated, ...samples].sort(
+      (a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id),
+    );
+  }
+
+  function cookImage(path: string, thumb: boolean): CookImage {
+    const made = cookPhotos.get(path);
+    if (made) return { uri: thumb ? made.thumbUri : made.uri, cacheKey: path };
+    const bundled = imageByPath(path);
+    return typeof bundled === 'number'
+      ? bundled
+      : (imageByPath('/images/potluck-spread.jpg') as number);
+  }
+
+  function toCook(row: Omit<FixtureCook, 'hoursAgo'> & { createdAt: string }): Cook {
+    const me = state.session?.userId ?? 'fixture-you';
+    const recipe = row.recipeId
+      ? visibleRecipes().find((r) => r.id === row.recipeId)
+      : undefined;
+    const reacted = state.cookReactions.includes(row.id);
+    const circle = [...fixtureCircles, ...state.circlesCreated].find(
+      (c) => c.id === row.circleId,
+    );
+    return {
+      id: row.id,
+      circleId: row.circleId,
+      circleName: circle?.name ?? '',
+      authorId: row.authorId,
+      authorName: row.authorId === me ? myName() : row.authorName,
+      recipeId: row.recipeId,
+      recipeTitle: recipe?.title ?? null,
+      caption: row.caption,
+      photo: cookImage(row.image, false),
+      thumb: cookImage(row.image, true),
+      photoAlt: row.photoAlt,
+      width: row.width,
+      height: row.height,
+      createdAt: row.createdAt,
+      reactions: row.reactions + (reacted ? 1 : 0),
+      reacted,
+      mine: row.authorId === me,
+    };
+  }
+
+  /** What cook_cards shows the viewer: their active Circles, nobody they blocked. */
+  const visibleCooks = () =>
+    allCooks()
+      .filter((c) => myCircleIds().includes(c.circleId) && !state.blocked.includes(c.authorId))
+      .map(toCook);
 
   const normalizeWords = (text: string): string[] =>
     text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().split(/\s+/).filter(Boolean);
@@ -1053,6 +1132,151 @@ export async function createFixtureBackend(): Promise<Backend> {
         idempotent: { ...state.idempotent, [key]: { fingerprint, id: recipe.id } },
       });
       return recipe.id;
+    },
+
+    async listCooks({ circleId, cursor, limit }) {
+      await call();
+      requireSession();
+      const all = visibleCooks().filter((c) => !circleId || c.circleId === circleId);
+      const after = cursor
+        ? all.filter(
+            (c) =>
+              c.createdAt < cursor.createdAt ||
+              (c.createdAt === cursor.createdAt && c.id < cursor.id),
+          )
+        : all;
+      const items = after.slice(0, limit);
+      const last = items[items.length - 1];
+      return {
+        items,
+        next: after.length > limit && last ? { createdAt: last.createdAt, id: last.id } : null,
+      };
+    },
+
+    async getCook(cookId) {
+      await call();
+      requireSession();
+      const cook = visibleCooks().find((c) => c.id === cookId);
+      if (!cook) throw new BackendError('not_found');
+      return cook;
+    },
+
+    async listMyCooks({ cursor, limit }) {
+      await call();
+      const me = requireSession().userId;
+      const all = allCooks()
+        .filter((c) => c.authorId === me)
+        .map(toCook)
+        .filter(
+          (c) =>
+            !cursor ||
+            c.createdAt < cursor.createdAt ||
+            (c.createdAt === cursor.createdAt && c.id < cursor.id),
+        );
+      const items = all.slice(0, limit);
+      const last = items[items.length - 1];
+      return {
+        items,
+        next: all.length > limit && last ? { createdAt: last.createdAt, id: last.id } : null,
+      };
+    },
+
+    async uploadCookPhoto(photo) {
+      await call();
+      requireActive();
+      if (!photo.base64 || !photo.thumbBase64) throw new BackendError('invalid_input');
+      const me = requireSession().userId;
+      const path = `${me}/${Date.now()}-${cookPhotos.size}.jpg`;
+      cookPhotos.set(path, {
+        uri: `data:image/jpeg;base64,${photo.base64}`,
+        thumbUri: `data:image/jpeg;base64,${photo.thumbBase64}`,
+      });
+      return { path };
+    },
+
+    async createCook(input, key) {
+      await call();
+      requireActive();
+      const fingerprint = fingerprintOf(input);
+      const replayedId = replayKey(key, fingerprint);
+      if (replayedId) return replayedId;
+      if (!myCircleIds().includes(input.circleId)) throw new BackendError('not_found');
+      const caption = input.caption.trim();
+      if (caption.length < 1 || caption.length > 140 || (input.photoAlt?.length ?? 0) > 200) {
+        throw new BackendError('invalid_input');
+      }
+      if (
+        !cookPhotos.has(input.photoPath) ||
+        allCooks().some((c) => c.image === input.photoPath)
+      ) {
+        throw new BackendError('invalid_input');
+      }
+      const dayAgo = Date.now() - 86_400_000;
+      const today = state.cookPostTimes.filter((t) => Date.parse(t) > dayAgo);
+      if (today.length >= 10) throw new BackendError('rate_limited');
+      const now = new Date().toISOString();
+      const id = `cook-${Date.now()}-${key.slice(0, 8)}`;
+      commit({
+        ...state,
+        cooksCreated: [
+          {
+            id,
+            circleId: input.circleId,
+            authorId: requireSession().userId,
+            authorName: myName(),
+            recipeId: input.recipeId,
+            caption,
+            image: input.photoPath,
+            photoAlt: input.photoAlt?.trim() || null,
+            width: 1200,
+            height: 1500,
+            createdAt: now,
+            reactions: 0,
+          },
+          ...state.cooksCreated,
+        ],
+        cookPostTimes: [...today, now],
+        idempotent: { ...state.idempotent, [key]: { fingerprint, id } },
+      });
+      return id;
+    },
+
+    async deleteCook(cookId, key) {
+      await call();
+      const me = requireSession().userId;
+      // A retry after a lost response finds the first answer, as cook_delete replays it.
+      if (state.idempotent[key]?.fingerprint === `cook_delete:${cookId}`) return;
+      const cook = allCooks().find((c) => c.id === cookId && c.authorId === me);
+      if (!cook) throw new BackendError('not_found');
+      cookPhotos.delete(cook.image);
+      commit({
+        ...state,
+        cooksCreated: state.cooksCreated.filter((c) => c.id !== cookId),
+        cooksDeleted: [...state.cooksDeleted, cookId],
+        cookReactions: state.cookReactions.filter((id) => id !== cookId),
+        idempotent: {
+          ...state.idempotent,
+          [key]: { fingerprint: `cook_delete:${cookId}`, id: cookId },
+        },
+      });
+    },
+
+    async setCookReaction(cookId, on) {
+      await call();
+      if (on) {
+        requireActive();
+        const cook = visibleCooks().find((c) => c.id === cookId);
+        if (!cook) throw new BackendError('not_found');
+        if (cook.mine) throw new BackendError('own_post');
+        if (!state.cookReactions.includes(cookId)) {
+          commit({ ...state, cookReactions: [...state.cookReactions, cookId] });
+        }
+      } else {
+        requireSession();
+        commit({ ...state, cookReactions: state.cookReactions.filter((id) => id !== cookId) });
+      }
+      const row = allCooks().find((c) => c.id === cookId);
+      return { reacted: on, reactions: (row?.reactions ?? 0) + (on ? 1 : 0) };
     },
 
     async createPlan(input, key) {
@@ -2180,7 +2404,9 @@ export async function createFixtureBackend(): Promise<Backend> {
           : input.targetType === 'plan' || input.targetType === 'order'
             ? (plans().find((candidate) => candidate.id === input.targetId)?.title ??
               input.targetId)
-            : input.targetId;
+            : input.targetType === 'cook'
+              ? (allCooks().find((c) => c.id === input.targetId)?.caption ?? input.targetId)
+              : input.targetId;
       const hours = severity === 'urgent' ? 1 : severity === 'high' ? 24 : 72;
       commit({
         ...state,
@@ -2327,6 +2553,20 @@ export async function createFixtureBackend(): Promise<Backend> {
       const found = state.reports.find((r) => r.id === reportId);
       if (!found) throw new BackendError('not_found');
       return found;
+    },
+
+    async staffCook(reportId) {
+      await call();
+      requireStaff();
+      const found = state.reports.find((r) => r.id === reportId);
+      const cook = found ? allCooks().find((c) => c.id === found.targetId) : undefined;
+      if (!found || found.targetType !== 'cook' || !cook) throw new BackendError('not_found');
+      return {
+        caption: cook.caption,
+        photo: cookImage(cook.image, false),
+        photoAlt: cook.photoAlt,
+        removed: false,
+      };
     },
 
     async staffViewMessages(reportId, reason) {

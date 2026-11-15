@@ -826,6 +826,111 @@ export const toRecipe = (row: z.infer<typeof recipeCardSchema>): Recipe => ({
   followingAuthor: row.following_author,
 });
 
+// Cooked it (docs/superpowers/specs/2026-11-15-cooked-it-design.md): a photo of something a
+// member cooked, shared with one of their Circles.
+
+/** A photo to show: a URL (signed, short-lived) or, in the fixtures, a bundled image. */
+export type CookImage = { uri: string; cacheKey: string } | number;
+
+export interface Cook {
+  id: string;
+  circleId: string;
+  circleName: string;
+  authorId: string;
+  authorName: string;
+  recipeId: string | null;
+  /** Only when the viewer can see the recipe. */
+  recipeTitle: string | null;
+  caption: string;
+  photo: CookImage;
+  thumb: CookImage;
+  photoAlt: string | null;
+  width: number;
+  height: number;
+  createdAt: string;
+  reactions: number;
+  reacted: boolean;
+  mine: boolean;
+}
+
+/** Where the next page starts: the last post shown (newest first, ties broken by id). */
+export interface CookCursor {
+  createdAt: string;
+  id: string;
+}
+
+export interface CookPage {
+  items: Cook[];
+  next: CookCursor | null;
+}
+
+/** A photo prepared on the phone: cropped to 4:5, resized, re-encoded as JPEG (no metadata). */
+export interface PreparedPhoto {
+  base64: string;
+  thumbBase64: string;
+  width: number;
+  height: number;
+  /** For the composer's preview. */
+  previewUri: string;
+}
+
+export interface CookInput {
+  circleId: string;
+  recipeId: string | null;
+  caption: string;
+  photoAlt: string | null;
+  photoPath: string;
+}
+
+export const cookCardSchema = z.object({
+  id: z.string(),
+  circle_id: z.string(),
+  circle_name: z.string(),
+  author_id: z.string(),
+  author_name: z.string(),
+  recipe_id: z.string().nullable(),
+  recipe_title: z.string().nullable(),
+  caption: z.string(),
+  photo_path: z.string(),
+  photo_alt: z.string().nullable(),
+  width: z.number().int(),
+  height: z.number().int(),
+  created_at: z.string(),
+  reactions: z.number().int(),
+  reacted: z.boolean(),
+});
+
+export const myCookSchema = z.object({
+  id: z.string(),
+  circle_id: z.string(),
+  circle_name: z.string(),
+  caption: z.string(),
+  photo_path: z.string(),
+  photo_alt: z.string().nullable(),
+  width: z.number().int(),
+  height: z.number().int(),
+  created_at: z.string(),
+  reactions: z.number().int(),
+});
+
+/** A reported post as staff see it: the caption and the photo, whether or not it is removed. */
+export interface StaffCook {
+  caption: string;
+  photo: CookImage | null;
+  photoAlt: string | null;
+  removed: boolean;
+}
+
+export const staffCookSchema = z.object({
+  caption: z.string(),
+  photo_path: z.string(),
+  photo_alt: z.string().nullable(),
+  removed: z.boolean(),
+});
+
+/** The thumbnail sits next to the photo: `<id>.jpg` and `<id>.thumb.jpg`. */
+export const thumbPathOf = (photoPath: string) => photoPath.replace(/\.jpg$/, '.thumb.jpg');
+
 // Safety (C10). Report and block on every person, Plan, post, message and group order.
 
 export const REPORT_TARGETS = [
@@ -836,6 +941,7 @@ export const REPORT_TARGETS = [
   'message',
   'order',
   'app',
+  'cook',
 ] as const;
 export type ReportTarget = (typeof REPORT_TARGETS)[number];
 export const REPORT_CATEGORIES = [

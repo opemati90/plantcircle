@@ -92,3 +92,7 @@ export function zonedTimeToUtc(
   const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'));
   return new Date(guess - (asUtc - guess));
 }
+
+/** "1 Nov", in the viewer's own time zone and the active language. */
+export const dayMonth = (iso: string) =>
+  new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(iso));

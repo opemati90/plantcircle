@@ -9,6 +9,10 @@ import type {
   CircleRequest,
   City,
   ConversationSettings,
+  Cook,
+  CookCursor,
+  CookInput,
+  CookPage,
   DirectRequest,
   FeedbackState,
   GroupOrder,
@@ -42,6 +46,7 @@ import type {
   StaffAppeal,
   StaffCity,
   StaffCase,
+  StaffCook,
   StaffQueueRow,
   Suspension,
   UpNext,
@@ -53,6 +58,7 @@ import type {
   PersonProfile,
   PlanPatch,
   PlanStatus,
+  PreparedPhoto,
 } from './types';
 
 export type BackendErrorCode =
@@ -75,6 +81,7 @@ export type BackendErrorCode =
   | 'host_level_in_person'
   | 'host_level_capacity'
   | 'own_recipe'
+  | 'own_post'
   | 'checkin_closed'
   | 'plan_not_started'
   | 'plan_started'
@@ -177,6 +184,28 @@ export interface Backend {
   getRecipe(recipeId: string): Promise<RecipeDetail>;
   createRecipe(input: RecipeInput, idempotencyKey: string): Promise<string>;
 
+  /**
+   * Cooked it. Posts in the viewer's Circles (one Circle, or all of them), newest first, a page
+   * at a time. Photos come as short-lived signed URLs.
+   */
+  listCooks(query: {
+    circleId: string | null;
+    cursor: CookCursor | null;
+    limit: number;
+  }): Promise<CookPage>;
+  getCook(cookId: string): Promise<Cook>;
+  /** Your own posts, wherever they are (Circles you left too), so you can delete them. */
+  listMyCooks(query: { cursor: CookCursor | null; limit: number }): Promise<CookPage>;
+  /** Sends the prepared photo; the server strips metadata and keeps it for one post. */
+  uploadCookPhoto(photo: PreparedPhoto): Promise<{ path: string }>;
+  createCook(input: CookInput, idempotencyKey: string): Promise<string>;
+  /** The author's delete; a retry with the same key after a lost response succeeds. */
+  deleteCook(cookId: string, idempotencyKey: string): Promise<void>;
+  setCookReaction(
+    cookId: string,
+    on: boolean,
+  ): Promise<{ reacted: boolean; reactions: number }>;
+
   /** Publishes a Plan in the host's home city. Returns the new Plan's id. */
   createPlan(input: PlanInput, idempotencyKey: string): Promise<string>;
   /** Host edits a live Plan. Returns the Plan's status afterwards (`changed` if guests must re-confirm). */
@@ -264,6 +293,8 @@ export interface Backend {
   /** Staff console (web). The database refuses anyone without the staff role. */
   staffQueue(): Promise<StaffQueueRow[]>;
   staffCase(reportId: string): Promise<StaffCase>;
+  /** A reported post's caption and photo, for the case view. Every look is logged. */
+  staffCook(reportId: string): Promise<StaffCook>;
   staffViewMessages(reportId: string, reason: string): Promise<ChatMessage[]>;
   staffDecide(
     input: {

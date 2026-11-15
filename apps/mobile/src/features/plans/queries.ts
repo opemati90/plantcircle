@@ -3,6 +3,7 @@ import { randomUUID } from 'expo-crypto';
 import { useBackend } from '../../lib/backend/BackendProvider';
 import type { CircleInput, City, MyPlansScope, PlanFormat } from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
+import { forgetCookPhotos } from '../../lib/photoCache';
 import { getOnboarding, saveOnboardingStrict } from '../onboarding/onboardingStore';
 
 const WEEK_MS = 7 * 86_400_000;
@@ -200,11 +201,13 @@ export function useLeaveCircle(circleId: string) {
   return useMutation({
     mutationFn: (key: string) => backend.leaveCircle(circleId, key),
     onSuccess: () =>
-      Promise.all(
-        ['circles', 'circle', 'my-circles', 'recipes', 'inbox'].map((key) =>
+      Promise.all([
+        // The Circle's photos are no longer the member's to see.
+        forgetCookPhotos(),
+        ...['circles', 'circle', 'my-circles', 'recipes', 'inbox', 'cooks', 'cook'].map((key) =>
           queryClient.invalidateQueries({ queryKey: [key] }),
         ),
-      ),
+      ]),
   });
 }
 
@@ -217,7 +220,7 @@ export function useJoinCircle(circleId: string) {
     onSuccess: () =>
       Promise.all(
         // Membership decides which recipes and pickers a person sees, so those refresh too.
-        ['circles', 'circle', 'my-circles', 'recipes'].map((key) =>
+        ['circles', 'circle', 'my-circles', 'recipes', 'cooks'].map((key) =>
           queryClient.invalidateQueries({ queryKey: [key] }),
         ),
       ),
