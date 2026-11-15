@@ -5,6 +5,7 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
+    "start:staging": "set -a && . ./.env.staging && set +a && expo start --clear",
     "ios": "expo run:ios",
     "android": "expo run:android",
     "web": "expo start --web",
@@ -12,7 +13,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "web:smoke": "playwright test --project=journeys --trace off",
-    "web:visual": "playwright test --project=visual --trace off"
+    "web:visual": "playwright test --project=visual --trace off",
+    "smoke:staging": "set -a && . ./.env.staging && set +a && playwright test -c playwright.staging.config.ts"
   },
   "dependencies": {
     "@formatjs/intl-getcanonicallocales": "3.3.1",

@@ -33,9 +33,14 @@ run against a real Supabase project. That is the first thing to do once the proj
 
 ## Needs the owner before launch
 
-1. **Supabase project (EU region).** URL, anon key, service-role key, and database password.
-   Then: run migrations, set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` as
-   EAS environment variables, schedule the reminders cron, deploy the edge functions.
+1. **Supabase project: created 2026-11-15** (`qxzbjkpggoekagvinazn`, EU, free plan, linked).
+   Done: all 31 migrations applied, the three edge functions deployed, public URL and anon key in
+   `apps/mobile/.env.staging` (git-ignored; `pnpm start:staging` and `pnpm smoke:staging` load
+   it). The staging smoke test passes: onboarding, typed city, Home, Explore.
+   Still open: seed (starter cities, optional demo people), the 6-digit code in the sign-in email
+   template, auth redirect URLs, cron schedules for `push-dispatch` (1 min) and
+   `cron-reminders` (15 min), `APP_WEB_URL` for `web-rsvp`, EAS env variables, Pro plan before
+   real users.
 2. **Email provider** (for example Postmark or Resend, EU): API key and a verified sending
    domain. Waitlist offers, changes, cancellations and moderation notices queue email rows that
    nothing sends yet.
