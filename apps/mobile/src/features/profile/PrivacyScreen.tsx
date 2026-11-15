@@ -8,6 +8,7 @@ import { Toggle } from '../../components/Toggle';
 import { useScreenInsets } from '../../components/useScreenInsets';
 import { useAuth } from '../auth/useAuth';
 import { useSetPeopleVisible } from '../people/queries';
+import { features } from '../../lib/features';
 
 /** Privacy choices. For now: whether members of your Circles can see you in People. */
 export default function PrivacyScreen() {
@@ -44,31 +45,33 @@ export default function PrivacyScreen() {
         >
           {t('profile.privacyLead')}
         </Text>
-        <View style={styles.card}>
-          <Toggle
-            label={t('people.visibleTitle')}
-            value={shown}
-            disabled={!profile || setVisible.isPending}
-            onValueChange={(next) => {
-              setVisible.mutate(next);
-            }}
-          />
-          <Text
-            maxFontSizeMultiplier={2.0}
-            style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}
-          >
-            {t('people.visibleLead')}
-          </Text>
-          {setVisible.isError ? (
+        {features.people ? (
+          <View style={styles.card}>
+            <Toggle
+              label={t('people.visibleTitle')}
+              value={shown}
+              disabled={!profile || setVisible.isPending}
+              onValueChange={(next) => {
+                setVisible.mutate(next);
+              }}
+            />
             <Text
               maxFontSizeMultiplier={2.0}
-              role="alert"
-              style={type(15, 'regular', { color: color.danger })}
+              style={type(15, 'regular', { color: color.secondary, leading: 1.5 })}
             >
-              {t('people.error')}
+              {t('people.visibleLead')}
             </Text>
-          ) : null}
-        </View>
+            {setVisible.isError ? (
+              <Text
+                maxFontSizeMultiplier={2.0}
+                role="alert"
+                style={type(15, 'regular', { color: color.danger })}
+              >
+                {t('people.error')}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
         <Pressable
           accessibilityRole="link"
           onPress={() => {

@@ -9,6 +9,7 @@ test('the Filters sheet narrows Plans by where and price, shows active chips, an
   page,
 }) => {
   await page.goto('/explore');
+  await page.getByRole('tab', { name: 'Plans', exact: true }).click();
   await expect(page.getByRole('link', { name: /West African Cooking Night/ })).toBeVisible();
   await page.getByRole('button', { name: 'Filters' }).click();
   await expect(page.getByRole('heading', { name: 'Filters' })).toBeVisible();

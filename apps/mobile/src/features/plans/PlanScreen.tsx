@@ -43,6 +43,7 @@ import { hasPushToken } from '../notifications/push';
 import { OfflineBanner } from '../../components/OfflineBanner';
 import { isOffline } from '../../lib/offlineCache';
 import { useAuth } from '../auth/useAuth';
+import { features } from '../../lib/features';
 import {
   addressNote,
   placeLabel,
@@ -481,7 +482,7 @@ function PlanView({
             />
           ) : null}
 
-          {bringItems.length > 0 ? (
+          {features.bringList && bringItems.length > 0 ? (
             <Section title={t('plan.bring')}>
               <View>
                 {bringItems.map((item) => {
@@ -684,7 +685,7 @@ function PlanView({
               variant="outline"
               label={t('plan.findOthers')}
               onPress={() => {
-                router.push('/explore');
+                router.push({ pathname: '/explore', params: { tab: 'plans' } });
               }}
               style={styles.cta}
             />
@@ -941,6 +942,8 @@ export default function PlanScreen() {
   }
 
   if (plan.data?.plan.category === 'group_order') {
+    // Group orders are switched off at launch: their links lead home.
+    if (!features.groupOrders) return <Redirect href="/home" />;
     return <Redirect href={{ pathname: '/order/[id]', params: { id: planId } }} />;
   }
   // Offline with a saved copy: the Plan stays readable; changes wait for the connection.

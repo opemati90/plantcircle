@@ -16,6 +16,7 @@ import { useDirectRequests, useRespondDirect } from '../chat/queries';
 import { newIdempotencyKey } from '../plans/queries';
 import { useBlockUser } from '../safety/queries';
 import { useConnectWithPerson, usePerson } from './queries';
+import { features } from '../../lib/features';
 
 /**
  * Someone from a shared Circle, before you connect or answer their message request. Shows who
@@ -157,23 +158,27 @@ function PersonView({ person, back }: { person: PersonProfile; back: React.React
           </View>
         </View>
 
-        <View style={styles.levelRow}>
-          {person.verified ? <VerifiedIcon /> : null}
-          <Text
-            maxFontSizeMultiplier={2.0}
-            style={type(15, 'semibold', { color: color.brand })}
-          >
-            {person.verified
-              ? t('person.verified')
-              : t('person.levelLine', { name: levelName, level: person.level })}
-          </Text>
-        </View>
+        {person.verified || features.hostingLevels ? (
+          <View style={styles.levelRow}>
+            {person.verified ? <VerifiedIcon /> : null}
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'semibold', { color: color.brand })}
+            >
+              {person.verified
+                ? t('person.verified')
+                : t('person.levelLine', { name: levelName, level: person.level })}
+            </Text>
+          </View>
+        ) : null}
 
-        <View style={styles.stats}>
-          <Stat value={person.recipes} label={t('person.statRecipes')} />
-          <Stat value={person.hosted} label={t('person.statHosted')} />
-          <Stat value={person.upvotes} label={t('person.statUpvotes')} />
-        </View>
+        {features.recipes ? (
+          <View style={styles.stats}>
+            <Stat value={person.recipes} label={t('person.statRecipes')} />
+            <Stat value={person.hosted} label={t('person.statHosted')} />
+            <Stat value={person.upvotes} label={t('person.statUpvotes')} />
+          </View>
+        ) : null}
 
         <Text maxFontSizeMultiplier={2.0} style={type(15, 'regular', { leading: 1.5 })}>
           {person.plansTogether > 0
@@ -199,7 +204,7 @@ function PersonView({ person, back }: { person: PersonProfile; back: React.React
           ))}
         </View>
 
-        {person.recentRecipes.length > 0 ? (
+        {features.recipes && person.recentRecipes.length > 0 ? (
           <>
             <Text
               maxFontSizeMultiplier={2.0}
@@ -298,7 +303,8 @@ function PersonView({ person, back }: { person: PersonProfile; back: React.React
         ) : null}
 
         <View style={styles.actions}>
-          {person.connection === 'none' ? (
+          {!features.people && person.connection !== 'connected' ? null : person.connection ===
+            'none' ? (
             <Button
               label={t('people.connect')}
               accessibilityLabel={t('people.connectWith', { name: person.displayName })}

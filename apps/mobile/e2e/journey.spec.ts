@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
   await freezeTime(page);
 });
 
-test('first run: pick a city, browse, sign up with an email code, join, bring something, cancel', async ({
+test('first run: pick a city, browse, sign up with an email code, join, cancel', async ({
   page,
 }) => {
   await page.goto('/');
@@ -66,15 +66,6 @@ test('first run: pick a city, browse, sign up with an email code, join, bring so
   await expect(page.getByText('3 of 8 spots left')).toBeVisible();
   await expect(page.getByText('Address unlocks Friday, 17:00')).toBeVisible();
 
-  await page.getByRole('button', { name: 'I’ll bring it: Plantains' }).click();
-  await expect(page.getByText('You’re bringing this')).toBeVisible();
-
-  // Withdrawing frees the place again; bringing it once more keeps the rest of the journey as it was.
-  await page.getByRole('button', { name: 'Withdraw Plantains' }).click();
-  await expect(page.getByRole('button', { name: 'I’ll bring it: Plantains' })).toBeVisible();
-  await page.getByRole('button', { name: 'I’ll bring it: Plantains' }).click();
-  await expect(page.getByText('You’re bringing this')).toBeVisible();
-
   await page.goto('/home');
   await expect(page.getByText('Good evening, Lena')).toBeVisible();
   // Your Plans carries the nudge for the next Plan.
@@ -87,7 +78,6 @@ test('first run: pick a city, browse, sign up with an email code, join, bring so
   await page.getByRole('button', { name: 'Cancel my spot' }).click();
   await expect(page.getByRole('button', { name: 'Join', exact: true })).toBeVisible();
   await expect(page.getByText('4 people are going')).toBeVisible();
-  await expect(page.getByText('1 of 2 still open')).toBeVisible();
 });
 
 test('skipping the city lands on online Plans from anywhere', async ({ page }) => {
@@ -157,13 +147,4 @@ test('signing out returns Home to the anonymous state', async ({ page }) => {
   await page.goto('/profile');
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
-});
-
-test('Home filters narrow the list', async ({ page }) => {
-  await page.goto('/home');
-  await page.getByRole('radio', { name: 'Social' }).click();
-  await expect(page.getByRole('link', { name: /Sunday Community Potluck/ })).toBeVisible();
-  await expect(page.getByRole('link', { name: /West African Cooking Night/ })).toHaveCount(0);
-  await page.getByRole('radio', { name: 'Online' }).click();
-  await expect(page.getByText('No Plans match this filter this week.')).toBeVisible();
 });

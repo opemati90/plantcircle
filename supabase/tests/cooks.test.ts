@@ -71,7 +71,7 @@ const post = async (
   const path = options.path ?? (await upload(user));
   return asUser(db, user, () =>
     db.query<{ result: { id: string } }>(
-      'select public.cook_create($1, $2, $3, $4, $5, $6) as result',
+      'select public.cook_create($1, $2, $3, $4, $5, null, $6) as result',
       [
         options.circle ?? KITCHEN,
         options.recipe ?? null,

@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail, type FixtureWindow } from './support';
+import { enableAllFeatures, freezeTime, signInWithEmail, type FixtureWindow } from './support';
 
 test.beforeEach(async ({ page }) => {
+  await enableAllFeatures(page);
   await freezeTime(page);
 });
 
@@ -38,7 +39,7 @@ test('reporting a person can also block them; blocked people are listed under Pr
   page,
 }) => {
   await signInWithEmail(page, '/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();

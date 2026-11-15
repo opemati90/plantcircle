@@ -19,6 +19,7 @@ import {
 import { useAuth } from '../auth/useAuth';
 import { newIdempotencyKey, useCities } from '../plans/queries';
 import { HostLevelCard } from '../hosting/HostLevelCard';
+import { features } from '../../lib/features';
 import { useHostLevel } from '../hosting/queries';
 import { useRecipe } from '../learn/queries';
 import { useCreatePlan } from './queries';
@@ -262,7 +263,7 @@ export default function CreatePlanScreen() {
       </View>
     );
   }
-  // Hosting is earned: nothing to publish until a recipe is shared (design note §2).
+  // Hosting is earned: three posts first (the launch rule, migration 20261112003400).
   if (hostLevel.data.level === 0) {
     return (
       <View style={styles.screen}>
@@ -275,12 +276,19 @@ export default function CreatePlanScreen() {
               <Button
                 label={t('hosting.gateAction')}
                 onPress={() => {
-                  router.replace('/recipe/new');
+                  router.replace('/cook/new');
                 }}
               />
             }
           />
-          <HostLevelCard level={hostLevel.data} />
+          <Text
+            maxFontSizeMultiplier={2.0}
+            role="status"
+            style={[type(15, 'semibold', { color: color.brand }), styles.gateProgress]}
+          >
+            {t('hosting.gateProgress', { count: Math.min(3, hostLevel.data.posts) })}
+          </Text>
+          {features.hostingLevels ? <HostLevelCard level={hostLevel.data} /> : null}
         </View>
       </View>
     );
@@ -361,23 +369,25 @@ export default function CreatePlanScreen() {
                   </Pressable>
                 );
               })}
-              <Pressable
-                accessibilityRole="link"
-                onPress={() => {
-                  router.push('/create/order');
-                }}
-                style={styles.tile}
-              >
-                <Text
-                  maxFontSizeMultiplier={2.0}
-                  style={type(17, 'semibold', { tracking: -0.3 })}
+              {features.groupOrders ? (
+                <Pressable
+                  accessibilityRole="link"
+                  onPress={() => {
+                    router.push('/create/order');
+                  }}
+                  style={styles.tile}
                 >
-                  {t('plan.category.group_order')}
-                </Text>
-                <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
-                  {t('create.hintGroupOrder')}
-                </Text>
-              </Pressable>
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    style={type(17, 'semibold', { tracking: -0.3 })}
+                  >
+                    {t('plan.category.group_order')}
+                  </Text>
+                  <Text maxFontSizeMultiplier={2.0} style={styles.lead}>
+                    {t('create.hintGroupOrder')}
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
           </>
         ) : null}
@@ -713,6 +723,7 @@ const styles = StyleSheet.create({
     borderColor: extra.cardBorder,
   },
   tileSelected: { borderColor: color.brand, backgroundColor: color.brandTint },
+  gateProgress: { textAlign: 'center' },
   dayStrip: { gap: 8, paddingVertical: 4 },
   day: {
     width: 64,

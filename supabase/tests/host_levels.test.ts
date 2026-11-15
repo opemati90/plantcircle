@@ -16,6 +16,7 @@ const hours = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
 
 type Level = {
   level: number;
+  posts: number;
   recipes: number;
   hosted: number;
   followers: number;
@@ -102,81 +103,71 @@ beforeEach(async () => {
   );
 });
 
+/** Shares a Cooked it post (the launch hosting rule counts these). */
+const cook = async (user: string) => {
+  const path = `${user}/c0000000-0000-4000-8000-${String((n += 1)).padStart(12, '0')}.jpg`;
+  await db.query(
+    `insert into public.cook_uploads (photo_path, user_id, width, height, stored_at) values ($1, $2, 1200, 1500, now())`,
+    [path, user],
+  );
+  await asUser(db, user, () =>
+    db.query(`select public.cook_create($1, null, 'Dal', $2, null, null, $3)`, [
+      KITCHEN,
+      path,
+      key(),
+    ]),
+  );
+};
+
 describe('hosting is earned', () => {
-  it('starts at level 0: no Plans or orders until a recipe is shared; one recipe opens small online Plans', async () => {
+  it('starts at level 0; three posts open online Plans up to 12 spots', async () => {
     expect(await level(AUTHOR)).toEqual(
       expect.objectContaining({
         level: 0,
+        posts: 0,
         max_capacity: 0,
         in_person: false,
-        next: expect.objectContaining({ level: 1, recipes: 1 }),
+        next: expect.objectContaining({ level: 1, posts: 3, account_days: 0 }),
       }),
     );
     await expect(plan(AUTHOR, 'online', 4)).rejects.toThrow(/host_level_required/);
     await expect(order(AUTHOR)).rejects.toThrow(/host_level_required/);
 
+    // Recipes no longer count.
     await recipe(AUTHOR, 'Efo Riro');
-    expect(await level(AUTHOR)).toEqual(
-      expect.objectContaining({ level: 1, recipes: 1, max_capacity: 6, in_person: false }),
-    );
-    await expect(plan(AUTHOR, 'in_person', 4)).rejects.toThrow(/host_level_in_person/);
-    await expect(plan(AUTHOR, 'online', 7)).rejects.toThrow(/host_level_capacity/);
-    await expect(order(AUTHOR)).rejects.toThrow(/host_level_required/);
-    const made = await plan(AUTHOR, 'online', 6);
-    expect(made.rows[0]?.r.id).toMatch(/^[0-9a-f-]{36}$/);
-    const card = await asUser(db, null, () =>
-      db.query<{ host_featured: boolean }>(
-        'select host_featured from public.plan_cards where id = $1',
-        [made.rows[0]?.r.id],
-      ),
-    );
-    expect(card.rows[0]?.host_featured).toBe(false);
-  });
-
-  it('reaches level 2 with three recipes, a hosted Plan that got feedback and ten followers', async () => {
-    for (const t of ['A', 'B', 'C']) await recipe(AUTHOR, `Recipe ${t}`);
-    const hosted = await plan(AUTHOR, 'online', 6);
-    const planId = hosted.rows[0]?.r.id ?? '';
-    for (let i = 0; i < 10; i += 1) {
-      const r = await asUser(db, fan(i), () =>
-        db.query<{ f: { following: boolean } }>('select public.follow_set($1, true) as f', [
-          AUTHOR,
-        ]),
-      );
-      expect(r.rows[0]?.f.following).toBe(true);
-    }
-    // Still level 1: the Plan has not happened yet.
-    expect((await level(AUTHOR))?.level).toBe(1);
-    expect((await level(AUTHOR))?.followers).toBe(10);
-    await db.query(
-      `update public.plans set starts_at = now() - interval '3 hours', ends_at = now() - interval '1 hour' where id = $1`,
-      [planId],
-    );
-    await db.query(
-      `insert into public.rsvps (plan_id, user_id, state) values ($1, $2, 'going')`,
-      [planId, MEMBER],
-    );
-    await db.query(
-      `insert into public.plan_feedback (plan_id, user_id, rating) values ($1, $2, 5)`,
-      [planId, MEMBER],
-    );
+    expect((await level(AUTHOR))?.level).toBe(0);
+    for (let i = 0; i < 3; i += 1) await cook(AUTHOR);
     expect(await level(AUTHOR)).toEqual(
       expect.objectContaining({
-        level: 2,
-        hosted: 1,
+        level: 1,
+        posts: 3,
         max_capacity: 12,
-        in_person: true,
-        group_orders: true,
-        next: expect.objectContaining({ level: 3, followers: 100 }),
+        in_person: false,
+        next: expect.objectContaining({ level: 2, account_days: 14 }),
       }),
+    );
+    await expect(plan(AUTHOR, 'in_person', 4)).rejects.toThrow(/host_level_in_person/);
+    await expect(plan(AUTHOR, 'online', 13)).rejects.toThrow(/host_level_capacity/);
+    const made = await plan(AUTHOR, 'online', 12);
+    expect(made.rows[0]?.r.id).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it('opens in-person Plans once the account is two weeks old; a removed post stops counting', async () => {
+    for (let i = 0; i < 3; i += 1) await cook(AUTHOR);
+    await db.query(
+      `update public.profiles set created_at = now() - interval '15 days' where id = $1`,
+      [AUTHOR],
+    );
+    expect(await level(AUTHOR)).toEqual(
+      expect.objectContaining({ level: 2, max_capacity: 12, in_person: true, next: null }),
     );
     const inPerson = await plan(AUTHOR, 'in_person', 12);
     expect(inPerson.rows[0]?.r.id).toBeTruthy();
     await expect(plan(AUTHOR, 'in_person', 13)).rejects.toThrow(/host_level_capacity/);
-    await order(AUTHOR);
-    // Unfollowing drops the count; the level follows the counts.
-    await asUser(db, fan(0), () => db.query('select public.follow_set($1, false)', [AUTHOR]));
-    expect((await level(AUTHOR))?.level).toBe(1);
+    await db.query(
+      `update public.cooks set removed_at = now() where id = (select id from public.cooks limit 1)`,
+    );
+    expect((await level(AUTHOR))?.level).toBe(0);
     // A staff-verified host is level 3 whatever the counts.
     await db.query('update public.profiles set is_verified_host = true where id = $1', [
       AUTHOR,
@@ -184,7 +175,20 @@ describe('hosting is earned', () => {
     expect(await level(AUTHOR)).toEqual(
       expect.objectContaining({ level: 3, max_capacity: 30, next: null }),
     );
-    // Featured: the badge Explore shows, on every Plan of a level-3 or verified host.
+    const planId = inPerson.rows[0]?.r.id ?? '';
+    // The profile others see agrees with host_level().
+    await db.query('update public.profiles set is_verified_host = false where id = $1', [
+      AUTHOR,
+    ]);
+    await db.query('update public.cooks set removed_at = null');
+    await db.query('update public.profiles set people_visible = true where id = $1', [AUTHOR]);
+    const seen = await asUser(db, MEMBER, () =>
+      db.query<{ p: { level: number } }>('select public.person_profile($1) as p', [AUTHOR]),
+    );
+    expect(seen.rows[0]?.p.level).toBe(2);
+    await db.query('update public.profiles set is_verified_host = true where id = $1', [
+      AUTHOR,
+    ]);
     const cards = await asUser(db, null, () =>
       db.query<{ host_featured: boolean }>(
         'select host_featured from public.plan_cards where id = $1',
@@ -192,44 +196,6 @@ describe('hosting is earned', () => {
       ),
     );
     expect(cards.rows[0]?.host_featured).toBe(true);
-    // The stored flag follows the counts: refreshed on writes and by the cron.
-    await db.query('update public.profiles set is_verified_host = false where id = $1', [
-      AUTHOR,
-    ]);
-    expect(
-      (
-        await db.query<{ f: boolean }>(
-          'select featured_host as f from public.profiles where id = $1',
-          [AUTHOR],
-        )
-      ).rows[0]?.f,
-    ).toBe(false);
-    await db.query('update public.profiles set featured_host = true where id = $1', [AUTHOR]);
-    expect(
-      (
-        await asUser(db, null, () =>
-          db.query<{ host_featured: boolean }>(
-            'select host_featured from public.plan_cards where id = $1',
-            [planId],
-          ),
-        )
-      ).rows[0]?.host_featured,
-    ).toBe(true);
-    expect(
-      (await db.query<{ n: number }>('select public.host_featured_refresh_all() as n')).rows[0]
-        ?.n,
-    ).toBeGreaterThan(0);
-    expect(
-      (
-        await db.query<{ f: boolean }>(
-          'select featured_host as f from public.profiles where id = $1',
-          [AUTHOR],
-        )
-      ).rows[0]?.f,
-    ).toBe(false);
-    await expect(
-      asUser(db, null, () => db.query('select public.host_is_featured($1)', [AUTHOR])),
-    ).rejects.toThrow(/permission denied/);
   });
 
   it('follows need a visible, unblocked other person; a block ends them; standing and tenure count', async () => {
@@ -264,7 +230,7 @@ describe('hosting is earned', () => {
     // A brand-new account that never showed up does not count yet; checking in at a Plan does.
     await db.query('update public.profiles set created_at = now() where id = $1', [MEMBER]);
     expect((await level(AUTHOR))?.followers).toBe(0);
-    await recipe(AUTHOR, 'Efo Riro');
+    for (let i = 0; i < 3; i += 1) await cook(AUTHOR);
     const planId = (await plan(AUTHOR, 'online', 6)).rows[0]?.r.id ?? '';
     await db.query(
       `insert into public.rsvps (plan_id, user_id, state, checked_in_at) values ($1, $2, 'checked_in', now())`,

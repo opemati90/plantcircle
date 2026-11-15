@@ -392,6 +392,8 @@ export interface FixtureCook {
   height: number;
   hoursAgo: number;
   reactions: number;
+  /** An entry in its Circle's challenge for the week it was posted in. */
+  forChallenge?: boolean;
 }
 
 export const fixtureCooks: FixtureCook[] = [
@@ -422,6 +424,7 @@ export const fixtureCooks: FixtureCook[] = [
     height: 1500,
     hoursAgo: 20,
     reactions: 3,
+    forChallenge: true,
   },
   {
     id: 'cook-jonas-together',

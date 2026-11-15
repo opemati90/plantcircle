@@ -65,6 +65,14 @@ export const FilterIcon = stroke(
   </>,
 );
 
+/** Three overlapping rings: the Circles tab. */
+export const CirclesIcon = stroke(
+  <>
+    <Circle cx="9" cy="9.5" r="5" />
+    <Circle cx="15" cy="9.5" r="5" />
+    <Circle cx="12" cy="15" r="5" />
+  </>,
+);
 export const CompassIcon = stroke(
   <>
     <Circle cx="12" cy="12" r="9" />

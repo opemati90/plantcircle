@@ -1,74 +1,40 @@
 import type { HostLevel, HostStats } from '../../lib/backend/types';
 
 /**
- * The same thresholds as `host_levels` in the database (migration 20261112002000). The fixture
- * backend computes a level from them; the real one asks the server, which is the source of truth.
+ * The same thresholds as `host_levels` in the database (migration 20261112003400, the launch
+ * rule): three posts open online Plans, and an account two weeks old opens in-person ones too.
+ * Level 3 is only for staff-verified hosts. The fixture backend computes a level from these; the
+ * real one asks the server, which is the source of truth.
  */
 export const HOST_LEVELS = [
-  {
-    level: 1,
-    recipes: 1,
-    hosted: 0,
-    followers: 0,
-    upvotes: 0,
-    maxCapacity: 6,
-    inPerson: false,
-    groupOrders: false,
-  },
-  {
-    level: 2,
-    recipes: 3,
-    hosted: 1,
-    followers: 10,
-    upvotes: 0,
-    maxCapacity: 12,
-    inPerson: true,
-    groupOrders: true,
-  },
-  {
-    level: 3,
-    recipes: 3,
-    hosted: 1,
-    followers: 100,
-    upvotes: 2000,
-    maxCapacity: 30,
-    inPerson: true,
-    groupOrders: true,
-  },
+  { level: 1, posts: 3, accountDays: 0, maxCapacity: 12, inPerson: false, groupOrders: false },
+  { level: 2, posts: 3, accountDays: 14, maxCapacity: 12, inPerson: true, groupOrders: true },
 ] as const;
+const VERIFIED = { level: 3, maxCapacity: 30, inPerson: true, groupOrders: true } as const;
 
 export function hostLevelFrom(stats: HostStats, verified = false): HostLevel {
   let current = 0;
-  if (verified) {
-    current = HOST_LEVELS[HOST_LEVELS.length - 1]?.level ?? 0;
-  } else {
-    for (const row of HOST_LEVELS) {
-      if (
-        stats.recipes < row.recipes ||
-        stats.hosted < row.hosted ||
-        stats.followers < row.followers ||
-        stats.upvotes < row.upvotes
-      ) {
-        break;
-      }
-      current = row.level;
-    }
+  for (const row of HOST_LEVELS) {
+    if (stats.posts < row.posts || stats.accountDays < row.accountDays) break;
+    current = row.level;
   }
-  const row = HOST_LEVELS.find((r) => r.level === current);
-  const next = HOST_LEVELS.find((r) => r.level === current + 1);
+  const row = verified ? VERIFIED : HOST_LEVELS.find((r) => r.level === current);
+  const next = verified ? undefined : HOST_LEVELS.find((r) => r.level === current + 1);
   return {
-    level: current,
     ...stats,
+    level: verified ? VERIFIED.level : current,
     maxCapacity: row?.maxCapacity ?? 0,
     inPerson: row?.inPerson ?? false,
     groupOrders: row?.groupOrders ?? false,
     next: next
       ? {
           level: next.level,
-          recipes: next.recipes,
-          hosted: next.hosted,
-          followers: next.followers,
-          upvotes: next.upvotes,
+          recipes: 0,
+          hosted: 0,
+          followers: 0,
+          upvotes: 0,
+          posts: next.posts,
+          accountDays: next.accountDays,
           maxCapacity: next.maxCapacity,
           inPerson: next.inPerson,
           groupOrders: next.groupOrders,
@@ -77,11 +43,8 @@ export function hostLevelFrom(stats: HostStats, verified = false): HostLevel {
   };
 }
 
-/** What is still missing for the next level, in the order it is worth doing: recipes first. */
-export function nextSteps(level: HostLevel): { key: keyof HostStats; missing: number }[] {
-  if (!level.next) return [];
-  const keys: (keyof HostStats)[] = ['recipes', 'hosted', 'followers', 'upvotes'];
-  return keys
-    .map((key) => ({ key, missing: Math.max(0, (level.next?.[key] ?? 0) - level[key]) }))
-    .filter((step) => step.missing > 0);
+/** Posts still to share before hosting opens; zero once it has (a verified host needs none). */
+export function postsToHost(level: HostLevel): number {
+  if (level.level > 0) return 0;
+  return Math.max(0, HOST_LEVELS[0].posts - level.posts);
 }

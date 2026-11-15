@@ -41,7 +41,7 @@ export function HomeCooks() {
     <View style={styles.section}>
       <View style={styles.header}>
         <Text
-          maxFontSizeMultiplier={1.6}
+          maxFontSizeMultiplier={2.0}
           accessibilityRole="header"
           aria-level={2}
           style={[type(22, 'bold', { tracking: -0.6 }), styles.title]}

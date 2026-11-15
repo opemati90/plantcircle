@@ -14,7 +14,7 @@ test('sign-up waits for the age confirmation, and the under-18 path stores nothi
   await page.getByRole('link', { name: 'I’m under 18' }).click();
   await expect(page.getByRole('heading', { name: 'PlantCircle is for adults' })).toBeVisible();
   await expect(page.getByText('We haven’t saved any of your details.')).toBeVisible();
-  await page.getByRole('button', { name: 'Browse public recipes' }).click();
+  await page.getByRole('button', { name: 'Look around' }).click();
   await expect(page).toHaveURL(/explore/);
   await page.goto('/under-18');
   await page.getByRole('button', { name: 'Got it' }).click();
@@ -49,5 +49,5 @@ test('a new required Terms version blocks the tabs until accepted; Profile shows
   await expect(page.getByRole('button', { name: /I don’t agree/ })).toBeVisible();
   await page.getByRole('button', { name: 'Accept and continue' }).click();
   await expect(page).toHaveURL(/home/);
-  await expect(page.getByRole('heading', { name: 'This week' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'This week', exact: true })).toBeVisible();
 });

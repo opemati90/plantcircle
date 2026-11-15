@@ -21,6 +21,7 @@ import {
   useHostSummary,
 } from './queries';
 import { BringSection } from './BringSection';
+import { features } from '../../lib/features';
 import { canEnd, checkinOpen } from './rules';
 
 const STATE_LABEL: Record<
@@ -306,7 +307,9 @@ export default function ManageScreen() {
           }}
         />
 
-        <BringSection planId={id} items={plan.data.bringItems} editable={itemsEditable} />
+        {features.bringList ? (
+          <BringSection planId={id} items={plan.data.bringItems} editable={itemsEditable} />
+        ) : null}
 
         {editable || cancellable ? (
           <View style={styles.edit}>

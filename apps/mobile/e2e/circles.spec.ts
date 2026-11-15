@@ -9,7 +9,7 @@ test('a member joins an open Circle and asks to join one that needs approval', a
   page,
 }) => {
   await signInWithEmail(page, '/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await expect(page.getByRole('link', { name: /Budget Plant Cooking/ })).toBeVisible();
   await expect(page.getByRole('link', { name: /Neukölln Plant Kitchen/ })).toBeVisible();
 
@@ -18,7 +18,7 @@ test('a member joins an open Circle and asks to join one that needs approval', a
   await expect(page.getByText('You’re a member').last()).toBeVisible();
 
   await page.goto('/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Budget Plant Cooking/ }).click();
   await page.getByRole('button', { name: 'Ask to join' }).click();
   // The request screen, as the CircleRequest design has it.
@@ -39,8 +39,8 @@ test('a member starts a Circle from Explore and lands on its page', async ({ pag
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: 'Change city' }).click();
   await chooseCity(page, 'Berlin');
-  await page.getByRole('tab', { name: 'Explore' }).click();
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles' }).last().click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('button', { name: 'Start a Circle' }).click();
   await page.getByRole('textbox', { name: 'Name' }).fill('Vegan bakers');
   await page.getByRole('button', { name: 'Create Circle' }).click();
@@ -52,8 +52,8 @@ test('an owner reviews a request to their Circle and approves it', async ({ page
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: 'Change city' }).click();
   await chooseCity(page, 'Berlin');
-  await page.getByRole('tab', { name: 'Explore' }).click();
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles' }).last().click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('button', { name: 'Start a Circle' }).click();
   await page.getByRole('textbox', { name: 'Name' }).fill('Pickling party');
   await page.getByRole('radio', { name: /With approval/ }).click();
@@ -69,7 +69,7 @@ test('an owner reviews a request to their Circle and approves it', async ({ page
 
 test('a member can leave a Circle', async ({ page }) => {
   await signInWithEmail(page, '/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();

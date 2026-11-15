@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { chooseCity, freezeTime, signInWithEmail } from './support';
+import { enableAllFeatures, chooseCity, freezeTime, signInWithEmail } from './support';
 
 test.beforeEach(async ({ page }) => {
+  await enableAllFeatures(page);
   await freezeTime(page);
 });
 

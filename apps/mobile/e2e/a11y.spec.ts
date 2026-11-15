@@ -43,7 +43,7 @@ for (const [name, path, ready] of [
     page,
   }) => {
     await page.goto(path);
-    await expect(page.getByRole('heading', { name: ready })).toBeVisible();
+    await expect(page.getByRole('heading', { name: ready, exact: true })).toBeVisible();
     await expectNoViolations(page);
   });
 }
@@ -84,7 +84,11 @@ test('the waitlist offer screen has no detectable violations', async ({ page }) 
 });
 
 for (const [name, path, ready] of [
-  ['explore', '/explore', 'Explore'],
+  ['circles', '/explore', 'Circles'],
+  ['this week', '/home', 'This week'],
+  ['cooked feed', '/cooks', 'Cooked in your Circles'],
+  ['share what you cooked', '/cook/new', 'Share what you cooked'],
+  ['your posts', '/profile/posts', 'Your posts'],
   ['my plans', '/my-plans', 'My Plans'],
   ['profile', '/profile', 'Profile'],
   ['notification settings', '/profile/notifications', 'Notifications'],
@@ -113,7 +117,7 @@ test('create Plan, a recipe, a joined Plan and the city sheet have no detectable
   await expectNoViolations(page);
 
   await page.goto('/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();

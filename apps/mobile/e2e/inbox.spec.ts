@@ -9,7 +9,7 @@ test('the inbox lists a joined Circle and the request, filters by kind, and open
   page,
 }) => {
   await signInWithEmail(page, '/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();
@@ -25,7 +25,7 @@ test('the inbox lists a joined Circle and the request, filters by kind, and open
 
   await page.getByRole('tab', { name: 'Direct', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Nothing here yet' })).toBeVisible();
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await expect(page.getByRole('heading', { name: 'Circle chat' })).toBeVisible();
 });

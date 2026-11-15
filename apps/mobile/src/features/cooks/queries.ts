@@ -95,6 +95,7 @@ export function useShareCook() {
       recipeId: string | null;
       caption: string;
       photoAlt: string | null;
+      challengeWeek: string | null;
       key: string;
     }) => {
       let path = input.uploadedPath;
@@ -109,15 +110,55 @@ export function useShareCook() {
           caption: input.caption,
           photoAlt: input.photoAlt,
           photoPath: path,
+          challengeWeek: input.challengeWeek,
         },
         input.key,
       );
     },
     onSuccess: () =>
+      Promise.all(
+        ['cooks', 'myCooks', 'challenge', 'cookStreak', 'hostLevel'].map((name) =>
+          queryClient.invalidateQueries({ queryKey: [name] }),
+        ),
+      ),
+  });
+}
+
+/** This week's challenge in a Circle (members only). */
+export function useCircleChallenge(circleId: string | null, enabled = true) {
+  const backend = useBackend();
+  const { session } = useAuth();
+  return useQuery({
+    queryKey: ['challenge', circleId, session?.userId ?? null],
+    queryFn: () => backend.getCircleChallenge(circleId ?? ''),
+    enabled: enabled && Boolean(session) && circleId !== null,
+    staleTime: FRESH_MS,
+  });
+}
+
+export function useSetCircleChallenge(circleId: string) {
+  const backend = useBackend();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { weekStart: string; theme: string | null; key: string }) =>
+      backend.setCircleChallenge(circleId, input.weekStart, input.theme, input.key),
+    onSuccess: () =>
       Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['challenge', circleId] }),
         queryClient.invalidateQueries({ queryKey: ['cooks'] }),
-        queryClient.invalidateQueries({ queryKey: ['myCooks'] }),
       ]),
+  });
+}
+
+/** The viewer's own weeks with a post. */
+export function useCookStreak(enabled = true) {
+  const backend = useBackend();
+  const { session } = useAuth();
+  return useQuery({
+    queryKey: ['cookStreak', session?.userId ?? null],
+    queryFn: () => backend.getCookStreak(),
+    enabled: enabled && Boolean(session),
+    staleTime: FRESH_MS,
   });
 }
 
@@ -151,10 +192,11 @@ export function useDeleteCook() {
           : data,
       );
       queryClient.removeQueries({ queryKey: ['cook', cookId] });
-      return Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['cooks'] }),
-        queryClient.invalidateQueries({ queryKey: ['myCooks'] }),
-      ]);
+      return Promise.all(
+        ['cooks', 'myCooks', 'challenge', 'cookStreak', 'hostLevel'].map((name) =>
+          queryClient.invalidateQueries({ queryKey: [name] }),
+        ),
+      );
     },
   });
 }

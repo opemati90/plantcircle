@@ -17,6 +17,18 @@ listed as needing the owner.
 The app has only been run against the fixture backend and the in-memory database. It has never
 run against a real Supabase project. That is the first thing to do once the project exists.
 
+## Launch scope (2026-11-15)
+
+The owner narrowed the launch to one rhythm: every Circle is a weekly cook club
+(`docs/superpowers/specs/2026-11-15-lean-core-design.md`). Four tabs (This week, Circles,
+Inbox, Profile); a weekly challenge per Circle; Cooked it posts; the table (a cook-together Plan).
+Hidden at launch but kept in code and tests (`apps/mobile/src/lib/features.ts`): group orders,
+recipes as a section, People and connecting, the bring list, hosting levels in the interface.
+Hosting: 3 posts open online Plans, a 2-week-old account opens in-person ones.
+Known and accepted: the group order RPCs and their push notifications still exist on the
+server; nothing in the launch app can create an order, so they stay silent. Switching group
+orders back on needs no database change.
+
 ## What the MVP does
 
 - Onboarding with goals and a typed city (global, no prebuilt list); skip lands on online Plans.

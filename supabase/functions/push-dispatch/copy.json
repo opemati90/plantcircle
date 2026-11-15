@@ -18,9 +18,9 @@
       "unread": "Unread",
       "generic": "Update",
       "rsvpConfirmed": "You’re going to {{plan}}",
-      "rsvpConfirmedNote": "See the details and what to bring.",
+      "rsvpConfirmedNote": "See the time, the place and the chat.",
       "reminderDayBefore": "Tomorrow {{time}} · {{plan}}",
-      "reminderNote": "Check what you’re bringing.",
+      "reminderNote": "See the details and the Plan chat.",
       "addressUnlocked": "The address for {{plan}} is ready",
       "addressUnlockedNote": "Open the Plan to see it.",
       "waitlistOffer": "A spot opened at {{plan}}",
@@ -74,7 +74,7 @@
       "notNow": "Not now",
       "sampleNow": "now",
       "sampleOffer": "A spot opened at Vegan Ramen Workshop — confirm within 2 hours",
-      "sampleReminder": "Tomorrow 17:00 · West African Cooking Night. You’re bringing plantains."
+      "sampleReminder": "Tomorrow 17:00 · West African Cooking Night"
     },
     "appName": "PlantCircle"
   },
@@ -97,9 +97,9 @@
       "unread": "Ungelesen",
       "generic": "Update",
       "rsvpConfirmed": "Du bist dabei bei {{plan}}",
-      "rsvpConfirmedNote": "Sieh dir die Details an und was du mitbringst.",
+      "rsvpConfirmedNote": "Sieh dir Zeit, Ort und Chat an.",
       "reminderDayBefore": "Morgen {{time}} · {{plan}}",
-      "reminderNote": "Schau nach, was du mitbringst.",
+      "reminderNote": "Sieh dir die Details und den Chat zum Plan an.",
       "addressUnlocked": "Die Adresse für {{plan}} ist da",
       "addressUnlockedNote": "Öffne den Plan, um sie zu sehen.",
       "waitlistOffer": "Ein Platz ist frei bei {{plan}}",
@@ -153,7 +153,7 @@
       "notNow": "Jetzt nicht",
       "sampleNow": "jetzt",
       "sampleOffer": "Ein Platz ist frei beim Workshop für vegane Ramen – bestätige innerhalb von 2 Stunden",
-      "sampleReminder": "Morgen 17:00 · Westafrikanischer Kochabend. Du bringst Kochbananen mit."
+      "sampleReminder": "Morgen 17:00 · Westafrikanischer Kochabend"
     },
     "appName": "PlantCircle"
   },
@@ -176,9 +176,9 @@
       "unread": "Sin leer",
       "generic": "Novedad",
       "rsvpConfirmed": "Vas a {{plan}}",
-      "rsvpConfirmedNote": "Mira los detalles y qué llevar.",
+      "rsvpConfirmedNote": "Mira la hora, el lugar y el chat.",
       "reminderDayBefore": "Mañana {{time}} · {{plan}}",
-      "reminderNote": "Revisa qué llevas.",
+      "reminderNote": "Mira los detalles y el chat del plan.",
       "addressUnlocked": "La dirección de {{plan}} está lista",
       "addressUnlockedNote": "Abre el Plan para verla.",
       "waitlistOffer": "Se liberó una plaza en {{plan}}",
@@ -232,7 +232,7 @@
       "notNow": "Ahora no",
       "sampleNow": "ahora",
       "sampleOffer": "Se liberó una plaza en el taller de ramen vegano: confirma antes de que pasen 2 horas",
-      "sampleReminder": "Mañana 17:00 · Noche de cocina de África occidental. Llevas plátanos macho."
+      "sampleReminder": "Mañana 17:00 · Noche de cocina de África occidental"
     },
     "appName": "PlantCircle"
   },
@@ -255,9 +255,9 @@
       "unread": "Por ler",
       "generic": "Novidade",
       "rsvpConfirmed": "Vais a {{plan}}",
-      "rsvpConfirmedNote": "Vê os detalhes e o que levar.",
+      "rsvpConfirmedNote": "Vê a hora, o local e a conversa.",
       "reminderDayBefore": "Amanhã {{time}} · {{plan}}",
-      "reminderNote": "Confirma o que levas.",
+      "reminderNote": "Vê os detalhes e a conversa do plano.",
       "addressUnlocked": "A morada de {{plan}} está pronta",
       "addressUnlockedNote": "Abre o Plano para a ver.",
       "waitlistOffer": "Abriu um lugar em {{plan}}",
@@ -311,7 +311,7 @@
       "notNow": "Agora não",
       "sampleNow": "agora",
       "sampleOffer": "Abriu uma vaga na Oficina de Ramen Vegano — confirme dentro de 2 horas",
-      "sampleReminder": "Amanhã 17:00 · Noite de Cozinha da África Ocidental. Você leva bananas-pão."
+      "sampleReminder": "Amanhã 17:00 · Noite de Cozinha da África Ocidental"
     },
     "appName": "PlantCircle"
   },
@@ -334,9 +334,9 @@
       "unread": "Non lu",
       "generic": "Actu",
       "rsvpConfirmed": "Tu participes à {{plan}}",
-      "rsvpConfirmedNote": "Vois les détails et quoi apporter.",
+      "rsvpConfirmedNote": "Vois l’heure, le lieu et la discussion.",
       "reminderDayBefore": "Demain {{time}} · {{plan}}",
-      "reminderNote": "Vérifie ce que tu apportes.",
+      "reminderNote": "Vois les détails et la discussion du plan.",
       "addressUnlocked": "L’adresse de {{plan}} est prête",
       "addressUnlockedNote": "Ouvre le Plan pour la voir.",
       "waitlistOffer": "Une place s’est libérée à {{plan}}",
@@ -390,7 +390,7 @@
       "notNow": "Pas maintenant",
       "sampleNow": "maintenant",
       "sampleOffer": "Une place s’est libérée à l’atelier de ramen végan — confirme dans les 2 heures",
-      "sampleReminder": "Demain 17:00 · Soirée cuisine ouest-africaine. Tu apportes des bananes plantain."
+      "sampleReminder": "Demain 17:00 · Soirée cuisine ouest-africaine"
     },
     "appName": "PlantCircle"
   },
@@ -419,9 +419,9 @@
       "unread": "Nieprzeczytane",
       "generic": "Aktualność",
       "rsvpConfirmed": "Twój udział jest potwierdzony · {{plan}}",
-      "rsvpConfirmedNote": "Zobacz szczegóły i co przynieść.",
+      "rsvpConfirmedNote": "Zobacz godzinę, miejsce i czat.",
       "reminderDayBefore": "Jutro {{time}} · {{plan}}",
-      "reminderNote": "Sprawdź, co przynosisz.",
+      "reminderNote": "Zobacz szczegóły i czat planu.",
       "addressUnlocked": "Adres dla {{plan}} jest gotowy",
       "addressUnlockedNote": "Otwórz Plan, aby go zobaczyć.",
       "waitlistOffer": "Zwolniło się miejsce · {{plan}}",
@@ -475,7 +475,7 @@
       "notNow": "Nie teraz",
       "sampleNow": "teraz",
       "sampleOffer": "Zwolniło się miejsce na warsztatach wegańskiego ramenu — potwierdź w ciągu 2 godzin",
-      "sampleReminder": "Jutro 17:00 · Wieczór gotowania potraw z Afryki Zachodniej. Przynosisz plantany."
+      "sampleReminder": "Jutro 17:00 · Wieczór gotowania potraw z Afryki Zachodniej"
     },
     "appName": "PlantCircle"
   },
@@ -498,9 +498,9 @@
       "unread": "Da leggere",
       "generic": "Novità",
       "rsvpConfirmed": "Partecipi a {{plan}}",
-      "rsvpConfirmedNote": "Guarda i dettagli e cosa portare.",
+      "rsvpConfirmedNote": "Guarda l’orario, il luogo e la chat.",
       "reminderDayBefore": "Domani {{time}} · {{plan}}",
-      "reminderNote": "Controlla cosa porti.",
+      "reminderNote": "Guarda i dettagli e la chat del piano.",
       "addressUnlocked": "L’indirizzo di {{plan}} è pronto",
       "addressUnlockedNote": "Apri il Piano per vederlo.",
       "waitlistOffer": "Si è liberato un posto a {{plan}}",
@@ -554,7 +554,7 @@
       "notNow": "Non ora",
       "sampleNow": "adesso",
       "sampleOffer": "Si è liberato un posto al Vegan Ramen Workshop — conferma entro 2 ore",
-      "sampleReminder": "Domani 17:00 · West African Cooking Night. Porti i platani."
+      "sampleReminder": "Domani 17:00 · West African Cooking Night"
     },
     "appName": "PlantCircle"
   },
@@ -577,9 +577,9 @@
       "unread": "Ongelezen",
       "generic": "Update",
       "rsvpConfirmed": "Je gaat naar {{plan}}",
-      "rsvpConfirmedNote": "Bekijk de details en wat je meeneemt.",
+      "rsvpConfirmedNote": "Bekijk de tijd, de plek en de chat.",
       "reminderDayBefore": "Morgen {{time}} · {{plan}}",
-      "reminderNote": "Check wat je meeneemt.",
+      "reminderNote": "Bekijk de details en de chat van het plan.",
       "addressUnlocked": "Het adres van {{plan}} is nu beschikbaar",
       "addressUnlockedNote": "Open het plan om het te zien.",
       "waitlistOffer": "Er kwam een plek vrij bij {{plan}}",
@@ -633,7 +633,7 @@
       "notNow": "Niet nu",
       "sampleNow": "nu",
       "sampleOffer": "Er kwam een plek vrij bij Vegan Ramen Workshop — bevestig binnen 2 uur",
-      "sampleReminder": "Morgen 17:00 · West African Cooking Night. Jij neemt bakbananen mee."
+      "sampleReminder": "Morgen 17:00 · West African Cooking Night"
     },
     "appName": "PlantCircle"
   }

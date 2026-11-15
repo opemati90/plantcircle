@@ -18,6 +18,8 @@ import { useAuth, useSignOut } from '../auth/useAuth';
 import { hasNotice, isPaused } from '../safety/standing';
 import { useCities } from '../plans/queries';
 import { HostLevelCard } from '../hosting/HostLevelCard';
+import { CookingWeeks } from '../cooks/CookingWeeks';
+import { features } from '../../lib/features';
 import { useHostLevel } from '../hosting/queries';
 
 type Row = { label: string; href: Href; icon?: 'bell' | 'lock' | 'user' | 'sprout' | 'alert' };
@@ -150,11 +152,13 @@ export default function ProfileScreen() {
         <View style={styles.stats}>
           <Stat value={stats.data?.plans ?? 0} label={t('profile.statsPlans')} />
           <Stat value={stats.data?.circles ?? 0} label={t('profile.statsCircles')} />
-          <Stat value={stats.data?.connections ?? 0} label={t('profile.statsConnections')} />
+          {features.people ? (
+            <Stat value={stats.data?.connections ?? 0} label={t('profile.statsConnections')} />
+          ) : null}
         </View>
       </View>
 
-      {hostLevel.data ? (
+      {features.hostingLevels && hostLevel.data ? (
         <View style={styles.group}>
           <Text
             maxFontSizeMultiplier={2.0}
@@ -163,6 +167,17 @@ export default function ProfileScreen() {
             {t('profile.hosting')}
           </Text>
           <HostLevelCard level={hostLevel.data} />
+        </View>
+      ) : null}
+      {session ? (
+        <View style={styles.group}>
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={[type(14, 'semibold', { color: color.secondary }), styles.groupTitle]}
+          >
+            {t('cooks.weeksTitle')}
+          </Text>
+          <CookingWeeks />
         </View>
       ) : null}
 

@@ -12,6 +12,8 @@ export const extra = {
   sheetHandle: '#C7C7CC',
   hairlineOnPhoto: 'rgba(255,255,255,0.3)',
   glassLight: 'rgba(255,255,255,0.22)',
+  // Secondary text on ink (#0A0A0A): about 12:1.
+  onInkMuted: 'rgba(255,255,255,0.78)',
   // Controls on photos: a dark tint so a white icon keeps 4.5:1 on light and dark images alike.
   glassDark: 'rgba(10,10,10,0.55)',
   tabBar: 'rgba(255,255,255,0.9)',

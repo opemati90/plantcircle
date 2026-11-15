@@ -20,12 +20,35 @@ export interface FixtureWindow {
     makeStaff: () => void;
     publishTerms: () => void;
     setHostStats: (
-      stats: Partial<{ recipes: number; hosted: number; followers: number; upvotes: number }>,
+      stats: Partial<{
+        recipes: number;
+        hosted: number;
+        followers: number;
+        upvotes: number;
+        posts: number;
+        accountDays: number;
+      }>,
     ) => void;
     hostChanges: (planId: string) => void;
     hostCancels: (planId: string, reason: string) => void;
   };
   __pcFixtureFailures?: Partial<Record<Operation, number>>;
+}
+
+/**
+ * Turns every launch switch on (src/lib/features.ts), for journeys that cover a part hidden at
+ * launch: the code stays and keeps its tests.
+ */
+export async function enableAllFeatures(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    (globalThis as { __pcFeatures?: Record<string, boolean> }).__pcFeatures = {
+      groupOrders: true,
+      recipes: true,
+      people: true,
+      bringList: true,
+      hostingLevels: true,
+    };
+  });
 }
 
 export async function freezeTime(page: Page): Promise<void> {

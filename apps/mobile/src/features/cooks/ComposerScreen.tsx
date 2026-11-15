@@ -23,7 +23,10 @@ import { useAuth } from '../auth/useAuth';
 import { useRecipes } from '../learn/queries';
 import { newIdempotencyKey, useMyCircles } from '../plans/queries';
 import { pickCookPhoto, type PickSource } from './preparePhoto';
-import { useShareCook } from './queries';
+import { Toggle } from '../../components/Toggle';
+import { features } from '../../lib/features';
+import { themeLabel } from './challengeThemes';
+import { useCircleChallenge, useShareCook } from './queries';
 
 const CAPTION_MAX = 140;
 const ALT_MAX = 200;
@@ -33,7 +36,11 @@ const ALT_MAX = 200;
  * the photo, one line, an optional recipe and an optional photo description.
  */
 export default function ComposerScreen() {
-  const params = useLocalSearchParams<{ circle?: string; recipe?: string }>();
+  const params = useLocalSearchParams<{
+    circle?: string;
+    recipe?: string;
+    challenge?: string;
+  }>();
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useScreenInsets();
@@ -62,6 +69,18 @@ export default function ComposerScreen() {
   const [recipeId, setRecipeId] = useState<string | null>(params.recipe ?? null);
   const [recipePicker, setRecipePicker] = useState(false);
   const [key, setKey] = useState(newIdempotencyKey);
+  const challenge = useCircleChallenge(circleId, circleId !== null);
+  const [entering, setEntering] = useState(params.challenge === '1');
+  // The week this draft was started in, kept even if the week turns while it is open: a post
+  // never moves to a new theme on its own. If it has ended, sharing says so and asks again.
+  const [draftWeek, setDraftWeek] = useState<{ circleId: string; week: string } | null>(null);
+  useEffect(() => {
+    if (challenge.data && circleId && draftWeek?.circleId !== circleId) {
+      setDraftWeek({ circleId, week: challenge.data.weekStart });
+    }
+  }, [challenge.data, circleId, draftWeek]);
+  const challengeWeek =
+    entering && draftWeek && draftWeek.circleId === circleId ? draftWeek.week : null;
 
   // A changed post is a new one, so the key follows the content; a retry keeps it. The upload
   // finishing is not a change: the same key covers the upload and the share that follows.
@@ -70,6 +89,7 @@ export default function ComposerScreen() {
     caption,
     alt,
     recipeId,
+    challengeWeek,
     photo: photo?.previewUri,
   });
   useEffect(() => {
@@ -135,6 +155,7 @@ export default function ComposerScreen() {
         recipeId: linked && linked.circleId === circleId ? linked.id : null,
         caption: trimmed,
         photoAlt: alt.trim() || null,
+        challengeWeek,
         key,
       },
       {
@@ -344,53 +365,71 @@ export default function ComposerScreen() {
               ) : null}
             </View>
 
-            <View style={styles.field}>
-              <Text maxFontSizeMultiplier={2.0} style={styles.label}>
-                {t('cooks.recipeLabel')}
-              </Text>
-              {linked ? (
-                <View style={styles.linked}>
-                  <Text
-                    maxFontSizeMultiplier={2.0}
-                    numberOfLines={2}
-                    style={[type(16, 'semibold', { color: color.brand }), styles.grow]}
-                  >
-                    {linked.title}
+            {challenge.data ? (
+              <Toggle
+                label={t('cooks.forChallenge', {
+                  theme: themeLabel(t, challenge.data.theme, challenge.data.weekStart),
+                })}
+                note={t('cooks.forChallengeNote')}
+                value={entering}
+                onValueChange={setEntering}
+              />
+            ) : null}
+
+            {features.recipes ? (
+              <>
+                <View style={styles.field}>
+                  <Text maxFontSizeMultiplier={2.0} style={styles.label}>
+                    {t('cooks.recipeLabel')}
                   </Text>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={t('cooks.unlinkRecipe', { title: linked.title })}
-                    onPress={() => {
-                      setRecipeId(null);
-                    }}
-                    style={styles.unlink}
-                  >
-                    <CloseIcon size={16} strokeWidth={2.4} color={color.brand} />
-                  </Pressable>
+                  {linked ? (
+                    <View style={styles.linked}>
+                      <Text
+                        maxFontSizeMultiplier={2.0}
+                        numberOfLines={2}
+                        style={[type(16, 'semibold', { color: color.brand }), styles.grow]}
+                      >
+                        {linked.title}
+                      </Text>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={t('cooks.unlinkRecipe', { title: linked.title })}
+                        onPress={() => {
+                          setRecipeId(null);
+                        }}
+                        style={styles.unlink}
+                      >
+                        <CloseIcon size={16} strokeWidth={2.4} color={color.brand} />
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => {
+                        setRecipePicker(true);
+                      }}
+                      style={styles.row}
+                    >
+                      <Text
+                        maxFontSizeMultiplier={2.0}
+                        style={[type(16, 'medium'), styles.grow]}
+                      >
+                        {t('cooks.linkRecipe')}
+                      </Text>
+                      <ChevronRightIcon size={16} strokeWidth={2.2} color={color.secondary} />
+                    </Pressable>
+                  )}
+                  {linked && linked.circleId !== circleId ? (
+                    <Text
+                      maxFontSizeMultiplier={2.0}
+                      style={type(13, 'regular', { color: color.secondary })}
+                    >
+                      {t('cooks.recipeOtherCircle')}
+                    </Text>
+                  ) : null}
                 </View>
-              ) : (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => {
-                    setRecipePicker(true);
-                  }}
-                  style={styles.row}
-                >
-                  <Text maxFontSizeMultiplier={2.0} style={[type(16, 'medium'), styles.grow]}>
-                    {t('cooks.linkRecipe')}
-                  </Text>
-                  <ChevronRightIcon size={16} strokeWidth={2.2} color={color.secondary} />
-                </Pressable>
-              )}
-              {linked && linked.circleId !== circleId ? (
-                <Text
-                  maxFontSizeMultiplier={2.0}
-                  style={type(13, 'regular', { color: color.secondary })}
-                >
-                  {t('cooks.recipeOtherCircle')}
-                </Text>
-              ) : null}
-            </View>
+              </>
+            ) : null}
 
             {describing ? (
               <View style={styles.field}>
@@ -434,12 +473,30 @@ export default function ComposerScreen() {
               >
                 {shareError === 'rate_limited'
                   ? t('cooks.errorRateLimited')
-                  : shareError === 'suspended'
-                    ? t('cooks.errorPaused')
-                    : shareError === 'network'
-                      ? t('cooks.errorOffline')
-                      : t('cooks.errorShare')}
+                  : shareError === 'challenge_ended'
+                    ? t('cooks.errorChallengeEnded')
+                    : shareError === 'suspended'
+                      ? t('cooks.errorPaused')
+                      : shareError === 'network'
+                        ? t('cooks.errorOffline')
+                        : t('cooks.errorShare')}
               </Text>
+            ) : null}
+            {shareError === 'challenge_ended' ? (
+              <Button
+                variant="outline"
+                label={t('cooks.challengeNewWeek')}
+                onPress={() => {
+                  void challenge.refetch().then((next) => {
+                    if (next.data && circleId) {
+                      setDraftWeek({ circleId, week: next.data.weekStart });
+                    }
+                    // Joining the new week's challenge is the member's choice.
+                    setEntering(false);
+                    share.reset();
+                  });
+                }}
+              />
             ) : null}
 
             <Button

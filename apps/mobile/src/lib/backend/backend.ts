@@ -9,7 +9,9 @@ import type {
   CircleRequest,
   City,
   ConversationSettings,
+  CircleChallenge,
   Cook,
+  CookStreak,
   CookCursor,
   CookInput,
   CookPage,
@@ -82,6 +84,7 @@ export type BackendErrorCode =
   | 'host_level_capacity'
   | 'own_recipe'
   | 'own_post'
+  | 'challenge_ended'
   | 'checkin_closed'
   | 'plan_not_started'
   | 'plan_started'
@@ -205,6 +208,20 @@ export interface Backend {
     cookId: string,
     on: boolean,
   ): Promise<{ reacted: boolean; reactions: number }>;
+  /** This week's challenge in a Circle the viewer is in. */
+  getCircleChallenge(circleId: string): Promise<CircleChallenge>;
+  /**
+   * Owners and moderators set the theme for the week they saw (refused once it has ended);
+   * null goes back to the default. A retry with the same key replays.
+   */
+  setCircleChallenge(
+    circleId: string,
+    weekStart: string,
+    theme: string | null,
+    idempotencyKey: string,
+  ): Promise<void>;
+  /** The viewer's own weeks with a post. */
+  getCookStreak(): Promise<CookStreak>;
 
   /** Publishes a Plan in the host's home city. Returns the new Plan's id. */
   createPlan(input: PlanInput, idempotencyKey: string): Promise<string>;

@@ -1,6 +1,12 @@
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { freezeTime, signInWithEmail, type FixtureWindow } from './support';
+import {
+  chooseCity,
+  enableAllFeatures,
+  freezeTime,
+  signInWithEmail,
+  type FixtureWindow,
+} from './support';
 
 const PHOTO = join(__dirname, '../../../supabase/tests/fixtures/gps.jpg');
 /** Optional folder for screenshots of each screen (visual review). */
@@ -13,7 +19,7 @@ async function shot(page: Page, name: string) {
 
 async function joinKitchen(page: Page) {
   await page.goto('/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();
@@ -71,7 +77,7 @@ test('Yum toggles with its count, and Ask how opens a chat with an editable draf
   );
 });
 
-test('sharing a photo: Circle first, photo, caption, recipe; then it can be deleted from Your posts', async ({
+test('sharing a photo: Circle first, photo, caption; then it can be deleted from Your posts', async ({
   page,
 }) => {
   await signInWithEmail(page, '/home');
@@ -89,8 +95,10 @@ test('sharing a photo: Circle first, photo, caption, recipe; then it can be dele
   await (await chooser).setFiles(PHOTO);
   await expect(page.getByRole('img', { name: 'Your photo' })).toBeVisible();
   await page.getByRole('textbox', { name: 'What did you make?' }).fill('Red lentil dal');
-  await page.getByRole('button', { name: 'Link a recipe from this Circle' }).click();
-  await page.getByRole('button', { name: /Efo Riro with Smoked Tofu/ }).click();
+  // Linking a recipe is switched off at launch.
+  await expect(
+    page.getByRole('button', { name: 'Link a recipe from this Circle' }),
+  ).toHaveCount(0);
   await page.getByRole('button', { name: 'Describe the photo for screen readers' }).click();
   await page.getByRole('textbox', { name: 'Photo description' }).fill('A bowl of dal');
   await shot(page, 'composer-ready');
@@ -133,7 +141,7 @@ test('the Circle’s Posts tab is its feed for members, and a teaser for everyon
   page,
 }) => {
   await signInWithEmail(page, '/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('tab', { name: 'Posts' }).click();
   await expect(
@@ -145,7 +153,10 @@ test('the Circle’s Posts tab is its feed for members, and a teaser for everyon
   await shot(page, 'circle-posts');
 });
 
-test('a recipe offers “I cooked this”, which starts a post linked to it', async ({ page }) => {
+test('with recipes switched on, a recipe offers “I cooked this”, which starts a post linked to it', async ({
+  page,
+}) => {
+  await enableAllFeatures(page);
   await signInWithEmail(page, '/home');
   await joinKitchen(page);
   await page.goto('/recipe/efo-riro-smoked-tofu');
@@ -181,4 +192,54 @@ test('a reported post reaches staff with its photo and caption', async ({ page }
     page.getByRole('img', { name: 'A table of shared dishes with greens and rice' }),
   ).toBeVisible();
   await expect(page.getByText('Efo riro for six, with extra smoked tofu').last()).toBeVisible();
+});
+
+test('This week leads with the Circle’s challenge; an entry from it carries the theme', async ({
+  page,
+}) => {
+  await signInWithEmail(page, '/home');
+  // Not in a Circle yet: an invitation to find one.
+  await expect(page.getByText('Cook along with a Circle')).toBeVisible();
+  await joinKitchen(page);
+  await page.goto('/home');
+  // The week of 2 November has the default theme “Leftovers made new”.
+  await expect(page.getByText('This week in Neukölln Plant Kitchen')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Leftovers made new' })).toBeVisible();
+  await shot(page, 'this-week');
+  await page.getByRole('button', { name: 'Cook it this week' }).click();
+  await expect(page.getByRole('heading', { name: 'Share what you cooked' })).toBeVisible();
+  const entry = page.getByRole('switch', {
+    name: 'For this week’s challenge: Leftovers made new',
+  });
+  await expect(entry).toHaveAttribute('aria-checked', 'true');
+
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Choose a photo' }).click();
+  await (await chooser).setFiles(PHOTO);
+  await page.getByRole('textbox', { name: 'What did you make?' }).fill('Bubble and squeak');
+  await page.getByRole('button', { name: 'Share with Neukölln Plant Kitchen' }).click();
+  await expect(page.getByText('Challenge · Leftovers made new')).toBeVisible();
+
+  await page.getByRole('button', { name: 'More from Neukölln Plant Kitchen' }).click();
+  await expect(page.getByText(/^1 member cooked it/).last()).toBeVisible();
+  await shot(page, 'circle-challenge');
+});
+
+test('an owner changes this week’s theme; members see it', async ({ page }) => {
+  await signInWithEmail(page, '/home');
+  await page.getByRole('button', { name: 'Change city' }).click();
+  await chooseCity(page, 'Berlin');
+  await page.getByRole('tab', { name: 'Circles' }).last().click();
+  await page.getByRole('button', { name: 'Start a Circle' }).click();
+  await page.getByRole('textbox', { name: 'Name' }).fill('Vegan bakers');
+  await page.getByRole('button', { name: 'Create Circle' }).click();
+  await expect(page.getByRole('heading', { name: 'Vegan bakers' })).toBeVisible();
+  await page.getByRole('tab', { name: 'Posts' }).click();
+  await page.getByRole('button', { name: 'Change this week’s theme' }).click();
+  await page.getByRole('textbox', { name: 'Theme' }).fill('Sourdough');
+  await page.getByRole('button', { name: 'Save theme' }).click();
+  await expect(page.getByRole('heading', { name: 'Sourdough' })).toBeVisible();
+  await page.getByRole('button', { name: 'Change this week’s theme' }).click();
+  await page.getByRole('button', { name: 'Use the suggested theme' }).click();
+  await expect(page.getByRole('heading', { name: 'Leftovers made new' })).toBeVisible();
 });

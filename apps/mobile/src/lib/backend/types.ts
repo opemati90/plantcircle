@@ -851,7 +851,49 @@ export interface Cook {
   reactions: number;
   reacted: boolean;
   mine: boolean;
+  /** Monday of the challenge week this post entered, or null. */
+  challengeWeek: string | null;
+  /** That week's custom theme; null with a week means the week's default theme. */
+  challengeTheme: string | null;
 }
+
+/** This week's challenge in a Circle. A null theme means the default for the week. */
+export interface CircleChallenge {
+  weekStart: string;
+  theme: string | null;
+  canSet: boolean;
+  entrants: number;
+  entries: { id: string; thumb: CookImage; caption: string; authorName: string }[];
+}
+
+export const circleChallengeSchema = z.object({
+  week_start: z.string(),
+  ends_at: z.string(),
+  theme: z.string().nullable(),
+  can_set: z.boolean(),
+  entrants: z.number().int(),
+  entries: z.array(
+    z.object({
+      id: z.string(),
+      photo_path: z.string(),
+      caption: z.string(),
+      author_name: z.string(),
+    }),
+  ),
+});
+
+/** Weeks with at least one post: the current run, the best run, all weeks. */
+export interface CookStreak {
+  current: number;
+  best: number;
+  weeks: number;
+}
+
+export const cookStreakSchema = z.object({
+  current: z.number().int(),
+  best: z.number().int(),
+  weeks: z.number().int(),
+});
 
 /** Where the next page starts: the last post shown (newest first, ties broken by id). */
 export interface CookCursor {
@@ -880,6 +922,8 @@ export interface CookInput {
   caption: string;
   photoAlt: string | null;
   photoPath: string;
+  /** An entry in the Circle's challenge for this week (its Monday, as shown), or null. */
+  challengeWeek: string | null;
 }
 
 export const cookCardSchema = z.object({
@@ -898,6 +942,8 @@ export const cookCardSchema = z.object({
   created_at: z.string(),
   reactions: z.number().int(),
   reacted: z.boolean(),
+  challenge_week: z.string().nullable(),
+  challenge_theme: z.string().nullable(),
 });
 
 export const myCookSchema = z.object({
@@ -1311,6 +1357,10 @@ export interface HostStats {
   hosted: number;
   followers: number;
   upvotes: number;
+  /** Cooked it posts shared (the launch hosting rule counts these). */
+  posts: number;
+  /** Days since the account was made. */
+  accountDays: number;
 }
 export interface HostLevel extends HostStats {
   level: number;
@@ -1332,6 +1382,8 @@ const hostLevelRowSchema = z.object({
   hosted: z.number().int(),
   followers: z.number().int(),
   upvotes: z.number().int(),
+  posts: z.number().int(),
+  account_days: z.number().int(),
   max_capacity: z.number().int(),
   in_person: z.boolean(),
   group_orders: z.boolean(),
@@ -1345,6 +1397,8 @@ export const toHostLevel = (row: z.infer<typeof hostLevelSchema>): HostLevel => 
   hosted: row.hosted,
   followers: row.followers,
   upvotes: row.upvotes,
+  posts: row.posts,
+  accountDays: row.account_days,
   maxCapacity: row.max_capacity,
   inPerson: row.in_person,
   groupOrders: row.group_orders,
@@ -1355,6 +1409,8 @@ export const toHostLevel = (row: z.infer<typeof hostLevelSchema>): HostLevel => 
         hosted: row.next.hosted,
         followers: row.next.followers,
         upvotes: row.next.upvotes,
+        posts: row.next.posts,
+        accountDays: row.next.account_days,
         maxCapacity: row.next.max_capacity,
         inPerson: row.next.in_person,
         groupOrders: row.next.group_orders,

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail } from './support';
+import { enableAllFeatures, freezeTime, signInWithEmail } from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
@@ -9,7 +9,9 @@ test('Explore lists the coming month of Plans and searches them as the member ty
   page,
 }) => {
   await page.goto('/explore');
-  await expect(page.getByRole('heading', { name: 'Explore' })).toBeVisible();
+  // The Circles tab opens on Circles; Plans is its second section.
+  await expect(page.getByRole('heading', { name: 'Circles' })).toBeVisible();
+  await page.getByRole('tab', { name: 'Plans', exact: true }).click();
   await expect(page.getByRole('tab', { name: 'Plans', exact: true })).toHaveAttribute(
     'aria-selected',
     'true',
@@ -29,7 +31,8 @@ test('Explore lists the coming month of Plans and searches them as the member ty
   await expect(page.getByRole('link', { name: /West African Cooking Night/ })).toBeVisible();
 });
 
-test('every Explore tab opens its own content', async ({ page }) => {
+test('with every part switched on, each section opens its own content', async ({ page }) => {
+  await enableAllFeatures(page);
   await signInWithEmail(page, '/explore');
   await page.getByRole('tab', { name: 'Learn', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'No recipes yet' })).toBeVisible();
@@ -47,9 +50,20 @@ test('a featured host’s Plan comes first in Explore and carries the badge', as
   page,
 }) => {
   await page.goto('/explore');
+  await page.getByRole('tab', { name: 'Plans', exact: true }).click();
   const first = page
     .getByRole('link', { name: /Cooking Night|Potluck|Workshop|Feijoada/ })
     .first();
   await expect(first).toContainText('West African Cooking Night');
   await expect(first).toContainText('Featured host');
+});
+
+test('at launch the Circles tab has Circles and Plans only', async ({ page }) => {
+  await signInWithEmail(page, '/explore');
+  await expect(page.getByRole('tab', { name: 'Circles', exact: true }).first()).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await expect(page.getByRole('tab', { name: 'Learn', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('tab', { name: 'People', exact: true })).toHaveCount(0);
 });

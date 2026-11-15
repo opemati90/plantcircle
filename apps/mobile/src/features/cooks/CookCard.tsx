@@ -20,6 +20,7 @@ import type { Cook } from '../../lib/backend/types';
 import { postedAgo } from './postedAgo';
 import { newIdempotencyKey } from '../plans/queries';
 import { useBlockUser } from '../safety/queries';
+import { themeLabel } from './challengeThemes';
 import { useCookReaction, useDeleteCook } from './queries';
 
 /** Initial on a soft tint, the same three tints the rest of the app uses for people. */
@@ -175,6 +176,16 @@ export function CookCard({
       </Pressable>
 
       <View style={styles.body}>
+        {cook.challengeWeek ? (
+          <Text
+            maxFontSizeMultiplier={2.0}
+            style={[type(12, 'bold', { color: color.brand, tracking: 1 }), styles.upper]}
+          >
+            {t('cooks.challengeTag', {
+              theme: themeLabel(t, cook.challengeTheme, cook.challengeWeek),
+            })}
+          </Text>
+        ) : null}
         <Text maxFontSizeMultiplier={2.0} style={type(17, 'regular', { leading: 1.4 })}>
           {cook.caption}
         </Text>
@@ -414,6 +425,7 @@ const styles = StyleSheet.create({
   },
   pressedPhoto: { opacity: 0.94 },
   body: { gap: 10, paddingHorizontal: 2 },
+  upper: { textTransform: 'uppercase' },
   recipe: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -37,8 +37,10 @@ import {
   useOnlinePlans,
 } from '../plans/queries';
 import { CityPickerSheet } from './CityPickerSheet';
-import { filterPlans, HOME_FILTERS, type HomeFilter } from './homeFilters';
+import { filterPlans } from './homeFilters';
 import { statusPill } from '../myPlans/myPlanRules';
+import { HomeChallenge } from '../cooks/HomeChallenge';
+import { features } from '../../lib/features';
 import { HomeCooks } from '../cooks/HomeCooks';
 
 const SCRIM = {
@@ -197,12 +199,6 @@ function HomeSkeleton({ top }: { top: number }) {
         <Skeleton width="40%" height={16} radius={6} />
         <Skeleton width="75%" height={34} radius={8} />
       </View>
-      <View style={[styles.row, styles.chips]}>
-        <Skeleton width={78} height={36} radius={999} />
-        <Skeleton width={78} height={36} radius={999} />
-        <Skeleton width={78} height={36} radius={999} />
-        <Skeleton width={70} height={36} radius={999} />
-      </View>
       <View style={styles.row}>
         <Skeleton width="100%" height={430} radius={28} />
       </View>
@@ -228,7 +224,6 @@ export default function HomeScreen() {
   // What the person joined, waits for or hosts: the first few here, the full list on My Plans.
   const mine = useMyPlans('upcoming', Boolean(session));
   const yourPlans = (mine.data ?? []).slice(0, 3);
-  const [filter, setFilter] = useState<HomeFilter>('forYou');
   const [cityOpen, setCityOpen] = useState(false);
   const setCity = useSetCity();
   const ensureCity = useEnsureCity();
@@ -260,7 +255,7 @@ export default function HomeScreen() {
     );
   }
 
-  const [featured, ...rest] = filterPlans(plans.data, filter);
+  const [featured, ...rest] = filterPlans(plans.data, 'forYou');
   const name = profile?.displayName.split(' ')[0];
 
   return (
@@ -388,6 +383,8 @@ export default function HomeScreen() {
           />
         ))}
 
+        <HomeChallenge />
+
         {session ? (
           <View style={[styles.row, styles.yourPlans]}>
             <View style={styles.sectionHeader}>
@@ -446,7 +443,9 @@ export default function HomeScreen() {
                 plan={item.plan}
                 when={`${weekdayShort(item.plan.startsAt, item.plan.timezone)} ${time(item.plan.startsAt, item.plan.timezone)} · ${placeLabel(t, item.plan)}`}
                 pill={statusPill(t, item, false)}
-                {...(upNext.data?.needsDish && upNext.data.plan.id === item.plan.id
+                {...(features.bringList &&
+                upNext.data?.needsDish &&
+                upNext.data.plan.id === item.plan.id
                   ? { badge: { label: t('home.chooseDish'), tone: 'attention' as const } }
                   : {})}
                 onPress={() => {
@@ -464,37 +463,20 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        <View
-          accessibilityRole="radiogroup"
-          accessibilityLabel={t('home.filterLabel')}
-          style={[styles.row, styles.chips]}
-        >
-          {HOME_FILTERS.map((option) => {
-            const selected = filter === option;
-            return (
-              <Pressable
-                key={option}
-                accessibilityRole="radio"
-                aria-checked={selected}
-                onPress={() => {
-                  setFilter(option);
-                }}
-                style={[styles.filter, selected && styles.filterSelected]}
-              >
-                <Text
-                  maxFontSizeMultiplier={2.0}
-                  style={type(14, selected ? 'semibold' : 'medium', {
-                    color: selected ? color.surface : color.ink,
-                    tracking: -0.1,
-                  })}
-                >
-                  {t(`home.filters.${option}`)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        {session ? <HomeCooks /> : null}
 
+        {featured ? (
+          <View style={[styles.row, styles.sectionHeader]}>
+            <Text
+              maxFontSizeMultiplier={1.6}
+              accessibilityRole="header"
+              aria-level={2}
+              style={type(22, 'bold', { tracking: -0.6 })}
+            >
+              {t('home.tableTitle')}
+            </Text>
+          </View>
+        ) : null}
         {featured ? (
           <FeaturedCard
             plan={featured}
@@ -575,8 +557,6 @@ export default function HomeScreen() {
           </Text>
         )}
 
-        {session ? <HomeCooks /> : null}
-
         {rest.length > 0 ? (
           <>
             <View style={[styles.row, styles.sectionHeader]}>
@@ -592,7 +572,7 @@ export default function HomeScreen() {
                 accessibilityRole="link"
                 hitSlop={12}
                 onPress={() => {
-                  router.push('/explore');
+                  router.push({ pathname: '/explore', params: { tab: 'plans' } });
                 }}
               >
                 <Text
@@ -756,14 +736,6 @@ const styles = StyleSheet.create({
   upNextText: { flex: 1, gap: 3 },
   offer: { borderColor: color.brand, backgroundColor: color.brandTint },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  filter: {
-    minHeight: 44,
-    paddingHorizontal: 15,
-    borderRadius: radius.pill,
-    backgroundColor: color.fill,
-    justifyContent: 'center',
-  },
-  filterSelected: { backgroundColor: color.ink },
   featured: {
     height: 430,
     marginHorizontal: 20,

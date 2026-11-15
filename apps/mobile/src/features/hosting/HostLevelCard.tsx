@@ -4,12 +4,10 @@ import { color, extra, type } from '../../components/theme';
 import type { HostLevel, HostStats } from '../../lib/backend/types';
 
 const STAT_KEYS = {
-  recipes: 'hosting.statRecipes',
-  hosted: 'hosting.statHosted',
-  followers: 'hosting.statFollowers',
-  upvotes: 'hosting.statUpvotes',
+  posts: 'hosting.statPosts',
+  accountDays: 'hosting.statDays',
 } as const;
-const ORDER: (keyof HostStats)[] = ['recipes', 'hosted', 'followers', 'upvotes'];
+const ORDER: (keyof typeof STAT_KEYS & keyof HostStats)[] = ['posts', 'accountDays'];
 
 /**
  * The hosting level as a profile card: the level badge and what it unlocks, then a progress bar

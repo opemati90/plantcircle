@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { freezeTime, signInWithEmail } from './support';
+import { enableAllFeatures, freezeTime, signInWithEmail } from './support';
 
 test.beforeEach(async ({ page }) => {
+  await enableAllFeatures(page);
   await freezeTime(page);
 });
 
@@ -9,7 +10,7 @@ test('a member accepts a first-message request, then chats with that person and 
   page,
 }) => {
   await signInWithEmail(page, '/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();

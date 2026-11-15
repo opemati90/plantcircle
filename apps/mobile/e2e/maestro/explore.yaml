@@ -1,5 +1,6 @@
-# Explore on a simulator (F3): browse a city's Plans, search, filter by where, clear, and the
-# Circles, Learn and People tabs. Fixture backend; Metro on :8081.
+# The Circles tab on a simulator (F3): Circles first, then a city's Plans: search, filter by
+# where, clear. Learn and People are hidden at launch (src/lib/features.ts).
+# Fixture backend; Metro on :8081.
 #   maestro test apps/mobile/e2e/maestro/explore.yaml
 appId: app.plantcircle.mobile
 ---
@@ -16,8 +17,9 @@ appId: app.plantcircle.mobile
     direction: DOWN
 - tapOn: 'Continue'
 - assertVisible: 'This week in Berlin'
-- tapOn: 'Explore'
-- assertVisible: 'Explore'
+- tapOn: 'Circles'
+- assertVisible: '.*Neukölln Plant Kitchen.*'
+- tapOn: 'Plans'
 - assertVisible: '.*West African Cooking Night.*'
 - tapOn: 'Search'
 - inputText: 'potluck'
@@ -35,8 +37,5 @@ appId: app.plantcircle.mobile
 - assertVisible: 'Remove filter Online'
 - tapOn: 'Remove filter Online'
 - assertVisible: '.*West African Cooking Night.*'
-- tapOn: 'Circles'
-- assertVisible: '.*Neukölln Plant Kitchen.*'
-- tapOn: 'Learn'
-- tapOn: 'People'
-- assertVisible: '.*sign in.*'
+- assertNotVisible: 'Learn'
+- assertNotVisible: 'People'

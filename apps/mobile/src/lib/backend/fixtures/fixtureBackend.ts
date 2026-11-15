@@ -173,7 +173,13 @@ interface State {
   idempotent: Record<string, { fingerprint: string; id: string }>;
   /** Cooked it: posts made here (their photos live in memory only), sample posts deleted,
    * posts the viewer said Yum to, and when the viewer posted (10 a day). */
-  cooksCreated: (Omit<FixtureCook, 'hoursAgo'> & { createdAt: string })[];
+  cooksCreated: (Omit<FixtureCook, 'hoursAgo'> & {
+    createdAt: string;
+    challengeWeek?: string | null;
+    challengeTheme?: string | null;
+  })[];
+  /** Custom challenge themes set in this session, by Circle and week. */
+  challengeThemes: { circleId: string; weekStart: string; theme: string }[];
   cooksDeleted: string[];
   cookReactions: string[];
   cookPostTimes: string[];
@@ -268,7 +274,7 @@ const EMPTY: State = {
   following: [],
   recipeVotes: [],
   // Level 2 out of the box, so the sample member can host in person; tests lower it (setHostStats).
-  hostStats: { recipes: 3, hosted: 1, followers: 12, upvotes: 40 },
+  hostStats: { recipes: 3, hosted: 1, followers: 12, upvotes: 40, posts: 3, accountDays: 30 },
   plansSecrets: {},
   orders: {},
   plansGuests: {},
@@ -304,6 +310,7 @@ const EMPTY: State = {
   feedbackMine: {},
   idempotent: {},
   cooksCreated: [],
+  challengeThemes: [],
   cooksDeleted: [],
   cookReactions: [],
   cookPostTimes: [],
@@ -317,7 +324,10 @@ function removeOne(list: string[], value: string): string[] {
 async function loadState(): Promise<State> {
   try {
     const raw = await appStorage.get(STORAGE_KEY);
-    return raw ? { ...EMPTY, ...(JSON.parse(raw) as Partial<State>) } : EMPTY;
+    if (!raw) return EMPTY;
+    const saved = JSON.parse(raw) as Partial<State>;
+    // Stats saved before a field existed keep the default for it.
+    return { ...EMPTY, ...saved, hostStats: { ...EMPTY.hostStats, ...saved.hostStats } };
   } catch {
     // Corrupt dev state is not worth surfacing; start clean.
     return EMPTY;
@@ -553,7 +563,7 @@ export async function createFixtureBackend(): Promise<Backend> {
   const myCircleIds = () => [...state.circlesJoined, ...state.circlesCreated.map((c) => c.id)];
 
   /** Every post that still exists, newest first, as cook_cards rows before the viewer's rules. */
-  function allCooks(): (Omit<FixtureCook, 'hoursAgo'> & { createdAt: string })[] {
+  function allCooks(): State['cooksCreated'] {
     const samples = fixtureCooks
       .filter((c) => !state.cooksDeleted.includes(c.id))
       .map(({ hoursAgo, ...c }) => ({
@@ -565,6 +575,32 @@ export async function createFixtureBackend(): Promise<Backend> {
     );
   }
 
+  /** Monday of the week `iso` falls in, in a time zone (the Circle's, or UTC for cooking weeks). */
+  function weekStart(iso: string, timeZone = 'UTC'): string {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date(iso));
+    const local = new Date(`${parts}T00:00:00Z`);
+    local.setUTCDate(local.getUTCDate() - ((local.getUTCDay() + 6) % 7));
+    return local.toISOString().slice(0, 10);
+  }
+
+  /** A Circle's time zone: its city's, or UTC for a global Circle (as circle_tz). */
+  function circleZone(circleId: string): string {
+    const circle = [...fixtureCircles, ...state.circlesCreated].find((c) => c.id === circleId);
+    return allCities().find((c) => c.id === circle?.cityId)?.timezone ?? 'UTC';
+  }
+
+  const circleWeek = (circleId: string, iso = new Date().toISOString()) =>
+    weekStart(iso, circleZone(circleId));
+
+  const themeOf = (circleId: string, week: string) =>
+    state.challengeThemes.find((c) => c.circleId === circleId && c.weekStart === week)?.theme ??
+    null;
+
   function cookImage(path: string, thumb: boolean): CookImage {
     const made = cookPhotos.get(path);
     if (made) return { uri: thumb ? made.thumbUri : made.uri, cacheKey: path };
@@ -574,7 +610,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       : (imageByPath('/images/potluck-spread.jpg') as number);
   }
 
-  function toCook(row: Omit<FixtureCook, 'hoursAgo'> & { createdAt: string }): Cook {
+  function toCook(row: State['cooksCreated'][number]): Cook {
     const me = state.session?.userId ?? 'fixture-you';
     const recipe = row.recipeId
       ? visibleRecipes().find((r) => r.id === row.recipeId)
@@ -601,6 +637,16 @@ export async function createFixtureBackend(): Promise<Backend> {
       reactions: row.reactions + (reacted ? 1 : 0),
       reacted,
       mine: row.authorId === me,
+      challengeWeek:
+        row.challengeWeek ??
+        (row.forChallenge ? circleWeek(row.circleId, row.createdAt) : null),
+      // An entry keeps the theme it was posted under, as the database does.
+      challengeTheme:
+        row.challengeWeek !== undefined
+          ? (row.challengeTheme ?? null)
+          : row.forChallenge
+            ? themeOf(row.circleId, circleWeek(row.circleId, row.createdAt))
+            : null,
     };
   }
 
@@ -812,6 +858,7 @@ export async function createFixtureBackend(): Promise<Backend> {
     hostLevelFrom({
       ...state.hostStats,
       recipes: state.hostStats.recipes + state.recipesCreated.length,
+      posts: state.hostStats.posts + state.cooksCreated.length,
     });
 
   /** Property order must not change a request's identity, so keys are sorted before comparing. */
@@ -1211,6 +1258,9 @@ export async function createFixtureBackend(): Promise<Backend> {
       ) {
         throw new BackendError('invalid_input');
       }
+      if (input.challengeWeek && input.challengeWeek !== circleWeek(input.circleId)) {
+        throw new BackendError('challenge_ended');
+      }
       const dayAgo = Date.now() - 86_400_000;
       const today = state.cookPostTimes.filter((t) => Date.parse(t) > dayAgo);
       if (today.length >= 10) throw new BackendError('rate_limited');
@@ -1232,6 +1282,11 @@ export async function createFixtureBackend(): Promise<Backend> {
             height: 1500,
             createdAt: now,
             reactions: 0,
+            forChallenge: input.challengeWeek !== null,
+            challengeWeek: input.challengeWeek,
+            challengeTheme: input.challengeWeek
+              ? themeOf(input.circleId, input.challengeWeek)
+              : null,
           },
           ...state.cooksCreated,
         ],
@@ -1259,6 +1314,83 @@ export async function createFixtureBackend(): Promise<Backend> {
           [key]: { fingerprint: `cook_delete:${cookId}`, id: cookId },
         },
       });
+    },
+
+    async getCircleChallenge(circleId) {
+      await call();
+      requireSession();
+      if (!myCircleIds().includes(circleId)) throw new BackendError('not_found');
+      const week = circleWeek(circleId);
+      const entries = visibleCooks().filter(
+        (c) => c.circleId === circleId && c.challengeWeek === week,
+      );
+      const created = state.circlesCreated.some((c) => c.id === circleId);
+      return {
+        weekStart: week,
+        theme: themeOf(circleId, week),
+        canSet: created || state.profile?.role === 'staff',
+        entrants: new Set(entries.map((c) => c.authorId)).size,
+        entries: entries.slice(0, 4).map((c) => ({
+          id: c.id,
+          thumb: c.thumb,
+          caption: c.caption,
+          authorName: c.authorName,
+        })),
+      };
+    },
+
+    async setCircleChallenge(circleId, week, theme, key) {
+      await call();
+      requireActive();
+      if (seenKeys.has(key)) return;
+      if (
+        !state.circlesCreated.some((c) => c.id === circleId) &&
+        state.profile?.role !== 'staff'
+      ) {
+        throw new BackendError('forbidden');
+      }
+      const clean = theme?.trim() ?? '';
+      if (clean.length > 40) throw new BackendError('invalid_input');
+      if (week !== circleWeek(circleId)) throw new BackendError('challenge_ended');
+      seenKeys.add(key);
+      const rest = state.challengeThemes.filter(
+        (c) => !(c.circleId === circleId && c.weekStart === week),
+      );
+      commit({
+        ...state,
+        challengeThemes: clean ? [...rest, { circleId, weekStart: week, theme: clean }] : rest,
+      });
+    },
+
+    async getCookStreak() {
+      await call();
+      const me = requireSession().userId;
+      const weeks = [
+        ...new Set(
+          allCooks()
+            .filter((c) => c.authorId === me)
+            .map((c) => weekStart(c.createdAt)),
+        ),
+      ].sort();
+      let best = 0;
+      let run = 0;
+      let previous: string | null = null;
+      for (const week of weeks) {
+        const next = previous
+          ? new Date(Date.parse(`${previous}T00:00:00Z`) + 7 * 86_400_000)
+              .toISOString()
+              .slice(0, 10)
+          : null;
+        run = next === week ? run + 1 : 1;
+        best = Math.max(best, run);
+        previous = week;
+      }
+      const thisWeek = weekStart(new Date().toISOString());
+      const lastWeek = new Date(Date.parse(`${thisWeek}T00:00:00Z`) - 7 * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
+      const current = previous === thisWeek || previous === lastWeek ? run : 0;
+      return { current, best, weeks: weeks.length };
     },
 
     async setCookReaction(cookId, on) {

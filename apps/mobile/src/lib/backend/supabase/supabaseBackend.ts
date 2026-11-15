@@ -12,6 +12,8 @@ import {
   cityRowSchema,
   circleCardSchema,
   cookCardSchema,
+  circleChallengeSchema,
+  cookStreakSchema,
   myCookSchema,
   staffCookSchema,
   thumbPathOf,
@@ -315,6 +317,8 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
           reactions: row.reactions,
           reacted: row.reacted,
           mine: row.author_id === userId,
+          challengeWeek: row.challenge_week,
+          challengeTheme: row.challenge_theme,
         },
       ];
     });
@@ -737,6 +741,8 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         recipe_id: null,
         recipe_title: null,
         reacted: false,
+        challenge_week: null,
+        challenge_theme: null,
       }));
       return {
         items: await withPhotos(rows, userId),
@@ -759,6 +765,7 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         p_caption: input.caption,
         p_photo_path: input.photoPath,
         p_photo_alt: input.photoAlt,
+        p_challenge_week: input.challengeWeek,
         p_idempotency_key: key,
       });
       if (result.error) throw toBackendError(result.error);
@@ -780,6 +787,50 @@ export function createSupabaseBackend(url: string, anonKey: string): Backend {
         z.object({ reacted: z.boolean(), reactions: z.number().int() }),
         result.data,
       );
+    },
+
+    async getCircleChallenge(circleId) {
+      const result = await client.rpc('circle_challenge', { p_circle_id: circleId });
+      if (result.error) throw toBackendError(result.error);
+      const row = parse(circleChallengeSchema, result.data);
+      const thumbs = row.entries.map((e) => thumbPathOf(e.photo_path));
+      const urls = thumbs.length > 0 ? await photoUrls(thumbs) : new Map<string, string>();
+      return {
+        weekStart: row.week_start,
+        theme: row.theme,
+        canSet: row.can_set,
+        entrants: row.entrants,
+        entries: row.entries.flatMap((e) => {
+          const path = thumbPathOf(e.photo_path);
+          const url = urls.get(path);
+          return url
+            ? [
+                {
+                  id: e.id,
+                  thumb: { uri: url, cacheKey: path },
+                  caption: e.caption,
+                  authorName: e.author_name,
+                },
+              ]
+            : [];
+        }),
+      };
+    },
+
+    async setCircleChallenge(circleId, weekStart, theme, key) {
+      const { error } = await client.rpc('circle_challenge_set', {
+        p_circle_id: circleId,
+        p_week_start: weekStart,
+        p_theme: theme,
+        p_idempotency_key: key,
+      });
+      if (error) throw toBackendError(error);
+    },
+
+    async getCookStreak() {
+      const result = await client.rpc('cook_streak');
+      if (result.error) throw toBackendError(result.error);
+      return parse(cookStreakSchema, result.data);
     },
 
     async createPlan(input, key) {

@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { chooseCity, freezeTime, signInWithEmail } from './support';
+import { enableAllFeatures, chooseCity, freezeTime, signInWithEmail } from './support';
 
 test.beforeEach(async ({ page }) => {
+  await enableAllFeatures(page);
   await freezeTime(page);
 });
 
@@ -9,7 +10,7 @@ test('a member opens a shared recipe and rescales it, with the allergen state sh
   page,
 }) => {
   await signInWithEmail(page, '/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();
@@ -32,7 +33,7 @@ test('a member opens a shared recipe and rescales it, with the allergen state sh
 
 test('a member shares a recipe into a Circle they are in', async ({ page }) => {
   await signInWithEmail(page, '/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();
@@ -63,7 +64,7 @@ test('“Cook this together” starts a Plan from the recipe, prefilled and cred
   await chooseCity(page, 'Berlin');
   await expect(page.getByRole('heading', { name: 'This week in Berlin' })).toBeVisible();
   await page.goto('/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();

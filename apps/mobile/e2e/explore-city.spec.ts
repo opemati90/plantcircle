@@ -7,6 +7,7 @@ test.beforeEach(async ({ page }) => {
 
 test('browsing another city in Explore does not change the home city', async ({ page }) => {
   await page.goto('/explore');
+  await page.getByRole('tab', { name: 'Plans', exact: true }).click();
   await page.getByRole('button', { name: 'Browse another city' }).click();
   await chooseCity(page, 'Lisbon');
   await expect(page.getByRole('button', { name: 'Browse another city' })).toContainText(
@@ -15,12 +16,13 @@ test('browsing another city in Explore does not change the home city', async ({ 
   await expect(page.getByRole('link', { name: /West African Cooking Night/ })).toHaveCount(0);
 
   await page.goto('/home');
-  await expect(page.getByRole('heading', { name: 'This week' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'This week', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Change city' })).toContainText('Anywhere');
 });
 
 test('Anywhere in Explore lists Plans from every city', async ({ page }) => {
   await page.goto('/explore');
+  await page.getByRole('tab', { name: 'Plans', exact: true }).click();
   await page.getByRole('button', { name: 'Browse another city' }).click();
   await page.getByRole('radio', { name: 'Anywhere' }).click();
   await expect(page.getByRole('link', { name: /West African Cooking Night/ })).toBeVisible();

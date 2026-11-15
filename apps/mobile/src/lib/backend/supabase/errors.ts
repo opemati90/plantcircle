@@ -27,6 +27,7 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   host_level_capacity: 'host_level_capacity',
   own_recipe: 'own_recipe',
   own_post: 'own_post',
+  challenge_ended: 'challenge_ended',
   not_host: 'forbidden',
   checkin_closed: 'checkin_closed',
   plan_not_started: 'plan_not_started',

@@ -29,7 +29,7 @@ export function describeNotification(
           inCity > 0
             ? t('notify.weeklyDigestNote', { count: online })
             : t('notify.weeklyDigestNoteHome'),
-        href: '/explore',
+        href: { pathname: '/explore', params: { tab: 'plans' } },
       };
     }
     case 'rsvp_confirmed':

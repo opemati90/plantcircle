@@ -18,6 +18,7 @@ test('Home can go back to Anywhere after choosing a city', async ({ page }) => {
 
 test('Explore can show every city in a country', async ({ page }) => {
   await page.goto('/explore');
+  await page.getByRole('tab', { name: 'Plans', exact: true }).click();
   await page.getByRole('button', { name: 'Browse another city' }).click();
   await page.getByRole('textbox', { name: 'Search cities' }).fill('Germany');
   await page.getByRole('radio', { name: 'All in Germany' }).click();

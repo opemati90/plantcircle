@@ -1,8 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import { useBackend } from '../../lib/backend/BackendProvider';
-import type { CircleInput, City, MyPlansScope, PlanFormat } from '../../lib/backend/types';
+import type {
+  CircleInput,
+  City,
+  MyPlansScope,
+  Plan,
+  PlanFormat,
+} from '../../lib/backend/types';
 import { useAuth } from '../auth/useAuth';
+import { features } from '../../lib/features';
 import { forgetCookPhotos } from '../../lib/photoCache';
 import { getOnboarding, saveOnboardingStrict } from '../onboarding/onboardingStore';
 
@@ -19,12 +26,17 @@ export function useCities() {
   });
 }
 
+/** Group orders stay out of every list while they are switched off for launch. */
+const launchPlans = (plans: Plan[]) =>
+  features.groupOrders ? plans : plans.filter((p) => p.category !== 'group_order');
+
 /** `cityIds: null` means Anywhere: Plans from every city. */
 export function usePlansThisWeek(cityIds: string[] | null, enabled = true) {
   const backend = useBackend();
   return useQuery({
     enabled,
     queryKey: ['plans', cityIds?.join(',') ?? 'all'],
+    select: launchPlans,
     queryFn: () => {
       const from = new Date();
       return backend.listUpcomingPlans({
@@ -44,6 +56,7 @@ export function useOnlinePlans(enabled: boolean) {
   return useQuery({
     queryKey: ['explorePlans', 'online'],
     enabled,
+    select: launchPlans,
     queryFn: () => {
       const from = new Date();
       return backend.listUpcomingPlans({
@@ -66,6 +79,7 @@ export function useExplorePlans(cityIds: string[] | null, enabled = true, format
   return useQuery({
     queryKey: ['explorePlans', cityIds?.join(',') ?? 'all', format ?? 'any'],
     enabled,
+    select: launchPlans,
     queryFn: () => {
       const from = new Date();
       return backend.listUpcomingPlans({
@@ -100,6 +114,8 @@ export function useUpNext() {
     queryKey: ['upNext', session?.userId ?? null],
     queryFn: () => backend.getUpNext(new Date()),
     enabled: Boolean(session),
+    select: (next) =>
+      next && !features.groupOrders && next.plan.category === 'group_order' ? null : next,
   });
 }
 
@@ -110,6 +126,8 @@ export function useMyPlans(scope: MyPlansScope, enabled: boolean) {
   return useQuery({
     queryKey: ['myPlans', scope, session?.userId ?? null],
     queryFn: () => backend.listMyPlans({ scope, now: new Date() }),
+    select: (items) =>
+      features.groupOrders ? items : items.filter((i) => i.plan.category !== 'group_order'),
     enabled: enabled && Boolean(session),
     refetchOnMount: 'always',
     // Restored from the offline cache it is still fetched again as soon as the session is known.
@@ -176,12 +194,13 @@ export function useCircles(search: string) {
 }
 
 /** Every Circle the viewer is in, for pickers. Not filtered by the discovery search. */
-export function useMyCircles() {
+export function useMyCircles(enabled = true) {
   const backend = useBackend();
   const { session } = useAuth();
   return useQuery({
     queryKey: ['my-circles', session?.userId ?? null],
     queryFn: () => backend.listMyCircles(),
+    enabled,
   });
 }
 

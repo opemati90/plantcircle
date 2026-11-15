@@ -32,10 +32,17 @@ import {
   type PlanFilters,
 } from './exploreRules';
 import { FiltersSheet } from './FiltersSheet';
+import { features } from '../../lib/features';
 import { useNow } from '../../lib/useNow';
 import { FilterIcon } from '../../components/icons';
 
-const TABS: ExploreTab[] = ['circles', 'plans', 'learn', 'people'];
+// At launch: Circles first, then Plans. Learn and People come back with their switches.
+const TABS: ExploreTab[] = [
+  'circles',
+  'plans',
+  ...(features.recipes ? (['learn'] as const) : []),
+  ...(features.people ? (['people'] as const) : []),
+];
 
 function PlansTab({
   plans,
@@ -212,11 +219,17 @@ export default function ExploreScreen() {
       ? t('explore.anywhere')
       : (countryName ?? cityName ?? (cities.isError ? t('city.loadError') : t('city.loading')));
   const countryReady = choice.kind !== 'country' || cities.isSuccess;
-  const [tab, setTab] = useState<ExploreTab>('plans');
-  const [query, setQuery] = useState('');
   // Onboarding sends people without a city here with ?where=online, so they land on Plans
   // they can actually join. The param only seeds the filter; clearing it works as usual.
-  const { where: whereParam } = useLocalSearchParams<{ where?: string }>();
+  // `?tab=plans` (Plan links, the weekly digest) opens on Plans; Circles otherwise.
+  const { where: whereParam, tab: tabParam } = useLocalSearchParams<{
+    where?: string;
+    tab?: string;
+  }>();
+  const [tab, setTab] = useState<ExploreTab>(
+    whereParam || tabParam === 'plans' ? 'plans' : 'circles',
+  );
+  const [query, setQuery] = useState('');
   const initialFilters: PlanFilters =
     whereParam === 'online' || whereParam === 'in_person'
       ? { ...NO_FILTERS, where: whereParam }
@@ -334,7 +347,7 @@ export default function ExploreScreen() {
         accessibilityRole="header"
         style={type(34, 'bold', { tracking: -1.1 })}
       >
-        {t('tabs.explore')}
+        {t('tabs.circles')}
       </Text>
 
       {tab === 'plans' ? (

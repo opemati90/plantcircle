@@ -18,6 +18,7 @@ import { useAuth } from '../auth/useAuth';
 import { useRecipe, useSetFollow, useSetRecipeVote } from './queries';
 import { allergenNames, formatQuantity, scaleQuantity } from './recipeRules';
 import { Stepper } from '../../components/Stepper';
+import { features } from '../../lib/features';
 
 const MIN_SERVINGS = 1;
 const MAX_SERVINGS = 50;
@@ -173,7 +174,7 @@ export default function RecipeScreen() {
               />
             </View>
           ) : null}
-          {session && data.authorId !== session.userId ? (
+          {features.recipes && session && data.authorId !== session.userId ? (
             <View style={styles.actions}>
               <Button
                 variant={data.voted ? 'primary' : 'outline'}
@@ -206,7 +207,7 @@ export default function RecipeScreen() {
                 />
               ) : null}
             </View>
-          ) : !session ? (
+          ) : features.recipes && !session ? (
             <Text
               maxFontSizeMultiplier={2.0}
               style={type(14, 'regular', { color: color.secondary })}

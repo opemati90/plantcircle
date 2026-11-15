@@ -1,33 +1,34 @@
 import { expect, test } from '@playwright/test';
-import { chooseCity, freezeTime, signInWithEmail, type FixtureWindow } from './support';
+import {
+  chooseCity,
+  enableAllFeatures,
+  freezeTime,
+  signInWithEmail,
+  type FixtureWindow,
+} from './support';
 
 test.beforeEach(async ({ page }) => {
   await freezeTime(page);
 });
 
-test('a member with no recipe cannot host yet; one recipe opens small online Plans', async ({
+test('hosting opens after three posts: online first, in person once the account is two weeks old', async ({
   page,
 }) => {
   await signInWithEmail(page, '/home');
   await page.getByRole('button', { name: 'Change city' }).click();
   await chooseCity(page, 'Berlin');
   await page.evaluate(() =>
-    (globalThis as FixtureWindow).__pcFixtures?.setHostStats({
-      recipes: 0,
-      hosted: 0,
-      followers: 0,
-      upvotes: 0,
-    }),
+    (globalThis as FixtureWindow).__pcFixtures?.setHostStats({ posts: 1, accountDays: 3 }),
   );
   await page.getByRole('link', { name: 'Start a Plan' }).click();
-  await expect(page.getByRole('heading', { name: 'Share a recipe first' })).toBeVisible();
-  await expect(page.getByText('Level 0', { exact: true })).toBeVisible();
-  await expect(page.getByRole('progressbar', { name: 'Recipes shared' })).toBeVisible();
-  await expect(page.getByText('0 of 1')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Share 3 dishes first' })).toBeVisible();
+  await expect(page.getByText('1 of 3 shared')).toBeVisible();
+  await page.getByRole('button', { name: 'Share what you cooked' }).click();
+  await expect(page.getByRole('heading', { name: 'Share what you cooked' })).toBeVisible();
 
-  // Level 1: online only, up to 6 spots; the in-person choice is locked and says why.
+  // Three posts: online Plans, up to 12 spots; in person waits for a two-week-old account.
   await page.evaluate(() =>
-    (globalThis as FixtureWindow).__pcFixtures?.setHostStats({ recipes: 1 }),
+    (globalThis as FixtureWindow).__pcFixtures?.setHostStats({ posts: 3, accountDays: 3 }),
   );
   await page.goto('/create');
   await page.getByRole('radio', { name: 'Cooking night' }).click();
@@ -38,28 +39,37 @@ test('a member with no recipe cannot host yet; one recipe opens small online Pla
   await page.getByRole('radio', { name: '18:00' }).click();
   await page.getByRole('radio', { name: '120 min' }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByText('In-person Plans open at level 2.')).toBeVisible();
+  await expect(page.getByText('In-person Plans open two weeks after you join.')).toBeVisible();
   await expect(page.getByRole('radio', { name: 'Online' })).toBeChecked();
   await page
     .getByRole('textbox', { name: 'Google Meet link' })
     .fill('https://meet.example.com/abc');
   await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByText('Up to 6 spots at your level.')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'More servings' })).toBeDisabled();
+  await expect(page.getByText('Up to 12 spots.')).toBeVisible();
 });
 
-test('the profile shows the level and the next steps; a recipe can be upvoted and its author followed', async ({
+test('the profile shows your cooking weeks and where hosting stands, with no levels at launch', async ({
   page,
 }) => {
   await signInWithEmail(page, '/profile');
-  await expect(page.getByText('Host', { exact: true })).toBeVisible();
-  await expect(page.getByText('Level 2', { exact: true })).toBeVisible();
-  await expect(page.getByText('NEXT: PILLAR')).toBeVisible();
-  await expect(page.getByText('12 of 100')).toBeVisible();
-  await expect(page.getByText('40 of 2,000')).toBeVisible();
+  await expect(page.getByText('Your cooking weeks')).toBeVisible();
+  await expect(page.getByText('Share something you cooked this week')).toBeVisible();
+  await expect(page.getByText('You can host Plans online and in person')).toBeVisible();
+  await expect(page.getByText('Level 2', { exact: true })).toHaveCount(0);
+  await page.evaluate(() =>
+    (globalThis as FixtureWindow).__pcFixtures?.setHostStats({ posts: 1 }),
+  );
+  await page.reload();
+  await page.getByRole('link', { name: 'Share 2 more dishes to host a Plan' }).click();
+  await expect(page.getByRole('heading', { name: 'Share what you cooked' })).toBeVisible();
+});
 
-  await page.goto('/explore');
-  await page.getByRole('tab', { name: 'Circles', exact: true }).click();
+test('with every part switched on, a recipe can be upvoted and its author followed', async ({
+  page,
+}) => {
+  await enableAllFeatures(page);
+  await signInWithEmail(page, '/explore');
+  await page.getByRole('tab', { name: 'Circles', exact: true }).first().click();
   await page.getByRole('link', { name: /Neukölln Plant Kitchen/ }).click();
   await page.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(page.getByText('You’re a member').last()).toBeVisible();
@@ -72,7 +82,6 @@ test('the profile shows the level and the next steps; a recipe can be upvoted an
   await expect(upvote).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Follow Ama O.' }).click();
   await expect(page.getByRole('button', { name: 'Unfollow Ama O.' })).toBeVisible();
-  // Both survive a reload: the fixture backend keeps them like the database would.
   await page.reload();
   await expect(page.getByRole('button', { name: /^Upvote, / })).toHaveAccessibleName(
     'Upvote, 39 upvotes',

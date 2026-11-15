@@ -4,11 +4,12 @@ import type { Recipe, RecipeDetail, RecipeInput } from '../../lib/backend/types'
 import { useAuth } from '../auth/useAuth';
 
 /** Recipes the viewer can see, searched on the server. */
-export function useRecipes(search: string) {
+export function useRecipes(search: string, enabled = true) {
   const backend = useBackend();
   const { session } = useAuth();
   const userId = session?.userId ?? null;
   return useQuery({
+    enabled,
     queryKey: ['recipes', userId, search.trim()],
     queryFn: () => backend.listRecipes({ search }),
     // Only the same person's earlier list may stand in while typing; never another person's.

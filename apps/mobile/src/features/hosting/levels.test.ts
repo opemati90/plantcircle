@@ -1,38 +1,39 @@
-import { hostLevelFrom, nextSteps } from './levels';
+import { hostLevelFrom, postsToHost } from './levels';
 
-const none = { recipes: 0, hosted: 0, followers: 0, upvotes: 0 };
+const stats = (posts: number, accountDays: number) => ({
+  recipes: 0,
+  hosted: 0,
+  followers: 0,
+  upvotes: 0,
+  posts,
+  accountDays,
+});
 
 describe('hostLevelFrom', () => {
-  it('is level 0 with nothing, level 1 after one recipe, level 2 with the full set', () => {
-    expect(hostLevelFrom(none)).toEqual(
+  it('opens online hosting after three posts, and in person once the account is two weeks old', () => {
+    expect(hostLevelFrom(stats(2, 30))).toEqual(
       expect.objectContaining({ level: 0, maxCapacity: 0, inPerson: false }),
     );
-    expect(hostLevelFrom({ ...none, recipes: 1 })).toEqual(
-      expect.objectContaining({ level: 1, maxCapacity: 6 }),
+    expect(hostLevelFrom(stats(3, 3))).toEqual(
+      expect.objectContaining({ level: 1, maxCapacity: 12, inPerson: false }),
     );
-    expect(hostLevelFrom({ recipes: 3, hosted: 1, followers: 10, upvotes: 0 })).toEqual(
-      expect.objectContaining({ level: 2, inPerson: true, groupOrders: true }),
+    expect(hostLevelFrom(stats(3, 3)).next).toEqual(
+      expect.objectContaining({ level: 2, accountDays: 14 }),
     );
-    expect(
-      hostLevelFrom({ recipes: 3, hosted: 1, followers: 10, upvotes: 0 }).next?.level,
-    ).toBe(3);
-    expect(
-      hostLevelFrom({ recipes: 3, hosted: 1, followers: 100, upvotes: 2000 }).next,
-    ).toBeNull();
+    expect(hostLevelFrom(stats(3, 14))).toEqual(
+      expect.objectContaining({ level: 2, inPerson: true, next: null }),
+    );
   });
 
   it('a verified host is the top level regardless', () => {
-    expect(hostLevelFrom(none, true).level).toBe(3);
+    expect(hostLevelFrom(stats(0, 0), true)).toEqual(
+      expect.objectContaining({ level: 3, maxCapacity: 30, next: null }),
+    );
   });
 
-  it('lists what is missing for the next level, recipes first', () => {
-    expect(
-      nextSteps(hostLevelFrom({ recipes: 1, hosted: 0, followers: 4, upvotes: 0 })),
-    ).toEqual([
-      { key: 'recipes', missing: 2 },
-      { key: 'hosted', missing: 1 },
-      { key: 'followers', missing: 6 },
-    ]);
-    expect(nextSteps(hostLevelFrom(none, true))).toEqual([]);
+  it('says how many posts are left before hosting opens', () => {
+    expect(postsToHost(hostLevelFrom(stats(1, 0)))).toBe(2);
+    expect(postsToHost(hostLevelFrom(stats(5, 0)))).toBe(0);
+    expect(postsToHost(hostLevelFrom(stats(0, 0), true))).toBe(0);
   });
 });

@@ -16,7 +16,9 @@ import { shortWhen } from '../../lib/dates';
 import { ProviderButtons } from '../auth/ProviderButtons';
 import { useAuth } from '../auth/useAuth';
 import { useRecipes } from '../learn/queries';
+import { ChallengeCard } from '../cooks/ChallengeCard';
 import { CookCard } from '../cooks/CookCard';
+import { features } from '../../lib/features';
 import { useCooks } from '../cooks/queries';
 import { useNow } from '../../lib/useNow';
 import { PlanListItem } from '../plans/PlanListItem';
@@ -61,7 +63,10 @@ export default function CircleScreen() {
     circle.data?.viewerRole === 'owner' || circle.data?.viewerRole === 'moderator';
   const requests = useCircleRequests(id, canModerate);
   const respond = useRespondToCircleRequest();
-  const [tab, setTab] = useState<Tab>(TABS.find((name) => name === startTab) ?? 'plans');
+  // Members land on Posts, where the week's challenge is; visitors on Plans. A link can choose.
+  const [chosenTab, setTab] = useState<Tab | null>(
+    TABS.find((name) => name === startTab) ?? null,
+  );
   const [signingUp, setSigningUp] = useState(false);
   const [key, setKey] = useState(newIdempotencyKey);
   const [decisionKeys, setDecisionKeys] = useState<Record<string, string>>({});
@@ -120,6 +125,7 @@ export default function CircleScreen() {
   const data = circle.data;
   const requested = data.viewerRequestPending;
   const member = data.viewerRole !== null;
+  const tab: Tab = chosenTab ?? (member ? 'posts' : 'plans');
   const needsAccount = !session;
 
   const joinNow = () => {
@@ -509,7 +515,7 @@ function PostsTab({ circleId, member }: { circleId: string; member: boolean }) {
   const router = useRouter();
   const now = useNow(60_000);
   const cooks = useCooks(circleId, member);
-  const recipes = useRecipes('');
+  const recipes = useRecipes('', features.recipes);
   const items = cooks.data?.pages.flatMap((page) => page.items) ?? [];
   const shownRecipes = (recipes.data ?? []).filter((r) => r.circleId === circleId);
 
@@ -517,9 +523,11 @@ function PostsTab({ circleId, member }: { circleId: string; member: boolean }) {
     <View style={styles.feed}>
       {member ? (
         <>
+          <ChallengeCard circleId={circleId} />
           <Button
+            variant="outline"
             label={t('cooks.shareYours')}
-            icon={<PlusIcon size={18} strokeWidth={2.4} color={color.surface} />}
+            icon={<PlusIcon size={18} strokeWidth={2.4} />}
             onPress={() => {
               router.push({ pathname: '/cook/new', params: { circle: circleId } });
             }}
@@ -568,74 +576,76 @@ function PostsTab({ circleId, member }: { circleId: string; member: boolean }) {
         </Text>
       )}
 
-      <View style={styles.list}>
-        <Text
-          maxFontSizeMultiplier={1.6}
-          accessibilityRole="header"
-          aria-level={3}
-          style={type(20, 'bold', { tracking: -0.4 })}
-        >
-          {t('cooks.recipesHere')}
-        </Text>
-        {recipes.isPending ? (
-          <Skeleton width="100%" height={72} radius={radius.card} />
-        ) : recipes.isError ? (
-          <InlineState
-            title={t('errors.serverTitle')}
-            text={t('errors.serverText')}
-            action={
-              <Button
-                variant="outline"
-                label={t('common.retry')}
-                onPress={() => void recipes.refetch()}
-              />
-            }
-          />
-        ) : shownRecipes.length === 0 ? (
+      {features.recipes ? (
+        <View style={styles.list}>
           <Text
-            maxFontSizeMultiplier={2.0}
-            style={type(15, 'regular', { color: color.secondary })}
+            maxFontSizeMultiplier={1.6}
+            accessibilityRole="header"
+            aria-level={3}
+            style={type(20, 'bold', { tracking: -0.4 })}
           >
-            {t('circles.postsEmpty')}
+            {t('cooks.recipesHere')}
           </Text>
-        ) : (
-          shownRecipes.map((recipe) => (
-            <Pressable
-              key={recipe.id}
-              accessibilityRole="link"
-              onPress={() => {
-                router.push({ pathname: '/recipe/[id]', params: { id: recipe.id } });
-              }}
-              style={styles.post}
+          {recipes.isPending ? (
+            <Skeleton width="100%" height={72} radius={radius.card} />
+          ) : recipes.isError ? (
+            <InlineState
+              title={t('errors.serverTitle')}
+              text={t('errors.serverText')}
+              action={
+                <Button
+                  variant="outline"
+                  label={t('common.retry')}
+                  onPress={() => void recipes.refetch()}
+                />
+              }
+            />
+          ) : shownRecipes.length === 0 ? (
+            <Text
+              maxFontSizeMultiplier={2.0}
+              style={type(15, 'regular', { color: color.secondary })}
             >
-              <Text
-                maxFontSizeMultiplier={2.0}
-                style={type(13, 'regular', { color: color.secondary })}
+              {t('circles.postsEmpty')}
+            </Text>
+          ) : (
+            shownRecipes.map((recipe) => (
+              <Pressable
+                key={recipe.id}
+                accessibilityRole="link"
+                onPress={() => {
+                  router.push({ pathname: '/recipe/[id]', params: { id: recipe.id } });
+                }}
+                style={styles.post}
               >
-                {t('learn.byline', {
-                  name: recipe.authorName ?? t('circles.requests.someone'),
-                  circle: recipe.circleName,
-                })}
-              </Text>
-              <Text
-                maxFontSizeMultiplier={2.0}
-                style={type(16, 'semibold', { tracking: -0.3 })}
-              >
-                {recipe.title}
-              </Text>
-              {recipe.intro ? (
                 <Text
                   maxFontSizeMultiplier={2.0}
-                  numberOfLines={2}
-                  style={type(14, 'regular', { color: color.secondary })}
+                  style={type(13, 'regular', { color: color.secondary })}
                 >
-                  {recipe.intro}
+                  {t('learn.byline', {
+                    name: recipe.authorName ?? t('circles.requests.someone'),
+                    circle: recipe.circleName,
+                  })}
                 </Text>
-              ) : null}
-            </Pressable>
-          ))
-        )}
-      </View>
+                <Text
+                  maxFontSizeMultiplier={2.0}
+                  style={type(16, 'semibold', { tracking: -0.3 })}
+                >
+                  {recipe.title}
+                </Text>
+                {recipe.intro ? (
+                  <Text
+                    maxFontSizeMultiplier={2.0}
+                    numberOfLines={2}
+                    style={type(14, 'regular', { color: color.secondary })}
+                  >
+                    {recipe.intro}
+                  </Text>
+                ) : null}
+              </Pressable>
+            ))
+          )}
+        </View>
+      ) : null}
     </View>
   );
 }
