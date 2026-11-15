@@ -1,14 +1,15 @@
 # Store photos
 
 Used only for the store screenshots (the capture swaps them in for the fixture stand-ins). All are
-CC0 (public domain dedication) from the WordPress Photo Directory, found through Openverse. No
-attribution is required; listed so the source can be checked.
+CC0 (public domain dedication), found through Openverse. No attribution is required; listed so
+the source can be checked.
 
-| File                | Source                                                            |
-| ------------------- | ----------------------------------------------------------------- |
-| `table.jpg`         | https://pd.w.org/2025/06/53685c112c78ddf2.12208580-2048x1365.jpg  |
-| `greens-stew.jpg`   | https://pd.w.org/2022/12/88963985ec3732ce1.46863340-2048x1536.jpg |
-| `chickpea-stew.jpg` | https://pd.w.org/2026/08/1116a71eba66cccc1.90650100-1536x2048.jpg |
-| `sheet-pan.jpg`     | https://pd.w.org/2022/02/3466206d62e0bdbd7.97605538-1709x2048.jpg |
+| File                 | Used for                         | Source                                                                                                                                                                       |
+| -------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bruschetta.jpg`     | Welcome, Circle and invite photo | https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL2ZyYnJ1c2NoZXR0YV90b21hdG9fY2FwcmljZV9ncmlsbGVkLWltYWdlLWt5YmU0dmUwLmpwZw.jpg   |
+| `pasta-making.jpg`   | The Fresh Pasta Night Plan       | https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvYTAxOS1qYWt1YmstMDc1MC1tYWtpbmctZnJlc2gtaG9tZW1hZGUtcGFzdGEuanBn.jpg |
+| `mushroom-pasta.jpg` | Mia’s post                       | https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcHg4MDczMDYtaW1hZ2Uta3d2eGhkdDkuanBn.jpg                             |
+| `lentil-soup.jpg`    | Ola’s post                       | https://upload.wikimedia.org/wikipedia/commons/e/e6/Amy%27s_lentil_vegetable_soup.jpg                                                                                        |
+| `sheet-pan.jpg`      | The post shared in the shots     | https://pd.w.org/2022/02/3466206d62e0bdbd7.97605538-1709x2048.jpg                                                                                                            |
 
 Real photos from your own first cooking nights will sell better; swap them in here when you have them.

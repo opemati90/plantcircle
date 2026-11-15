@@ -1,10 +1,13 @@
-import { mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from '@playwright/test';
+import type { Language } from '@plantcircle/copy';
+import { HEADLINES, STORE_LANGUAGES } from './locales';
 
 /**
  * Frames the raw screens from capture.spec.ts into the store images: brand green, the logo, a
- * headline and a phone with the real screen. Output in store/out/{app-store,google-play,promo}.
+ * headline and a phone with the real screen, in every language captured. Output in
+ * store/out/{language}/{app-store,google-play,promo}.
  */
 const RAW = join(__dirname, 'out', 'raw');
 const OUT = join(__dirname, 'out');
@@ -16,8 +19,6 @@ const LOGO = join(
 interface Shot {
   file: string;
   raw: string;
-  title: [string, string];
-  sub: string;
   /** The screen's top is a dark photo: light status bar. */
   darkTop?: boolean;
   /** A scrolled screen: the status bar gets a solid band, as under a scrolled header. */
@@ -29,41 +30,29 @@ const SHOTS: Shot[] = [
   {
     file: '01-this-week',
     raw: 'this-week',
-    title: ['Find your people.', 'Cook together.'],
-    sub: 'A weekly cook club with people near you.',
   },
   {
     file: '02-challenge',
     raw: 'circle-week',
-    title: ['One theme a week.', 'Everyone cooks.'],
-    sub: 'Your Circle sets it. You cook it at home.',
     darkTop: true,
   },
   {
     file: '03-share',
     raw: 'composer',
-    title: ['Show what', 'you cooked.'],
-    sub: 'A photo and a line, shared only with your Circle.',
   },
   {
     file: '04-ideas',
     raw: 'feed',
-    title: ['Fresh ideas', 'from your Circle.'],
-    sub: 'See what others made, say yum, ask how.',
     solidTop: true,
   },
   {
     file: '05-together',
     raw: 'plan-joined',
-    title: ['Then cook together', 'in person.'],
-    sub: 'Cooking nights and potlucks. Join in one tap.',
     darkTop: true,
   },
   {
     file: '06-invite',
     raw: 'invite',
-    title: ['Bring a friend', 'with one link.'],
-    sub: 'They can look around first. No app needed.',
     darkTop: true,
   },
 ];
@@ -81,6 +70,17 @@ const dataUri = (path: string, mime: string) =>
   `data:${mime};base64,${readFileSync(path).toString('base64')}`;
 const screen = (name: string) => dataUri(join(RAW, `${name}.png`), 'image/png');
 const logo = () => dataUri(LOGO, 'image/svg+xml');
+
+/** Long headlines (German, Polish) shrink until each line fits its box. */
+const FIT = `<script>
+  document.querySelectorAll('h1').forEach((h) => {
+    let size = parseFloat(getComputedStyle(h).fontSize);
+    while (h.scrollWidth > h.clientWidth && size > 20) {
+      size -= 2;
+      h.style.fontSize = size + 'px';
+    }
+  });
+</script>`;
 
 const BASE_CSS = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -157,7 +157,14 @@ function phone(
   </div>`;
 }
 
-function portrait(shot: Shot, w: number, h: number, platform: Platform): string {
+function portrait(
+  shot: Shot,
+  headline: { title: [string, string]; sub: string },
+  language: Language,
+  w: number,
+  h: number,
+  platform: Platform,
+): string {
   const s = w / 1320;
   // Shorter canvases (Play 9:16) get a slightly smaller phone so the screen still reads.
   const tall = h / w > 2;
@@ -165,19 +172,20 @@ function portrait(shot: Shot, w: number, h: number, platform: Platform): string 
   return `<!doctype html><html><head><style>${BASE_CSS}
     .wrap { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: ${(tall ? 150 : 110) * s}px; }
     .logo { height: ${(tall ? 64 : 58) * s}px; margin-bottom: ${(tall ? 64 : 48) * s}px; }
-    h1 { font-size: ${(tall ? 128 : 118) * s}px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; }
+    h1 { font-size: ${(tall ? 128 : 118) * s}px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; white-space: nowrap; width: ${w - 96 * s}px; }
     p { font-size: ${(tall ? 50 : 46) * s}px; margin-top: ${36 * s}px; color: rgba(255,255,255,0.86); line-height: 1.3; max-width: ${1080 * s}px; }
     .phone { margin-top: ${(tall ? 96 : 70) * s}px; }
   </style></head><body><div class="wrap">
     <img class="logo" src="${logo()}">
-    <h1>${shot.title[0]}<br><span class="accent">${shot.title[1]}</span></h1>
-    <p>${shot.sub}</p>
-    ${phone(shot.raw, phoneW, platform, shot.darkTop, shot.solidTop)}
-  </div></body></html>`;
+    <h1>${headline.title[0]}<br><span class="accent">${headline.title[1]}</span></h1>
+    <p>${headline.sub}</p>
+    ${phone(`${language}/${shot.raw}`, phoneW, platform, shot.darkTop, shot.solidTop)}
+  </div>${FIT}</body></html>`;
 }
 
 /** Landscape: text left, two phones right, cropped at the bottom edge. */
 function landscape(
+  language: Language,
   w: number,
   h: number,
   platform: Platform,
@@ -191,55 +199,65 @@ function landscape(
     body { background: radial-gradient(90% 120% at 15% 10%, #1F7449 0%, rgba(31,116,73,0) 70%), #155A37; }
     .text { position: absolute; left: ${64 * s}px; top: 50%; transform: translateY(-50%); width: ${470 * s}px; }
     .logo { height: ${30 * s}px; margin-bottom: ${30 * s}px; }
-    h1 { font-size: ${54 * s}px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.02; }
+    h1 { font-size: ${54 * s}px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.02; white-space: nowrap; width: 100%; }
     p { font-size: ${21 * s}px; margin-top: ${18 * s}px; color: rgba(255,255,255,0.86); line-height: 1.35; }
     .a { position: absolute; left: ${w - 64 * s - phoneW * 1.72}px; top: ${h - 408 * s}px; }
     .b { position: absolute; left: ${w - 64 * s - phoneW}px; top: ${h - 464 * s}px; }
   </style></head><body>
     <div class="text"><img class="logo" src="${logo()}"><h1>${title[0]}<br><span class="accent">${title[1]}</span></h1><p>${sub}</p></div>
-    <div class="a">${phone('circle-week', phoneW, platform, true)}</div>
-    <div class="b">${phone('this-week', phoneW, platform)}</div>
-  </body></html>`;
+    <div class="a">${phone(`${language}/circle-week`, phoneW, platform, true)}</div>
+    <div class="b">${phone(`${language}/this-week`, phoneW, platform)}</div>
+  ${FIT}</body></html>`;
 }
 
-test('compose store images', async ({ browser }) => {
-  test.setTimeout(180_000);
-  for (const size of SIZES) {
-    const dir = join(OUT, size.dir);
-    mkdirSync(dir, { recursive: true });
-    const page = await browser.newPage({
-      viewport: { width: size.w, height: size.h },
-      deviceScaleFactor: 1,
-    });
-    for (const shot of SHOTS) {
-      await page.setContent(portrait(shot, size.w, size.h, size.platform), {
+const captured = STORE_LANGUAGES.filter((language) => existsSync(join(RAW, language)));
+
+for (const language of captured) {
+  test(`compose store images, ${language}`, async ({ browser }) => {
+    test.setTimeout(180_000);
+    const out = join(OUT, language);
+    const headlines = HEADLINES[language];
+    for (const size of SIZES) {
+      const dir = join(out, size.dir);
+      mkdirSync(dir, { recursive: true });
+      const page = await browser.newPage({
+        viewport: { width: size.w, height: size.h },
+        deviceScaleFactor: 1,
+      });
+      for (const [index, shot] of SHOTS.entries()) {
+        const headline = headlines[index];
+        if (!headline) throw new Error(`No ${language} headline ${String(index + 1)}`);
+        await page.setContent(
+          portrait(shot, headline, language, size.w, size.h, size.platform),
+          {
+            waitUntil: 'load',
+          },
+        );
+        await page.screenshot({
+          path: join(dir, `${shot.file}.jpg`),
+          type: 'jpeg',
+          quality: 90,
+        });
+      }
+      await page.close();
+    }
+    const wide: [string, number, number, Platform][] = [
+      ['google-play/feature-graphic-1024x500.jpg', 1024, 500, 'android'],
+      ['promo/promo-1920x1080.jpg', 1920, 1080, 'ios'],
+    ];
+    const lead = headlines[0];
+    if (!lead) throw new Error(`No ${language} headline`);
+    for (const [file, w, h, platform] of wide) {
+      mkdirSync(join(out, file, '..'), { recursive: true });
+      const page = await browser.newPage({
+        viewport: { width: w, height: h },
+        deviceScaleFactor: 1,
+      });
+      await page.setContent(landscape(language, w, h, platform, lead.title, lead.sub), {
         waitUntil: 'load',
       });
-      await page.screenshot({ path: join(dir, `${shot.file}.png`) });
+      await page.screenshot({ path: join(out, file), type: 'jpeg', quality: 90 });
+      await page.close();
     }
-    await page.close();
-  }
-  const wide: [string, number, number, Platform][] = [
-    ['google-play/feature-graphic-1024x500.png', 1024, 500, 'android'],
-    ['promo/promo-1920x1080.png', 1920, 1080, 'ios'],
-  ];
-  for (const [file, w, h, platform] of wide) {
-    mkdirSync(join(OUT, file, '..'), { recursive: true });
-    const page = await browser.newPage({
-      viewport: { width: w, height: h },
-      deviceScaleFactor: 1,
-    });
-    await page.setContent(
-      landscape(
-        w,
-        h,
-        platform,
-        ['Find your people.', 'Cook together.'],
-        'A weekly cook club with people near you.',
-      ),
-      { waitUntil: 'load' },
-    );
-    await page.screenshot({ path: join(OUT, file) });
-    await page.close();
-  }
-});
+  });
+}

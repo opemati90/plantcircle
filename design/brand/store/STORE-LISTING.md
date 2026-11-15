@@ -4,28 +4,31 @@ Screenshots, feature graphic, promo banner, icons and listing copy (EN + DE) for
 
 ## Files
 
+Screenshots, feature graphic and promo banner are in `screenshots/{language}/` for every language the app speaks: `en`, `de`, `es`, `fr`, `it`, `nl`, `pl`, `pt`. Each has the app in that language, sample posts written in that language and the headlines below. Upload each language to its own store localization.
+
 | File | Where it goes | Size |
 | --- | --- | --- |
-| `app-store/6.9-inch/01…06.png` | App Store Connect, iPhone 6.9" screenshots (required) | 1320 × 2868 |
-| `app-store/6.5-inch/01…06.png` | iPhone 6.5" (optional; Apple can scale 6.9") | 1284 × 2778 |
+| `screenshots/{language}/app-store/6.9-inch/01…06.jpg` | App Store Connect, iPhone 6.9" screenshots (required) | 1320 × 2868 |
+| `screenshots/{language}/app-store/6.5-inch/01…06.jpg` | iPhone 6.5" (optional; Apple can scale 6.9") | 1284 × 2778 |
+| `screenshots/{language}/google-play/phone/01…06.jpg` | Play Console, phone screenshots | 1080 × 1920 |
+| `screenshots/{language}/google-play/feature-graphic-1024x500.jpg` | Play feature graphic (the store header) | 1024 × 500 |
+| `screenshots/{language}/promo/promo-1920x1080.jpg` | Website, press kit, social posts (not In-App Events: those need art for a specific event) | 1920 × 1080 |
 | `app-store/app-icon-1024.png` | App Store icon (no transparency, no rounded corners) | 1024 × 1024 |
-| `google-play/phone/01…06.png` | Play Console, phone screenshots | 1080 × 1920 |
-| `google-play/feature-graphic-1024x500.png` | Play feature graphic (the store header) | 1024 × 500 |
 | `google-play/app-icon-512.png` | Play app icon | 512 × 512 |
-| `promo/promo-1920x1080.png` | Website, press kit, social posts (not In-App Events: those need art for a specific event) | 1920 × 1080 |
 
-All images are RGB with no transparency, as both stores require.
+Screenshots are high-quality JPEG (both stores accept it) with no transparency.
 
 ## How they are made
 
-The screenshots are the real app screens, not mock-ups (the App Store set in an iPhone frame, the Google Play set in a neutral Android frame): `apps/mobile/store/capture.spec.ts` drives the app (sample data, Berlin, Monday 2 November) and `compose.spec.ts` frames each screen in brand green with the headline. Rebuild after any UI change:
+The screenshots are the real app screens, not mock-ups (the App Store set in an iPhone frame, the Google Play set in a neutral Android frame), captured with the device set to each language: `apps/mobile/store/capture.spec.ts` drives the app on sample data (Berlin, Monday 2 November) and `compose.spec.ts` frames each screen in brand green with its headline. The sample content is European and plant-based (a fresh pasta night, mushroom pasta, lentil soup, bruschetta) and written per language in `apps/mobile/store/locales.ts`, together with the headlines. Rebuild after any UI change:
 
 ```
 cd apps/mobile
-pnpm store:capture && pnpm store:compose   # output in apps/mobile/store/out/
+pnpm store:capture && pnpm store:compose   # all languages; STORE_LANGUAGES=de,fr for some
+cp -R store/out/{en,de,es,fr,it,nl,pl,pt} ../../design/brand/store/screenshots/
 ```
 
-Then copy `store/out/*` here. The food photos in the shots are CC0 (public domain) and swapped in only for the capture (`apps/mobile/store/photos/CREDITS.md`); the app’s own sample photos are unlicensed stand-ins and never appear. Replace them with photos from your own cooking nights when you have them: real food from real members sells best.
+The food photos are CC0 (public domain) and swapped in only for the capture (`apps/mobile/store/photos/CREDITS.md`); the app’s own sample photos are unlicensed stand-ins and never appear. Replace them with photos from your own cooking nights when you have them: real food from real members sells best. The headlines and sample captions in languages other than English need a native speaker’s review, like the app’s own translations.
 
 ## Screenshot story (order matters)
 
@@ -40,7 +43,7 @@ Most people see only the first two or three in search, so the order sells the we
 | 5 | Then cook together in person. | Cooking nights and potlucks. Join in one tap. | A cooking night you’ve joined |
 | 6 | Bring a friend with one link. | They can look around first. No app needed. | The invite page a friend opens |
 
-German headlines, for German screenshots later: 1 *Finde deine Leute. Kocht zusammen.* · 2 *Ein Thema pro Woche. Alle kochen mit.* · 3 *Zeig, was du gekocht hast.* · 4 *Neue Ideen aus deinem Circle.* · 5 *Dann kocht zusammen, vor Ort.* · 6 *Bring Freund:innen mit einem Link mit.*
+The headlines in every other language are in `apps/mobile/store/locales.ts`.
 
 ## App Store (iOS)
 
@@ -141,7 +144,6 @@ Data linked to the user: email, name, user ID, the photos and messages they post
 ## To lift conversion after launch
 
 - **A/B test screenshot 1:** Apple *Product Page Optimization* and Google Play *Store listing experiments*. First test: “Find your people. Cook together.” against “Cook one theme a week with people near you.”
-- **German screenshots:** capture with the German app UI and the German headlines above for the DE listing.
 - **App preview video** (15 to 30 s): screen recordings of the app only (Apple 2.3.4 allows no live-action footage): the Monday notice, the theme, a photo going up, yums coming in, joining a potluck. Text overlays and narration are fine. Keep real footage of cooking nights for social posts and the website.
 - **Ratings:** ask after a good moment (a post that got yums, or after a cooking night), never on first launch.
 - **Real social proof:** once you have it, add a line with real Circle counts or member quotes. Don’t invent numbers.

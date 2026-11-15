@@ -197,7 +197,18 @@ type Operation =
 
 const OFFER_MS = 2 * 3_600_000;
 
+/**
+ * Store screenshots (apps/mobile/store/capture.spec.ts): other sample content, by id. Photos may
+ * be https URLs. Development fixtures only; the real backend never reads it.
+ */
+export interface FixtureOverrides {
+  plans?: Record<string, Partial<Plan>>;
+  circles?: Record<string, Partial<Circle>>;
+  cooks?: Record<string, Partial<FixtureCook>>;
+}
+
 interface FixtureHooks {
+  __pcFixtureOverrides?: FixtureOverrides;
   /** Test hook: make the next call to `operation` fail as a network error. */
   __pcFixtures?: {
     failNext: (operation: Operation, times?: number) => void;
@@ -335,6 +346,18 @@ async function loadState(): Promise<State> {
 }
 
 export async function createFixtureBackend(): Promise<Backend> {
+  // This backend's own copies, so overrides never touch the shared samples.
+  const overrides = hooks.__pcFixtureOverrides;
+  const sampleCircles: Circle[] = fixtureCircles.map((circle) => ({
+    ...circle,
+    ...overrides?.circles?.[circle.id],
+  }));
+  const sampleCooks: FixtureCook[] = fixtureCooks.map((cook) => ({
+    ...cook,
+    ...overrides?.cooks?.[cook.id],
+  }));
+  const samplePlans = (now: Date): Plan[] =>
+    fixturePlans(now).map((plan) => ({ ...plan, ...overrides?.plans?.[plan.id] }));
   let state = await loadState();
   const listeners = new Set<(session: Session | null) => void>();
   const failures = new Map<Operation, number>(
@@ -564,7 +587,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
   /** Every post that still exists, newest first, as cook_cards rows before the viewer's rules. */
   function allCooks(): State['cooksCreated'] {
-    const samples = fixtureCooks
+    const samples = sampleCooks
       .filter((c) => !state.cooksDeleted.includes(c.id))
       .map(({ hoursAgo, ...c }) => ({
         ...c,
@@ -590,7 +613,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
   /** A Circle's time zone: its city's, or UTC for a global Circle (as circle_tz). */
   function circleZone(circleId: string): string {
-    const circle = [...fixtureCircles, ...state.circlesCreated].find((c) => c.id === circleId);
+    const circle = [...sampleCircles, ...state.circlesCreated].find((c) => c.id === circleId);
     return allCities().find((c) => c.id === circle?.cityId)?.timezone ?? 'UTC';
   }
 
@@ -604,10 +627,13 @@ export async function createFixtureBackend(): Promise<Backend> {
   function cookImage(path: string, thumb: boolean): CookImage {
     const made = cookPhotos.get(path);
     if (made) return { uri: thumb ? made.thumbUri : made.uri, cacheKey: path };
-    const bundled = imageByPath(path);
-    return typeof bundled === 'number'
-      ? bundled
-      : (imageByPath('/images/potluck-spread.jpg') as number);
+    const found = imageByPath(path);
+    if (typeof found === 'number') return found;
+    // A remote photo (store screenshot overrides).
+    if (found && 'uri' in found && typeof found.uri === 'string') {
+      return { uri: found.uri, cacheKey: path };
+    }
+    return imageByPath('/images/potluck-spread.jpg') as number;
   }
 
   function toCook(row: State['cooksCreated'][number]): Cook {
@@ -616,7 +642,7 @@ export async function createFixtureBackend(): Promise<Backend> {
       ? visibleRecipes().find((r) => r.id === row.recipeId)
       : undefined;
     const reacted = state.cookReactions.includes(row.id);
-    const circle = [...fixtureCircles, ...state.circlesCreated].find(
+    const circle = [...sampleCircles, ...state.circlesCreated].find(
       (c) => c.id === row.circleId,
     );
     return {
@@ -894,7 +920,7 @@ export async function createFixtureBackend(): Promise<Backend> {
   };
 
   function plans(now = new Date()): Plan[] {
-    return [...fixturePlans(now), ...state.plansCreated].map((plan) => {
+    return [...samplePlans(now), ...state.plansCreated].map((plan) => {
       const freed = state.freedPlanIds.filter((id) => id === plan.id).length;
       const guests = Object.values(state.webGuests).filter(
         (g) => g.planId === plan.id && g.status === 'going',
@@ -986,7 +1012,7 @@ export async function createFixtureBackend(): Promise<Backend> {
     async listMyCircles() {
       await call();
       requireSession();
-      return [...fixtureCircles, ...state.circlesCreated]
+      return [...sampleCircles, ...state.circlesCreated]
         .map(withViewer)
         .filter((c) => c.viewerRole !== null);
     },
@@ -994,16 +1020,14 @@ export async function createFixtureBackend(): Promise<Backend> {
     async listCircles({ search }) {
       await call();
       const words = search.trim().toLowerCase();
-      return [...fixtureCircles, ...state.circlesCreated]
+      return [...sampleCircles, ...state.circlesCreated]
         .map(withViewer)
         .filter((c) => !words || `${c.name} ${c.tagline ?? ''}`.toLowerCase().includes(words));
     },
 
     async getCircle(circleId) {
       await call();
-      const circle = [...fixtureCircles, ...state.circlesCreated].find(
-        (c) => c.id === circleId,
-      );
+      const circle = [...sampleCircles, ...state.circlesCreated].find((c) => c.id === circleId);
       if (!circle) throw new BackendError('not_found');
       return withViewer(circle);
     },
@@ -1020,9 +1044,7 @@ export async function createFixtureBackend(): Promise<Backend> {
     async joinCircle(circleId) {
       await call();
       requireActive();
-      const circle = [...fixtureCircles, ...state.circlesCreated].find(
-        (c) => c.id === circleId,
-      );
+      const circle = [...sampleCircles, ...state.circlesCreated].find((c) => c.id === circleId);
       if (!circle || circle.access === 'invite') throw new BackendError('not_found');
       const view = withViewer(circle);
       if (view.viewerRole) return 'member';
@@ -1151,7 +1173,7 @@ export async function createFixtureBackend(): Promise<Backend> {
         throw new BackendError('invalid_input');
       }
       const circleName =
-        [...fixtureCircles, ...state.circlesCreated].find((c) => c.id === input.circleId)
+        [...sampleCircles, ...state.circlesCreated].find((c) => c.id === input.circleId)
           ?.name ?? '';
       const recipe: RecipeDetail = {
         id: `recipe-${Date.now()}-${key.slice(0, 8)}`,
@@ -1328,9 +1350,7 @@ export async function createFixtureBackend(): Promise<Backend> {
 
     async getCircleWeekPublic(circleId) {
       await call();
-      const circle = [...fixtureCircles, ...state.circlesCreated].find(
-        (c) => c.id === circleId,
-      );
+      const circle = [...sampleCircles, ...state.circlesCreated].find((c) => c.id === circleId);
       if (!circle || circle.access === 'invite') throw new BackendError('not_found');
       const week = circleWeek(circleId);
       return { weekStart: week, theme: themeOf(circleId, week) };
@@ -1983,7 +2003,7 @@ export async function createFixtureBackend(): Promise<Backend> {
               state.plansCreated.some((c) => c.id === p.id),
           )
           .map((p) => ({ kind: 'plan' as const, refId: p.id, title: p.title })),
-        ...[...fixtureCircles, ...state.circlesCreated]
+        ...[...sampleCircles, ...state.circlesCreated]
           .filter(
             (c) =>
               state.circlesJoined.includes(c.id) ||
@@ -2641,7 +2661,7 @@ export async function createFixtureBackend(): Promise<Backend> {
           timezone: c.timezone,
           members: state.profile?.cityId === c.id ? 1 : 0,
           plans: plansAll.filter((p) => p.cityId === c.id).length,
-          circles: [...fixtureCircles, ...state.circlesCreated].filter((x) => x.cityId === c.id)
+          circles: [...sampleCircles, ...state.circlesCreated].filter((x) => x.cityId === c.id)
             .length,
         }))
         .sort(
