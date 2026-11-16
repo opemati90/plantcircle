@@ -129,7 +129,7 @@ export const fr: Catalog = {
     emptyCityText:
       'Pas encore de tables ici. Lance-en une, ou cuisine en ligne avec d’autres depuis chez toi.',
     startOwnTitle: 'Lance ton propre Plan',
-    startOwnText: 'Un potluck, une soirée cuisine ou une commande groupée',
+    startOwnText: 'Un potluck, une soirée cuisine ou une session de cuisine en ligne',
     startOwnAction: 'Créer',
     joinFromHome: 'Rejoindre depuis chez toi',
     tableTitle: 'Cuisiner ensemble cette semaine',
@@ -874,6 +874,11 @@ export const fr: Catalog = {
       someone: 'Quelqu’un',
     },
     genericError: 'Impossible d’enregistrer. Réessaie.',
+    requestCooldown: 'Tu pourras redemander 30 jours après un refus.',
+    requestLimit:
+      'Tu as déjà demandé à rejoindre beaucoup de Circles aujourd’hui. Réessaie demain.',
+    requestsPending:
+      'Tu as 20 demandes en attente de réponse. Tu pourras redemander quand certaines seront tranchées.',
     searchLabel: 'Rechercher des cercles',
     searchPlaceholder: 'Rechercher des cercles',
     empty: {

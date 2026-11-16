@@ -210,6 +210,8 @@ interface State {
   cookCommentsStaffRemoved: string[];
   /** Circles where a test made the viewer a moderator. */
   circlesModerated: string[];
+  /** When the viewer asked to join a Circle (10 a day). */
+  circleRequestTimes: string[];
 }
 
 type Operation =
@@ -362,6 +364,7 @@ const EMPTY: State = {
   cooksStaffRemoved: [],
   cookCommentsStaffRemoved: [],
   circlesModerated: [],
+  circleRequestTimes: [],
 };
 
 function removeOne(list: string[], value: string): string[] {
@@ -1175,7 +1178,16 @@ export async function createFixtureBackend(): Promise<Backend> {
         return 'member';
       }
       if (!state.circlesRequested.includes(circleId)) {
-        commit({ ...state, circlesRequested: [...state.circlesRequested, circleId] });
+        // 10 new requests a day and 20 waiting at once, as circle_join counts them.
+        const dayAgo = Date.now() - 86_400_000;
+        const today = state.circleRequestTimes.filter((t) => Date.parse(t) > dayAgo);
+        if (today.length >= 10) throw new BackendError('rate_limited');
+        if (state.circlesRequested.length >= 20) throw new BackendError('requests_pending');
+        commit({
+          ...state,
+          circlesRequested: [...state.circlesRequested, circleId],
+          circleRequestTimes: [...today, new Date().toISOString()],
+        });
       }
       return 'requested';
     },

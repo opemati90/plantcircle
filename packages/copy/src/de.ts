@@ -124,7 +124,7 @@ export const de: Catalog = {
     emptyCityText:
       'Hier gibt es noch keine Runden. Starte eine, oder koch online mit anderen von zu Hause.',
     startOwnTitle: 'Eigenen Plan starten',
-    startOwnText: 'Ein Potluck, ein Kochabend oder eine Sammelbestellung',
+    startOwnText: 'Ein Potluck, ein Kochabend oder gemeinsames Kochen online',
     startOwnAction: 'Erstellen',
     joinFromHome: 'Von zu Hause mitmachen',
     tableTitle: 'Diese Woche zusammen kochen',
@@ -879,6 +879,10 @@ export const de: Catalog = {
       someone: 'Jemand',
     },
     genericError: 'Das hat nicht geklappt. Bitte versuch es noch einmal.',
+    requestCooldown: 'Nach einer Ablehnung kannst du nach 30 Tagen wieder fragen.',
+    requestLimit: 'Du hast heute schon viele Circles gefragt. Versuch es morgen wieder.',
+    requestsPending:
+      'Du hast 20 Anfragen, die auf eine Antwort warten. Du kannst wieder fragen, sobald einige entschieden sind.',
     searchLabel: 'Circles suchen',
     searchPlaceholder: 'Circles suchen',
     empty: {

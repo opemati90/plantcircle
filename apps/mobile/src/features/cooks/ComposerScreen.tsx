@@ -446,6 +446,7 @@ export default function ComposerScreen() {
               <TextInput
                 maxFontSizeMultiplier={2.0}
                 accessibilityLabel={captionLabel}
+                testID="cook-caption"
                 placeholder={captionPlaceholder}
                 placeholderTextColor={color.controlOff}
                 value={caption}

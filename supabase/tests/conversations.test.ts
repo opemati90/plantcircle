@@ -401,3 +401,81 @@ describe('who hears about comments', () => {
     expect(await comments(AMA, q)).toEqual([]);
   });
 });
+
+describe('Circle privacy and limits', () => {
+  it('names an owner only to signed-in members, never across a block or when suspended', async () => {
+    const owner = (user: string | null) =>
+      asUser(db, user, () =>
+        db.query<{ owner_name: string | null }>(
+          'select owner_name from public.circle_cards where id = $1',
+          [KITCHEN],
+        ),
+      ).then((r) => r.rows[0]?.owner_name ?? null);
+    expect(await owner(null)).toBeNull();
+    expect(await owner(MIA)).toBe('Ama');
+    await db.query('insert into public.blocks (blocker_id, blocked_id) values ($1, $2)', [
+      MIA,
+      AMA,
+    ]);
+    expect(await owner(MIA)).toBeNull();
+    await db.query(`update public.profiles set status = 'suspended' where id = $1`, [AMA]);
+    expect(await owner(LENA)).toBeNull();
+  });
+
+  it('limits new join requests to 10 a day across Circles', async () => {
+    for (let i = 0; i < 11; i += 1) {
+      await db.query(
+        `insert into public.circles (id, name, city_id, access, created_by)
+         values ($1, $2, $3, 'request', $4)`,
+        [
+          `51000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
+          `Circle ${String(i)}`,
+          CITY,
+          AMA,
+        ],
+      );
+    }
+    const ask = (i: number) =>
+      asUser(db, MIA, () =>
+        db.query('select public.circle_join($1, null, $2)', [
+          `51000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
+          key(),
+        ]),
+      );
+    for (let i = 0; i < 10; i += 1) await ask(i);
+    await expect(ask(10)).rejects.toThrow(/rate_limited/);
+    // Asking again where a request already waits is not a new one.
+    await ask(3);
+  });
+
+  it('stops at 20 requests waiting, with its own answer', async () => {
+    for (let i = 0; i < 21; i += 1) {
+      await db.query(
+        `insert into public.circles (id, name, city_id, access, created_by)
+         values ($1, $2, $3, 'request', $4)`,
+        [
+          `52000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
+          `Waiting ${String(i)}`,
+          CITY,
+          AMA,
+        ],
+      );
+    }
+    // Twenty asked days ago, still waiting.
+    for (let i = 0; i < 20; i += 1) {
+      await db.query(
+        `insert into public.circle_requests (circle_id, user_id, created_at)
+         values ($1, $2, now() - interval '3 days')`,
+        [`52000000-0000-4000-8000-${String(i).padStart(12, '0')}`, MIA],
+      );
+    }
+    await expect(
+      asUser(db, MIA, () =>
+        db.query('select public.circle_join($1, null, $2)', [
+          '52000000-0000-4000-8000-000000000020',
+          key(),
+        ]),
+      ),
+    ).rejects.toThrow(/requests_pending/);
+  });
+});

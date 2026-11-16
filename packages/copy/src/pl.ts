@@ -129,7 +129,7 @@ export const pl: Catalog = {
     emptyCityTitle: 'Zacznij jako pierwszy · {{city}}',
     emptyCityText: 'Nie ma tu jeszcze stołów. Załóż własny albo gotuj online z innymi z domu.',
     startOwnTitle: 'Utwórz własny Plan',
-    startOwnText: 'Posiłek składkowy, wieczór gotowania albo zamówienie grupowe',
+    startOwnText: 'Posiłek składkowy, wieczór gotowania albo wspólne gotowanie online',
     startOwnAction: 'Utwórz',
     joinFromHome: 'Dołącz z domu',
     tableTitle: 'Gotujcie razem w tym tygodniu',
@@ -913,6 +913,10 @@ export const pl: Catalog = {
       someone: 'Ktoś',
     },
     genericError: 'Nie udało się zapisać. Spróbuj ponownie.',
+    requestCooldown: 'Po odmowie możesz poprosić ponownie po 30 dniach.',
+    requestLimit: 'Dziś prosisz już o dołączenie do wielu Circle. Spróbuj jutro.',
+    requestsPending:
+      'Masz 20 próśb czekających na odpowiedź. Możesz poprosić ponownie, gdy część zostanie rozpatrzona.',
     searchLabel: 'Szukaj kręgów',
     searchPlaceholder: 'Szukaj kręgów',
     empty: {

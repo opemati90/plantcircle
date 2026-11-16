@@ -229,7 +229,13 @@ export default function CircleRequestScreen() {
             role="alert"
             style={type(15, 'regular', { color: color.danger })}
           >
-            {t('circles.genericError')}
+            {errorCode(join.error) === 'request_cooldown'
+              ? t('circles.requestCooldown')
+              : errorCode(join.error) === 'rate_limited'
+                ? t('circles.requestLimit')
+                : errorCode(join.error) === 'requests_pending'
+                  ? t('circles.requestsPending')
+                  : t('circles.genericError')}
           </Text>
         ) : null}
       </ScrollView>

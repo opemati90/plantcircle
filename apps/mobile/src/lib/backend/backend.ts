@@ -79,6 +79,7 @@ export type BackendErrorCode =
   | 'invalid_input'
   | 'city_required'
   | 'request_cooldown'
+  | 'requests_pending'
   | 'city_not_found'
   | 'host_level_required'
   | 'host_level_in_person'

@@ -124,7 +124,7 @@ export const es: Catalog = {
     emptyCityText:
       'Aún no hay mesas aquí. Puedes crear una o cocinar online con otros desde casa.',
     startOwnTitle: 'Crea tu propio Plan',
-    startOwnText: 'Una comida para compartir, una noche de cocina o un pedido en grupo',
+    startOwnText: 'Una comida para compartir, una noche de cocina o cocinar juntos en línea',
     startOwnAction: 'Crear',
     joinFromHome: 'Únete desde casa',
     tableTitle: 'Cocinar juntos esta semana',
@@ -862,6 +862,10 @@ export const es: Catalog = {
       someone: 'Alguien',
     },
     genericError: 'No se pudo guardar. Inténtalo de nuevo.',
+    requestCooldown: 'Puedes volver a pedirlo 30 días después de un rechazo.',
+    requestLimit: 'Hoy ya has pedido unirte a muchos Circles. Inténtalo mañana.',
+    requestsPending:
+      'Tienes 20 solicitudes esperando respuesta. Podrás pedir de nuevo cuando se decidan algunas.',
     searchLabel: 'Buscar círculos',
     searchPlaceholder: 'Buscar círculos',
     empty: {

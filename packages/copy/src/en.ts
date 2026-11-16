@@ -119,7 +119,7 @@ export const en = {
     emptyCityText:
       'No tables here yet. You can start one, or cook with others online from home.',
     startOwnTitle: 'Start your own Plan',
-    startOwnText: 'A potluck, a cooking night or a group order',
+    startOwnText: 'A potluck, a cooking night or an online cook-along',
     startOwnAction: 'Create',
     joinFromHome: 'Join from home',
     tableTitle: 'Cook together this week',
@@ -851,6 +851,10 @@ export const en = {
       someone: 'Someone',
     },
     genericError: 'Couldn’t save that. Try again.',
+    requestCooldown: 'You can ask again 30 days after a request was declined.',
+    requestLimit: 'You’ve asked to join a lot of Circles today. Try again tomorrow.',
+    requestsPending:
+      'You have 20 requests waiting for an answer. You can ask again once some are decided.',
     searchLabel: 'Search Circles',
     searchPlaceholder: 'Search Circles',
     empty: {

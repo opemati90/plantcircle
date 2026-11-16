@@ -258,6 +258,7 @@ export function CommentBar({ cook, bottom }: { cook: Cook; bottom: number }) {
         <TextInput
           maxFontSizeMultiplier={2.0}
           accessibilityLabel={t('cooks.commentLabel')}
+          testID="comment-input"
           placeholder={t('cooks.commentPlaceholder')}
           placeholderTextColor={color.secondary}
           value={text}

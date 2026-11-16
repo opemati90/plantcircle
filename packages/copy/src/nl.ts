@@ -123,7 +123,7 @@ export const nl: Catalog = {
     emptyCityTitle: 'Wees de eerste in {{city}}',
     emptyCityText: 'Hier zijn nog geen tafels. Begin er een, of kook online mee vanuit huis.',
     startOwnTitle: 'Begin je eigen plan',
-    startOwnText: 'Een potluck, een kookavond of een groepsbestelling',
+    startOwnText: 'Een potluck, een kookavond of samen online koken',
     startOwnAction: 'Maken',
     joinFromHome: 'Doe mee vanuit huis',
     tableTitle: 'Deze week samen koken',
@@ -866,6 +866,10 @@ export const nl: Catalog = {
       someone: 'Iemand',
     },
     genericError: 'Opslaan lukte niet. Probeer het opnieuw.',
+    requestCooldown: 'Na een afwijzing kun je het na 30 dagen opnieuw vragen.',
+    requestLimit: 'Je hebt vandaag al bij veel Circles gevraagd. Probeer het morgen weer.',
+    requestsPending:
+      'Je hebt 20 verzoeken die op een antwoord wachten. Je kunt weer vragen zodra er een paar beslist zijn.',
     searchLabel: 'Kringen zoeken',
     searchPlaceholder: 'Kringen zoeken',
     empty: {

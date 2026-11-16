@@ -20,6 +20,7 @@ const DOMAIN_ERRORS: Record<string, BackendErrorCode> = {
   city_required: 'city_required',
   feedback_exists: 'invalid_input',
   request_cooldown: 'request_cooldown',
+  requests_pending: 'requests_pending',
   last_owner: 'invalid_input',
   city_not_found: 'city_not_found',
   host_level_required: 'host_level_required',

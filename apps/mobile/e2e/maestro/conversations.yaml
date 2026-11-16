@@ -1,0 +1,64 @@
+# Circle conversations on a simulator: join a Circle, share a question without a photo, comment
+# on a post. Fixture backend (email code 000000); Metro on :8081.
+#   maestro test apps/mobile/e2e/maestro/conversations.yaml
+appId: app.plantcircle.mobile
+---
+- launchApp:
+    clearState: true
+- tapOn: 'Get started'
+- tapOn: 'Continue'
+- tapOn: 'Type your city'
+- inputText: 'berli'
+- tapOn:
+    id: 'city-berlin'
+- scrollUntilVisible:
+    element: 'Continue'
+    direction: DOWN
+- tapOn: 'Continue'
+- assertVisible: 'This week in Berlin'
+- openLink: plantcircle://circle/neukolln-plant-kitchen
+- assertVisible: 'Neukölln Plant Kitchen'
+- waitForAnimationToEnd
+- tapOn: 'Join'
+- tapOn: 'Use email instead'
+- tapOn:
+    text: 'I’m 18 or older'
+    optional: true
+- tapOn: 'Email'
+- inputText: 'lena@example.com'
+- tapOn: 'Continue with email'
+- assertVisible: 'Check your email'
+- inputText: '000000'
+- tapOn: 'Verify'
+- tapOn:
+    text: 'Only needed'
+    optional: true
+- tapOn:
+    text: 'Not now'
+    optional: true
+- tapOn:
+    text: 'Join'
+    optional: true
+- assertVisible: '.*member.*'
+# A question, no photo.
+- openLink: plantcircle://cook/new?circle=neukolln-plant-kitchen&kind=question
+- assertVisible: 'Share with your Circle'
+- tapOn:
+    id: 'cook-caption'
+- inputText: 'Where do you buy good tempeh?'
+- hideKeyboard
+- tapOn: 'Share with Neukölln Plant Kitchen'
+- assertVisible: 'Shared with Neukölln Plant Kitchen'
+- takeScreenshot: conversations-question
+# A comment on a sample post.
+- openLink: plantcircle://cook/cook-ola-tip
+- assertVisible: 'Comments'
+- assertVisible: 'Tried it with cumin last night. You were right.'
+- tapOn:
+    id: 'comment-input'
+- inputText: 'Doing this tonight!'
+- tapOn: 'Send'
+# Sent: it shows as the newest comment, posted just now (unsent text would not say so).
+- assertVisible: '.*just now.*'
+- assertVisible: 'Doing this tonight!'
+- takeScreenshot: conversations-comment
